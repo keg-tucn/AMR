@@ -286,10 +286,10 @@ class AMR(defaultdict):
                 elif type == "POLARITY":
                     match = polarity_re.match(token)
                     if match:
-                        stack.append((CNODE, Polarity(match.group(1)), None))
+                        stack.append((CNODE, Polarity(match.group(1)+str(match.group(2))), None))
                         if '-' not in amr.node_to_tokens:
                             amr.node_to_tokens['-'] = []
-                        amr.node_to_tokens['-'].append(match.group(2))
+                        amr.node_to_tokens['-'].append((match.group(2), parentnodelabel))
                     else:
                         stack.append((CNODE, Polarity(token.strip()), None))
                     state = 6
