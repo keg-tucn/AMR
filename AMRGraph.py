@@ -69,6 +69,7 @@ class AMR(defaultdict):
         # attributes to be added
         self.node_to_concepts = {}
         self.node_to_tokens = {}
+        self.relation_to_tokens = {}
         self.align_to_sentence = None
 
         self.reentrance_triples = []
@@ -93,7 +94,6 @@ class AMR(defaultdict):
                 if parentconcept is not None:
                     match = alignment_re.match(parentconcept)
                     if match:
-                        amr.node_to_tokens[node_idx] = match.group(2)
                         amr.node_to_concepts[node_idx] = match.group(1)
                     else:
                         amr.node_to_concepts[node_idx] = parentconcept
@@ -105,7 +105,6 @@ class AMR(defaultdict):
                     if parentnodelabel not in mapping_table:
                         match = alignment_re.mathc(parentnodelabel)
                         if match:
-                            amr.node_to_tokens[node_idx] = match.group(2)
                             amr.node_to_concepts[node_idx] = match.group(1)
                         else:
                             amr.node_to_concepts[node_idx] = parentnodelabel
@@ -141,18 +140,6 @@ class AMR(defaultdict):
 
         token_re = make_compiled_regex(lex_rules)
 
-        alignment_rule = u'^(.+)~e.([0-9]+)(?:,([0-9]+))*$'
-        alignment_re = re.compile(alignment_rule)
-
-        literal_rule = u'("[^"]+"|\u201c[^\u201d]+\u201d)(?:~e.([0-9]+)(?:,([0-9]+))*)?'
-        literal_re = re.compile(literal_rule)
-
-        polarity_rule = "\s(\-|\+)(?:~e.([0-9]+))?(?:,([0-9]+))*"
-        polarity_re = re.compile(polarity_rule)
-
-        edgelabel_rule = ":([A-Za-z0-9'-']+)(?:~e.([0-9]+)(?:,([0-9]+))*)?"
-        edgelabel_re = re.compile(edgelabel_rule)
-
         # lexer = Lexer(lex_rules)
         # amr.reentrance_triples = []
 
@@ -179,11 +166,7 @@ class AMR(defaultdict):
                     stack.append((PNODE, Quantity(token.strip()), None))
                     state = 2
                 elif type == "STRLITERAL":
-                    match = literal_re.match(token)
-                    if match:
-                        stack.append((PNODE, StrLiteral(match.group(1)), None))
-                    else:
-                        stack.append((PNODE, StrLiteral(token.strip()), None))
+                    stack.append((PNODE, StrLiteral(token.strip()), None))
                     state = 2
                 else:
                     raise ParserError, "Unexpected token %s" % (token.encode('utf8'))
@@ -192,11 +175,7 @@ class AMR(defaultdict):
                 if type == "SLASH":
                     state = 3
                 elif type == "EDGELABEL":
-                    match = edgelabel_re.match(token)
-                    if match:
-                        stack.append((EDGE, match.group(1)))
-                    else:
-                        stack.append((EDGE, token[1:]))
+                    stack.append((EDGE, token[1:]))
                     state = 5
                 elif type == "RPAR":
                     forgetme, parentnodelabel, parentconcept = AMR.popFromStack(stack)
@@ -207,12 +186,7 @@ class AMR(defaultdict):
                         rename_node(parentnodelabel, parentconcept)
                     else:
                         if not parentnodelabel in amr.node_to_concepts or parentconcept is not None:
-                            match = alignment_re.match(parentconcept)
-                            if match:
-                                amr.node_to_concepts[parentnodelabel] = match.group(1)
-                                amr.node_to_tokens[parentnodelabel] = match.group(2)
-                            else:
-                                amr.node_to_concepts[parentnodelabel] = parentconcept
+                            amr.node_to_concepts[parentnodelabel] = parentconcept
 
                     foo = amr[parentnodelabel]
 
@@ -237,11 +211,7 @@ class AMR(defaultdict):
 
             elif state == 4:
                 if type == "EDGELABEL":
-                    match = edgelabel_re.match(token)
-                    if match:
-                        stack.append((EDGE, match.group(1)))
-                    else:
-                        stack.append((EDGE, token[1:]))
+                    stack.append((EDGE, token[1:]))
                     state = 5
                 elif type == "RPAR":
                     forgetme, parentnodelabel, parentconcept = AMR.popFromStack(stack)
@@ -249,12 +219,7 @@ class AMR(defaultdict):
                     foo = amr[parentnodelabel]  # add only the node
                     # print state,parentnodelabel,parentconcept
                     if parentconcept is not None:
-                        match = alignment_re.match(parentconcept)
-                        if (match):
-                            amr.node_to_concepts[parentnodelabel] = match.group(1)
-                            amr.node_to_tokens[parentnodelabel] = match.group(2)
-                        else:
-                            amr.node_to_concepts[parentnodelabel] = parentconcept
+                        amr.node_to_concepts[parentnodelabel] = parentconcept
 
                     if stack:
                         stack.append((CNODE, parentnodelabel, parentconcept))
@@ -274,35 +239,20 @@ class AMR(defaultdict):
                     stack.append((CNODE, Quantity(token), None))
                     state = 6
                 elif type == "STRLITERAL":
-                    match = literal_re.match(token)
-                    if (match):
-                        stack.append((CNODE, StrLiteral(match.group(1)), None))
-                    else:
-                        stack.append((CNODE, StrLiteral(token[1:-1]), None))
+                    stack.append((CNODE, StrLiteral(token[1:-1]), None))
                     state = 6
                 elif type == "INTERROGATIVE":
                     stack.append((CNODE, Interrogative(token[1:]), None))
                     state = 6
                 elif type == "POLARITY":
-                    match = polarity_re.match(token)
-                    if match:
-                        stack.append((CNODE, Polarity(match.group(1)+str(match.group(2))), None))
-                        if '-' not in amr.node_to_tokens:
-                            amr.node_to_tokens['-'] = []
-                        amr.node_to_tokens['-'].append((match.group(2), parentnodelabel))
-                    else:
-                        stack.append((CNODE, Polarity(token.strip()), None))
+                    stack.append((CNODE, Polarity(token.strip()), None))
                     state = 6
                 elif type == "IDENTIFIER":
                     stack.append((RCNODE, token, None))
                     state = 6
                 elif type == "EDGELABEL":  # Unary edge
                     stack.append((CNODE, None, None))
-                    match = edgelabel_re.match(token)
-                    if match:
-                        stack.append((EDGE, match.group(1)))
-                    else:
-                        stack.append((EDGE, token[1:]))
+                    stack.append((EDGE, token[1:]))
                     state = 5
 
                 elif type == "RPAR":
@@ -319,7 +269,6 @@ class AMR(defaultdict):
                         assert stack[-1][0] == EDGE
                         forgetme, edgelabel = AMR.popFromStack(stack)
                         edges.append((edgelabel, children))
-                        #TODO: maybe also here?
 
                     forgetme, parentnodelabel, parentconcept = AMR.popFromStack(stack)
                     # print state,parentnodelabel,parentconcept
@@ -342,12 +291,7 @@ class AMR(defaultdict):
                         rename_node(parentnodelabel, parentconcept)
                     else:
                         if not parentnodelabel in amr.node_to_concepts or parentconcept is not None:
-                            match = alignment_re.match(parentconcept)
-                            if (match):
-                                amr.node_to_concepts[parentnodelabel] = match.group(1)
-                                amr.node_to_tokens[parentnodelabel] = match.group(2)
-                            else:
-                                amr.node_to_concepts[parentnodelabel] = parentconcept
+                            amr.node_to_concepts[parentnodelabel] = parentconcept
 
                     for edgelabel, children in reversed(edges):
                         hypertarget = []
@@ -359,12 +303,7 @@ class AMR(defaultdict):
                                     rename_node(node, concept)
                                 else:
                                     if concept:
-                                        match = alignment_re.match(concept)
-                                        if match:
-                                            amr.node_to_tokens[node] = match.group(2)
-                                            amr.node_to_concepts[node] = match.group(1)
-                                        else:
-                                            amr.node_to_concepts[node] = concept
+                                        amr.node_to_concepts[node] = concept
 
                             hypertarget.append(node)
                         hyperchild = tuple(hypertarget)
@@ -396,7 +335,7 @@ class AMR(defaultdict):
                         forgetme, edgelabel = AMR.popFromStack(stack)
                         edges.append((edgelabel, children))
                         reedges.append((edgelabel, reentrances))
-                        #TODO: check for token
+                        # TODO: check for token
 
                     forgetme, parentnodelabel, parentconcept = AMR.popFromStack(stack)
                     # print "PNODE",state,parentnodelabel,parentconcept
@@ -419,12 +358,7 @@ class AMR(defaultdict):
                         rename_node(parentnodelabel, parentconcept)
                     else:
                         if parentnodelabel not in amr.node_to_concepts and parentconcept is not None:
-                            match = alignment_re.match(parentconcept)
-                            if match:
-                                amr.node_to_concepts[parentnodelabel] = match.group(1)
-                                amr.node_to_tokens[parentnodelabel] = match.group(2)
-                            else:
-                                amr.node_to_concepts[parentnodelabel] = parentconcept
+                            amr.node_to_concepts[parentnodelabel] = parentconcept
 
                     for edgelabel, children in reversed(edges):
                         hypertarget = []
@@ -436,12 +370,7 @@ class AMR(defaultdict):
                                     rename_node(node, concept)
                                 else:
                                     if concept:
-                                        match = alignment_re.match(concept)
-                                        if (match):
-                                            amr.node_to_concepts[node] = match.group(1)
-                                            amr.node_to_tokens[node] = match.group(2)
-                                        else:
-                                            amr.node_to_concepts[node] = concept
+                                        amr.node_to_concepts[node] = concept
                             hypertarget.append(node)
                         hyperchild = tuple(hypertarget)
                         amr._add_triple(parentnodelabel, edgelabel, hyperchild)
@@ -477,6 +406,8 @@ class AMR(defaultdict):
 
         if state != 0 and stack:
             raise ParserError, "mismatched parenthesis"
+        amr._make_node_alignments()
+        amr._clean_up_keys()
         return amr
 
     @classmethod
@@ -590,6 +521,128 @@ class AMR(defaultdict):
         if reentrance:
             self.reentrance_triples.append((parent, relation, reentrance[0]))
 
+    def _make_node_alignments(self):
+        alignment_rule = u'^(.+)~e.([0-9]+)((?:,(?:[0-9]+))*)$'
+        alignment_re = re.compile(alignment_rule)
+        for k in self.node_to_concepts.keys():
+            concept = self.node_to_concepts[k]
+            match = alignment_re.match(concept)
+            if match:
+                self.node_to_concepts[k] = match.group(1)
+                self.node_to_tokens[k] = [match.group(2)]
+                if match.group(3) is not None:
+                    extra_tokens = match.group(3).split(',')
+                    if len(extra_tokens)  > 1:
+                        for i in xrange(1, len(extra_tokens)):
+                            self.node_to_tokens[k].append(extra_tokens[i])
+
+    def _align_edge(self, parent, relation):
+        edgelabel_rule = u'^(.+)~e.([0-9]+)((?:,(?:[0-9]+))*)$'
+        edgelabel_re = re.compile(edgelabel_rule)
+        match = edgelabel_re.match(relation)
+        new_relation = relation
+        if match:
+            new_relation = match.group(1)
+            if match.group(2) is not None:
+                # add the edge token to the edge - (token, edge-parent) map
+                self.relation_to_tokens[new_relation] = [(match.group(2), parent)]
+            if match.group(3) is not None:
+                extra_tokens = match.group(3).split(',')
+                if len(extra_tokens) > 1:
+                    for i in xrange(1, len(extra_tokens)):
+                        self.relation_to_tokens[new_relation].append((extra_tokens[i], parent))
+        return new_relation
+
+    def _handle_polarity(self, parent, child, relation):
+        polarity_rule = "(\-|\+)(?:~e.([0-9]+)((?:,(?:[0-9]+))*))*"
+        polarity_re = re.compile(polarity_rule)
+
+        new_parent = parent
+        new_child = child[0]
+        if relation == 'polarity':
+            match = polarity_re.match(child[0])
+            new_child = match.group(1)
+
+            if match.group(2) is not None:
+                if new_child[0] not in self.node_to_tokens.keys():
+                    self.node_to_tokens[new_child] = []
+                self.node_to_tokens[new_child].append((match.group(2), new_parent))
+                if match.group(3) is not None:
+                    extra_tokens = match.group(3).split(',')
+                    if len(extra_tokens) > 1:
+                        for i in xrange(1, len(extra_tokens)):
+                            self.node_to_tokens[new_child].append((extra_tokens[i], new_parent))
+        else:
+            match = polarity_re.match(parent)
+            if match:
+                new_parent = match.group(1)
+        return new_parent, (new_child,)
+
+    def _handle_literals(self, parent, child):
+        literal_rule = u'([^"]+"|[^\u201d]+\u201d)(?:~e.([0-9]+)((?:,(?:[0-9]+))*))?'
+        literal_re = re.compile(literal_rule)
+        match = literal_re.match(child[0])
+        new_child = child[0]
+        if match:
+            if len(match.group(1)) > 2:
+                new_child = match.group(1)[:-1]
+            else:
+                new_child = match.group(1)
+            if match.group(2) is not None:
+                if new_child[0] not in self.node_to_tokens.keys():
+                    self.node_to_tokens[new_child] = []
+                self.node_to_tokens[new_child].append((match.group(2), parent))
+            if match.group(3) is not None:
+                extra_tokens = match.group(3).split(',')
+                if len(extra_tokens) > 1:
+                    for i in xrange(1, len(extra_tokens)):
+                        self.node_to_tokens[new_child].append((extra_tokens[i], parent))
+        return (new_child,)
+
+    def _handle_quantity(self, parent, child):
+        quantity_rule = "([0-9][0-9Ee^+\-\.,:]*)(?:~e.([0-9]+)((?:,(?:[0-9]+))*))?"
+        quantity_re = re.compile(quantity_rule)
+        new_child = child[0]
+        match = quantity_re.match(new_child)
+        if match:
+            new_child = match.group(1)
+            if match.group(2) is not None:
+                if new_child[0] not in self.node_to_tokens.keys():
+                    self.node_to_tokens[new_child] = []
+                self.node_to_tokens[new_child].append((match.group(2), parent))
+            if match.group(3) is not None:
+                extra_tokens = match.group(3).split(',')
+                if len(extra_tokens) > 1:
+                    for i in xrange(1, len(extra_tokens)):
+                        self.node_to_tokens[new_child].append((extra_tokens[i], parent))
+        return (new_child,)
+
+    def _handle_interrogative(self, parent, child):
+        interrogative_rule = "(interrogative|imperative|expressive)(?:~e.([0-9]+)((?:,(?:[0-9]+))*))?"
+        interrogative_re = re.compile(interrogative_rule)
+        new_child = child[0]
+        match = interrogative_re.match(new_child)
+        if match:
+            new_child = match.group(1)
+            if match.group(2) is not None:
+                if new_child[0] not in self.node_to_tokens.keys():
+                    self.node_to_tokens[new_child] = []
+                self.node_to_tokens[new_child].append((match.group(2), parent))
+            if match.group(3) is not None:
+                extra_tokens = match.group(3).split(',')
+                if len(extra_tokens) > 1:
+                    for i in xrange(1, len(extra_tokens)):
+                        self.node_to_tokens[new_child].append((extra_tokens[i], parent))
+        return (new_child,)
+
+    def _clean_up_keys(self):
+        alignment_rule = u'^(.+)~e.([0-9]+)((?:,(?:[0-9]+))*)$'
+        alignment_re = re.compile(alignment_rule)
+        for k in self.keys():
+            match = alignment_re.match(k)
+            if match:
+                self[match.group(1)] = self.pop(k)
+
     def _add_triple(self, parent, relation, child, warn=None):
         """
         Add a (parent, relation, child) triple to the DAG.
@@ -618,6 +671,11 @@ class AMR(defaultdict):
 
                             # raise ValueError,"(%s, %s, %s) would produce a cycle with (%s, %s, %s)" % (parent, relation, child, c, rel, test)
 
+        relation = self._align_edge(parent, relation)
+        (parent, child) = self._handle_polarity(parent, child, relation)
+        child = self._handle_literals(parent, child)
+        child = self._handle_quantity(parent, child)
+        child = self._handle_interrogative(parent, child)
         self[parent].append(relation, child)
 
     def set_alignment(self, alignment):
@@ -661,7 +719,7 @@ class AMR(defaultdict):
                                 queue.append((child, rel, depth + 1, None))
                             amr_triples.append((rel, n, child[0]))
 
-        return (sequence, amr_triples)
+        return sequence, amr_triples
 
     def print_triples(self):
         result = ''
