@@ -199,7 +199,7 @@ class AMR(defaultdict):
                         stack.append((EDGE, token[1:]))
                     state = 5
                 elif type == "RPAR":
-                    forgetme, parentnodelabel, parentconcept = stack.pop()
+                    forgetme, parentnodelabel, parentconcept = AMR.popFromStack(stack)
                     assert forgetme == PNODE
                     assert parentconcept == None
 
@@ -229,7 +229,7 @@ class AMR(defaultdict):
             elif state == 3:
                 if type == "IDENTIFIER" or "QUANTITY":
                     assert stack[-1][0] == PNODE
-                    nodelabel = stack.pop()[1]
+                    nodelabel = AMR.popFromStack(stack)[1]
                     stack.append((PNODE, nodelabel, token))
                     state = 4
                 else:
@@ -244,7 +244,7 @@ class AMR(defaultdict):
                         stack.append((EDGE, token[1:]))
                     state = 5
                 elif type == "RPAR":
-                    forgetme, parentnodelabel, parentconcept = stack.pop()
+                    forgetme, parentnodelabel, parentconcept = AMR.popFromStack(stack)
                     assert forgetme == PNODE
                     foo = amr[parentnodelabel]  # add only the node
                     # print state,parentnodelabel,parentconcept
@@ -298,7 +298,11 @@ class AMR(defaultdict):
                     state = 6
                 elif type == "EDGELABEL":  # Unary edge
                     stack.append((CNODE, None, None))
-                    stack.append((EDGE, token[1:]))
+                    match = edgelabel_re.match(token)
+                    if match:
+                        stack.append((EDGE, match.group(1)))
+                    else:
+                        stack.append((EDGE, token[1:]))
                     state = 5
 
                 elif type == "RPAR":
@@ -309,14 +313,15 @@ class AMR(defaultdict):
                         children = []
                         # one edge may have multiple children/tail nodes
                         while stack[-1][0] == CNODE:
-                            forgetme, childnodelabel, childconcept = stack.pop()
+                            forgetme, childnodelabel, childconcept = AMR.popFromStack(stack)
                             children.append((childnodelabel, childconcept))
 
                         assert stack[-1][0] == EDGE
-                        forgetme, edgelabel = stack.pop()
+                        forgetme, edgelabel = AMR.popFromStack(stack)
                         edges.append((edgelabel, children))
+                        #TODO: maybe also here?
 
-                    forgetme, parentnodelabel, parentconcept = stack.pop()
+                    forgetme, parentnodelabel, parentconcept = AMR.popFromStack(stack)
                     # print state,parentnodelabel,parentconcept
 
                     # check for annotation error
@@ -382,17 +387,18 @@ class AMR(defaultdict):
                         reentrances = []
                         # one edge may have multiple children/tail nodes
                         while stack[-1][0] == CNODE or stack[-1][0] == RCNODE:
-                            CTYPE, childnodelabel, childconcept = stack.pop()
+                            CTYPE, childnodelabel, childconcept = AMR.popFromStack(stack)
                             if CTYPE == RCNODE:
                                 reentrances.append((childnodelabel, childconcept))
                             children.append((childnodelabel, childconcept))
 
                         assert stack[-1][0] == EDGE
-                        forgetme, edgelabel = stack.pop()
+                        forgetme, edgelabel = AMR.popFromStack(stack)
                         edges.append((edgelabel, children))
                         reedges.append((edgelabel, reentrances))
+                        #TODO: check for token
 
-                    forgetme, parentnodelabel, parentconcept = stack.pop()
+                    forgetme, parentnodelabel, parentconcept = AMR.popFromStack(stack)
                     # print "PNODE",state,parentnodelabel,parentconcept
 
                     # check for annotation error
@@ -472,6 +478,11 @@ class AMR(defaultdict):
         if state != 0 and stack:
             raise ParserError, "mismatched parenthesis"
         return amr
+
+    @classmethod
+    def popFromStack(cls, stack):
+        pop = stack.pop()
+        return pop
 
     def get_variable(self, posID):
         """return variable given postition ID"""
@@ -681,7 +692,7 @@ class AMR(defaultdict):
 
             # all_nodes = []
             while stack:
-                next, rel, parent, depth, seqID = stack.pop()
+                next, rel, parent, depth, seqID = AMR.popFromStack(stack)
                 for n in next:
                     if self.reentrance_triples:
                         firsthit = (parent, rel, n) not in self.reentrance_triples
@@ -732,7 +743,7 @@ class AMR(defaultdict):
             stack = [((r,), None, None)]  # node,incoming edge and preceding node
 
             while stack:
-                next, rel, previous = stack.pop()
+                next, rel, previous = AMR.popFromStack(stack)
                 for n in next:
                     if n == idx:
                         if previous == None:  # replace root

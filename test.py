@@ -35,6 +35,29 @@ amr = AMR.parse_string("""(m / multi-sentence
            :ARG0 (s8 / she~e.45)
            :ARG1-of (s5 / significant-02~e.48)
            :li (x3 / 3~e.43)))""")
+
+
+amr = AMR.parse_string("""(m / multi-sentence
+      :snt1 (r / return-01~e.3
+            :ARG1 (i / i~e.0)
+            :ARG4~e.4 (c / country~e.6
+                  :poss~e.5 i~e.5)
+            :time~e.7 (d / date-entity :month~e.8 9~e.8))
+      :snt2 (p2 / place~e.14 :quant 2~e.13
+            :ARG4-of (g / go-02~e.17
+                  :ARG0 (i2 / i~e.15)
+                  :time (n / now~e.10)
+                  :ARG1-of (p / possible-01~e.16)))
+      :snt3 (p3 / possible-01~e.20 :mode~e.31 interrogative~e.31
+            :ARG1 (h / help-01~e.22
+                  :ARG0 (e / everyone~e.21)
+                  :ARG1 (s / see-01~e.24
+                        :ARG0 i3~e.23
+                        :ARG1 (t / thing~e.28
+                              :ARG1-of~e.28 (s2 / suitable-04~e.28
+                                    :ARG2 i3)
+                              :degree (m2 / more~e.27)))
+                  :ARG2~e.29 (i3 / i~e.30))))""")
 print amr.node_to_concepts
 print amr.node_to_tokens
 print amr.external_nodes
