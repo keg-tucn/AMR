@@ -1,13 +1,19 @@
 from AMRGraph import AMR
-#
-amr = AMR.parse_string("""(a3 / and
-      :op1 (s / selfish~e.3
-            :domain~e.1 (p / person~e.0
-                  :quant (a / all~e.2)))
-      :op2 (g / gray-02~e.9
-            :ARG1 (r / reality~e.5)
-            :frequency (o / often~e.8)
-            :mod (a2 / also~e.6)))""")
+from AMRData import CustomizedAMR
+
+# amr = AMR.parse_string("""(a3 / and
+#       :op1 (s / selfish~e.3
+#             :domain~e.1 (p / person~e.0
+#                   :quant (a / all~e.2)))
+#       :op2 (g / gray-02~e.9
+#             :ARG1 (r / reality~e.5)
+#             :frequency (o / often~e.8)
+#             :mod (a2 / also~e.6)))""")
+
+amr = AMR.parse_string("""(r / recommend-01~e.1
+      :ARG1 (a / advocate-01~e.3
+            :ARG1 (i / it~e.0)
+            :manner~e.2 (v / vigorous~e.2)))""")
 
 # amr = AMR.parse_string("""(m / multi-sentence
 #      :snt1 (e / exemplify-01~e.1
@@ -60,31 +66,44 @@ amr = AMR.parse_string("""(a3 / and
 #                   :ARG2~e.29 (i3 / i~e.30))))""")
 
 
-
 def pretty_print(amr):
     for k in amr.keys():
         print "Key: %s" % (k)
         list = amr[k]
+        print list
         if len(list) == 0:
             print "Leaf"
         for rel in list:
             print "%s -> %s" % (rel, list[rel][0])
         print ""
 
-
 print "\nMappings between node variables and their corresponding concepts.\n"
 print amr.node_to_concepts
+
 print "\nMappings between nodes and all the aligned tokens: If the nodes don't have" \
-      "a variable (polarity, literals, quantities, interrogatives), they specify both the aligned tokens" \
+      "a variable (polarity, literals, quantities, interrogatives), they specify both the aligned tokens " \
       "and the parent in order to uniquely identify them\n"
 print amr.node_to_tokens
+
 print "\nMappings between relations and tokens. Uniquely identified by also specifying the parent of that relation.\n"
-#TODO: since the clean-up of parents which are not actual variables is done at the final, we might end up
+# TODO: since the clean-up of parents which are not actual variables is done at the final, we might end up
 # having parents such as 9~e.15 for the relations. However, as I've seen so far, these kind of nodes are usually leaves
 # so hopefully we won't have this problem
 print amr.relation_to_tokens
+
 print "\nMappings from a node to each child, along with the relation between them.\n"
 pretty_print(amr)
-print "\nAll the nodes inthe amr should appear here.\n"
+
+print "\nAll the nodes in the amr should appear here.\n"
 print amr.keys()
+
+
+print "\nCreating custom AMR.\n"
+custom_AMR = CustomizedAMR()
+custom_AMR.create_custom_AMR(amr)
+print custom_AMR.tokens_to_concepts_dict
+print custom_AMR.relations_dict.keys()
+print custom_AMR.relations_dict
+
+
 
