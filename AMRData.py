@@ -10,6 +10,7 @@ class AMRNode():
 
 class CustomizedAMR():
     def __init__(self):
+        self.parent_dict = {}
         self.relations_dict = {}
         self.tokens_to_concepts_dict = {}
 
@@ -23,7 +24,7 @@ class CustomizedAMR():
             tokens = amr_graph.node_to_tokens[node_variable]
             if node_variable in amr_graph.node_to_concepts.keys():
                 concept = amr_graph.node_to_concepts[node_variable]
-                self.tokens_to_concepts_dict[tokens[0]] = (node_variable, concept)
+                self.tokens_to_concepts_dict[int(tokens[0])] = (node_variable, concept)
 
     def add_parent_and_edge(self, key, parent, edge, data):
         if (key, parent) not in self.relations_dict.keys():
