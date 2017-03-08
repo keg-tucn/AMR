@@ -118,12 +118,12 @@ custom_AMR = CustomizedAMR()
 custom_AMR.create_custom_AMR(amr)
 print "\nCustom AMR token to concepts dict\n"
 print custom_AMR.tokens_to_concepts_dict
-
-parent_dict = {"l": "", "b": "l", "w": "b", "w2": "b", "a": "b"}
-custom_AMR.parent_dict = parent_dict
-relations_dict = {("l", ""): ("", ["b"]), ("b", "l"): ("ARG1", ["w", "w2", "a"]),
-                  ("w", "b"): ("ARG0", []), ("w2", "b"): ("ARG1", []), ("a", "b"): ("mod", [])}
-custom_AMR.relations_dict = relations_dict
+print "\nCustom AMR relations dict\n"
+print custom_AMR.relations_dict
+print "\nCustom AMR parent dict\n"
+print custom_AMR.parent_dict
 
 print(ActionSequenceGenerator.generate_action_sequence(custom_AMR,
-                                                       "It looks like we will also bring in whales ."))
+                                                     "It looks like we will also bring in whales ."))
+
+#['DN', 'SH_look-02', 'DN', 'SH_we', 'DN', 'SH_also', 'SH_bring-01', 'RL_mod', 'RL_ARG0', 'DN', 'SH_whale', 'RR_ARG1', 'RR_ARG1', 'DN']
