@@ -1,13 +1,20 @@
 from AMRGraph import AMR
-#
-amr = AMR.parse_string("""(a3 / and
-      :op1 (s / selfish~e.3
-            :domain~e.1 (p / person~e.0
-                  :quant (a / all~e.2)))
-      :op2 (g / gray-02~e.9
-            :ARG1 (r / reality~e.5)
-            :frequency (o / often~e.8)
-            :mod (a2 / also~e.6)))""")
+from AMRData import CustomizedAMR
+import ActionSequenceGenerator
+
+# amr = AMR.parse_string("""(a3 / and
+#       :op1 (s / selfish~e.3
+#             :domain~e.1 (p / person~e.0
+#                   :quant (a / all~e.2)))
+#       :op2 (g / gray-02~e.9
+#             :ARG1 (r / reality~e.5)
+#             :frequency (o / often~e.8)
+#             :mod (a2 / also~e.6)))""")
+
+# amr = AMR.parse_string("""(r / recommend-01~e.1
+#       :ARG1 (a / advocate-01~e.4
+#             :ARG1 (i / it~e.0)
+#             :manner~e.2 (v / vigorous~e.3)))""")
 
 # amr = AMR.parse_string("""(m / multi-sentence
 #      :snt1 (e / exemplify-01~e.1
@@ -59,6 +66,20 @@ amr = AMR.parse_string("""(a3 / and
 #                               :degree (m2 / more~e.27)))
 #                   :ARG2~e.29 (i3 / i~e.30))))""")
 
+# amr = AMR.parse_string("""(s2 / seem-01~e.1
+#       :ARG1~e.3 (h / have-03~e.8
+#             :ARG0 (w / we~e.7)
+#             :ARG1 (s / scheme~e.10
+#                   :mod (p / plan-01~e.15
+#                         :ARG1 (r / renovate-01~e.14)
+#                         :ARG1-of (m / major-02~e.13))
+#                   :purpose (f / future~e.5))))""")
+
+amr = AMR.parse_string("""(l / look-02~e.1
+      :ARG1~e.2 (b / bring-01~e.6
+            :ARG0 (w / we~e.3)
+            :ARG1~e.7 (w2 / whale~e.8)
+            :mod (a / also~e.5)))""")
 
 
 def pretty_print(amr):
@@ -74,17 +95,35 @@ def pretty_print(amr):
 
 print "\nMappings between node variables and their corresponding concepts.\n"
 print amr.node_to_concepts
+
 print "\nMappings between nodes and all the aligned tokens: If the nodes don't have" \
-      "a variable (polarity, literals, quantities, interrogatives), they specify both the aligned tokens" \
+      "a variable (polarity, literals, quantities, interrogatives), they specify both the aligned tokens " \
       "and the parent in order to uniquely identify them\n"
 print amr.node_to_tokens
+
 print "\nMappings between relations and tokens. Uniquely identified by also specifying the parent of that relation.\n"
-#TODO: since the clean-up of parents which are not actual variables is done at the final, we might end up
+# TODO: since the clean-up of parents which are not actual variables is done at the final, we might end up
 # having parents such as 9~e.15 for the relations. However, as I've seen so far, these kind of nodes are usually leaves
 # so hopefully we won't have this problem
 print amr.relation_to_tokens
+
 print "\nMappings from a node to each child, along with the relation between them.\n"
 pretty_print(amr)
-print "\nAll the nodes inthe amr should appear here.\n"
+
+print "\nAll the nodes in the amr should appear here.\n"
 print amr.keys()
 
+print "\nCreating custom AMR.\n"
+custom_AMR = CustomizedAMR()
+custom_AMR.create_custom_AMR(amr)
+print "\nCustom AMR token to concepts dict\n"
+print custom_AMR.tokens_to_concepts_dict
+
+parent_dict = {"l": "", "b": "l", "w": "b", "w2": "b", "a": "b"}
+custom_AMR.parent_dict = parent_dict
+relations_dict = {("l", ""): ("", ["b"]), ("b", "l"): ("ARG1", ["w", "w2", "a"]),
+                  ("w", "b"): ("ARG0", []), ("w2", "b"): ("ARG1", []), ("a", "b"): ("mod", [])}
+custom_AMR.relations_dict = relations_dict
+
+print(ActionSequenceGenerator.generate_action_sequence(custom_AMR,
+                                                       "It looks like we will also bring in whales ."))
