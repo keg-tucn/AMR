@@ -51,12 +51,13 @@ def generate_action_sequence(amr_graph, sentence):
                     print stack
                     return actions
             # try to shift the current token
-            if current_token in amr_graph.tokens_to_concepts_dict.keys():
-                stack.append(current_token)
-                actions.append("SH_" + amr_graph.tokens_to_concepts_dict[current_token][1])
             else:
-                actions.append("DN")
-            current_token += 1
+                if current_token in amr_graph.tokens_to_concepts_dict.keys():
+                    stack.append(current_token)
+                    actions.append("SH_" + amr_graph.tokens_to_concepts_dict[current_token][1])
+                else:
+                    actions.append("DN")
+                current_token += 1
     return actions
 
 

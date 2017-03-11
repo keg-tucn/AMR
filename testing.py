@@ -1,7 +1,5 @@
 from AMRGraph import AMR
-from AMRData import CustomizedAMR
-import ActionSequenceGenerator
-
+from utilities import generate_action_sequence, generate_custom_amr, generate_amr_with_literals
 
 # amr = AMR.parse_string("""(a3 / and
 #       :op1 (s / selfish~e.3
@@ -11,11 +9,6 @@ import ActionSequenceGenerator
 #             :ARG1 (r / reality~e.5)
 #             :frequency (o / often~e.8)
 #             :mod (a2 / also~e.6)))""")
-
-# amr = AMR.parse_string("""(r / recommend-01~e.1
-#       :ARG1 (a / advocate-01~e.4
-#             :ARG1 (i / it~e.0)
-#             :manner~e.2 (v / vigorous~e.3)))""")
 
 # amr = AMR.parse_string("""(m / multi-sentence
 #      :snt1 (e / exemplify-01~e.1
@@ -76,47 +69,63 @@ import ActionSequenceGenerator
 #                         :ARG1-of (m / major-02~e.13))
 #                   :purpose (f / future~e.5))))""")
 
-def pretty_print(amr):
-    for k in amr.keys():
-        print "Key: %s" % (k)
-        list = amr[k]
-        if len(list) == 0:
-            print "Leaf"
-        for rel in list:
-            print "%s -> %s" % (rel, list[rel][0])
-        print ""
+# amr_str = """(c / cause-01~e.0
+#       :ARG1 (o / open-01~e.9
+#             :ARG1 (a / amusement-park
+#                   :name (n / name :op1 "Disneyland"~e.7)
+#                   :poss~e.6 (w / we~e.6))
+#             :ARG1-of (k / know-01~e.4
+#                   :ARG0 (e / everyone~e.3))
+#             :time~e.2 (d2 / date-entity :month~e.11 9~e.11
+#                   :mod (y / year~e.14
+#                         :mod (t / this~e.13)))))"""
+# sentence_str = """Because , as everyone knows , our Disneyland will open in September of this year ."""
+
+# amr_str = """(c5 / crown-01~e.6
+#       :ARG1 (c / city :wiki "Hong_Kong"
+#             :name (n / name :op1 "Hong"~e.0 :op2 "Kong"~e.1))
+#       :ARG2~e.7 (l2 / location :wiki -
+#             :name (n2 / name :op1 "Hollywood"~e.8 :op2 "of"~e.9 :op3 "the"~e.10 :op4 "East"~e.11))
+#       :time (a2 / always~e.3))"""
+# sentence = """Hong Kong has always worn the crown of Hollywood of the East ."""
+
+# amr_str = """(c5 / crown-01~e.6
+#       :ARG1 (c / city :wiki "Hong_Kong"
+#             :name (n / name :op1 "Hong"~e.0 :op2 "Kong"~e.1))
+#       :ARG2~e.7 (l2 / location :wiki -
+#             :name (n2 / name :op1 "Hollywood"~e.8 :op2 "of"~e.9 :op3 "the"~e.10 :op4 "East"~e.11))
+#       :time (a2 / always~e.3))"""
+#
+# sentence = "Hong Kong has always worn the crown of Hollywood of the East ."
+
+# amr_str = """(r / recommend-01~e.1
+#                 :ARG1 (a / advocate-01~e.4
+#                     :ARG1 (i / it~e.0)
+#                     :manner~e.2 (v / vigorous~e.3)))"""
+# sentence = """It should be vigorously advocated ."""
+
+amr_str = """(b / become-01~e.6
+      :ARG1 (a / area~e.4
+            :mod (t / this~e.3))
+      :ARG2 (z / zone~e.9
+            :ARG1-of (p / prohibit-01~e.8)
+            :part-of~e.10 (c / city :wiki "Hong_Kong"
+                  :name (n / name :op1 "Hong"~e.11 :op2 "Kong"~e.12)))
+      :time (s / since~e.0
+            :op1 (t2 / then~e.1)))"""
+sentence = """Since then , this area has become a prohibited zone in Hong Kong ."""
+
+def test_literals(amr_str, sentence):
+    (new_amr, new_sentence, named_entities) = generate_amr_with_literals(amr_str, sentence)
+    custom_amr = generate_custom_amr(new_amr)
+    seq = generate_action_sequence(custom_amr, new_sentence)
+    print seq
 
 
-def generate_action_sequence(amr_string, sentence):
-    amr = AMR.parse_string(amr_string)
+def test_amr(amr_str, sentence):
+    amr = AMR.parse_string(amr_str)
+    custom_amr = generate_custom_amr(amr)
+    seq = generate_action_sequence(custom_amr, sentence)
+    print seq
 
-    print "\nMappings between node variables and their corresponding concepts.\n"
-    print amr.node_to_concepts
-
-    print "\nMappings between nodes and all the aligned tokens: If the nodes don't have" \
-          "a variable (polarity, literals, quantities, interrogatives), they specify both the aligned tokens " \
-          "and the parent in order to uniquely identify them\n"
-    print amr.node_to_tokens
-
-    print "\nMappings between relations and tokens. Uniquely identified by also specifying the parent of that relation.\n"
-    # TODO: since the clean-up of parents which are not actual variables is done at the final, we might end up
-    # having parents such as 9~e.15 for the relations. However, as I've seen so far, these kind of nodes are usually leaves
-    # so hopefully we won't have this problem
-    print amr.relation_to_tokens
-
-    print "\nMappings from a node to each child, along with the relation between them.\n"
-    pretty_print(amr)
-
-    print "\nAll the nodes in the amr should appear here.\n"
-    print amr.keys()
-
-    print "\nCreating custom AMR.\n"
-    custom_AMR = CustomizedAMR()
-    custom_AMR.create_custom_AMR(amr)
-    print "\nCustom AMR token to concepts dict\n"
-    print custom_AMR.tokens_to_concepts_dict
-    print "\nCustom AMR relations dict\n"
-    print custom_AMR.relations_dict
-    print "\nCustom AMR parent dict\n"
-    print custom_AMR.parent_dict
-    return ActionSequenceGenerator.generate_action_sequence(custom_AMR, sentence)
+test_literals(amr_str, sentence)

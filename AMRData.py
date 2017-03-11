@@ -19,14 +19,14 @@ class CustomizedAMR():
     # It only works on concepts which have variables assigned to them, not on
     # elements such as polarity
     def create_tokens_to_concepts_dict(self, amr_graph):
-
+        exceptions = ["-", "interrogative"]
         for node_variable in amr_graph.node_to_tokens.keys():
             tokens = amr_graph.node_to_tokens[node_variable]
             if node_variable in amr_graph.node_to_concepts.keys():
                 concept = amr_graph.node_to_concepts[node_variable]
                 self.tokens_to_concepts_dict[int(tokens[0])] = (node_variable, concept)
             else:
-                if node_variable == "-":
+                if node_variable in exceptions:
                     for token_tuple in tokens:
                         self.tokens_to_concepts_dict[int(token_tuple[0])] = (node_variable, node_variable)
 

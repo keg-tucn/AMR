@@ -239,7 +239,7 @@ class AMR(defaultdict):
                     stack.append((CNODE, Quantity(token), None))
                     state = 6
                 elif type == "STRLITERAL":
-                    stack.append((CNODE, StrLiteral(token[1:-1]), None))
+                    stack.append((CNODE, StrLiteral(token[1:]), None))
                     state = 6
                 elif type == "INTERROGATIVE":
                     stack.append((CNODE, Interrogative(token[1:]), None))
@@ -644,6 +644,9 @@ class AMR(defaultdict):
             match = alignment_re.match(k)
             if match:
                 self[match.group(1)] = self.pop(k)
+                k = match.group(1)
+            if len(k) > 2 and k[0] != "\"" and k[len(k) - 1] == "\"":
+                self[k[:-1]] = self.pop(k)
 
     def _add_triple(self, parent, relation, child, warn=None):
         """
