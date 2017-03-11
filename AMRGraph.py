@@ -543,9 +543,11 @@ class AMR(defaultdict):
         new_relation = relation
         if match:
             new_relation = match.group(1)
+            if new_relation not in self.relation_to_tokens.keys():
+                self.relation_to_tokens[new_relation] = []
             if match.group(2) is not None:
                 # add the edge token to the edge - (token, edge-parent) map
-                self.relation_to_tokens[new_relation] = [(match.group(2), parent)]
+                self.relation_to_tokens[new_relation].append([(match.group(2), parent)])
             if match.group(3) is not None:
                 extra_tokens = match.group(3).split(',')
                 if len(extra_tokens) > 1:

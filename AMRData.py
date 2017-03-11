@@ -25,11 +25,15 @@ class CustomizedAMR():
             if node_variable in amr_graph.node_to_concepts.keys():
                 concept = amr_graph.node_to_concepts[node_variable]
                 self.tokens_to_concepts_dict[int(tokens[0])] = (node_variable, concept)
+            else:
+                if node_variable == "-":
+                    for token_tuple in tokens:
+                        self.tokens_to_concepts_dict[int(token_tuple[0])] = (node_variable, node_variable)
 
     def add_parent_and_edge(self, key, parent, edge, data):
         if (key, parent) not in self.relations_dict.keys()and (key, "") not in self.relations_dict.keys():
             data.edgeToParent = edge
-            self.relations_dict[(key, parent)] = (edge, "", "")
+            self.relations_dict[(key, parent)] = (edge, [], "")
         else:
             if (key, "") in self.relations_dict.keys():
                 t = list(self.relations_dict[(key, "")])

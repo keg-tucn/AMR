@@ -39,10 +39,17 @@ def generate_action_sequence(amr_graph, sentence):
 
         if not reduce_succeeded:
             if current_token >= len(buffer):
-                print "[ERROR]"
-                print "\nTokens left on the stack\n"
-                print stack
-                return actions
+                if len(stack) >= 3:
+                    # we swap the second and third node
+                    aux = stack[top - 1]
+                    stack[top - 1] = stack[top - 2]
+                    stack[top - 2] = aux
+                    actions.append("SW")
+                else:
+                    print "[ERROR]"
+                    print "\nTokens left on the stack\n"
+                    print stack
+                    return actions
             # try to shift the current token
             if current_token in amr_graph.tokens_to_concepts_dict.keys():
                 stack.append(current_token)
