@@ -31,12 +31,12 @@ def replace_named_entities(amr, sentence):
     # Remove name vars from node_to_concepts
     name_variables = [n[1] for n in named_entities]
     amr_copy.node_to_concepts = dict((key, value) for key, value in amr_copy.node_to_concepts.iteritems()
-                                if key not in name_variables)
+                                     if key not in name_variables)
 
     # Remove literals from node_to_tokens
     literals = sum([n[2] for n in named_entities], [])
     amr_copy.node_to_tokens = dict((key, value) for key, value in amr_copy.node_to_tokens.iteritems()
-                              if key not in literals)
+                                   if key not in literals)
 
     # Remove name vars and literals from amr_copy dict
     for l in literals:
@@ -52,7 +52,8 @@ def replace_named_entities(amr, sentence):
         if "wiki" in amr_copy[name_root].keys():
             if amr_copy[name_root]["wiki"][0] in amr_copy.keys():
                 amr_copy.pop(amr_copy[name_root]["wiki"][0])
-        amr_copy[name_root] = {}
+        amr_copy[name_root] = dict(
+            (key, value) for key, value in amr_copy[name_root].iteritems() if key != "name" and key != "wiki")
 
     # Add name root vars in node_to_tokens and update incrementally the token indices of the affected nodes
     named_entities = sorted(named_entities, key=itemgetter(3))
@@ -63,8 +64,8 @@ def replace_named_entities(amr, sentence):
         span_max = named_entity[4]
         for n in amr_copy.node_to_tokens:
             amr_copy.node_to_tokens[n] = [t if int(t) < span_max
-                                       else int(t) - (span_max - span_min)
-                                       for t in amr_copy.node_to_tokens[n]]
+                                          else int(t) - (span_max - span_min)
+                                          for t in amr_copy.node_to_tokens[n]]
         amr_copy.node_to_tokens[named_entity[0]] = [named_entity[3] - total_displacement]
         tokens = [tokens[:(span_min - total_displacement)] +
                   [amr_copy.node_to_concepts[named_entity[0]]] +

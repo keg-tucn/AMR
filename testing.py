@@ -104,16 +104,23 @@ from utilities import generate_action_sequence, generate_custom_amr, generate_am
 #                     :manner~e.2 (v / vigorous~e.3)))"""
 # sentence = """It should be vigorously advocated ."""
 
-amr_str = """(b / become-01~e.6
-      :ARG1 (a / area~e.4
-            :mod (t / this~e.3))
-      :ARG2 (z / zone~e.9
-            :ARG1-of (p / prohibit-01~e.8)
-            :part-of~e.10 (c / city :wiki "Hong_Kong"
-                  :name (n / name :op1 "Hong"~e.11 :op2 "Kong"~e.12)))
-      :time (s / since~e.0
-            :op1 (t2 / then~e.1)))"""
-sentence = """Since then , this area has become a prohibited zone in Hong Kong ."""
+# amr_str = """(b / become-01~e.6
+#       :ARG1 (a / area~e.4
+#             :mod (t / this~e.3))
+#       :ARG2 (z / zone~e.9
+#             :ARG1-of (p / prohibit-01~e.8)
+#             :part-of~e.10 (c / city :wiki "Hong_Kong"
+#                   :name (n / name :op1 "Hong"~e.11 :op2 "Kong"~e.12)))
+#       :time (s / since~e.0
+#             :op1 (t2 / then~e.1)))"""
+# sentence = """Since then , this area has become a prohibited zone in Hong Kong ."""
+
+amr_str = """(p / person :wiki "Goddess"
+      :name (n / name :op1 "Goddess"~e.3)
+      :domain~e.1 (s / she~e.0)
+      :poss~e.2 (i / i~e.2)
+      :mod (a / ah~e.5))"""
+sentence = """She is my Goddess , ah ."""
 
 def test_literals(amr_str, sentence):
     (new_amr, new_sentence, named_entities) = generate_amr_with_literals(amr_str, sentence)
