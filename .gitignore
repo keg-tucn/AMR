@@ -3,3 +3,4 @@
 *.pyc
 *.xml
 .ipynb_checkpoints
+resources/alignments

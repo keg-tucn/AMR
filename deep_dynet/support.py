@@ -45,7 +45,7 @@ def read_oracle(fname, word_vocab, action_vocab):
             ssent, sacts = re.split(r' \|\|\| ', line)
             sent = word_sentence_to_vocab_index(ssent.split(), word_vocab)
             acts = oracle_actions_to_action_index(sacts, action_vocab)
-            yield (sent, acts)
+            yield (sent, acts, ssent, sacts, "")
 
 
 def word_sentence_to_vocab_index(sentence_words, word_vocab):
@@ -56,8 +56,10 @@ def oracle_actions_to_action_index(oracle_action_sequence, action_vocab):
     if '\'' in oracle_action_sequence:
         # actions format: ['SH_label', 'RL_label', 'RR_label', 'DN']
         actions = oracle_action_sequence[2:-2].split('\', \'')
-    else:
+    elif " " in oracle_action_sequence:
         actions = oracle_action_sequence.split()
+    else:
+        actions = oracle_action_sequence
     parser_actions = [AMRAction.from_oracle(x, action_vocab) for x in actions]
     return parser_actions
 
