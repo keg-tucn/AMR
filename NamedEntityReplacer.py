@@ -7,6 +7,8 @@ def replace_named_entities(amr, sentence):
     amr_copy = copy.deepcopy(amr)
     # Find all the nodes which have a :name relation along with the node containing the "name" variable
     name_nodes = [(k, amr_copy[k]["name"][0]) for k in amr_copy if amr_copy[k] and "name" in amr_copy[k]]
+    if len(name_nodes) == 0:
+        return amr, sentence, []
 
     # Find the literals associated with each named entity
     literals_triplets = []
@@ -63,8 +65,10 @@ def replace_named_entities(amr, sentence):
         span_min = named_entity[3]
         span_max = named_entity[4]
         for n in amr_copy.node_to_tokens:
-            amr_copy.node_to_tokens[n] = [t if int(t) < span_max
-                                          else int(t) - (span_max - span_min)
+            amr_copy.node_to_tokens[n] = [t if isinstance(t, tuple) and int(t[0]) < span_max
+                                          else (str(int(t[0]) - (span_max - span_min)), t[1]) if isinstance(t, tuple)
+                                          else str(t) if int(t) < span_max
+                                          else str(int(t) - (span_max - span_min))
                                           for t in amr_copy.node_to_tokens[n]]
         amr_copy.node_to_tokens[named_entity[0]] = [named_entity[3] - total_displacement]
         tokens = [tokens[:(span_min - total_displacement)] +
