@@ -566,7 +566,7 @@ class AMR(defaultdict):
             new_child = match.group(1)
 
             if match.group(2) is not None:
-                if new_child[0] not in self.node_to_tokens.keys():
+                if new_child not in self.node_to_tokens.keys():
                     self.node_to_tokens[new_child] = []
                 self.node_to_tokens[new_child].append((match.group(2), new_parent))
                 if match.group(3) is not None:
@@ -591,7 +591,7 @@ class AMR(defaultdict):
             else:
                 new_child = match.group(1)
             if match.group(2) is not None:
-                if new_child[0] not in self.node_to_tokens.keys():
+                if new_child not in self.node_to_tokens.keys():
                     self.node_to_tokens[new_child] = []
                 self.node_to_tokens[new_child].append((match.group(2), parent))
             if match.group(3) is not None:
@@ -609,7 +609,7 @@ class AMR(defaultdict):
         if match:
             new_child = match.group(1)
             if match.group(2) is not None:
-                if new_child[0] not in self.node_to_tokens.keys():
+                if new_child not in self.node_to_tokens.keys():
                     self.node_to_tokens[new_child] = []
                 self.node_to_tokens[new_child].append((match.group(2), parent))
             if match.group(3) is not None:
@@ -627,7 +627,7 @@ class AMR(defaultdict):
         if match:
             new_child = match.group(1)
             if match.group(2) is not None:
-                if new_child[0] not in self.node_to_tokens.keys():
+                if new_child not in self.node_to_tokens.keys():
                     self.node_to_tokens[new_child] = []
                 self.node_to_tokens[new_child].append((match.group(2), parent))
             if match.group(3) is not None:
@@ -645,7 +645,7 @@ class AMR(defaultdict):
             if match:
                 self[match.group(1)] = self.pop(k)
                 k = match.group(1)
-            if len(k) > 2 and k[0] != "\"" and k[len(k) - 1] == "\"":
+            if len(k) > 2 and k[0] != "\"" and k[len(k) - 1] == "\"" and k in self.keys():
                 self[k[:-1]] = self.pop(k)
 
     def _add_triple(self, parent, relation, child, warn=None):

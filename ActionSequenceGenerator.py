@@ -1,10 +1,16 @@
+import logging
 
-def generate_action_sequence(amr_graph, sentence):
+
+def generate_action_sequence(amr_graph, sentence, verbose=True):
+    if verbose is False:
+        logging.disable(logging.INFO)
+
     buffer = sentence.split(" ")
     # Top of stack is at position 0
     stack = []
     actions = []
     current_token = 0
+    last_action_swap = False
     while current_token < len(buffer) or len(stack) != 1:
         reduce_succeeded = False
         if len(stack) >= 2:
@@ -38,6 +44,13 @@ def generate_action_sequence(amr_graph, sentence):
                         reduce_succeeded = True
 
         if not reduce_succeeded:
+            # If a swap was performed and we still can't reduce the top two elements we're in a deadlock, return.
+            if last_action_swap:
+                logging.warn("[ERROR]")
+                logging.warn("Tokens left on the stack:")
+                logging.warn(stack)
+                logging.warn(actions)
+                raise Exception("Could not generate action sequence.")
             if current_token >= len(buffer):
                 if len(stack) >= 3:
                     # we swap the second and third node
@@ -45,11 +58,13 @@ def generate_action_sequence(amr_graph, sentence):
                     stack[top - 1] = stack[top - 2]
                     stack[top - 2] = aux
                     actions.append("SW")
+                    last_action_swap = True
                 else:
-                    print "[ERROR]"
-                    print "\nTokens left on the stack\n"
-                    print stack
-                    return actions
+                    logging.warn("[ERROR]")
+                    logging.warn("Tokens left on the stack:")
+                    logging.warn(stack)
+                    logging.warn(actions)
+                    raise Exception("Could not generate action sequence.")
             # try to shift the current token
             else:
                 if current_token in amr_graph.tokens_to_concepts_dict.keys():
@@ -63,4 +78,3 @@ def generate_action_sequence(amr_graph, sentence):
 
 def remove_child(amr_graph, node, parent, child):
     amr_graph.relations_dict[(node, parent)][1].remove(child)
-
