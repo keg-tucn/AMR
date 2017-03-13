@@ -25,7 +25,7 @@ def generate_training_data(file_path, verbose=True):
             (new_amr, new_sentence, _) = NamedEntityReplacer.replace_named_entities(amr, sentence)
             custom_amr = AMRData.CustomizedAMR()
             custom_amr.create_custom_AMR(new_amr)
-            action_sequence = ActionSequenceGenerator.generate_action_sequence(custom_amr, sentence)
+            action_sequence = ActionSequenceGenerator.generate_action_sequence(custom_amr, new_sentence)
             training_data.append((new_sentence, action_sequence, amr_str))
         except Exception as e:
             logging.warn(e)
@@ -35,3 +35,7 @@ def generate_training_data(file_path, verbose=True):
 
     logging.critical("Failed: %d out of %d", len(fail_sentences), len(sentence_amr_pairs))
     return training_data
+
+
+generate_training_data(
+    "/Users/silvianac/personalprojects/date/LDC2015E86_DEFT_Phase_2_AMR_Annotation_R1/data/alignments/unsplit/deft-p2-amr-r1-alignments-xinhua.txt", False)
