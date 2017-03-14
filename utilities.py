@@ -1,7 +1,7 @@
 from AMRGraph import AMR
 from AMRData import CustomizedAMR
 import ActionSequenceGenerator
-import NamedEntityReplacer
+import TokensReplacer
 
 
 def pretty_print(amr):
@@ -54,4 +54,4 @@ def generate_custom_amr(amr):
 
 def generate_amr_with_literals(amr_string, sentence):
     amr = AMR.parse_string(amr_string)
-    return NamedEntityReplacer.replace_named_entities(amr, sentence)
+    return TokensReplacer.replace_named_entities(amr, sentence)

@@ -3,6 +3,85 @@ import re
 from operator import itemgetter
 
 
+def replace_date_entities(amr, sentence):
+    amr_copy = copy.deepcopy(amr)
+
+    date_rels = ['calendar',
+                 'century',
+                 'day',
+                 'dayperiod',
+                 'decade',
+                 'month',
+                 'quant',
+                 'quarter',
+                 'season',
+                 'time',
+                 'time-of',
+                 'timezone',
+                 'unit',
+                 'weekday',
+                 'year']
+    date_entities = [k for k in amr_copy.keys() if k in amr_copy.node_to_concepts.keys() and
+                     amr_copy.node_to_concepts[k] == 'date-entity']
+
+    if len(date_entities) == 0:
+        return amr, sentence, []
+
+    date_tuples = []
+    for date_entity in date_entities:
+        op_rel_list = amr_copy[date_entity]
+        literals = []
+        relations = []
+        for op_rel in op_rel_list:
+            if op_rel in date_rels:
+                child = op_rel_list[op_rel][0]
+                # if it's not in node_to_tokens, all good
+                if child not in amr_copy.node_to_concepts.keys():
+                    literals.append(child)
+                    relations.append(op_rel)
+        date_tuples.append((date_entity, literals, relations))
+
+    date_entities = []
+    for date_tuple in date_tuples:
+        literals_list = date_tuple[1]
+        tokens = [int(amr_copy.node_to_tokens[literal][0][0]) for literal in literals_list]
+        date_entities.append((date_tuple[0], date_tuple[1], date_tuple[2], min(tokens), max(tokens)))
+
+    # Remove literals from node_to_tokens
+    literals = sum([d[1] for d in date_entities], [])
+    amr_copy.node_to_tokens = dict((key, value) for key, value in amr_copy.node_to_tokens.iteritems()
+                                   if key not in literals)
+
+    for l in literals:
+        if l in amr_copy.keys():
+            amr_copy.pop(l)
+
+    for date_entity in date_entities:
+        amr_copy[date_entity[0]] = dict(
+            (key, value) for key, value in amr_copy[date_entity[0]].iteritems() if key not in date_entity[2])
+
+    # Add name root vars in node_to_tokens and update incrementally the token indices of the affected nodes
+    date_entities = sorted(date_entities, key=itemgetter(3))
+    tokens = sentence.split(" ")
+    total_displacement = 0
+    for date_entity in date_entities:
+        span_min = date_entity[3]
+        span_max = date_entity[4]
+        for n in amr_copy.node_to_tokens:
+            amr_copy.node_to_tokens[n] = [t if isinstance(t, tuple) and int(t[0]) < span_max
+                                          else (str(int(t[0]) - (span_max - span_min)), t[1]) if isinstance(t, tuple)
+            else str(t) if int(t) < span_max
+            else str(int(t) - (span_max - span_min))
+                                          for t in amr_copy.node_to_tokens[n]]
+        amr_copy.node_to_tokens[date_entity[0]] = [date_entity[3] - total_displacement]
+        tokens = [tokens[:(span_min - total_displacement)] +
+                  [amr_copy.node_to_concepts[date_entity[0]]] +
+                  tokens[(span_max - total_displacement + 1):]][0]
+        total_displacement = total_displacement + span_max - span_min
+    sentence_copy = ' '.join(t for t in tokens)
+    return amr_copy, sentence_copy, date_entities
+
+
 def replace_named_entities(amr, sentence):
     amr_copy = copy.deepcopy(amr)
     # Find all the nodes which have a :name relation along with the node containing the "name" variable
@@ -40,7 +119,7 @@ def replace_named_entities(amr, sentence):
     amr_copy.node_to_tokens = dict((key, value) for key, value in amr_copy.node_to_tokens.iteritems()
                                    if key not in literals)
 
-    # Remove name vars and literals from amr_copy dict
+    # Remove name vars and literals from amr_copy_copy dict
     for l in literals:
         if l in amr_copy.keys():
             amr_copy.pop(l)
@@ -67,8 +146,8 @@ def replace_named_entities(amr, sentence):
         for n in amr_copy.node_to_tokens:
             amr_copy.node_to_tokens[n] = [t if isinstance(t, tuple) and int(t[0]) < span_max
                                           else (str(int(t[0]) - (span_max - span_min)), t[1]) if isinstance(t, tuple)
-                                          else str(t) if int(t) < span_max
-                                          else str(int(t) - (span_max - span_min))
+            else str(t) if int(t) < span_max
+            else str(int(t) - (span_max - span_min))
                                           for t in amr_copy.node_to_tokens[n]]
         amr_copy.node_to_tokens[named_entity[0]] = [named_entity[3] - total_displacement]
         tokens = [tokens[:(span_min - total_displacement)] +

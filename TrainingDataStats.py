@@ -8,3 +8,8 @@ def get_unaligned_nodes(amr, unaligned_nodes_dict):
                 unaligned_nodes_dict[concept] = [amr[key]]
             else:
                 unaligned_nodes_dict[concept].append(amr[key])
+
+
+def get_coreferences_count(custom_amr):
+    keys = [k[0] for k in custom_amr.relations_dict.keys()]
+    return len(keys) - len(set(keys))
