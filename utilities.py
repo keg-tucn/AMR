@@ -14,6 +14,7 @@ def pretty_print(amr):
             print "%s -> %s" % (rel, list[rel][0])
         print ""
 
+
 def generate_action_sequence(custom_amr, sentence):
     return ActionSequenceGenerator.generate_action_sequence(custom_amr, sentence)
 
@@ -49,6 +50,7 @@ def generate_custom_amr(amr):
     print "\nCustom AMR parent dict\n"
     print custom_AMR.parent_dict
     return custom_AMR
+
 
 def generate_amr_with_literals(amr_string, sentence):
     amr = AMR.parse_string(amr_string)
