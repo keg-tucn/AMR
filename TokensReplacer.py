@@ -317,3 +317,30 @@ def replace_quantities_default(amr, sentence, quantities):
         total_displacement = total_displacement + span_max - span_min
     sentence_copy = ' '.join(t for t in tokens)
     return amr_copy, sentence_copy, quant_unit_tokens_align
+
+
+def replace_have_org_role(amr, relation_to_bubble_up):
+    amr_copy = copy.deepcopy(amr)
+
+    # get the unaligned have-org-role-91 nodes which have an ARG1 child, i.e. they can be replaced
+    have_org_role_nodes = [k for k in amr_copy.node_to_concepts if amr_copy.node_to_concepts[k] == 'have-org-role-91'
+                           and k not in amr_copy.node_to_tokens
+                           and amr_copy[k]
+                           and relation_to_bubble_up in amr_copy[k]]
+    if len(have_org_role_nodes) == 0:
+        return amr, []
+
+    amr_copy.node_to_concepts = dict((k, v) for k, v in amr_copy.node_to_concepts.iteritems() if k not in have_org_role_nodes)
+    for h in have_org_role_nodes:
+        node = amr_copy.pop(h)
+        new_node = node[relation_to_bubble_up]
+        # add the have_org_role_children to the node corresponding to its ARG1 child
+        node.pop(relation_to_bubble_up)
+        for rel in node:
+            amr_copy[new_node[0]].append(rel, node[rel])
+        # update the parent of have_org_role
+        for k in amr:
+            for rel in amr_copy[k]:
+                if amr_copy[k][rel][0] == h:
+                    amr_copy[k].replace(rel, new_node)
+    return amr_copy, have_org_role_nodes

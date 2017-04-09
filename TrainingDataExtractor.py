@@ -20,6 +20,7 @@ def generate_training_data(file_path, verbose=True, withStats=False):
     unaligned_nodes_after = {}
     training_data = []
     coreferences_count = 0
+    have_org_role_exceptions = 0
     named_entity_exceptions = 0
     date_entity_exceptions = 0
     temporal_quantity_exceptions = 0
@@ -31,6 +32,13 @@ def generate_training_data(file_path, verbose=True, withStats=False):
             (sentence, amr_str) = sentence_amr_pairs[i]
             amr = AMR.parse_string(amr_str)
             TrainingDataStats.get_unaligned_nodes(amr, unaligned_nodes)
+            try:
+                (new_amr, _) = TokensReplacer.replace_have_org_role(amr, "ARG1")
+                (new_amr, _) = TokensReplacer.replace_have_org_role(amr, "ARG2")
+            except Exception as e:
+                have_org_role_exceptions += 1
+                raise e
+
             try:
                 (new_amr, new_sentence, _) = TokensReplacer.replace_named_entities(amr, sentence)
             except Exception as e:
@@ -78,7 +86,7 @@ def generate_training_data(file_path, verbose=True, withStats=False):
         return training_data
     else:
         return training_data, unaligned_nodes, unaligned_nodes_after, coreferences_count, \
-               named_entity_exceptions, date_entity_exceptions, temporal_quantity_exceptions, quantity_exceptions
+               named_entity_exceptions, date_entity_exceptions, temporal_quantity_exceptions, quantity_exceptions, have_org_role_exceptions
 
 # generate_training_data(
 #    "/Users/silvianac/personalprojects/date/LDC2015E86_DEFT_Phase_2_AMR_Annotation_R1/data/alignments/unsplit/deft-p2-amr-r1-alignments-xinhua.txt", False)
