@@ -127,7 +127,7 @@ def replace_named_entities(amr, sentence):
         if n in amr_copy.keys():
             amr_copy.pop(n)
 
-    # Update name root vars to have no children and remove wiki nodes
+    # Update name root vars to have no name and wiki children
     name_roots = [n[0] for n in named_entities]
     for name_root in name_roots:
         if "wiki" in amr_copy[name_root].keys():
@@ -156,3 +156,164 @@ def replace_named_entities(amr, sentence):
         total_displacement = total_displacement + span_max - span_min
     sentence_copy = ' '.join(t for t in tokens)
     return amr_copy, sentence_copy, named_entities
+
+
+def replace_temporal_quantities(amr, sentence):
+    amr_copy = copy.deepcopy(amr)
+
+    # Find all the "temporal-quantity" nodes.
+    temporal_quantity_nodes = [k for k in amr_copy if k in amr_copy.node_to_concepts
+                               and amr_copy.node_to_concepts[k] == 'temporal-quantity']
+
+    # Find the "quant" and "unit" nodes corresponding to the temporal quantity.
+    quant_unit_tokens = [(k, amr_copy[k]['quant'][0], amr_copy[k]['unit'][0])
+                         if 'quant' in amr_copy[k] and 'unit' in amr_copy[k]
+                         else (k, '', '')
+                         for k in temporal_quantity_nodes]
+
+    quant_unit_tokens_align = [(t[0], t[1], t[2],
+                                int(amr_copy.node_to_tokens[t[1]][0][0]),
+                                int(amr_copy.node_to_tokens[t[2]][0]))
+                               if t[1] in amr_copy.node_to_tokens and
+                                  t[2] in amr_copy.node_to_tokens
+                               else (t, '', '', -1, -1)
+                               for t in quant_unit_tokens]
+
+    for t in quant_unit_tokens_align:
+        if t[3] == -1 or t[4] == -1:
+            raise ValueError("Error! Unaligned quantity or token for sentence %s" % sentence)
+
+        else:
+            if not (abs(t[3] - t[4]) == 1 or
+                        (abs(t[3] - t[4]) == 2
+                         and sentence.split(' ')[max(t[3], t[4]) - 1] == '@-@')):
+                raise ValueError("Quant and unit not consecutive or separated by @-@ for sentence %s" % sentence)
+    # Remove units from node_to_concepts
+    units = [t[2] for t in quant_unit_tokens_align]
+    amr_copy.node_to_concepts = dict((key, value) for key, value in amr_copy.node_to_concepts.iteritems()
+                                     if key not in units)
+
+    # Remove quant and unit from node_to_tokens
+    quants = [t[1] for t in quant_unit_tokens_align]
+    amr_copy.node_to_tokens = dict((key, value) for key, value in amr_copy.node_to_tokens.iteritems()
+                                   if key not in units
+                                   and key not in quants)
+
+    # Remove quant and unit from amr dict
+    for q in quants:
+        if q in amr_copy.keys():
+            amr_copy.pop(q)
+    for u in units:
+        if u in amr_copy.keys():
+            amr_copy.pop(u)
+
+    # Remove quant and unit children from temporal-quantity in dict
+    temp_quantities = [t[0] for t in quant_unit_tokens]
+    for temp_quantity in temp_quantities:
+        amr_copy[temp_quantity] = dict(
+            (key, value) for key, value in amr_copy[temp_quantity].iteritems() if key != "quant" and key != "unit")
+
+    # Add node_to_tokens for the tempoeral quantities with token as the "min" token spanned by the quantity and unit
+    temporal_quantity_spans = [(t[0], min(t[3], t[4]), max(t[3], t[4]))
+                               for t in quant_unit_tokens_align]
+    temporal_quantity_spans = sorted(temporal_quantity_spans, key=itemgetter(1))
+
+    tokens = sentence.split(" ")
+    total_displacement = 0
+    for temporal_quantity in temporal_quantity_spans:
+        span_min = temporal_quantity[1]
+        span_max = temporal_quantity[2]
+        for n in amr_copy.node_to_tokens:
+            amr_copy.node_to_tokens[n] = [t if int(t) < span_max
+                                          else int(t) - (span_max - span_min)
+                                          for t in amr_copy.node_to_tokens[n]]
+        amr_copy.node_to_tokens[temporal_quantity[0]] = [span_min - total_displacement]
+        tokens = [tokens[:(span_min - total_displacement)] +
+                  [amr_copy.node_to_concepts[temporal_quantity[0]]] +
+                  tokens[(span_max - total_displacement + 1):]][0]
+        total_displacement = total_displacement + span_max - span_min
+    sentence_copy = ' '.join(t for t in tokens)
+    return amr_copy, sentence_copy, quant_unit_tokens_align
+
+
+def replace_quantities_default(amr, sentence, quantities):
+    amr_copy = copy.deepcopy(amr)
+
+    # Find all the "quantity" nodes.
+    quantity_nodes = [k for k in amr_copy if k in amr_copy.node_to_concepts
+                               and amr_copy.node_to_concepts[k] in quantities]
+
+    if len(quantity_nodes) == 0:
+        return amr, sentence, []
+
+    # Find the "quant" and "unit" nodes corresponding to the temporal quantity.
+    quant_unit_tokens = [(k, amr_copy[k]['quant'][0], amr_copy[k]['unit'][0])
+                         if 'quant' in amr_copy[k] and 'unit' in amr_copy[k]
+                         else (k, '', '')
+                         for k in quantity_nodes]
+
+    quant_unit_tokens_align = [(t[0], t[1], t[2],
+                                int(amr_copy.node_to_tokens[t[1]][0][0]),
+                                int(amr_copy.node_to_tokens[t[2]][0]))
+                               if t[1] in amr_copy.node_to_tokens and
+                                  t[2] in amr_copy.node_to_tokens
+                               else (t, '', '', -1, -1)
+                               for t in quant_unit_tokens]
+
+    for t in quant_unit_tokens_align:
+        if t[3] == -1 or t[4] == -1:
+            raise ValueError("Error! Unaligned quantity or token for sentence %s" % sentence)
+
+        else:
+            if not (abs(t[3] - t[4]) == 1 or
+                        (abs(t[3] - t[4]) == 2
+                         and sentence.split(' ')[max(t[3], t[4]) - 1] == '@-@')):
+                raise ValueError("Quant and unit not consecutive or separated by @-@ for sentence %s" % sentence)
+    # Remove units from node_to_concepts
+    units = [t[2] for t in quant_unit_tokens_align]
+    amr_copy.node_to_concepts = dict((key, value) for key, value in amr_copy.node_to_concepts.iteritems()
+                                     if key not in units)
+
+    # Remove quant and unit from node_to_tokens
+    quants = [t[1] for t in quant_unit_tokens_align]
+    amr_copy.node_to_tokens = dict((key, value) for key, value in amr_copy.node_to_tokens.iteritems()
+                                   if key not in units
+                                   and key not in quants)
+
+    # Remove quant and unit from amr dict
+    for q in quants:
+        if q in amr_copy.keys():
+            amr_copy.pop(q)
+    for u in units:
+        if u in amr_copy.keys():
+            if len(amr_copy[u]) != 0:
+                raise ValueError("The unit node has additional children for sentence %s" % sentence)
+            amr_copy.pop(u)
+
+    # Remove quant and unit children from quantity in dict
+    node_quantities = [t[0] for t in quant_unit_tokens]
+    for quantity in node_quantities:
+        amr_copy[quantity] = dict(
+            (key, value) for key, value in amr_copy[quantity].iteritems() if key != "quant" and key != "unit")
+
+    # Add node_to_tokens for the tempoeral quantities with token as the "min" token spanned by the quantity and unit
+    quantity_spans = [(t[0], min(t[3], t[4]), max(t[3], t[4]))
+                               for t in quant_unit_tokens_align]
+    quantity_spans = sorted(quantity_spans, key=itemgetter(1))
+
+    tokens = sentence.split(" ")
+    total_displacement = 0
+    for quantity in quantity_spans:
+        span_min = quantity[1]
+        span_max = quantity[2]
+        for n in amr_copy.node_to_tokens:
+            amr_copy.node_to_tokens[n] = [t if int(t) < span_max
+                                          else int(t) - (span_max - span_min)
+                                          for t in amr_copy.node_to_tokens[n]]
+        amr_copy.node_to_tokens[quantity[0]] = [span_min - total_displacement]
+        tokens = [tokens[:(span_min - total_displacement)] +
+                  [amr_copy.node_to_concepts[quantity[0]]] +
+                  tokens[(span_max - total_displacement + 1):]][0]
+        total_displacement = total_displacement + span_max - span_min
+    sentence_copy = ' '.join(t for t in tokens)
+    return amr_copy, sentence_copy, quant_unit_tokens_align

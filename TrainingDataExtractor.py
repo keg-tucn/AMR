@@ -17,8 +17,13 @@ def generate_training_data(file_path, verbose=True, withStats=False):
     sentence_amr_pairs = SentenceAMRPairsExtractor.extract_sentence_amr_pairs(file_path)
     fail_sentences = []
     unaligned_nodes = {}
+    unaligned_nodes_after = {}
     training_data = []
     coreferences_count = 0
+    named_entity_exceptions = 0
+    date_entity_exceptions = 0
+    temporal_quantity_exceptions = 0
+    quantity_exceptions = 0
 
     for i in tqdm(range(0, len(sentence_amr_pairs))):
         try:
@@ -26,8 +31,40 @@ def generate_training_data(file_path, verbose=True, withStats=False):
             (sentence, amr_str) = sentence_amr_pairs[i]
             amr = AMR.parse_string(amr_str)
             TrainingDataStats.get_unaligned_nodes(amr, unaligned_nodes)
-            (new_amr, new_sentence, _) = TokensReplacer.replace_named_entities(amr, sentence)
-            (new_amr, new_sentence, _) = TokensReplacer.replace_date_entities(new_amr, new_sentence)
+            try:
+                (new_amr, new_sentence, _) = TokensReplacer.replace_named_entities(amr, sentence)
+            except Exception as e:
+                named_entity_exceptions += 1
+                raise e
+
+            try:
+                (new_amr, new_sentence, _) = TokensReplacer.replace_date_entities(new_amr, new_sentence)
+            except Exception as e:
+                print file_path
+                print sentence
+                print e
+                date_entity_exceptions += 1
+                raise e
+
+            try:
+                (new_amr, new_sentence, _) = TokensReplacer.replace_temporal_quantities(new_amr, new_sentence)
+            except Exception as e:
+                temporal_quantity_exceptions += 1
+                raise e
+            try:
+                (new_amr, new_sentence, _) = TokensReplacer.replace_quantities_default(new_amr, new_sentence,
+                                                                                       ['monetary-quantity',
+                                                                                        'mass-quantity',
+                                                                                        'energy-quantity',
+                                                                                        'distance-quantity',
+                                                                                        'volume-quantity',
+                                                                                        'power-quantity'
+                                                                                        ])
+            except Exception as e:
+                quantity_exceptions += 1
+                raise e
+
+            TrainingDataStats.get_unaligned_nodes(new_amr, unaligned_nodes_after)
             custom_amr = AMRData.CustomizedAMR()
             custom_amr.create_custom_AMR(new_amr)
             coreferences_count += TrainingDataStats.get_coreferences_count(custom_amr)
@@ -43,7 +80,8 @@ def generate_training_data(file_path, verbose=True, withStats=False):
     if withStats is False:
         return training_data
     else:
-        return training_data, unaligned_nodes, coreferences_count
+        return training_data, unaligned_nodes, unaligned_nodes_after, coreferences_count, \
+               named_entity_exceptions, date_entity_exceptions, temporal_quantity_exceptions, quantity_exceptions
 
 # generate_training_data(
 #    "/Users/silvianac/personalprojects/date/LDC2015E86_DEFT_Phase_2_AMR_Annotation_R1/data/alignments/unsplit/deft-p2-amr-r1-alignments-xinhua.txt", False)
