@@ -40,9 +40,6 @@ def generate_training_data(file_path, verbose=True, withStats=False):
             try:
                 (new_amr, new_sentence, _) = TokensReplacer.replace_date_entities(new_amr, new_sentence)
             except Exception as e:
-                print file_path
-                print sentence
-                print e
                 date_entity_exceptions += 1
                 raise e
 
