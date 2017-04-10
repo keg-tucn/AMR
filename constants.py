@@ -198,11 +198,12 @@ DEFAULT_BROWN_CLUSTER = './resources/wclusters-engiga'
 def _load_brown_cluster(dir_path,cluster_num=1000):
     cluster_dict = defaultdict(str)
     for fn in listdir(dir_path):
-        if re.match('^.*c(\d+).*$',fn).group(1) == str(cluster_num) and fn.endswith('.txt'):
-            with open(dir_path+'/'+fn,'r') as f:
-                for line in f:
-                    bitstring, tok, freq = line.split()
-                    cluster_dict[tok]=bitstring
+        if re.match('^.*c(\d+).*$',fn):
+            if re.match('^.*c(\d+).*$',fn).group(1) == str(cluster_num) and fn.endswith('.txt'):
+                with open(dir_path+'/'+fn,'r') as f:
+                    for line in f:
+                        bitstring, tok, freq = line.split()
+                        cluster_dict[tok]=bitstring
 
     return cluster_dict
 
