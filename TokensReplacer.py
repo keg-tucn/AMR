@@ -213,7 +213,7 @@ def replace_temporal_quantities(amr, sentence):
         amr_copy[temp_quantity] = dict(
             (key, value) for key, value in amr_copy[temp_quantity].iteritems() if key != "quant" and key != "unit")
 
-    # Add node_to_tokens for the tempoeral quantities with token as the "min" token spanned by the quantity and unit
+    # Add node_to_tokens for the temporal quantities with token as the "min" token spanned by the quantity and unit
     temporal_quantity_spans = [(t[0], min(t[3], t[4]), max(t[3], t[4]))
                                for t in quant_unit_tokens_align]
     temporal_quantity_spans = sorted(temporal_quantity_spans, key=itemgetter(1))
@@ -296,7 +296,7 @@ def replace_quantities_default(amr, sentence, quantities):
         amr_copy[quantity] = dict(
             (key, value) for key, value in amr_copy[quantity].iteritems() if key != "quant" and key != "unit")
 
-    # Add node_to_tokens for the tempoeral quantities with token as the "min" token spanned by the quantity and unit
+    # Add node_to_tokens for the temporal quantities with token as the "min" token spanned by the quantity and unit
     quantity_spans = [(t[0], min(t[3], t[4]), max(t[3], t[4]))
                                for t in quant_unit_tokens_align]
     quantity_spans = sorted(quantity_spans, key=itemgetter(1))
