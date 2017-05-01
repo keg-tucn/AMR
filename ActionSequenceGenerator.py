@@ -50,7 +50,7 @@ def generate_action_sequence(amr_graph, sentence, verbose=True):
                 logging.warn("Tokens left on the stack:")
                 logging.warn(stack)
                 logging.warn(actions)
-                raise Exception("Could not generate action sequence.")
+                raise Exception("Could not generate action sequence. Swap not working")
             if current_token >= len(buffer):
                 if len(stack) >= 3:
                     # we swap the second and third node
@@ -64,7 +64,7 @@ def generate_action_sequence(amr_graph, sentence, verbose=True):
                     logging.warn("Tokens left on the stack:")
                     logging.warn(stack)
                     logging.warn(actions)
-                    raise Exception("Could not generate action sequence.")
+                    raise Exception("Could not generate action sequence. Tokens left on stack")
             # try to shift the current token
             else:
                 if current_token in amr_graph.tokens_to_concepts_dict.keys():
