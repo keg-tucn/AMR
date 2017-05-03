@@ -3,18 +3,25 @@ import dynet as dy
 import deep_dynet.support as ds
 import deep_dynet.transition_parser as tp
 import logging
-from os import listdir
+from os import listdir, path
 import TrainingDataExtractor as tde
+import json as js
 
 
 def read_data(type):
     data = []
     mypath = 'resources/alignments/split/' + type
+    dump_path = mypath + ".dump"
+    if path.exists(dump_path):
+        with open(dump_path, "rb") as f:
+            return js.load(f)
     print(mypath)
     for f in listdir(mypath):
         mypath_f = mypath + "/" + f
         print(mypath_f)
         data += tde.generate_training_data(mypath_f, False)
+    with open(dump_path, "wb") as f:
+        js.dump(data, f) #, indent=4, separators=(',', ': ')
     return data
 
 
