@@ -138,12 +138,13 @@ class Node:
     def add_child(self, obj, relation):
         self.children.append((obj, relation))
 
-    def preety_print(self, depth=1):
-        str = "( %s orig: %s" % (self.label, self.token)
-        str += "".join(
-            ("\n".ljust(depth + 1, "\t") + "%s  %s" % (relation, child.preety_print(depth + 1))) for (child, relation)
-            in self.children)
+    def preety_print(self, depth=1, include_original=True):
+        preety = "( %s" % self.label
+        if include_original:
+            preety += (" orig: %s" % self.token)
+        preety += "".join(
+            ("\n".ljust(depth + 1, "\t") + "%s  %s" % (relation, child.preety_print(depth=depth + 1, include_original=include_original))) for (child, relation) in self.children)
         if self.children:
-            str += "\n".ljust(depth, "\t")
-        str += ")"
-        return str
+            preety += "\n".ljust(depth, "\t")
+        preety += ")"
+        return preety

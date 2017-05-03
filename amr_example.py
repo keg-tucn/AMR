@@ -68,7 +68,13 @@ for epoch in range(100):
     for (sentence, actions, original_sentence, original_actions, amr) in train:
         loss = None
         try:
-            loss = tp.parse(sentence, actions)[0]
+            parsed = tp.parse(sentence, actions)
+            loss = parsed[0]
+            parsed_amr = parsed[1]
+            # print("Generated")
+            # print(parsed_amr.preety_print(include_original=False))
+            # print("Expected")
+            # print(amr)
         except Exception as e:
             logging.debug(e)
             fail_sentences.append(original_sentence)
