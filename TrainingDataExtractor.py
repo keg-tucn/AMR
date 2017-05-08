@@ -1,5 +1,6 @@
 from AMRGraph import AMR
 from tqdm import tqdm
+from DependencyExtractor import extract_dependencies
 import AMRData
 import ActionSequenceGenerator
 import TokensReplacer
@@ -10,7 +11,7 @@ import logging
 
 # Given a file with sentences and aligned amrs,
 # it returns an array of (sentence, action_sequence, amr_string))
-def generate_training_data(file_path, verbose=True, withStats=False):
+def generate_training_data(file_path, verbose=True, withStats=False, withDependencies=False):
     if verbose is False:
         logging.disable(logging.WARN)
 
@@ -74,7 +75,15 @@ def generate_training_data(file_path, verbose=True, withStats=False):
             custom_amr.create_custom_AMR(new_amr)
             coreferences_count += TrainingDataStats.get_coreferences_count(custom_amr)
             action_sequence = ActionSequenceGenerator.generate_action_sequence(custom_amr, new_sentence)
-            training_data.append((new_sentence, action_sequence, amr_str))
+            if withDependencies is False:
+                training_data.append((new_sentence, action_sequence, amr_str))
+            else:
+                try:
+                    deps = extract_dependencies(new_sentence)
+                except Exception as e:
+                    logging.warn("Dependency parsing failed at sentence %s with exception %s.", new_sentence, str(e))
+                    deps = {}
+                training_data.append((new_sentence, action_sequence, amr_str, deps))
         except Exception as e:
             logging.warn(e)
             fail_sentences.append(sentence)
@@ -82,11 +91,12 @@ def generate_training_data(file_path, verbose=True, withStats=False):
             logging.warn("%s\n", sentence)
 
     logging.critical("Failed: %d out of %d", len(fail_sentences), len(sentence_amr_pairs))
-    if withStats is False:
-        return training_data
-    else:
+    if withStats is True:
         return training_data, unaligned_nodes, unaligned_nodes_after, coreferences_count, \
                named_entity_exceptions, date_entity_exceptions, temporal_quantity_exceptions, quantity_exceptions, have_org_role_exceptions
+    else:
+        return training_data
+
 
 # generate_training_data(
 #    "/Users/silvianac/personalprojects/date/LDC2015E86_DEFT_Phase_2_AMR_Annotation_R1/data/alignments/unsplit/deft-p2-amr-r1-alignments-xinhua.txt", False)
