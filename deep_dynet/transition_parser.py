@@ -45,12 +45,12 @@ class TransitionParser:
         cur = self.buffRNN.initial_state()
         buffer = []
         empty_buffer_emb = dy.parameter(self.pempty_buffer_emb)
-        W_comp = dy.parameter(self.pW_comp)
-        b_comp = dy.parameter(self.pb_comp)
-        W_s2h = dy.parameter(self.pW_s2h)
-        b_s2h = dy.parameter(self.pb_s2h)
-        W_act = dy.parameter(self.pW_act)
-        b_act = dy.parameter(self.pb_act)
+        weight_comp = dy.parameter(self.pW_comp)
+        bias_comp = dy.parameter(self.pb_comp)
+        weight_s2h = dy.parameter(self.pW_s2h)
+        bias_s2h = dy.parameter(self.pb_s2h)
+        weight_act = dy.parameter(self.pW_act)
+        bias_act = dy.parameter(self.pb_act)
         losses = []
         for tok in toks:
             tok_embedding = self.WORDS_LOOKUP[tok]
@@ -78,8 +78,8 @@ class TransitionParser:
                 buffer_embedding = buffer[-1][0] if buffer else empty_buffer_emb
                 stack_embedding = stack[-1][0].output()  # the stack has something here
                 parser_state = dy.concatenate([buffer_embedding, stack_embedding])
-                h = dy.tanh(W_s2h * parser_state + b_s2h)
-                logits = W_act * h + b_act
+                h = dy.tanh(weight_s2h * parser_state + bias_s2h)
+                logits = weight_act * h + bias_act
                 log_probs = dy.log_softmax(logits, valid_actions)
                 if oracle_actions is None:
                     print('no oracle!')
@@ -113,7 +113,7 @@ class TransitionParser:
                 top_stack_state, _ = stack[-1] if stack else (stack_top, '<TOP>')
                 head_rep, head_node = head[0].output(), head[1]
                 mod_rep, mod_node = modifier[0].output(), modifier[1]
-                composed_rep = dy.rectify(W_comp * dy.concatenate([head_rep, mod_rep]) + b_comp)
+                composed_rep = dy.rectify(weight_comp * dy.concatenate([head_rep, mod_rep]) + bias_comp)
                 top_stack_state = top_stack_state.add_input(composed_rep)
                 head_node.add_child(mod_node, label)
                 stack.append((top_stack_state, head_node))
@@ -138,12 +138,13 @@ class Node:
     def add_child(self, obj, relation):
         self.children.append((obj, relation))
 
-    def preety_print(self, depth=1):
-        str = "( %s orig: %s" % (self.label, self.token)
-        str += "".join(
-            ("\n".ljust(depth + 1, "\t") + "%s  %s" % (relation, child.preety_print(depth + 1))) for (child, relation)
-            in self.children)
+    def preety_print(self, depth=1, include_original=True):
+        preety = "( %s" % self.label
+        if include_original:
+            preety += (" orig: %s" % self.token)
+        preety += "".join(
+            ("\n".ljust(depth + 1, "\t") + "%s  %s" % (relation, child.preety_print(depth=depth + 1, include_original=include_original))) for (child, relation) in self.children)
         if self.children:
-            str += "\n".ljust(depth, "\t")
-        str += ")"
-        return str
+            preety += "\n".ljust(depth, "\t")
+        preety += ")"
+        return preety
