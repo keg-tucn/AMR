@@ -1,4 +1,5 @@
 import dynet as dy
+from operator import itemgetter
 
 WORD_DIM = 64
 LSTM_DIM = 64
@@ -52,6 +53,7 @@ class TransitionParser:
         weight_act = dy.parameter(self.pW_act)
         bias_act = dy.parameter(self.pb_act)
         losses = []
+        good_predictions = []
         for tok in toks:
             tok_embedding = self.WORDS_LOOKUP[tok]
             cur = cur.add_input(tok_embedding)
@@ -81,9 +83,10 @@ class TransitionParser:
                 h = dy.tanh(weight_s2h * parser_state + bias_s2h)
                 logits = weight_act * h + bias_act
                 log_probs = dy.log_softmax(logits, valid_actions)
+                predicted_action = max(enumerate(log_probs.vec_value()), key=itemgetter(1))[0]
                 if oracle_actions is None:
                     print('no oracle!')
-                    action = max(enumerate(log_probs.vec_value()), key=itemgetter(1))[0]
+                    action = predicted_action
             if oracle_actions is not None:
                 oracle_action = oracle_actions.pop()
                 action = oracle_action.index
@@ -91,6 +94,7 @@ class TransitionParser:
                 if log_probs is not None:
                     # append the action-specific loss based on oracle
                     losses.append(dy.pick(log_probs, action))
+                    good_predictions.append(1 if action == predicted_action else 0)
             # execute the action to update the parser state
             if action == SH:
                 _, tok_embedding, token = buffer.pop()
@@ -126,7 +130,7 @@ class TransitionParser:
             print('ROOT --> {0}'.format(head))
         # print("losses" + str(map(lambda x: x.scalar_value(), losses)))
         # print(head.preety_print())
-        return -dy.esum(losses) if losses else None, head
+        return -dy.esum(losses) if losses else None, head, sum(good_predictions), len(good_predictions)
 
 
 class Node:

@@ -60,9 +60,9 @@ log_errors_on_train = False
 if(log_errors_on_train):
     logging.disable(logging.NOTSET)
 # cmake .. -DEIGEN3_INCLUDE_DIR=/Users/flo/Documents/Doctorat/AMR/dynet-base/eigen -DBOOST_ROOT=/usr/local/opt/boost160/ -DPYTHON=/usr/bin/python
-min_loss = 100
+max_accuracy = 0
 rounds = 0
-min_epoch = 0
+best_epoch = 0
 fail_sentences = []
 for epoch in range(100):
     for (sentence, actions, original_sentence, original_actions, amr) in train:
@@ -87,11 +87,16 @@ for epoch in range(100):
     print("Failed sentences: %d" % len(fail_sentences))
     dev_words = 0
     dev_loss = 0.0
+    right_predictions = 0.0
+    total_predictions = 0
     fail_sentences = []
     for (ds, da, original_sentence, original_actions, amr) in dev:
         loss = None
         try:
-            loss = tp.parse(ds, da)[0]
+            parsed_sentence = tp.parse(ds, da)
+            loss = parsed_sentence[0]
+            right_predictions += parsed_sentence[2]
+            total_predictions += parsed_sentence[3]
             dev_words += len(ds)
         except Exception as e:
             logging.debug(e)
@@ -100,12 +105,13 @@ for epoch in range(100):
         if loss is not None:
             dev_loss += loss.scalar_value()
     print("Failed sentencs in test: %d" % len(fail_sentences))
-    loss_dev_words = dev_loss / dev_words
-    print('[validation] epoch {}: per-word loss: {}'.format(epoch, loss_dev_words))
-    min_loss = min(min_loss, loss_dev_words)
-    if min_loss == loss_dev_words:
+    loss_dev_words = dev_loss / total_predictions
+    accuracy = right_predictions / total_predictions
+    print('[validation] epoch {}: per-word loss: {} prediction accuracy: {}'.format(epoch, loss_dev_words, accuracy))
+    max_accuracy = max(max_accuracy, accuracy)
+    if max_accuracy == accuracy:
         rounds = 0
-        min_epoch = epoch
+        best_epoch = epoch
     else:
         rounds += 1
-    print("since {} min loss {} for {} rounds.".format(min_epoch, min_loss, rounds))
+    print("since {} max accuracy {} for {} rounds.".format(best_epoch, max_accuracy, rounds))
