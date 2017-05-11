@@ -1,0 +1,30 @@
+|training|resources/alignments/split/training/deft-p2-amr-r1-alignments-training-bolt.txt|958|1061|103|
+|training|resources/alignments/split/training/deft-p2-amr-r1-alignments-training-cctv.txt|147|214|67|
+|training|resources/alignments/split/training/deft-p2-amr-r1-alignments-training-dfa.txt|5304|6455|1151|
+|training|resources/alignments/split/training/deft-p2-amr-r1-alignments-training-guidelines.txt|317|689|372|
+|training|resources/alignments/split/training/deft-p2-amr-r1-alignments-training-mt09sdl.txt|187|204|17|
+|training|resources/alignments/split/training/deft-p2-amr-r1-alignments-training-proxy.txt|5191|6603|1412|
+|training|resources/alignments/split/training/deft-p2-amr-r1-alignments-training-wb.txt|692|866|174|
+|training|resources/alignments/split/training/deft-p2-amr-r1-alignments-training-xinhua.txt|633|741|108|
+|test|resources/alignments/split/test/deft-p2-amr-r1-alignments-test-bolt.txt|103|133|30|
+|test|resources/alignments/split/test/deft-p2-amr-r1-alignments-test-consensus.txt|65|100|35|
+|test|resources/alignments/split/test/deft-p2-amr-r1-alignments-test-dfa.txt|197|229|32|
+|test|resources/alignments/split/test/deft-p2-amr-r1-alignments-test-proxy.txt|667|823|156|
+|test|resources/alignments/split/test/deft-p2-amr-r1-alignments-test-xinhua.txt|72|86|14|
+
+Test size 267
+Training size 3404
+
+# test on TEST
+bolt since 2 max accuracy 0.674641148325 for 7 rounds. Train 103 Test 30
+dfa since 1 max accuracy 0.813953488372 for 8 rounds. Train 1151 Test 32
+proxy since 4 max accuracy 0.809029896278 for 5 rounds. Train 1412 Test 156
+xinhua since 5 max accuracy 0.736842105263 for 4 rounds. Train 108 Test 14
+deft since 2 max accuracy 0.822586656728 for 7 rounds. Train 3404 Test 267
+
+# test on DEV
+bolt since 9 max accuracy 0.628820960699 for 0 rounds. Train 103 Test 20
+dfa since 2 max accuracy 0.803240740741 for 7 rounds. Train 1151 Test 38
+proxy since 3 max accuracy 0.828367875648 for 6 rounds. Train 1412 Test 151
+xinhua since 4 max accuracy 0.748633879781 for 5 rounds. Train 108 Test 18
+deft since 2 max accuracy 0.820806962025 for 7 rounds. Train 3404 Test 235
