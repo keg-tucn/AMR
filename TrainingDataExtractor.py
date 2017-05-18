@@ -91,6 +91,7 @@ def generate_training_data(file_path, verbose=True, withStats=False, withDepende
             logging.warn("%s\n", sentence)
 
     logging.critical("Failed: %d out of %d", len(fail_sentences), len(sentence_amr_pairs))
+    # logging.critical("|%s|%d|%d|%d", file_path, len(fail_sentences), len(sentence_amr_pairs), len(sentence_amr_pairs) - len(fail_sentences))
     if withStats is True:
         return training_data, unaligned_nodes, unaligned_nodes_after, coreferences_count, \
                named_entity_exceptions, date_entity_exceptions, temporal_quantity_exceptions, quantity_exceptions, have_org_role_exceptions
