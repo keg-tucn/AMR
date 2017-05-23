@@ -6,6 +6,8 @@ import logging
 from os import listdir, path
 import TrainingDataExtractor as tde
 import json as js
+from smatch import smatch_amr
+from smatch import smatch_util
 
 
 def generate_parsed_data(parsed_path):
@@ -86,10 +88,18 @@ for (filter_path, train, test) in cases:
                 parsed = tp.parse(sentence, actions)
                 loss = parsed[0]
                 parsed_amr = parsed[1]
+
+                parsed_amr_str = parsed_amr.amr_print()
+                original_amr = smatch_amr.AMR.parse_AMR_line(amr)
+                parsed_amr = smatch_amr.AMR.parse_AMR_line(parsed_amr_str)
+                smatch_f_score = smatch_util.smatch_f_score(parsed_amr, original_amr)
+
                 # print("Generated")
-                # print(parsed_amr.preety_print(include_original=False))
+                # print(parsed_amr_str)
                 # print("Expected")
                 # print(amr)
+                # print(">>> %f" % smatch_f_score)
+
             except Exception as e:
                 logging.debug(e)
                 fail_sentences.append(original_sentence)
@@ -109,9 +119,22 @@ for (filter_path, train, test) in cases:
             try:
                 parsed_sentence = tp.parse(ds, da)
                 loss = parsed_sentence[0]
+                parsed_amr = parsed[1]
                 right_predictions += parsed_sentence[2]
                 total_predictions += parsed_sentence[3]
                 dev_words += len(ds)
+
+                parsed_amr_str = parsed_amr.amr_print()
+                original_amr = smatch_amr.AMR.parse_AMR_line(amr)
+                parsed_amr = smatch_amr.AMR.parse_AMR_line(parsed_amr_str)
+                smatch_f_score = smatch_util.smatch_f_score(parsed_amr, original_amr)
+
+                # print("Generated")
+                # print(parsed_amr_str)
+                # print("Expected")
+                # print(amr)
+                print(">>> %f" % smatch_f_score)
+
             except Exception as e:
                 logging.debug(e)
                 fail_sentences.append(original_sentence)

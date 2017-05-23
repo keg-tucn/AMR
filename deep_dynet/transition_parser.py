@@ -54,6 +54,7 @@ class TransitionParser:
         bias_act = dy.parameter(self.pb_act)
         losses = []
         good_predictions = []
+        node_index = 1;
         for tok in toks:
             tok_embedding = self.WORDS_LOOKUP[tok]
             cur = cur.add_input(tok_embedding)
@@ -100,7 +101,8 @@ class TransitionParser:
                 _, tok_embedding, token = buffer.pop()
                 stack_state, _ = stack[-1] if stack else (stack_top, '<TOP>')
                 stack_state = stack_state.add_input(tok_embedding)
-                stack.append((stack_state, Node(label, token)))
+                stack.append((stack_state, Node(label, token, node_index)))
+                node_index += 1
             elif action == DN:
                 buffer.pop()
             elif action == SW:
@@ -134,10 +136,11 @@ class TransitionParser:
 
 
 class Node:
-    def __init__(self, label, token):
+    def __init__(self, label, token, node_index):
         self.label = label
         self.token = token
         self.children = []
+        self.node_index = node_index
 
     def add_child(self, obj, relation):
         self.children.append((obj, relation))
@@ -152,3 +155,17 @@ class Node:
             preety += "\n".ljust(depth, "\t")
         preety += ")"
         return preety
+
+    def amr_print(self, depth=1):
+        str = "( d%s / %s " % (self.node_index, self.label)
+        for (child, relation) in self.children:
+            if relation == "polarity" or relation == "mode":
+                child_representation = ":%s %s" % (relation, child.label)
+            else:
+                child_representation = ":%s  %s" % (relation, child.amr_print(depth + 1))
+            str += "\n".ljust(depth + 1, "\t") + child_representation
+
+        if self.children:
+            str += "\n".ljust(depth, "\t")
+        str += ")"
+        return str
