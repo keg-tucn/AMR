@@ -22,7 +22,7 @@ def generate_parsed_data(parsed_path):
     return data
 
 
-def read_data(type, filter_path = "resources"):
+def read_data(type, filter_path = "deft"):
     mypath = 'resources/alignments/split/' + type
     print(mypath + " with filter " + filter_path)
     data = []
@@ -51,7 +51,8 @@ def process_data(data, vocab_words, vocab_acts):
 vocab_acts = ds.Vocab.from_list(ddtp.acts)
 vocab_words = ds.Vocab.from_file('resources/data/vocab.txt')
 
-tests = ["bolt", "dfa", "proxy", "xinhua", "deft"]
+# tests = ["bolt", "dfa", "proxy", "xinhua", "deft"]
+tests = ["deft"]
 cases = []
 for filter_path in tests:
     training_data = read_data("training", filter_path=filter_path)
@@ -119,7 +120,7 @@ for (filter_path, train, test) in cases:
             try:
                 parsed_sentence = tp.parse(ds, da)
                 loss = parsed_sentence[0]
-                parsed_amr = parsed[1]
+                parsed_amr = parsed_sentence[1]
                 right_predictions += parsed_sentence[2]
                 total_predictions += parsed_sentence[3]
                 dev_words += len(ds)
@@ -129,11 +130,12 @@ for (filter_path, train, test) in cases:
                 parsed_amr = smatch_amr.AMR.parse_AMR_line(parsed_amr_str)
                 smatch_f_score = smatch_util.smatch_f_score(parsed_amr, original_amr)
 
-                # print("Generated")
-                # print(parsed_amr_str)
-                # print("Expected")
-                # print(amr)
                 print(">>> %f" % smatch_f_score)
+                if 1 > smatch_f_score > 0.9:
+                    print("Generated")
+                    print(parsed_amr_str)
+                    print("Expected")
+                    print(amr)
 
             except Exception as e:
                 logging.debug(e)
