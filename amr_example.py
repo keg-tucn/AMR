@@ -8,6 +8,8 @@ import TrainingDataExtractor as tde
 import json as js
 from smatch import smatch_amr
 from smatch import smatch_util
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def generate_parsed_data(parsed_path):
@@ -115,6 +117,7 @@ for (filter_path, train, test) in cases:
         right_predictions = 0.0
         total_predictions = 0
         fail_sentences = []
+        smatch_scores = []
         for (ds, da, original_sentence, original_actions, amr) in test:
             loss = None
             try:
@@ -130,7 +133,8 @@ for (filter_path, train, test) in cases:
                 parsed_amr = smatch_amr.AMR.parse_AMR_line(parsed_amr_str)
                 smatch_f_score = smatch_util.smatch_f_score(parsed_amr, original_amr)
 
-                print(">>> %f" % smatch_f_score)
+                smatch_scores.append(smatch_f_score)
+                # print(">>> %f" % smatch_f_score)
                 if 1 > smatch_f_score > 0.9:
                     print("Generated")
                     print(parsed_amr_str)
@@ -153,4 +157,12 @@ for (filter_path, train, test) in cases:
             best_epoch = epoch
         else:
             rounds += 1
+        hist_bins = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99, 1]
+        hist, bins = np.histogram(smatch_scores, bins=hist_bins)
+        print("%s in bins %s" % (hist, bins))
+        print("Average: %f" % np.average(smatch_scores))
+        print("Min: %f" % np.min(smatch_scores))
+        print("Max: %f" % np.max(smatch_scores))
+        # plt.hist(smatch_scores, hist_bins)
+        # plt.show()
     print("{} since {} max accuracy {} for {} rounds. Train {} Test {}".format(filter_path, best_epoch, max_accuracy, rounds, len(train), len(test)))
