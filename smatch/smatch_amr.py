@@ -16,6 +16,11 @@ ERROR_LOG = sys.stderr
 # change this if needed
 DEBUG_LOG = sys.stderr
 
+# the original implementation reverses relations ending in -of, e.g. instance-of, ARG0-of
+# this inversion is not recognised by smatch
+# added this flag to keep it off, at least for now
+ALLOW_RELATION_INVERSION = False
+
 
 class AMR(object):
     """
@@ -324,12 +329,12 @@ class AMR(object):
                         # it is reverse of some relation. For example, if a is "arg0-of" b,
                         # we can also say b is "arg0" a.
                         # If the relation name ends with "-of", we store the reverse relation.
-                        if not cur_relation_name.endswith("-of"):
-                            # stack[-2] is upper_level node we encountered, as we just add node_name to stack
-                            node_relation_dict1[stack[-2]].append((cur_relation_name, node_name))
-                        else:
+                        if ALLOW_RELATION_INVERSION and cur_relation_name.endswith("-of"):
                             # cur_relation_name[:-3] is to delete "-of"
                             node_relation_dict1[node_name].append((cur_relation_name[:-3], stack[-2]))
+                        else:
+                            # stack[-2] is upper_level node we encountered, as we just add node_name to stack
+                            node_relation_dict1[stack[-2]].append((cur_relation_name, node_name))
                         # clear current_relation_name
                         cur_relation_name = ""
                 else:
@@ -360,7 +365,7 @@ class AMR(object):
                     relation_value = parts[1].strip()
                     # store reverse of the relation
                     # we are sure relation_value is a node here, as "-of" relation is only between two nodes
-                    if relation_name.endswith("-of"):
+                    if ALLOW_RELATION_INVERSION and relation_name.endswith("-of"):
                         node_relation_dict1[relation_value].append((relation_name[:-3], stack[-1]))
                     # attribute value not seen before
                     # Note that it might be a constant attribute value, or an unseen node
@@ -420,6 +425,21 @@ class AMR(object):
         attribute_list[0].append(["TOP", node_value_list[0]])
         result_amr = AMR(node_name_list, node_value_list, relation_list, attribute_list)
         return result_amr
+
+    def pretty_print(self, root_index = 0, depth=1):
+        name_trimmed = self.node_values[root_index].strip(' \t\n\r')
+        str = "( %s / %s " % (self.nodes[root_index], name_trimmed)
+        for (attr_name, attr_value) in self.attributes[root_index]:
+            if attr_name != "TOP":
+                str += " :%s %s " % (attr_name, attr_value)
+        for (relation, child_node) in self.relations[root_index]:
+            child_index = self.nodes.index(child_node)
+            child_representation = ":%s  %s" % (relation, self.pretty_print(child_index, depth + 1))
+            str += "\n".ljust(depth + 1, "\t") + child_representation
+
+        str += ")"
+        return str
+
 
 # test AMR parsing
 # run by amr.py [file containing AMR]
