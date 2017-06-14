@@ -70,6 +70,7 @@ for filter_path in tests:
     test = list(process_data(test_data, vocab_words, vocab_acts))
     cases.append((filter_path, train, test))
 
+
 for (filter_path, train, test) in cases:
     model = dy.Model()
     trainer = dy.AdamTrainer(model)
@@ -85,6 +86,7 @@ for (filter_path, train, test) in cases:
     best_epoch = 0
     fail_sentences = []
     for epoch in range(10):
+        smatch_train_results = smatch_util.SmatchAccumulator()
         for (sentence, actions, original_sentence, original_actions, amr) in train:
             loss = None
             try:
@@ -95,7 +97,7 @@ for (filter_path, train, test) in cases:
                 parsed_amr_str = parsed_amr.amr_print()
                 original_amr = smatch_amr.AMR.parse_AMR_line(amr)
                 parsed_amr = smatch_amr.AMR.parse_AMR_line(parsed_amr_str)
-                smatch_f_score = smatch_util.smatch_f_score(parsed_amr, original_amr)
+                smatch_f_score = smatch_train_results.compute_and_add(parsed_amr, original_amr)
 
                 # print("Generated")
                 # print(parsed_amr_str)
@@ -112,12 +114,17 @@ for (filter_path, train, test) in cases:
                 loss.scalar_value()
                 loss.backward()
                 trainer.update()
+
+        print ("Train:")
+        smatch_train_results.print_all()
+
         dev_words = 0
         dev_loss = 0.0
         right_predictions = 0.0
         total_predictions = 0
         fail_sentences = []
-        smatch_scores = []
+
+        smatch_test_results = smatch_util.SmatchAccumulator()
         for (ds, da, original_sentence, original_actions, amr) in test:
             loss = None
             try:
@@ -131,9 +138,8 @@ for (filter_path, train, test) in cases:
                 parsed_amr_str = parsed_amr.amr_print()
                 original_amr = smatch_amr.AMR.parse_AMR_line(amr)
                 parsed_amr = smatch_amr.AMR.parse_AMR_line(parsed_amr_str)
-                smatch_f_score = smatch_util.smatch_f_score(parsed_amr, original_amr)
+                smatch_f_score = smatch_test_results.compute_and_add(parsed_amr, original_amr)
 
-                smatch_scores.append(smatch_f_score)
                 # print(">>> %f" % smatch_f_score)
                 if 1 > smatch_f_score > 0.9:
                     print("Generated")
@@ -158,11 +164,12 @@ for (filter_path, train, test) in cases:
         else:
             rounds += 1
         hist_bins = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99, 1]
-        hist, bins = np.histogram(smatch_scores, bins=hist_bins)
+        hist, bins = np.histogram(smatch_test_results.smatch_scores, bins=hist_bins)
         print("%s in bins %s" % (hist, bins))
-        print("Average: %f" % np.average(smatch_scores))
-        print("Min: %f" % np.min(smatch_scores))
-        print("Max: %f" % np.max(smatch_scores))
-        # plt.hist(smatch_scores, hist_bins)
-        # plt.show()
+        print("Test:")
+        smatch_test_results.print_all()
+        plt.hist(smatch_test_results.smatch_scores, hist_bins)
+        plt.show()
+
+
     print("{} since {} max accuracy {} for {} rounds. Train {} Test {}".format(filter_path, best_epoch, max_accuracy, rounds, len(train), len(test)))

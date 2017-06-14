@@ -6,10 +6,11 @@ Please see some examples in the main.
 
 import smatch
 import smatch_amr as amr
+import numpy as np
 import copy
 
 
-def smatch_f_score(amr1, amr2,
+def smatch_best_match_numbers(amr1, amr2,
                    doinstance=True, doattribute=True, dorelation=True):
     """
     The "best match" number is the number of matching nodes. Larger for larger matching AMRs.
@@ -51,11 +52,17 @@ def smatch_f_score(amr1, amr2,
         test_triple_num += len(relation1)
         gold_triple_num += len(relation2)
 
+    return best_match_num, test_triple_num, gold_triple_num
+
+
+def smatch_f_score(amr1, amr2,
+                   doinstance=True, doattribute=True, dorelation=True):
+
+    best_match_num, test_triple_num, gold_triple_num = smatch_best_match_numbers(amr1, amr2,
+                   doinstance, doattribute, dorelation)
     (precision, recall, best_f_score) = smatch.compute_f(
         best_match_num, test_triple_num, gold_triple_num)
-
     return best_f_score
-
 
 def clean_node_value(nv):
     return nv.strip(' \t\n\r').split('~', 1)[0]
@@ -69,24 +76,81 @@ def clean_all_node_names(amr):
     updated_relations = [[[clean_node_value(tok) for tok in toks] for toks in nrel] for nrel in amr.relations]
     amr.relations = updated_relations
 
+
+class SmatchAccumulator:
+
+    def __init__(self):
+        self.n = 0
+        self.smatch_scores = []
+        self.total_match_num = 0
+        self.total_amr1_num = 0
+        self.total_amr2_num = 0
+        self.smatch_sum = 0
+        self.inv_smatch_sum = 0
+        self.last_f_score = 0;
+
+    def compute_and_add(self, amr1, amr2):
+        self.n += 1
+
+        best_match_num, test_triple_num, gold_triple_num = smatch_best_match_numbers(amr1, amr2)
+        self.total_match_num += best_match_num
+        self.total_amr1_num += test_triple_num
+        self.total_amr2_num += gold_triple_num
+
+        (precision, recall, self.last_f_score) = smatch.compute_f(
+            best_match_num, test_triple_num, gold_triple_num)
+
+        self.smatch_scores.append(self.last_f_score)
+        self.smatch_sum += self.last_f_score
+        self.inv_smatch_sum += 1 / self.last_f_score
+
+        return self.last_f_score
+
+    def smatch_mean(self):
+        return self.n / self.inv_smatch_sum
+
+    def smatch_per_node_mean(self):
+        _, _, best_f_score = smatch.compute_f(
+            self.total_match_num, self.total_amr1_num, self.total_amr2_num)
+        return best_f_score
+
+    def print_all(self):
+        if self.n == 0:
+          print ("No results")
+        else:
+            print("Min: %f" % np.min(self.smatch_scores))
+            print("Max: %f" % np.max(self.smatch_scores))
+            print ("Arithm. mean %s" % (self.smatch_sum / self.n))
+            print ("Harm. mean %s" % (self.n / self.inv_smatch_sum))
+            print ("Global match f-score %s" % self.smatch_per_node_mean())
+
+
 if __name__ == "__main__":
     smatch.veryVerbose=False
 
     str1 = """
-    (n / need-01~e.2 
-      :ARG0 (y / you~e.0) 
-      :manner~e.1 (r / real~e.1))
+    (b / benefit-01~e.4 :polarity~e.2 -~e.2)
     """
     amr1 = amr.AMR.parse_AMR_line(str1)
+    #clean_all_node_names(amr1)
+    print amr1.pretty_print()
 
-    print smatch_f_score(amr1, copy.deepcopy(amr1))
+    #print smatch_f_score(amr1, copy.deepcopy(amr1))
 
 
     str2="""
-    ( d3 / need-01 
-	:manner  ( d2 / real )
-	:ARG0  ( d1 / you )
+    (c / contrast-01~e.0 
+      :ARG2 (n / need-01~e.15 
+            :mod (a2 / also~e.14) 
+            :ARG1 (r / restart-01~e.10 
+                  :ARG1 (d / dialogue-01~e.12)) 
+            :prep-as~e.2 (m / method~e.5 
+                  :mod (a3 / auxiliary~e.4) 
+                  :instrument-of~e.6 (m2 / measure-02~e.8 
+                        :ARG0 (m3 / military~e.7)))))
     """
     amr2 = amr.AMR.parse_AMR_line(str2)
+    clean_all_node_names(amr2)
+    print amr2.pretty_print()
 
     print smatch_f_score(amr1, amr2)
