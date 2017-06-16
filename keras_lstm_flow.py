@@ -275,7 +275,7 @@ model.fit([x_train_full[:, :, 0], x_train_full[:, :, 1], x_train_full[:, :, 2], 
          callbacks=[ModelCheckpoint(model_path, monitor='val_loss', verbose=0, save_best_only=True, save_weights_only=False, mode='auto', period=1)])
 
 
-model.load_weights('models/proxy_model_with_deps', by_name=False)
+model.load_weights('models/dfa_model_with_deps', by_name=False)
 index_to_word_map = {v: k for k, v in tokenizer.word_index.iteritems()}
 
 
@@ -297,7 +297,7 @@ def pretty_print_sentence(tokens, index_to_word_map):
     print '\n'
 
 
-def make_prediction(model, x_test, y_test):
+def make_prediction(model, x_test, y_test, deps):
     tokens_buffer = x_test
     tokens_stack = []
     current_step = 0
@@ -306,16 +306,18 @@ def make_prediction(model, x_test, y_test):
     stack_token1 = np.zeros((1, max_len))
     stack_token2 = np.zeros((1, max_len))
     prev_action = np.zeros((1, max_len, 5))
+    dep_info = np.zeros((1, max_len, 6))
 
     buffer_token[0][current_step] = tokens_buffer[0]
     stack_token0[0][current_step] = no_word_index
     stack_token1[0][current_step] = no_word_index
     stack_token2[0][current_step] = no_word_index
     prev_action[0][current_step] = [0, 0, 0, 0, 0]
+    dep_info[0][current_step] = [0, 0, 0, 0, 0, 0]
 
     final_prediction = []
     while (len(tokens_buffer) != 0 or len(tokens_stack) != 1) and current_step < max_len - 1:
-        prediction = model.predict([buffer_token, stack_token0, stack_token1, stack_token2, prev_action])
+        prediction = model.predict([buffer_token, stack_token0, stack_token1, stack_token2, prev_action, dep_info])
         current_actions_distr_ordered = np.argsort(prediction[0][current_step])[::-1]
         current_inspected_action_index = 0
         current_action = current_actions_distr_ordered[current_inspected_action_index]
@@ -376,6 +378,27 @@ def make_prediction(model, x_test, y_test):
                     stack_token1[0][current_step] = no_word_index
                     stack_token2[0][current_step] = no_word_index
         prev_action[0][current_step] = label_binarizer.transform([current_action])[0, :]
+
+        dep_0_on_1 = 0
+        dep_1_on_0 = 0
+        dep_0_on_2 = 0
+        dep_2_on_0 = 0
+        dep_0_on_b = 0
+        dep_b_on_0 = 0
+
+        if stack_token0[0][current_step] in deps.keys() and deps[stack_token0[0][current_step]][0] == stack_token1[0][current_step]:
+            dep_0_on_1 = 1
+        if stack_token1[0][current_step] in deps.keys() and deps[stack_token1[0][current_step]][0] == stack_token0[0][current_step]:
+            dep_1_on_0 = 1
+        if stack_token0[0][current_step] in deps.keys() and deps[stack_token0[0][current_step]][0] == stack_token2[0][current_step]:
+            dep_0_on_2 = 1
+        if stack_token2[0][current_step] in deps.keys() and deps[stack_token2[0][current_step]][0] == stack_token0[0][current_step]:
+            dep_2_on_0 = 1
+        if stack_token0[0][current_step] in deps.keys() and deps[stack_token0[0][current_step]][0] == buffer_token[0][current_step]:
+            dep_0_on_b = 1
+        if buffer_token[0][current_step] in deps.keys() and deps[buffer_token[0][current_step]][0] == stack_token0[0][current_step]:
+            dep_b_on_0 = 1
+    dep_info[0][current_step] = [dep_0_on_1, dep_1_on_0, dep_0_on_2, dep_2_on_0, dep_0_on_b, dep_b_on_0]
     print 'Buffer and stack at end of prediction'
     print tokens_buffer
     print tokens_stack
@@ -383,7 +406,7 @@ def make_prediction(model, x_test, y_test):
 
 
 for i in range(10):
-    prediction = make_prediction(model, x_test[i], y_test[i])
+    prediction = make_prediction(model, x_test[i], y_test[i], dependencies_test[i])
     print 'Predicted'
     pretty_print_predictions(prediction)
     print 'Actual'
