@@ -4,6 +4,7 @@ from os import listdir
 import numpy as np
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
+from keras.metrics import categorical_accuracy
 from keras.optimizers import RMSprop
 from keras.utils import plot_model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
@@ -16,6 +17,7 @@ from smatch import smatch_util
 
 from os import path
 import sys
+
 sys.path.append(path.abspath('./stanford_parser'))
 
 from stanford_parser.parser import Parser
@@ -28,6 +30,7 @@ dependencies = parser.parseToStanfordDependencies("Most death sentences are for 
 tupleResult = [(rel, gov.text, dep.text) for rel, gov, dep in dependencies.dependencies]
 print tupleResult
 
+
 # Load data
 def read_data(type, dataset=None):
     data = []
@@ -37,15 +40,18 @@ def read_data(type, dataset=None):
         for f in listdir(mypath):
             mypath_f = mypath + "/" + f
             print(mypath_f)
-            data += tde.generate_training_data(mypath_f, False)
+            data += tde.generate_training_data(mypath_f, False, withDependencies=True)
     else:
         mypath_f = mypath + "/" + dataset
         print(mypath_f)
         data = tde.generate_training_data(mypath_f, verbose=False, withDependencies=True)
     return data
 
-data = read_data('dev', 'deft-p2-amr-r1-alignments-dev-bolt.txt')
-#data = read_data('training', 'deft-p2-amr-r1-alignments-training-dfa.txt')
+
+test_data = read_data('test', 'deft-p2-amr-r1-alignments-test-dfa.txt')
+# test_data = []
+train_data = read_data('training', 'deft-p2-amr-r1-alignments-training-dfa.txt')
+data = train_data + test_data
 
 print "Data size %s" % len(data)
 
@@ -53,7 +59,6 @@ sentences = [d[0] for d in data]
 amrs = [d[2] for d in data]
 
 vocab_acts = support.Vocab.from_list(['SH', 'RL', 'RR', 'DN', 'SW'])
-#action_sequence = support.oracle_actions_to_action_index(data[20][1], vocab_acts)
 
 actions = [support.oracle_actions_to_action_index(d[1], vocab_acts) for d in data]
 
@@ -67,11 +72,12 @@ tokenizer.fit_on_texts(sentences)
 sequences = np.asarray(tokenizer.texts_to_sequences(sentences))
 
 word_index = tokenizer.word_index
+print 'Word index len: '
 print len(word_index)
 
 # Shuffle data
 indices = np.arange(sequences.shape[0])
-np.random.shuffle(indices)
+# np.random.shuffle(indices)
 sequences = sequences[indices]
 
 actions = np.asarray(action_indices)[indices]
@@ -80,7 +86,7 @@ dependencies = [dependencies[i] for i in indices]
 
 amrs = np.asanyarray(amrs)[indices]
 
-num_train_samples = int(0.95 * sequences.shape[0])
+num_train_samples = int(0.90 * sequences.shape[0])
 
 x_train = sequences[:num_train_samples]
 y_train = actions[:num_train_samples]
@@ -93,6 +99,7 @@ l_test = labels[num_train_samples:]
 amrs_test = amrs[num_train_samples:]
 dependencies_test = dependencies[num_train_samples:]
 
+print 'Training data shape: '
 print x_train.shape
 print y_train.shape
 print amrs_train.shape
@@ -225,7 +232,10 @@ def generate_dataset(x, y, dependencies):
 (x_test_full, y_test_full, lengths_test, filtered_count_test) = generate_dataset(x_test, y_test, dependencies_test)
 
 print "Mean length %s " % np.asarray(lengths_train).mean()
+print "Max length %s" % np.asarray(lengths_train).max()
+print "Filtered"
 print (filtered_count_tr)
+print "Final train data shape"
 print (x_train_full.shape)
 print (y_train_full.shape)
 
@@ -233,6 +243,11 @@ y_train_ohe = np.zeros((y_train.shape[0], max_len, 5), dtype='int32')
 for row, i in zip(y_train_full[:, :], range(y_train_full.shape[0])):
     y_train_instance_matrix = label_binarizer.transform(row)
     y_train_ohe[i, :, :] = y_train_instance_matrix
+
+y_test_ohe = np.zeros((y_test.shape[0], max_len, 5), dtype='int32')
+for row, i in zip(y_test_full[:, :], range(y_test_full.shape[0])):
+    y_test_instance_matrix = label_binarizer.transform(row)
+    y_test_ohe[i, :, :] = y_test_instance_matrix
 
 buffer_input = Input(shape=(max_len,), dtype='int32')
 stack_input_0 = Input(shape=(max_len,), dtype='int32')
@@ -242,10 +257,10 @@ prev_action_input = Input(shape=(max_len, 5), dtype='float32')
 dep_info_input = Input(shape=(max_len, 6), dtype='float32')
 
 embedding = Embedding(len(word_index) + 2,
-                            EMBEDDING_DIM,
-                            weights=[embedding_matrix],
-                            input_length=max_len,
-                            trainable=False)
+                      EMBEDDING_DIM,
+                      weights=[embedding_matrix],
+                      input_length=max_len,
+                      trainable=False)
 
 buffer_emb = embedding(buffer_input)
 stack_emb_0 = embedding(stack_input_0)
@@ -260,7 +275,6 @@ dense = TimeDistributed(Dense(5, activation="softmax"))(lstm_output)
 
 model = Model([buffer_input, stack_input_0, stack_input_1, stack_input_2, prev_action_input, dep_info_input], dense)
 
-
 rms = RMSprop(lr=0.0001, rho=0.9, epsilon=1e-08, decay=0.0)
 model.compile(optimizer=rms,
               loss='categorical_crossentropy',
@@ -270,17 +284,19 @@ plot_model(model, to_file='model.png')
 
 print model.summary()
 
-#model_path = 'models/proxy_model_with_deps'
-model_path = 'models/dfa_model_with_deps'
+# model_path = 'models/proxy_model_with_deps'
+model_path = 'models/dfa_model_with_deps_script'
 
-model.fit([x_train_full[:, :, 0], x_train_full[:, :, 1], x_train_full[:, :, 2], x_train_full[:, :, 3], x_train_full[:, :, 4:9], x_train_full[:, :, 9:]],
-         y_train_ohe,
-         epochs=3, batch_size=16,
-         validation_split=0.2,
-         callbacks=[ModelCheckpoint(model_path, monitor='val_loss', verbose=0, save_best_only=True, save_weights_only=False, mode='auto', period=1)])
+# model.fit([x_train_full[:, :, 0], x_train_full[:, :, 1], x_train_full[:, :, 2], x_train_full[:, :, 3],
+#            x_train_full[:, :, 4:9], x_train_full[:, :, 9:]],
+#           y_train_ohe,
+#           epochs=35, batch_size=16,
+#           validation_split=0.1,
+#           callbacks=[
+#               ModelCheckpoint(model_path, monitor='val_acc', verbose=0, save_best_only=True, save_weights_only=False,
+#                               mode='auto', period=1)])
 
-
-model.load_weights('models/dfa_model_with_deps', by_name=False)
+model.load_weights('models/dfa_model_with_deps_script', by_name=False)
 index_to_word_map = {v: k for k, v in tokenizer.word_index.iteritems()}
 
 
@@ -288,11 +304,13 @@ def get_predictions_from_distr(predictions_distr):
     predictions = [np.argmax(p) for p in predictions_distr]
     return predictions
 
+
 def pretty_print_actions(acts_i):
     VOCAB_ACTS = ['SH', 'RL', 'RR', 'DN', 'SW']
     for i in range(len(acts_i)):
         print VOCAB_ACTS[acts_i[i]], ;
     print '\n'
+
 
 def pretty_print_sentence(tokens, index_to_word_map):
     for i in range(len(tokens)):
@@ -300,7 +318,7 @@ def pretty_print_sentence(tokens, index_to_word_map):
     print '\n'
 
 
-def make_prediction(model, x_test, y_test, deps):
+def make_prediction(model, x_test, deps):
     tokens_buffer = x_test
     tokens_stack = []
     current_step = 0
@@ -326,6 +344,8 @@ def make_prediction(model, x_test, y_test, deps):
         current_action = current_actions_distr_ordered[current_inspected_action_index]
         invalid = True
         while invalid:
+            if current_inspected_action_index == 5:
+                return []
             invalid = False
             current_action = current_actions_distr_ordered[current_inspected_action_index]
             current_inspected_action_index += 1
@@ -389,28 +409,35 @@ def make_prediction(model, x_test, y_test, deps):
         dep_0_on_b = 0
         dep_b_on_0 = 0
 
-        if stack_token0[0][current_step] in deps.keys() and deps[stack_token0[0][current_step]][0] == stack_token1[0][current_step]:
+        if stack_token0[0][current_step] in deps.keys() and deps[stack_token0[0][current_step]][0] == stack_token1[0][
+            current_step]:
             dep_0_on_1 = 1
-        if stack_token1[0][current_step] in deps.keys() and deps[stack_token1[0][current_step]][0] == stack_token0[0][current_step]:
+        if stack_token1[0][current_step] in deps.keys() and deps[stack_token1[0][current_step]][0] == stack_token0[0][
+            current_step]:
             dep_1_on_0 = 1
-        if stack_token0[0][current_step] in deps.keys() and deps[stack_token0[0][current_step]][0] == stack_token2[0][current_step]:
+        if stack_token0[0][current_step] in deps.keys() and deps[stack_token0[0][current_step]][0] == stack_token2[0][
+            current_step]:
             dep_0_on_2 = 1
-        if stack_token2[0][current_step] in deps.keys() and deps[stack_token2[0][current_step]][0] == stack_token0[0][current_step]:
+        if stack_token2[0][current_step] in deps.keys() and deps[stack_token2[0][current_step]][0] == stack_token0[0][
+            current_step]:
             dep_2_on_0 = 1
-        if stack_token0[0][current_step] in deps.keys() and deps[stack_token0[0][current_step]][0] == buffer_token[0][current_step]:
+        if stack_token0[0][current_step] in deps.keys() and deps[stack_token0[0][current_step]][0] == buffer_token[0][
+            current_step]:
             dep_0_on_b = 1
-        if buffer_token[0][current_step] in deps.keys() and deps[buffer_token[0][current_step]][0] == stack_token0[0][current_step]:
+        if buffer_token[0][current_step] in deps.keys() and deps[buffer_token[0][current_step]][0] == stack_token0[0][
+            current_step]:
             dep_b_on_0 = 1
-    dep_info[0][current_step] = [dep_0_on_1, dep_1_on_0, dep_0_on_2, dep_2_on_0, dep_0_on_b, dep_b_on_0]
+        dep_info[0][current_step] = [dep_0_on_1, dep_1_on_0, dep_0_on_2, dep_2_on_0, dep_0_on_b, dep_b_on_0]
     print 'Buffer and stack at end of prediction'
     print tokens_buffer
     print tokens_stack
     return final_prediction
 
-smatch_results = smatch_util.SmatchAccumulator()
 
-for i in range(min(10, len(x_test))):
-    prediction = make_prediction(model, x_test[i], y_test[i], dependencies_test[i])
+smatch_results = smatch_util.SmatchAccumulator()
+errors = 0
+for i in range(len(x_test)):
+    prediction = make_prediction(model, x_test[i], dependencies_test[i])
     print 'Sentence'
     pretty_print_sentence(x_test[i], index_to_word_map)
     print 'Predicted'
@@ -418,23 +445,32 @@ for i in range(min(10, len(x_test))):
     print 'Actual'
     pretty_print_actions(y_test[i])
 
+    if len(prediction) > 0:
+        act = asr.ActionConceptTransfer()
+        act.load_from_action_and_label(y_test[i], l_test[i])
+        pred_label = act.populate_new_actions(prediction)
+        print 'Predictions with old labels: '
+        print pred_label
+        predicted_amr_str = asr.reconstruct_all(pred_label)
 
-    act = asr.ActionConceptTransfer()
-    act.load_from_action_and_label(y_test[i], l_test[i])
-    pred_label = act.populate_new_actions(prediction)
-    print 'Predictions with old labels: '
-    print pred_label
-    predicted_amr_str = asr.reconstruct_all(pred_label)
+        original_amr = smatch_amr.AMR.parse_AMR_line(amrs_test[i])
+        predicted_amr = smatch_amr.AMR.parse_AMR_line(predicted_amr_str)
+        smatch_f_score = smatch_results.compute_and_add(predicted_amr, original_amr)
 
-    original_amr = smatch_amr.AMR.parse_AMR_line(amrs_test[i])
-    predicted_amr = smatch_amr.AMR.parse_AMR_line(predicted_amr_str)
-    smatch_f_score = smatch_results.compute_and_add(predicted_amr, original_amr)
-
-    print 'Original Amr'
-    print amrs_test[i]
-    print 'Predicted Amr'
-    print predicted_amr_str
-    print 'Smatch f-score %f' % smatch_f_score
+        print 'Original Amr'
+        print amrs_test[i]
+        print 'Predicted Amr'
+        print predicted_amr_str
+        print 'Smatch f-score %f' % smatch_f_score
+    else:
+        errors += 1
 
 smatch_results.print_all()
-
+accuracy = model.evaluate([x_test_full[:, :, 0], x_test_full[:, :, 1], x_test_full[:, :, 2], x_test_full[:, :, 3],
+                           x_test_full[:, :, 4:9], x_test_full[:, :, 9:]], y_test_ohe)
+print 'Model metrics'
+print accuracy
+print 'Model metrics order'
+model.metrics_names
+print 'Errors'
+print errors

@@ -102,7 +102,7 @@ class SmatchAccumulator:
 
         self.smatch_scores.append(self.last_f_score)
         self.smatch_sum += self.last_f_score
-        self.inv_smatch_sum += 1 / self.last_f_score
+        self.inv_smatch_sum += 1 / max(self.last_f_score, 0.0001)
 
         return self.last_f_score
 
@@ -122,7 +122,7 @@ class SmatchAccumulator:
             print("Max: %f" % np.max(self.smatch_scores))
             print ("Arithm. mean %s" % (self.smatch_sum / self.n))
             print ("Harm. mean %s" % (self.n / self.inv_smatch_sum))
-            print ("Global match f-score %s" % self.smatch_per_node_mean())
+            print ("Global smatch f-score %s" % self.smatch_per_node_mean())
 
 
 if __name__ == "__main__":
