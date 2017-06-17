@@ -129,7 +129,12 @@ if __name__ == "__main__":
     smatch.veryVerbose=False
 
     str1 = """
-    (b / benefit-01~e.4 :polarity~e.2 -~e.2)
+    ( c / chat-01~e.6 
+	:ARG0  ( i / i~e.0 )
+	:ARG1  ( b / behave-01 
+		:ARG0  ( h / he~e.8,10 ))
+	:ARG2~e.7  h)
+	:mod  ( a / also~e.2 ))
     """
     amr1 = amr.AMR.parse_AMR_line(str1)
     #clean_all_node_names(amr1)

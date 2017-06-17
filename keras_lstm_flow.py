@@ -10,6 +10,9 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.layers import Input, Embedding, LSTM, Dense, concatenate, Flatten, TimeDistributed
 from keras.models import Model
 import sklearn.preprocessing
+import ActionSequenceReconstruction as asr
+from smatch import smatch_amr
+from smatch import smatch_util
 
 from os import path
 import sys
@@ -72,6 +75,7 @@ np.random.shuffle(indices)
 sequences = sequences[indices]
 
 actions = np.asarray(action_indices)[indices]
+labels = np.asarray(action_labels)[indices]
 dependencies = [dependencies[i] for i in indices]
 
 amrs = np.asanyarray(amrs)[indices]
@@ -85,6 +89,7 @@ dependencies_train = dependencies[:num_train_samples]
 
 x_test = sequences[num_train_samples:]
 y_test = actions[num_train_samples:]
+l_test = labels[num_train_samples:]
 amrs_test = amrs[num_train_samples:]
 dependencies_test = dependencies[num_train_samples:]
 
@@ -261,7 +266,7 @@ model.compile(optimizer=rms,
               loss='categorical_crossentropy',
               metrics=['accuracy'])
 
-#plot_model(model, to_file='model.png')
+plot_model(model, to_file='model.png')
 
 print model.summary()
 
@@ -270,7 +275,7 @@ model_path = 'models/dfa_model_with_deps'
 
 model.fit([x_train_full[:, :, 0], x_train_full[:, :, 1], x_train_full[:, :, 2], x_train_full[:, :, 3], x_train_full[:, :, 4:9], x_train_full[:, :, 9:]],
          y_train_ohe,
-         epochs=10, batch_size=16,
+         epochs=3, batch_size=16,
          validation_split=0.2,
          callbacks=[ModelCheckpoint(model_path, monitor='val_loss', verbose=0, save_best_only=True, save_weights_only=False, mode='auto', period=1)])
 
@@ -283,13 +288,11 @@ def get_predictions_from_distr(predictions_distr):
     predictions = [np.argmax(p) for p in predictions_distr]
     return predictions
 
-
-def pretty_print_predictions(predictions):
-    actions = ['SH', 'RL', 'RR', 'DN', 'SW']
-    for i in range(len(predictions)):
-        print actions[predictions[i]], ;
+def pretty_print_actions(acts_i):
+    VOCAB_ACTS = ['SH', 'RL', 'RR', 'DN', 'SW']
+    for i in range(len(acts_i)):
+        print VOCAB_ACTS[acts_i[i]], ;
     print '\n'
-
 
 def pretty_print_sentence(tokens, index_to_word_map):
     for i in range(len(tokens)):
@@ -404,14 +407,34 @@ def make_prediction(model, x_test, y_test, deps):
     print tokens_stack
     return final_prediction
 
+smatch_results = smatch_util.SmatchAccumulator()
 
-for i in range(10):
+for i in range(min(10, len(x_test))):
     prediction = make_prediction(model, x_test[i], y_test[i], dependencies_test[i])
-    print 'Predicted'
-    pretty_print_predictions(prediction)
-    print 'Actual'
-    pretty_print_predictions(y_test[i])
     print 'Sentence'
     pretty_print_sentence(x_test[i], index_to_word_map)
-    print 'Amr'
+    print 'Predicted'
+    pretty_print_actions(prediction)
+    print 'Actual'
+    pretty_print_actions(y_test[i])
+
+
+    act = asr.ActionConceptTransfer()
+    act.load_from_action_and_label(y_test[i], l_test[i])
+    pred_label = act.populate_new_actions(prediction)
+    print 'Predictions with old labels: '
+    print pred_label
+    predicted_amr_str = asr.reconstruct_all(pred_label)
+
+    original_amr = smatch_amr.AMR.parse_AMR_line(amrs_test[i])
+    predicted_amr = smatch_amr.AMR.parse_AMR_line(predicted_amr_str)
+    smatch_f_score = smatch_results.compute_and_add(predicted_amr, original_amr)
+
+    print 'Original Amr'
     print amrs_test[i]
+    print 'Predicted Amr'
+    print predicted_amr_str
+    print 'Smatch f-score %f' % smatch_f_score
+
+smatch_results.print_all()
+

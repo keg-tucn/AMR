@@ -6,6 +6,32 @@ from os import listdir, path
 import TrainingDataExtractor as tde
 from smatch import smatch_amr
 from smatch import smatch_util
+import ActionSequenceReconstruction as asr
+
+def check_smatch_identical(print_info, amrstr1, amrstr2):
+    amr2 = smatch_amr.AMR.parse_AMR_line(amrstr2)
+    if amr2 is None:
+        print (print_info + " Could not reparse!!!")
+        print("Original:")
+        print amrstr1
+        print("Could not reparse:")
+        print amrstr2
+        amr2 = smatch_amr.AMR.parse_AMR_line(amrstr2)
+        return False
+
+    else:
+        smatch_f_score = smatch_util.smatch_f_score(amr1, amr2)
+        if smatch_f_score < 1:
+            print(print_info + " Score %f" % smatch_f_score)
+            print("Original:")
+            print amrstr1
+            print("Reconstructed:")
+            print amrstr2
+            # amr1.pretty_print()
+            smatch_amr.AMR.parse_AMR_line(amr_string)
+            return False
+
+    return True
 
 
 data = []
@@ -20,26 +46,19 @@ for f in original_corpus:
 fail_count = 0
 for (sentence, action_sequence, amr_string) in data:
     amr1 = smatch_amr.AMR.parse_AMR_line(amr_string)
-    pretty = amr1.pretty_print()
-    amr2 = smatch_amr.AMR.parse_AMR_line(pretty) # reparse
-    if amr2 is None:
-        print ("Could not reparse!!!")
-        print("Original:")
+    if amr1 is None:
+        print 'Could not parse original amr'
         print amr_string
-        print("Parsed, printed:")
-        print pretty
         fail_count += 1
 
-    else:
-        smatch_f_score = smatch_util.smatch_f_score(amr1, amr2)
-        if smatch_f_score < 1:
-            print("Score %f" % smatch_f_score)
-            print("Original:")
-            print amr_string
-            print("Parsed, printed:")
-            print pretty
-            #amr1.pretty_print()
-            smatch_amr.AMR.parse_AMR_line(amr_string)
-            fail_count += 1
+    reprinted = amr1.pretty_print()
+    ok = check_smatch_identical('Reparse.', amr_string, reprinted)
 
-print("FAIL COUNT: %i" % fail_count)
+    rec_string = asr.reconstruct_all(action_sequence)
+    amr1 = smatch_amr.AMR.parse_AMR_line(amr_string)
+    ok = ok and check_smatch_identical('Reconstruct from actions.', amr_string, rec_string)
+
+    if not ok:
+        fail_count += 1
+
+print("FAIL COUNT: %i / %i" % (fail_count, len(data)))

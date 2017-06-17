@@ -334,6 +334,9 @@ class AMR(object):
                             node_relation_dict1[node_name].append((cur_relation_name[:-3], stack[-2]))
                         else:
                             # stack[-2] is upper_level node we encountered, as we just add node_name to stack
+                            if len(stack) <= 1:
+                                print >> ERROR_LOG, "Invalid state, stack is too short, cannot build relation."
+                                return None
                             node_relation_dict1[stack[-2]].append((cur_relation_name, node_name))
                         # clear current_relation_name
                         cur_relation_name = ""
@@ -427,18 +430,25 @@ class AMR(object):
         return result_amr
 
     def pretty_print(self, root_index = 0, depth=1):
+        if depth == 1:
+            self.already_written = []
         name_trimmed = self.node_values[root_index].strip(' \t\n\r')
-        str = "( %s / %s " % (self.nodes[root_index], name_trimmed)
+        alias = self.nodes[root_index]
+        if alias in self.already_written:
+            result = alias
+        else:
+            result = "( %s / %s " % (alias, name_trimmed)
+            self.already_written.append(alias)
         for (attr_name, attr_value) in self.attributes[root_index]:
             if attr_name != "TOP":
-                str += " :%s %s " % (attr_name, attr_value)
+                result += " :%s %s " % (attr_name, attr_value)
         for (relation, child_node) in self.relations[root_index]:
             child_index = self.nodes.index(child_node)
             child_representation = ":%s  %s" % (relation, self.pretty_print(child_index, depth + 1))
-            str += "\n".ljust(depth + 1, "\t") + child_representation
+            result += "\n".ljust(depth + 1, "\t") + child_representation
 
-        str += ")"
-        return str
+        result += ")"
+        return result
 
 
 # test AMR parsing
