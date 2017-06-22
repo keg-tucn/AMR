@@ -29,6 +29,7 @@ class TransitionParser:
         self.buffRNN = dy.LSTMBuilder(1, WORD_DIM, LSTM_DIM, model)
         self.stackRNN = dy.LSTMBuilder(1, WORD_DIM, LSTM_DIM, model)
         self.pempty_buffer_emb = model.add_parameters((LSTM_DIM,))
+        self.pempty_stack_emb = model.add_parameters((LSTM_DIM,))
         nwords = vocab.size()
         self.WORDS_LOOKUP = model.add_lookup_parameters((nwords, WORD_DIM))
 
@@ -46,6 +47,7 @@ class TransitionParser:
         cur = self.buffRNN.initial_state()
         buffer = []
         empty_buffer_emb = dy.parameter(self.pempty_buffer_emb)
+        empty_stack_emb = dy.parameter(self.pempty_stack_emb)
         weight_comp = dy.parameter(self.pW_comp)
         bias_comp = dy.parameter(self.pb_comp)
         weight_s2h = dy.parameter(self.pW_s2h)
@@ -65,7 +67,7 @@ class TransitionParser:
             valid_actions = []
             if len(buffer) > 0:  # can only reduce if elements in buffer
                 valid_actions += [SH]
-            if len(stack) >= 1:
+            if len(buffer) >= 1:
                 valid_actions += [DN]
             if len(stack) >= 2:  # can only shift if 2 elements on stack
                 valid_actions += [RL, RR]
@@ -79,7 +81,7 @@ class TransitionParser:
             log_probs = None
             if len(valid_actions) > 1:
                 buffer_embedding = buffer[-1][0] if buffer else empty_buffer_emb
-                stack_embedding = stack[-1][0].output()  # the stack has something here
+                stack_embedding = stack[-1][0].output() if stack else empty_stack_emb  # the stack has something here
                 parser_state = dy.concatenate([buffer_embedding, stack_embedding])
                 h = dy.tanh(weight_s2h * parser_state + bias_s2h)
                 logits = weight_act * h + bias_act

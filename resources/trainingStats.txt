@@ -28,3 +28,25 @@ dfa since 2 max accuracy 0.803240740741 for 7 rounds. Train 1151 Test 38
 proxy since 3 max accuracy 0.828367875648 for 6 rounds. Train 1412 Test 151
 xinhua since 4 max accuracy 0.748633879781 for 5 rounds. Train 108 Test 18
 deft since 2 max accuracy 0.820806962025 for 7 rounds. Train 3404 Test 235
+
+
+Results w/ empty stack embedding
+[ 1  6 58 25 24 28 21 72] in bins [ 0.3   0.4   0.5   0.6   0.7   0.8   0.9   0.99  1.  ]
+Test:
+Accuracy 0.809507
+Min: 0.363636
+Max: 1.000000
+Arithm. mean 0.781174997505
+Harm. mean 0.729577089666
+Global match f-score 0.816543350408
+
+Results w/o empty stack embedding
+[ 1  6 58 25 24 28 21 72] in bins [ 0.3   0.4   0.5   0.6   0.7   0.8   0.9   0.99  1.  ]
+Test:
+Accuracy 0.787579
+Min: 0.363636
+Max: 1.000000
+Arithm. mean 0.781174997505
+Harm. mean 0.729577089666
+Global match f-score 0.816543350408v
+

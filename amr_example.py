@@ -106,7 +106,7 @@ for (filter_path, train, test) in cases:
                 # print(">>> %f" % smatch_f_score)
 
             except Exception as e:
-                logging.debug(e)
+                logging.warn(e)
                 fail_sentences.append(original_sentence)
                 logging.warn("%s\n with actions %s\n", original_sentence, original_actions)
             if loss is not None:
@@ -148,7 +148,7 @@ for (filter_path, train, test) in cases:
                     print(amr)
 
             except Exception as e:
-                logging.debug(e)
+                logging.warn(e)
                 fail_sentences.append(original_sentence)
                 logging.warn("%s\n with actions %s\n", original_sentence, original_actions)
             if loss is not None:
@@ -167,6 +167,7 @@ for (filter_path, train, test) in cases:
         hist, bins = np.histogram(smatch_test_results.smatch_scores, bins=hist_bins)
         print("%s in bins %s" % (hist, bins))
         print("Test:")
+        print("Accuracy %f" % accuracy)
         smatch_test_results.print_all()
         plt.hist(smatch_test_results.smatch_scores, hist_bins)
         plt.show()
