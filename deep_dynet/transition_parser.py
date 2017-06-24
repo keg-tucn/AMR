@@ -1,5 +1,8 @@
-import dynet as dy
 from operator import itemgetter
+
+import dynet as dy
+
+from util.Node import Node
 
 WORD_DIM = 64
 LSTM_DIM = 64
@@ -103,7 +106,7 @@ class TransitionParser:
                 _, tok_embedding, token = buffer.pop()
                 stack_state, _ = stack[-1] if stack else (stack_top, '<TOP>')
                 stack_state = stack_state.add_input(tok_embedding)
-                stack.append((stack_state, Node(label, token, node_index)))
+                stack.append((stack_state, Node(label, node_index)))
                 node_index += 1
             elif action == DN:
                 buffer.pop()
@@ -135,39 +138,3 @@ class TransitionParser:
         # print("losses" + str(map(lambda x: x.scalar_value(), losses)))
         # print(head.preety_print())
         return -dy.esum(losses) if losses else None, head, sum(good_predictions), len(good_predictions)
-
-
-class Node:
-    def __init__(self, label, token, node_index):
-        self.label = label
-        self.token = token
-        self.children = []
-        self.node_index = node_index
-
-    def add_child(self, obj, relation):
-        self.children.append((obj, relation))
-
-    def preety_print(self, depth=1, include_original=True):
-        preety = "( %s" % self.label
-        if include_original:
-            preety += (" orig: %s" % self.token)
-        preety += "".join(
-            ("\n".ljust(depth + 1, "\t") + "%s  %s" % (relation, child.preety_print(depth=depth + 1, include_original=include_original))) for (child, relation) in self.children)
-        if self.children:
-            preety += "\n".ljust(depth, "\t")
-        preety += ")"
-        return preety
-
-    def amr_print(self, depth=1):
-        str = "( d%s / %s " % (self.node_index, self.label)
-        for (child, relation) in self.children:
-            if relation == "polarity" or relation == "mode":
-                child_representation = ":%s %s" % (relation, child.label)
-            else:
-                child_representation = ":%s  %s" % (relation, child.amr_print(depth + 1))
-            str += "\n".ljust(depth + 1, "\t") + child_representation
-
-        if self.children:
-            str += "\n".ljust(depth, "\t")
-        str += ")"
-        return str

@@ -1,9 +1,9 @@
-from AMRGraph import AMR
-from AMRData import CustomizedAMR
-from deep_dynet import support
-import ActionSequenceGenerator
 from collections import deque
-from Node import Node
+
+import ActionSequenceGenerator
+from AMRData import CustomizedAMR
+from AMRGraph import AMR
+from util.Node import Node
 
 VOCAB_ACTS = ['SH', 'RL', 'RR', 'DN', 'SW']
 SH = 0
