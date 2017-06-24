@@ -74,107 +74,102 @@ for filter_path in tests:
     test = list(process_data(test_data, vocab_words, vocab_acts))
     cases.append((filter_path, train, test))
 
+for run in range(1):
+    for (filter_path, train, test) in cases:
+        model = dy.Model()
+        trainer = dy.AdamTrainer(model)
 
-for (filter_path, train, test) in cases:
-    model = dy.Model()
-    trainer = dy.AdamTrainer(model)
+        tp = ddtp.TransitionParser(model, vocab_words)
 
-    tp = ddtp.TransitionParser(model, vocab_words)
-
-    log_errors_on_train = False
-    if (log_errors_on_train):
-        logging.disable(logging.NOTSET)
-    # cmake .. -DEIGEN3_INCLUDE_DIR=/Users/flo/Documents/Doctorat/AMR/dynet-base/eigen -DBOOST_ROOT=/usr/local/opt/boost160/ -DPYTHON=/usr/bin/python
-    max_accuracy = 0
-    rounds = 0
-    best_epoch = 0
-    fail_sentences = []
-    for epoch in range(10):
-        smatch_train_results = smatch_util.SmatchAccumulator()
-        for (sentence, actions, original_sentence, original_actions, amr) in train:
-            loss = None
-            try:
-                parsed = tp.parse(sentence, actions)
-                loss = parsed[0]
-                parsed_amr = parsed[1]
-
-                parsed_amr_str = parsed_amr.amr_print()
-                original_amr = smatch_amr.AMR.parse_AMR_line(amr)
-                parsed_amr = smatch_amr.AMR.parse_AMR_line(parsed_amr_str)
-                smatch_f_score = smatch_train_results.compute_and_add(parsed_amr, original_amr)
-
-                # print("Generated")
-                # print(parsed_amr_str)
-                # print("Expected")
-                # print(amr)
-                # print(">>> %f" % smatch_f_score)
-
-            except Exception as e:
-                logging.warn(e)
-                fail_sentences.append(original_sentence)
-                logging.warn("%s\n with actions %s\n", original_sentence, original_actions)
-            if loss is not None:
-                # for some weird reason backward throws an failed assertion if there is no scalar value retrievall
-                loss.scalar_value()
-                loss.backward()
-                trainer.update()
-
-        print ("Train:")
-        smatch_train_results.print_all()
-
-        dev_words = 0
-        dev_loss = 0.0
-        right_predictions = 0.0
-        total_predictions = 0
+        log_errors_on_train = False
+        if (log_errors_on_train):
+            logging.disable(logging.NOTSET)
+        # cmake .. -DEIGEN3_INCLUDE_DIR=/Users/flo/Documents/Doctorat/AMR/dynet-base/eigen -DBOOST_ROOT=/usr/local/opt/boost160/ -DPYTHON=/usr/bin/python
+        accuracies = []
+        rounds = 0
+        best_epoch = 0
         fail_sentences = []
+        for epoch in range(10):
+            smatch_train_results = smatch_util.SmatchAccumulator()
+            for (sentence, actions, original_sentence, original_actions, amr) in train:
+                loss = None
+                try:
+                    parsed = tp.parse(sentence, actions)
+                    loss = parsed[0]
+                    parsed_amr = parsed[1]
 
-        smatch_test_results = smatch_util.SmatchAccumulator()
-        for (ds, da, original_sentence, original_actions, amr) in test:
-            loss = None
-            try:
-                parsed_sentence = tp.parse(ds, da)
-                loss = parsed_sentence[0]
-                parsed_amr = parsed_sentence[1]
-                right_predictions += parsed_sentence[2]
-                total_predictions += parsed_sentence[3]
-                dev_words += len(ds)
+                    parsed_amr_str = parsed_amr.amr_print()
+                    original_amr = smatch_amr.AMR.parse_AMR_line(amr)
+                    parsed_amr = smatch_amr.AMR.parse_AMR_line(parsed_amr_str)
+                    smatch_f_score = smatch_train_results.compute_and_add(parsed_amr, original_amr)
 
-                parsed_amr_str = parsed_amr.amr_print()
-                original_amr = smatch_amr.AMR.parse_AMR_line(amr)
-                parsed_amr = smatch_amr.AMR.parse_AMR_line(parsed_amr_str)
-                smatch_f_score = smatch_test_results.compute_and_add(parsed_amr, original_amr)
+                    # print("Generated")
+                    # print(parsed_amr_str)
+                    # print("Expected")
+                    # print(amr)
+                    # print(">>> %f" % smatch_f_score)
 
-                # print(">>> %f" % smatch_f_score)
-                if 1 > smatch_f_score > 0.9:
-                    print("Generated")
-                    print(parsed_amr_str)
-                    print("Expected")
-                    print(amr)
+                except Exception as e:
+                    logging.warn(e)
+                    fail_sentences.append(original_sentence)
+                    logging.warn("%s\n with actions %s\n", original_sentence, original_actions)
+                if loss is not None:
+                    # for some weird reason backward throws an failed assertion if there is no scalar value retrievall
+                    loss.scalar_value()
+                    loss.backward()
+                    trainer.update()
 
-            except Exception as e:
-                logging.warn(e)
-                fail_sentences.append(original_sentence)
-                logging.warn("%s\n with actions %s\n", original_sentence, original_actions)
-            if loss is not None:
-                dev_loss += loss.scalar_value()
-        # print("Failed sentencs in test: %d" % len(fail_sentences))
-        loss_dev_words = dev_loss / total_predictions
-        accuracy = right_predictions / total_predictions
-        # print('[validation] epoch {}: per-word loss: {} prediction accuracy: {}'.format(epoch, loss_dev_words, accuracy))
-        max_accuracy = max(max_accuracy, accuracy)
-        if max_accuracy == accuracy:
-            rounds = 0
-            best_epoch = epoch
-        else:
-            rounds += 1
-        hist_bins = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99, 1]
-        hist, bins = np.histogram(smatch_test_results.smatch_scores, bins=hist_bins)
-        print("%s in bins %s" % (hist, bins))
-        print("Test:")
-        print("Accuracy %f" % accuracy)
-        smatch_test_results.print_all()
-        plt.hist(smatch_test_results.smatch_scores, hist_bins)
-        plt.show()
+            print ("Train:")
+            smatch_train_results.print_all()
 
+            dev_words = 0
+            dev_loss = 0.0
+            right_predictions = 0.0
+            total_predictions = 0
+            fail_sentences = []
 
-    print("{} since {} max accuracy {} for {} rounds. Train {} Test {}".format(filter_path, best_epoch, max_accuracy, rounds, len(train), len(test)))
+            smatch_test_results = smatch_util.SmatchAccumulator()
+            for (ds, da, original_sentence, original_actions, amr) in test:
+                loss = None
+                try:
+                    parsed_sentence = tp.parse(ds, da)
+                    loss = parsed_sentence[0]
+                    parsed_amr = parsed_sentence[1]
+                    right_predictions += parsed_sentence[2]
+                    total_predictions += parsed_sentence[3]
+                    dev_words += len(ds)
+
+                    parsed_amr_str = parsed_amr.amr_print()
+                    original_amr = smatch_amr.AMR.parse_AMR_line(amr)
+                    parsed_amr = smatch_amr.AMR.parse_AMR_line(parsed_amr_str)
+                    smatch_f_score = smatch_test_results.compute_and_add(parsed_amr, original_amr)
+
+                    # print(">>> %f" % smatch_f_score)
+                    if 1 > smatch_f_score > 0.9:
+                        print("Generated")
+                        print(parsed_amr_str)
+                        print("Expected")
+                        print(amr)
+
+                except Exception as e:
+                    logging.warn(e)
+                    fail_sentences.append(original_sentence)
+                    logging.warn("%s\n with actions %s\n", original_sentence, original_actions)
+                if loss is not None:
+                    dev_loss += loss.scalar_value()
+            # print("Failed sentencs in test: %d" % len(fail_sentences))
+            loss_dev_words = dev_loss / total_predictions
+            accuracy = right_predictions / total_predictions
+            # print('[validation] epoch {}: per-word loss: {} prediction accuracy: {}'.format(epoch, loss_dev_words, accuracy))
+            accuracies.append(accuracy)
+            hist_bins = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99, 1]
+            hist, bins = np.histogram(smatch_test_results.smatch_scores, bins=hist_bins)
+            print("%s in bins %s" % (hist, bins))
+            print("Test:")
+            print("Accuracy %f" % accuracy)
+            smatch_test_results.print_all()
+            plt.hist(smatch_test_results.smatch_scores, hist_bins)
+            plt.show()
+
+        print("run ", run, ": accuracies ", accuracies)
+        print("{} since {} max accuracy {} for {} rounds. Train {} Test {}".format(filter_path, np.argmax(accuracies), np.max(accuracies), rounds, len(train), len(test)))
