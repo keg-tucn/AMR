@@ -3,7 +3,7 @@ import dynet as dy
 import deep_dynet.support as ds
 import deep_dynet.transition_parser as ddtp
 import logging
-from os import listdir, path
+from os import listdir, path, makedirs
 import TrainingDataExtractor as tde
 import json as js
 from smatch import smatch_amr
@@ -12,13 +12,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def generate_parsed_data(parsed_path):
-    dump_path = parsed_path + ".dump"
+def generate_parsed_data(parsed_path, dump_path):
+    dump_path = dump_path + ".dump"
     # print(dump_path)
     if path.exists(dump_path):
         with open(dump_path, "rb") as f:
             return js.load(f)
     data = tde.generate_training_data(parsed_path, False)
+    if not path.exists(path.dirname(dump_path)):
+        makedirs(path.dirname(dump_path))
     with open(dump_path, "wb") as f:
         js.dump(data, f)  # , indent=4, separators=(',', ': ')
     return data
@@ -33,8 +35,9 @@ def read_data(type, filter_path = "deft"):
     original_corpus = filter(lambda x: filter_path in x, original_corpus)
     for f in original_corpus:
         mypath_f = mypath + "/" + f
+        dumppath_f = mypath + "/dumps/" + f
         print(mypath_f)
-        data += generate_parsed_data(mypath_f)
+        data += generate_parsed_data(mypath_f, dumppath_f)
     return data
 
 
@@ -42,12 +45,13 @@ def process_data(data, vocab_words, vocab_acts):
     for d in data:
         sentence = d[0]
         actions = d[1]
+        amr_str = d[2]
         yield (
             ds.word_sentence_to_vocab_index(sentence.split(), vocab_words),
             ds.oracle_actions_to_action_index(actions, vocab_acts),
             sentence,
             actions,
-            d[2]
+            amr_str
         )
 
 vocab_acts = ds.Vocab.from_list(ddtp.acts)
