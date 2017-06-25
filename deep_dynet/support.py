@@ -65,19 +65,23 @@ def oracle_actions_to_action_index(oracle_action_sequence, action_vocab):
 
 
 class AMRAction:
-    def __init__(self, action, label, index):
+    def __init__(self, action, label, index, key):
         self.action = action
         self.label = label
         self.index = index
+        self.key = key
 
     def __repr__(self):
-        return "action: %s label: %s index: %s" % (self.action, self.label, self.index)
+        return "action: %s label: %s index: %s key: %s" % (self.action, self.label, self.index, self.key)
 
     @classmethod
     def from_oracle(cls, labeled_action, va):
         split_action = labeled_action.split("_")
         action = split_action[0]
         label = None
-        if len(split_action) == 2:
+        key = None
+        if len(split_action) >= 2:
             label = split_action[1]
-        return AMRAction(action, label, va.w2i[action])
+        if len(split_action) == 3:
+            key = split_action[2]
+        return AMRAction(action, label, va.w2i[action], key)

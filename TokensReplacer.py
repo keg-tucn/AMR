@@ -1,6 +1,7 @@
 import copy
 import re
 from operator import itemgetter
+from amr_util.Node import Node
 
 
 def replace_date_entities(amr, sentence):
@@ -96,10 +97,16 @@ def replace_named_entities(amr, sentence):
         name_var = name_tuple[1]
         op_rel_list = amr_copy[name_var]
         literals = []
+        node = Node("name")
         for op_rel in op_rel_list:
             if op_regexp.match(op_rel):
-                literals.append(op_rel_list[op_rel][0])
-        literals_triplets.append((name_tuple[0], name_tuple[1], literals))
+                literal = op_rel_list[op_rel][0]
+                literals.append(literal)
+                literal_node = Node(None, literal)
+                node.add_child(literal_node, op_rel)
+        root = Node(amr_copy.node_to_concepts[name_tuple[0]])
+        root.add_child(node, "name")
+        literals_triplets.append((name_tuple[0], name_tuple[1], literals, root))
 
     # Create a structure with named-entity-root-var, name-var, literals list, beginning of literal index, end of literal
     # index
@@ -107,7 +114,7 @@ def replace_named_entities(amr, sentence):
     for literals_triplet in literals_triplets:
         literals_list = literals_triplet[2]
         tokens = [int(amr_copy.node_to_tokens[literal][0][0]) for literal in literals_list]
-        named_entities.append((literals_triplet[0], literals_triplet[1], literals_triplet[2], min(tokens), max(tokens)))
+        named_entities.append((literals_triplet[0], literals_triplet[1], literals_triplet[2], min(tokens), max(tokens), literals_triplet[3]))
 
     # Remove name vars from node_to_concepts
     name_variables = [n[1] for n in named_entities]
@@ -128,11 +135,13 @@ def replace_named_entities(amr, sentence):
             amr_copy.pop(n)
 
     # Update name root vars to have no name and wiki children
-    name_roots = [n[0] for n in named_entities]
-    for name_root in name_roots:
+    for name_entity in named_entities:
+        name_root = name_entity[0]
         if "wiki" in amr_copy[name_root].keys():
-            if amr_copy[name_root]["wiki"][0] in amr_copy.keys():
-                amr_copy.pop(amr_copy[name_root]["wiki"][0])
+            wiki_content = amr_copy[name_root]["wiki"][0]
+            if wiki_content in amr_copy.keys():
+                amr_copy.pop(wiki_content)
+            name_entity[5].add_child(Node(None, wiki_content), "wiki")
         amr_copy[name_root] = dict(
             (key, value) for key, value in amr_copy[name_root].iteritems() if key != "name" and key != "wiki")
 

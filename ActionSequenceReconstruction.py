@@ -3,7 +3,7 @@ from collections import deque
 import ActionSequenceGenerator
 from AMRData import CustomizedAMR
 from AMRGraph import AMR
-from util.Node import Node
+from amr_util.Node import Node
 
 VOCAB_ACTS = ['SH', 'RL', 'RR', 'DN', 'SW']
 SH = 0
@@ -65,14 +65,12 @@ def reconstruct_all(action_sequence):
 
 class ReconstructionState:
     def __init__(self):
-        self.node_index = 0
         self.stack = []
 
     def process_action(self, action, concept):
         # execute the action to update the parser state
         if action == 'SH':
-            node = Node(concept, self.node_index)
-            self.node_index += 1
+            node = Node(concept)
             self.stack.append(node)
         elif action == 'DN':
             pass

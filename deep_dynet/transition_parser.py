@@ -2,7 +2,7 @@ from operator import itemgetter
 
 import dynet as dy
 
-from util.Node import Node
+from amr_util.Node import Node
 
 WORD_DIM = 64
 LSTM_DIM = 64
@@ -38,7 +38,7 @@ class TransitionParser:
 
     # returns an expression of the loss for the sequence of actions
     # (that is, the oracle_actions if present or the predicted sequence otherwise)
-    def parse(self, t, oracle_actions=None):
+    def parse(self, t, oracle_actions=None, concepts_metadata = None):
         dy.renew_cg()
         if oracle_actions:
             oracle_actions = list(oracle_actions)
@@ -59,7 +59,6 @@ class TransitionParser:
         bias_act = dy.parameter(self.pb_act)
         losses = []
         good_predictions = []
-        node_index = 1;
         for tok in toks:
             tok_embedding = self.WORDS_LOOKUP[tok]
             cur = cur.add_input(tok_embedding)
@@ -81,6 +80,7 @@ class TransitionParser:
             # either from the oracle or if there is no oracle, based on the model
             action = valid_actions[0]
             label = None
+            concept_key = None
             log_probs = None
             if len(valid_actions) > 1:
                 buffer_embedding = buffer[-1][0] if buffer else empty_buffer_emb
@@ -97,6 +97,7 @@ class TransitionParser:
                 oracle_action = oracle_actions.pop()
                 action = oracle_action.index
                 label = oracle_action.label
+                concept_key = oracle_action.key
                 if log_probs is not None:
                     # append the action-specific loss based on oracle
                     losses.append(dy.pick(log_probs, action))
@@ -106,8 +107,10 @@ class TransitionParser:
                 _, tok_embedding, token = buffer.pop()
                 stack_state, _ = stack[-1] if stack else (stack_top, '<TOP>')
                 stack_state = stack_state.add_input(tok_embedding)
-                stack.append((stack_state, Node(label, node_index)))
-                node_index += 1
+                node = Node(label)
+                if concept_key in concepts_metadata:
+                    node = concepts_metadata[concept_key]
+                stack.append((stack_state, node))
             elif action == DN:
                 buffer.pop()
             elif action == SW:

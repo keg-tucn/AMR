@@ -69,7 +69,8 @@ def generate_action_sequence(amr_graph, sentence, verbose=True):
             else:
                 if current_token in amr_graph.tokens_to_concepts_dict.keys():
                     stack.append(current_token)
-                    actions.append("SH_" + amr_graph.tokens_to_concepts_dict[current_token][1])
+                    tokens_to_concept = amr_graph.tokens_to_concepts_dict[current_token]
+                    actions.append("SH_" + tokens_to_concept[1] + "_" + tokens_to_concept[0])
                 else:
                     actions.append("DN")
                 current_token += 1

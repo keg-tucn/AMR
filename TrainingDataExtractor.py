@@ -30,6 +30,7 @@ def generate_training_data(file_path, verbose=True, withStats=False, withDepende
     for i in tqdm(range(0, len(sentence_amr_pairs))):
         try:
             logging.warn("Started processing example %d", i)
+            concepts_metadata = {}
             (sentence, amr_str) = sentence_amr_pairs[i]
             amr = AMR.parse_string(amr_str)
             TrainingDataStats.get_unaligned_nodes(amr, unaligned_nodes)
@@ -41,7 +42,9 @@ def generate_training_data(file_path, verbose=True, withStats=False, withDepende
                 raise e
 
             try:
-                (new_amr, new_sentence, _) = TokensReplacer.replace_named_entities(amr, sentence)
+                (new_amr, new_sentence, named_entities) = TokensReplacer.replace_named_entities(amr, sentence)
+                for name_entity in named_entities:
+                    concepts_metadata[name_entity[0]] = name_entity[5]
             except Exception as e:
                 named_entity_exceptions += 1
                 raise e
@@ -76,7 +79,7 @@ def generate_training_data(file_path, verbose=True, withStats=False, withDepende
             coreferences_count += TrainingDataStats.get_coreferences_count(custom_amr)
             action_sequence = ActionSequenceGenerator.generate_action_sequence(custom_amr, new_sentence)
             if withDependencies is False:
-                training_data.append((new_sentence, action_sequence, amr_str))
+                training_data.append((new_sentence, action_sequence, amr_str, concepts_metadata))
             else:
                 try:
                     deps = extract_dependencies(new_sentence)

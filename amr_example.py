@@ -5,7 +5,7 @@ import deep_dynet.transition_parser as ddtp
 import logging
 from os import listdir, path, makedirs
 import TrainingDataExtractor as tde
-import json as js
+import pickle as js
 from smatch import smatch_amr
 from smatch import smatch_util
 import numpy as np
@@ -46,12 +46,14 @@ def process_data(data, vocab_words, vocab_acts):
         sentence = d[0]
         actions = d[1]
         amr_str = d[2]
+        concept_meta = d[3]
         yield (
             ds.word_sentence_to_vocab_index(sentence.split(), vocab_words),
             ds.oracle_actions_to_action_index(actions, vocab_acts),
             sentence,
             actions,
-            amr_str
+            amr_str,
+            concept_meta
         )
 
 vocab_acts = ds.Vocab.from_list(ddtp.acts)
@@ -91,10 +93,10 @@ for run in range(1):
         fail_sentences = []
         for epoch in range(10):
             smatch_train_results = smatch_util.SmatchAccumulator()
-            for (sentence, actions, original_sentence, original_actions, amr) in train:
+            for (sentence, actions, original_sentence, original_actions, amr, concepts_metadata) in train:
                 loss = None
                 try:
-                    parsed = tp.parse(sentence, actions)
+                    parsed = tp.parse(sentence, actions, concepts_metadata)
                     loss = parsed[0]
                     parsed_amr = parsed[1]
 
@@ -129,10 +131,10 @@ for run in range(1):
             fail_sentences = []
 
             smatch_test_results = smatch_util.SmatchAccumulator()
-            for (ds, da, original_sentence, original_actions, amr) in test:
+            for (ds, da, original_sentence, original_actions, amr, concepts_metadata) in test:
                 loss = None
                 try:
-                    parsed_sentence = tp.parse(ds, da)
+                    parsed_sentence = tp.parse(ds, da, concepts_metadata)
                     loss = parsed_sentence[0]
                     parsed_amr = parsed_sentence[1]
                     right_predictions += parsed_sentence[2]
