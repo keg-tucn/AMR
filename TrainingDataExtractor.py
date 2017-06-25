@@ -50,7 +50,9 @@ def generate_training_data(file_path, verbose=True, withStats=False, withDepende
                 raise e
 
             try:
-                (new_amr, new_sentence, _) = TokensReplacer.replace_date_entities(new_amr, new_sentence)
+                (new_amr, new_sentence, date_entities) = TokensReplacer.replace_date_entities(new_amr, new_sentence)
+                for date_entity in date_entities:
+                    concepts_metadata[date_entity[0]] = date_entity[5]
             except Exception as e:
                 date_entity_exceptions += 1
                 raise e

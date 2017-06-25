@@ -55,3 +55,7 @@ def generate_custom_amr(amr):
 def generate_amr_with_literals(amr_string, sentence):
     amr = AMR.parse_string(amr_string)
     return TokensReplacer.replace_named_entities(amr, sentence)
+
+def generate_amr_with_date_entities(amr_string, sentence):
+    amr = AMR.parse_string(amr_string)
+    return TokensReplacer.replace_date_entities(amr, sentence)

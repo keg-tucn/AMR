@@ -14,7 +14,7 @@ class Node:
         for (child, relation) in self.children:
             if relation == "polarity" or relation == "mode":
                 child_representation = ":%s %s" % (relation, child.label)
-            elif child.tag is not None and ("op" in relation or relation == "wiki"):
+            elif child.tag is not None:
                 child_representation = ":%s \"%s\"" % (relation, child.tag)
             else:
                 child_representation = ":%s  %s" % (relation, child.amr_print(depth + 1, idx + "_" + str(child_cnt)))

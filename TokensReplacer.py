@@ -33,6 +33,7 @@ def replace_date_entities(amr, sentence):
         op_rel_list = amr_copy[date_entity]
         literals = []
         relations = []
+        node = Node("date-entity")
         for op_rel in op_rel_list:
             if op_rel in date_rels:
                 child = op_rel_list[op_rel][0]
@@ -40,13 +41,14 @@ def replace_date_entities(amr, sentence):
                 if child not in amr_copy.node_to_concepts.keys():
                     literals.append(child)
                     relations.append(op_rel)
-        date_tuples.append((date_entity, literals, relations))
+                    node.add_child(Node(None, child), op_rel)
+        date_tuples.append((date_entity, literals, relations, node))
 
     date_entities = []
     for date_tuple in date_tuples:
         literals_list = date_tuple[1]
         tokens = [int(amr_copy.node_to_tokens[literal][0][0]) for literal in literals_list]
-        date_entities.append((date_tuple[0], date_tuple[1], date_tuple[2], min(tokens), max(tokens)))
+        date_entities.append((date_tuple[0], date_tuple[1], date_tuple[2], min(tokens), max(tokens), date_tuple[3]))
 
     # Remove literals from node_to_tokens
     literals = sum([d[1] for d in date_entities], [])
@@ -102,7 +104,7 @@ def replace_named_entities(amr, sentence):
             if op_regexp.match(op_rel):
                 literal = op_rel_list[op_rel][0]
                 literals.append(literal)
-                literal_node = Node(None, literal)
+                literal_node = Node(None, "\"" + literal + "\"")
                 node.add_child(literal_node, op_rel)
         root = Node(amr_copy.node_to_concepts[name_tuple[0]])
         root.add_child(node, "name")
@@ -141,7 +143,7 @@ def replace_named_entities(amr, sentence):
             wiki_content = amr_copy[name_root]["wiki"][0]
             if wiki_content in amr_copy.keys():
                 amr_copy.pop(wiki_content)
-            name_entity[5].add_child(Node(None, wiki_content), "wiki")
+            name_entity[5].add_child(Node(None, "\"" + wiki_content + "\""), "wiki")
         amr_copy[name_root] = dict(
             (key, value) for key, value in amr_copy[name_root].iteritems() if key != "name" and key != "wiki")
 
