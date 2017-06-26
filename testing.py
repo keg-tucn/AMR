@@ -69,40 +69,17 @@ from utilities import generate_action_sequence, generate_custom_amr, generate_am
 #                         :ARG1-of (m / major-02~e.13))
 #                   :purpose (f / future~e.5))))""")
 
-amr_str = """(c / cause-01~e.0
-      :ARG1 (o / open-01~e.9
-            :ARG1 (a / amusement-park
-                  :name (n / name :op1 "Disneyland"~e.7)
-                  :poss~e.6 (w / we~e.6))
-            :ARG1-of (k / know-01~e.4
-                  :ARG0 (e / everyone~e.3))
-            :time~e.2 (d2 / date-entity :month~e.11 9~e.11
-                  :mod (y / year~e.14
-                        :mod (t / this~e.13)))))"""
-sentence = """Because , as everyone knows , our Disneyland will open in September of this year ."""
-
-amr_str = """(c / contrast-01~e.9 
-      :ARG1 (h / head-02~e.1 
-            :ARG0 (i / i~e.0) 
-            :ARG1~e.3 (c6 / center~e.5 
-                  :mod~e.6 (a2 / activity-06~e.7)) 
-            :ARG1-of (s2 / straight-04~e.2)) 
-      :ARG2 (a / and~e.23 
-            :op1 (c2 / control-01~e.16 
-                  :ARG1 (t / traffic~e.13) 
-                  :prep-in~e.10 (f / fact~e.12 
-                        :ARG1-of (a3 / actual-02~e.11)) 
-                  :time~e.17 (d / date-entity :time~e.19,21 "4:00"~e.20 
-                        :mod (e / early~e.18))) 
-            :op2 (s / start-01~e.27 
-                  :ARG0 (t2 / they~e.24) 
-                  :ARG1 (l2 / limit-01~e.28 
-                        :ARG1 (c4 / crowd~e.30 
-                              :ARG0-of (e2 / enter-01~e.31 
-                                    :ARG1 (c5 / center~e.34 
-                                          :mod (s3 / sport~e.33))))) 
-                  :time (a4 / already~e.26))))"""
-sentence = """I headed straight for the center of activities , but in actual fact traffic was being controlled as early as 4 o'clock , and they had already started limiting the crowds entering the sports center ."""
+# amr_str = """(c / cause-01~e.0
+#       :ARG1 (o / open-01~e.9
+#             :ARG1 (a / amusement-park
+#                   :name (n / name :op1 "Disneyland"~e.7)
+#                   :poss~e.6 (w / we~e.6))
+#             :ARG1-of (k / know-01~e.4
+#                   :ARG0 (e / everyone~e.3))
+#             :time~e.2 (d2 / date-entity :month~e.11 9~e.11
+#                   :mod (y / year~e.14
+#                         :mod (t / this~e.13)))))"""
+# sentence_str = """Because , as everyone knows , our Disneyland will open in September of this year ."""
 
 # amr_str = """(c5 / crown-01~e.6
 #       :ARG1 (c / city :wiki "Hong_Kong"
@@ -138,36 +115,6 @@ sentence = """I headed straight for the center of activities , but in actual fac
 #             :op1 (t2 / then~e.1)))"""
 # sentence = """Since then , this area has become a prohibited zone in Hong Kong ."""
 
-# amr_str = """(t / turn-02~e.4 :mode~e.11 expressive~e.11
-#       :ARG0 (p3 / political-party :wiki "Democratic_Party_(United_States)"
-#             :name (n4 / name :op1 "Democrat"~e.1))
-#       :ARG1 (g2 / government-organization :wiki "United_States_Congress"
-#             :name (n2 / name :op1 "Congress"~e.5))
-#       :ARG3~e.6 (f2 / festival :wiki -
-#             :name (n3 / name :op1 "Bigtop"~e.9 :op2 "Circus"~e.10)
-#             :poss~e.8 (p2 / person :wiki "Bozo_the_Clown"
-#                   :name (n / name :op1 "Bozo"~e.7)))
-#       :manner (s / slow))"""
-# sentence = """The Democrats are slowy turning Congress into Bozo 's Bigtop Circus ! !!!!"""
-
-
-# amr_str = """(v / vote-01~e.6
-#       :ARG0 (a / and~e.4
-#             :op1 (c / country :wiki "United_States"
-#                   :name (n / name :op1 "United"~e.2 :op2 "States"~e.3))
-#             :op2 (c2 / country :wiki "Zimbabwe"
-#                   :name (n2 / name :op1 "Zimbabwe"~e.5))
-#             :mod (o / only~e.0))
-#       :ARG1 (a4 / against~e.7
-#             :op1 (m / move-01~e.8
-#                   :ARG1~e.10 (t / treaty~e.12
-#                         :ARG0-of (r / regulate-01~e.13
-#                               :ARG1 (t2 / trade-01~e.17
-#                                     :ARG1 (a3 / arm~e.16)
-#                                     :mod (g / globe~e.15))))
-#                   :ARG2 (a2 / ahead~e.9))))"""
-# sentence = """Only the United States and Zimbabwe voted against moving ahead with the treaty regulating the global arms trade ."""
-
 # amr_str = """(p / person :wiki "Goddess"
 #       :name (n / name :op1 "Goddess"~e.3)
 #       :domain~e.1 (s / she~e.0)
@@ -175,12 +122,35 @@ sentence = """I headed straight for the center of activities , but in actual fac
 #       :mod (a / ah~e.5))"""
 # sentence = """She is my Goddess , ah ."""
 
+sentence = """The official alleged Karzai was reluctant to move against big drug lords in Karzai 's political power base in the south of Afghanistan where most opium is produced ."""
+amr_str = """(a / allege-01~e.2
+      :ARG0 (p5 / person
+            :ARG0-of (h / have-org-role-91
+                  :ARG2 (o / official~e.1)))
+      :ARG1 (r / reluctant~e.5
+            :topic (m / move-04~e.7
+                  :ARG0 p
+                  :ARG1 (l / lord~e.11
+                        :mod (d / drug~e.10)
+                        :mod (b / big~e.9))
+                  :location~e.12 (b2 / base~e.17
+                        :mod (p2 / power~e.16)
+                        :mod (p3 / politics~e.15)
+                        :poss p~e.13,14
+                        :location~e.18 (s2 / south~e.20
+                              :part-of~e.21 (c / country :wiki "Afghanistan"
+                                    :name (n / name :op1 "Afghanistan"~e.22))
+                              :location-of~e.23 (p4 / produce-01~e.27
+                                    :ARG1 (o2 / opium~e.25
+                                          :quant (m2 / most~e.24))))))
+            :domain~e.4 (p / person :wiki "Hamid_Karzai"
+                  :name (n3 / name :op1 "Karzai"~e.3))))"""
+
 def test_literals(amr_str, sentence):
     (new_amr, new_sentence, named_entities) = generate_amr_with_literals(amr_str, sentence)
     custom_amr = generate_custom_amr(new_amr)
     seq = generate_action_sequence(custom_amr, new_sentence)
     print seq
-    print named_entities[0][5].amr_print()
 
 
 def test_amr(amr_str, sentence):

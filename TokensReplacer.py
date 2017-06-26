@@ -347,8 +347,8 @@ def replace_have_org_role(amr, relation_to_bubble_up):
         new_node = node[relation_to_bubble_up]
         # add the have_org_role_children to the node corresponding to its ARG1 child
         node.pop(relation_to_bubble_up)
-        for rel in node:
-            amr_copy[new_node[0]].append(rel, node[rel])
+        if len(node) != 0:
+            raise Exception("Amr %s has an have-org-role91 node with multiple children." % amr.to_amr_string())
         # update the parent of have_org_role
         for k in amr:
             for rel in amr_copy[k]:
