@@ -115,12 +115,36 @@ from utilities import generate_action_sequence, generate_custom_amr, generate_am
 #             :op1 (t2 / then~e.1)))"""
 # sentence = """Since then , this area has become a prohibited zone in Hong Kong ."""
 
-amr_str = """(p / person :wiki "Goddess"
-      :name (n / name :op1 "Goddess"~e.3)
-      :domain~e.1 (s / she~e.0)
-      :poss~e.2 (i / i~e.2)
-      :mod (a / ah~e.5))"""
-sentence = """She is my Goddess , ah ."""
+# amr_str = """(p / person :wiki "Goddess"
+#       :name (n / name :op1 "Goddess"~e.3)
+#       :domain~e.1 (s / she~e.0)
+#       :poss~e.2 (i / i~e.2)
+#       :mod (a / ah~e.5))"""
+# sentence = """She is my Goddess , ah ."""
+
+sentence = """The official alleged Karzai was reluctant to move against big drug lords in Karzai 's political power base in the south of Afghanistan where most opium is produced ."""
+amr_str = """(a / allege-01~e.2
+      :ARG0 (p5 / person
+            :ARG0-of (h / have-org-role-91
+                  :ARG2 (o / official~e.1)))
+      :ARG1 (r / reluctant~e.5
+            :topic (m / move-04~e.7
+                  :ARG0 p
+                  :ARG1 (l / lord~e.11
+                        :mod (d / drug~e.10)
+                        :mod (b / big~e.9))
+                  :location~e.12 (b2 / base~e.17
+                        :mod (p2 / power~e.16)
+                        :mod (p3 / politics~e.15)
+                        :poss p~e.13,14
+                        :location~e.18 (s2 / south~e.20
+                              :part-of~e.21 (c / country :wiki "Afghanistan"
+                                    :name (n / name :op1 "Afghanistan"~e.22))
+                              :location-of~e.23 (p4 / produce-01~e.27
+                                    :ARG1 (o2 / opium~e.25
+                                          :quant (m2 / most~e.24))))))
+            :domain~e.4 (p / person :wiki "Hamid_Karzai"
+                  :name (n3 / name :op1 "Karzai"~e.3))))"""
 
 def test_literals(amr_str, sentence):
     (new_amr, new_sentence, named_entities) = generate_amr_with_literals(amr_str, sentence)

@@ -1,0 +1,190 @@
+Proxy:
+Min: 0.043478
+Max: 1.000000
+Arithm. mean 0.456614318484
+Harm. mean 0.373704046771
+Global smatch f-score 0.413113006397
+ 32/157 [=====>........................] - ETA: 1s
+ 64/157 [===========>..................] - ETA: 0s
+ 96/157 [=================>............] - ETA: 0s
+128/157 [=======================>......] - ETA: 0s
+157/157 [==============================] - 1s
+Model metrics
+[0.22729351461692981, 0.83906582054818513]
+Model metrics order
+Errors
+0
+Data size 1566
+Word index len:
+2213
+Training data shape:
+(1409,)
+(1409,)
+(1409,)
+1409
+Found 400000 word vectors.
+Not found: ['toiba', 'volume-quantity', 'monetary-quantity', 'ransomware', 'temporal-quantity', 'world-region', 'railway-line', '@-@', 'mass-quantity', 'power-quantity', 'political-party', 'energy-quantity', 'country-region', 'esrp', 'date-entity', 'city-district', 'religious-group', 'criminal-organization', '0.00525', 'ethnic-group', 'worship-place', 'securitynet', 'resarch', 'pgpcoder', 'distance-quantity', 'aircraft-type', 'research-institute', 'government-organization']
+Mean length 11.6188786373
+Max length 71
+Filtered
+68
+Final train data shape
+(1409, 30, 15)
+(1409, 30)
+
+
+
+DFA:
+Min: 0.062500
+Max: 1.000000
+Arithm. mean 0.478723495272
+Harm. mean 0.370511137993
+Global smatch f-score 0.455516014235
+ 32/119 [=======>......................] - ETA: 1s
+ 64/119 [===============>..............] - ETA: 0s
+ 96/119 [=======================>......] - ETA: 0s
+119/119 [==============================] - 1s     
+Model metrics
+[0.24036308772423687, 0.45546218502421337]
+Model metrics order
+Errors
+3
+
+
+
+Tot:
+Min: 0.000000
+Max: 1.000000
+Arithm. mean 0.454618729506
+Harm. mean 0.0142023234774
+Global smatch f-score 0.412048877522
+ 32/368 [=>............................] - ETA: 2s
+ 64/368 [====>.........................] - ETA: 2s
+ 96/368 [======>.......................] - ETA: 2s
+128/368 [=========>....................] - ETA: 1s
+160/368 [============>.................] - ETA: 1s
+192/368 [==============>...............] - ETA: 1s
+224/368 [=================>............] - ETA: 1s
+256/368 [===================>..........] - ETA: 0s
+288/368 [======================>.......] - ETA: 0s
+320/368 [=========================>....] - ETA: 0s
+352/368 [===========================>..] - ETA: 0s
+368/368 [==============================] - 2s     
+Model metrics
+[0.18432568272818689, 0.54048912680667383]
+Model metrics order
+Errors
+72
+
+
+Dfb: 546 test instances out of the training set
+Min: 0.000000
+Max: 1.000000
+Arithm. mean 0.520541899722
+Harm. mean 0.0066292159626
+Global smatch f-score 0.463519313305
+546/546 [==============================] - 4s
+Model metrics
+[0.19262569979679234, 0.28901099001531638]
+Model metrics order
+Errors
+7
+
+
+All data (with dfb included)
+Data size 9127
+Word index len:
+6983
+Training data shape:
+(8214,)
+(8214,)
+(8214,)
+8214
+Found 400000 word vectors.
+Not found: ['around~', 'blowjobs', 'volume-quantity', "don'cha", 'dumbfuck', 'statement/report', 'href="http://www.businessinsider.com/cornell-wins-bloombergs-nyc-tech-campus-heres-what-the-2-million-square-foot-school-will-look-like-2011-12">', '25+', 'booyah', 'music-key', 'railway-line', 'though...', 'decisiohttp://www.historyofwar.org/articles/wars_downfall3.htmln', "'?", '\'"', "'.", 'href="http://themamas.org/about-the-madison-area-music-awards/mission-vision-statements/">', 'miscoding', 'colenel', 'obamabots', '............', '!!!!!!', 'k00', 'http://news.cnet.com/8301-1035_3-57572850-94/doj-lets-important-deadline-pass-in-t-mobile-metropcs-deal/', 'remaning', 'theblaze.com', 'nannystate', 'right..', '#3', 'mass-quantity', '#4', 'http://www.bradblog.com/?p=7906', "'s...", 'political-party', 'lastly..', 'negged', 'href="http://www.youtube.com/watch?v=eqg1hu0pmg0">', 'href="http://www.mideastweb.org/palpop.htm">', 'class..', '.........', 'href="http://dictionary.reference.com/browse/charity">', 'yayn', 'sakeenah', 'href="http://www.ndp.ca/platform/healthcare">', 'one....', 'gimmmeeeee', 'fianlly', 'esrp', 'batshit', '.\xe2\x80\x9d', "isn't...", 'crapola', 'audasity', '...where', '****', '2h2', 'yes..', 'hmm...good', 'head~', 'whackjobs', 'mmmk', 'out...', 'know..', 'rofl', ')"', 'criminal-organization', '<a', '"?!?!', 'might~', 'http://www.representativepress.org/israelhistory.html', 'href="http://cthealth.server101.com/the_case_for_universal_health_care_in_the_united_states.htm">', 'goooooood', 'spin..', 'securitynet', 'minutiea', 'libbs', 'ethnic-group', 'worship-place', '<--', 'wedgy', 'resarch', 'evinidence', 'anaonymous', 'distance-quantity', 'imho', '#10', 'natural-object', '=/', 'energy-quantity', 'asshat', 'numpty', '225k', 'dumb...', '//www.youtube.com/watch', 'out..', 'grats', '\xc2\xa7', 'victims\xe2\x84\xa2.', 'inacurate', '3,794,100', 'nutjob', 'times..', 'lable', 'href="http://whatreallyhappened.com/wrharticles/pearl/www.geocities.com/pentagon/6315/fdr.html">', 'bday', '......', 'dumbass', 'href="http://news.cnet.com/8301-1035_3-57572850-94/doj-lets-important-deadline-pass-in-t-mobile-metropcs-deal/">', 'moonbats', 'them..', 'href="http://www.wired.com/wiredscience/2008/03/colbert-and-kam/">', 'dipshit', '.............', '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', 'accusatio', 'funny...', 'interviened', 'href="http://nation.foxnews.com/ft-hood-shooting/2011/12/07/obama-regime-calls-ft-hood-shooting-workplace-violence">', 'occsassionally', 'temperatures.?', 'amusement-park', 'david...', '17189', 'trng', '534446433', 'foresnics', 'href="http://visiontoamerica.org/5959/gingrich-i-helped-defeat-communism/">', 'ignorants', 'dyspraxia', 'href="http://www.businessweek.com/articles/2012-03-16/wanted-more-ceos-in-washington">', '???????????', 'power-quantity', 'typo--yes', '********************************', 'me......', 'indisputible', 'tless', 'href="http://www.factcheck.org/2008/01/clinton-passed-on-killing-bin-laden/">', 'reamain', 'href="http://www.sakeenah.org/celebrate.shtml">', 'slammed..', '-@', 'obummer', '->', 'country-region', 'editec', 'gulty', '@-', '..........', 'nycarbineer', 'conservs', '****ing', 'phear', 'goals=', '****.', 'educated(?)', '*passes', 'http://www.themamas.org/', 'indeciperable', 'href="http://cnsnews.com/node/464826">', 'religious-group', '"..', 'tatements/', "'....", '???????', 'political-movement', 'ok..', '^^case', '</a>', '#name', '.)', '..', '."', 'liar..', 'overwhelingly', 'href="http://www.snopes.com/rumors/clinton.asp">', '*******', '.......', 'href="http://www.avert.org/aids-history-america.htm">', 'dosent', '\xe2\x80\x9d.', '\xe2\x80\x9d?', 'attrocious', 'about.?', 'ilogical', 'market-sector', 'about..', 'ummmmm', 'a.d.?', 'href="http://www.themamas.org/">', 'cringeworthy', 'taxes..', 'href="http://www.counterpunch.org/2011/12/02/debt-slavery-%e2%80%93-why-it-destroyed-rome-why-it-will-destroy-us-unless-it%e2%80%99s-stopped/">', '**edit**', 'href="http://www.britannica.com/ebchecked/topic/89739/caliphate">', 'bwahahahaaa', 'negs', ':wink', 'immie', 'historicall', 'pusses', 'broadcast-program', '0.00525', 'href="http://www.newscientist.com/article/dn14527-climate-myths-global-warming-stopped-in-1998.html">', 'gunna', 'pussies', 'http://www.mideastweb.org/palpop.htm', 'href="http://video.foxnews.com/v/3982487/live-free-or-die">', 'dear..', 'href="http://www.bradblog.com/?p=7906">', 'it...', 'oil..', 'href="mailto:elrushbo@eibnet.com">', 'href="http://www.plannedparenthood.org/health-center/centerdetails.asp?f=3945&a=90070&v=details">', 'to..', 'sourcewatch', '...and', 'href="http://www.latimes.com/world/worldnow/la-fg-wn-suicide-bomber-pakistan-20130922,0,923285.story">', '@:@', 'oohhhhhh', '//www.vanityfair.com/commentary/content/articles/050411roco03c', 'local-region', 'blog-01', 'work-of-art', 'href="http://www.adl.org/holocaust/weber.asp">', 'definate', 'innit', 'href="http://www.law.umkc.edu/faculty/projects/ftrials/conlaw/rightofprivacy.html">', 'shoot-02', 'marccy', 'asswipe', 'true..', 'afelm', '??????????', "rw'er", 'srsly', 'href="http://mochamanual.com/mochamanual/trying-to-conceive/are-your-fortified-the-facts-about-folic-acid-what-every-black-woman-needs-to-know.html">', 'indesputable', 'oo0o', '!!???', 'a....well', 'halarious', 'href="http://scienceblogs.com/gregladen/2011/03/the_fukushima_disaster_hyperbo.php?utm_source=networkbanner&utm_medium=link">', 'up..', 'href="http://science.nasa.gov/newhome/headlines/essd06oct97_1.htm">', 'baddy', 'href="http://prospect.org/article/why-we-need-occupy-wall-street?utm_source=daily+digest&utm_campaign=39ed4689d6-dd_11_16_1111_16_2011&utm_medium=email">', 'shitstain', 'governmenht', "ain't", 'href="http://www.democracynow.org/2011/2/15/obamas_37_trillion_budget_calls_for">', 'christianoid', 'petita', 'carrry', '..............', 'sandy..', 'strawmanning', 'country..', 'paulestinian', 'href="http://www.usmessageboard.com/4267872-post42.html">', 'nerly', '!!!!!!!', 'lulz', 'weapon..', 'href="http://www.youtube.com/watch?v=nz5amhi9g7o">', 'blowjob', 'natural-disaster', 'pe4', 'course..', 'so....who', 'href="http://en.wikipedia.org/wiki/fallacy">', 'pgpcoder', 'href="http://www.salon.com/news/1998/03/cov_12news.html">', 'warmist', 'happned', 'href="http://www.snopes.com/quotes/internet.asp">', "won't", 'excuses..', 'sports-facility', 'href="http://www.gwu.edu/~nsarchiv/nsaebb/nsaebb162/index.htm">', 'pubication', 'inherrently', 'now..', 'prodiction', 'itelf', 'thankies', '*no*', 'fuckwhit', 'dufus', 'actaul', 'twoofer', "s'okay", 'ayup', 'allll', 'car-make', 'href="http://www.decisionsonevidence.com/2011/10/do-regulations-curtail-job-growth/">', '1234567', 'is..', 'not..', 'skaptiks', 'toiba', 'turdboat', 'soon...', 'rule-01', 'href="http://www.theblaze.com/stories/beck-doesnt-hold-back-in-gingrich-interview-tough-questions-on-mandates-big-govt-and-global-warming/">', 'monetary-quantity', '"?', 'href="http://cnsnews.com/news/article/half-unemployment-rate-decline-due-people-giving-job-search-labor-data-show">', 'href="http://democratherald.com/news/opinion/editorial/editorial-once-again-fluoridation/article_e82f150c-6263-11e1-aab4-001871e3ce6c.html#ixzz1o0ksmtvn">', 'href="http://www.votersunite.org/info/es&sinthenews.pdf">', '"...', 'bwahahahaa', 'ransomware', '~shakes', "havn't", 'contracption', '",', '".', 'huuuge', 'nutbag', 'regretable', 'temporal-quantity', 'world-region', '[/', '@-@', 'v=iaadvod2srq', 'llocks', 'motherfucking', 'miniture', 'slowy', 'intergency', 'pay..', 'tbh', 'nowhatimean', '?????????????', 'nucleic-acid', 'elrushbo@eibnet.com', 'raincloud', '^^^', 'aeroplace', "y'all", 'dickhead', '#9', '#8', '#2', '#1', '#7', '#5', '@/@', 'said..', 'http://www.votersunite.org/info/es&sinthenews.pdf', 'braniac', 'mehbeh', '303.00', 'ehh', '75+', 'tickee', 'neithe', 'admittted', 'helloo000', '????????', 'point^^', 'href="http://members.iinet.net.au/~gduncan/massacres_pacific.html">', 'date-entity', 'oralloy', 'href="http://www.digitalhistory.uh.edu/do_history/decisions/hiroshima.html">', 'cmpanies', 'won\xe2\x80\x99t', 'regional-group', 'htis', 'cannont', 'braawwk', 'rediculous', '!!!.....', 'not...it', '25,28,32', 'jail...', 'puhleeze', 'href="http://www.usmessageboard.com/attachments/politics/17189-is-the-media-in-the-bag-for-newt-head_up.jpg">', 'typical...', 'hahahaha', 'scan..', 'crazy..', 'fauxtography', 'right...', 'anyhoo', 'http://themamas.org/about-the-madison-a...', 'wittle', 'aircraft-type', 'lepruchauns', 'excusatio', 'braawwkkk', 'stumped..', 'hehehe', 'research-institute', 'city-district', 'href="http://www.latimes.com/news/politics/la-pn-obama-clinton-most-admired-gallup-20111227,0,4670281.story">', '!!!!!!1', 'qudea', 'zro2', 'government-organization', 'sustainingly', '18701954600', 'no\xe2\x80\xa6', 'case..', 'href="http://www.representativepress.org/israelhistory.html">']
+Mean length 10.7277818359
+Max length 71
+Filtered
+175
+Final train data shape
+(8214, 30, 15)
+(8214, 30)
+
+____________________________________________________________________________________________________
+Layer (type)                     Output Shape          Param #     Connected to
+====================================================================================================
+input_1 (InputLayer)             (None, 30)            0
+____________________________________________________________________________________________________
+input_2 (InputLayer)             (None, 30)            0
+____________________________________________________________________________________________________
+input_3 (InputLayer)             (None, 30)            0
+____________________________________________________________________________________________________
+input_4 (InputLayer)             (None, 30)            0
+____________________________________________________________________________________________________
+embedding_1 (Embedding)          (None, 30, 100)       698500
+____________________________________________________________________________________________________
+input_5 (InputLayer)             (None, 30, 5)         0
+____________________________________________________________________________________________________
+input_6 (InputLayer)             (None, 30, 6)         0
+____________________________________________________________________________________________________
+concatenate_1 (Concatenate)      (None, 30, 411)       0
+____________________________________________________________________________________________________
+lstm_1 (LSTM)                    (None, 30, 1024)      5881856
+____________________________________________________________________________________________________
+time_distributed_1 (TimeDistribu (None, 30, 5)         5125
+====================================================================================================
+Total params: 6,585,481.0
+Trainable params: 5,886,981.0
+Non-trainable params: 698,500.0
+
+
+Guidelines:
+Min: 0.166667
+Max: 0.700000
+Arithm. mean 0.415282200899
+Harm. mean 0.376777007074
+Global smatch f-score 0.415519399249
+32/38 [========================>.....] - ETA: 0s
+38/38 [==============================] - 0s
+Model metrics
+[0.31491824670841817, 0.60087720343941131]
+Model metrics order
+Errors
+0
+Final train data shape
+(334, 30, 15)
+(334, 30)
+
+
+DFA/B:
+Min: 0.000000
+Max: 1.000000
+Arithm. mean 0.498379757594
+Harm. mean 0.0071062271483
+Global smatch f-score 0.445894305154
+ 32/661 [>.............................] - ETA: 5s
+ 64/661 [=>............................] - ETA: 5s
+ 96/661 [===>..........................] - ETA: 4s
+128/661 [====>.........................] - ETA: 4s
+160/661 [======>.......................] - ETA: 4s
+192/661 [=======>......................] - ETA: 3s
+224/661 [=========>....................] - ETA: 3s
+256/661 [==========>...................] - ETA: 3s
+288/661 [============>.................] - ETA: 3s
+320/661 [=============>................] - ETA: 2s
+352/661 [==============>...............] - ETA: 2s
+384/661 [================>.............] - ETA: 2s
+416/661 [=================>............] - ETA: 2s
+448/661 [===================>..........] - ETA: 1s
+480/661 [====================>.........] - ETA: 1s
+512/661 [======================>.......] - ETA: 1s
+544/661 [=======================>......] - ETA: 0s
+576/661 [=========================>....] - ETA: 0s
+608/661 [==========================>...] - ETA: 0s
+640/661 [============================>.] - ETA: 0s
+661/661 [==============================] - 5s
+Model metrics
+[0.23135108930170084, 0.33872919684098457]
+Model metrics order
+Errors
+10

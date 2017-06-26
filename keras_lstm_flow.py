@@ -1,19 +1,19 @@
+from keras.callbacks import ModelCheckpoint
+
 import TrainingDataExtractor as tde
 from deep_dynet import support
 from os import listdir
 import numpy as np
 from keras.preprocessing.text import Tokenizer
-from keras.preprocessing.sequence import pad_sequences
-from keras.metrics import categorical_accuracy
 from keras.optimizers import RMSprop
 from keras.utils import plot_model
-from keras.callbacks import EarlyStopping, ModelCheckpoint
-from keras.layers import Input, Embedding, LSTM, Dense, concatenate, Flatten, TimeDistributed
+from keras.layers import Input, Embedding, LSTM, Dense, concatenate, TimeDistributed
 from keras.models import Model
 import sklearn.preprocessing
 import ActionSequenceReconstruction as asr
 from smatch import smatch_amr
 from smatch import smatch_util
+from KerasPlotter import plot_history
 
 from os import path
 import sys
@@ -22,14 +22,8 @@ sys.path.append(path.abspath('./stanford_parser'))
 
 from stanford_parser.parser import Parser
 
-# Dep parsing test
+# Dep parser
 parser = Parser()
-
-dependencies = parser.parseToStanfordDependencies("Most death sentences are for drug @-@ related offenses .")
-
-tupleResult = [(rel, gov.text, dep.text) for rel, gov, dep in dependencies.dependencies]
-print tupleResult
-
 
 # Load data
 def read_data(type, dataset=None):
@@ -48,10 +42,12 @@ def read_data(type, dataset=None):
     return data
 
 
+model_path = 'models/dfab_full_model_with_deps'
 test_data = read_data('test', 'deft-p2-amr-r1-alignments-test-dfa.txt')
-# test_data = []
-train_data = read_data('training', 'deft-p2-amr-r1-alignments-training-dfa.txt')
-data = train_data + test_data
+test_data = []
+train_data1 = read_data('training', 'deft-p2-amr-r1-alignments-training-dfa.txt')
+train_data2 = read_data('training', 'deft-p2-amr-r2-alignments-training-dfb.txt')
+data = train_data1 + train_data2 + test_data
 
 print "Data size %s" % len(data)
 
@@ -129,7 +125,9 @@ for word, i in word_index.items():
 print 'Not found: {}'.format(not_found)
 
 # Prepare the proper data set:
-# Input: Buffer top, First three elements on the stack, previous action index, stack[0] deps on stack[1], stack[1] deps on stack[0], stack[0] deps on buffer[0], buffer[0] deps on stack[1], stack[0] deps on stack[2], stack[2] deps on stack[0].
+# Input: Buffer top, First three elements on the stack, previous action index, stack[0] deps on stack[1],
+# stack[1] deps on stack[0], stack[0] deps on buffer[0], buffer[0] deps on stack[1], stack[0] deps on stack[2],
+# stack[2] deps on stack[0].
 # If the current action is shift, the next action will have the next token in the buffer and updated stack elements.
 # Else, the same element on the buffer is fed and the elements from the stack are updated
 # Do not consider instances with more than 30 actions for the moment.
@@ -284,19 +282,19 @@ plot_model(model, to_file='model.png')
 
 print model.summary()
 
-# model_path = 'models/proxy_model_with_deps'
-model_path = 'models/dfa_model_with_deps_script'
 
-# model.fit([x_train_full[:, :, 0], x_train_full[:, :, 1], x_train_full[:, :, 2], x_train_full[:, :, 3],
-#            x_train_full[:, :, 4:9], x_train_full[:, :, 9:]],
-#           y_train_ohe,
-#           epochs=35, batch_size=16,
-#           validation_split=0.1,
-#           callbacks=[
-#               ModelCheckpoint(model_path, monitor='val_acc', verbose=0, save_best_only=True, save_weights_only=False,
-#                               mode='auto', period=1)])
+history = model.fit([x_train_full[:, :, 0], x_train_full[:, :, 1], x_train_full[:, :, 2], x_train_full[:, :, 3],
+           x_train_full[:, :, 4:9], x_train_full[:, :, 9:]],
+          y_train_ohe,
+          epochs=35, batch_size=16,
+          validation_split=0.1,
+          callbacks=[
+              ModelCheckpoint(model_path, monitor='val_acc', verbose=0, save_best_only=True, save_weights_only=False,
+                              mode='auto', period=1)])
 
-model.load_weights('models/dfa_model_with_deps_script', by_name=False)
+plot_history(history)
+
+model.load_weights(model_path, by_name=False)
 index_to_word_map = {v: k for k, v in tokenizer.word_index.iteritems()}
 
 
