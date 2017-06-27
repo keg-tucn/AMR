@@ -1,0 +1,23 @@
+------------------------------------------------------------------------------------------------
+Train data shape: 
+(108,)
+Test data shape: 
+(14,)
+Final test data shape
+(13, 25, 15)
+Final train data shape
+(90, 25, 15)
+Mean train length 11.212962963 
+Max train length 62 
+Filtered
+18
+Scores for model ./models/xinhua_epochs=50_maxlen=25_embeddingsdim=100
+Min: 0.000000
+Max: 1.000000
+Arithm. mean 0.651140863674
+Harm. mean 0.00139662985457
+Global smatch f-score 0.371428571429
+Model test accuracy
+0.833846151829
+Errors
+0

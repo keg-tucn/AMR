@@ -1,0 +1,23 @@
+------------------------------------------------------------------------------------------------
+Train data shape: 
+(8241,)
+Test data shape: 
+(886,)
+Final test data shape
+(790, 20, 15)
+Final train data shape
+(7396, 20, 15)
+Mean train length 10.7249120252 
+Max train length 71 
+Filtered
+845
+Scores for model ./models/all_epochs=50_maxlen=20_embeddingsdim=100
+Min: 0.000000
+Max: 1.000000
+Arithm. mean 0.484337158898
+Harm. mean 0.00572752260185
+Global smatch f-score 0.419460880999
+Model test accuracy
+0.875696200057
+Errors
+13

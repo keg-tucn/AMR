@@ -1,12 +1,13 @@
-from AMRGraph import AMR
-from tqdm import tqdm
-from DependencyExtractor import extract_dependencies
-import AMRData
-import ActionSequenceGenerator
-import TokensReplacer
-import SentenceAMRPairsExtractor
-import TrainingDataStats
 import logging
+
+from tqdm import tqdm
+
+import AMRData
+from AMRGraph import AMR
+from amr_util import TrainingDataStats
+from preprocessing import SentenceAMRPairsExtractor, ActionSequenceGenerator
+from preprocessing import TokensReplacer
+from preprocessing.DependencyExtractor import extract_dependencies
 
 
 # Given a file with sentences and aligned amrs,

@@ -2,11 +2,13 @@
 Checks that printing a parsed AMR yields the same thing.
 '''
 
-from os import listdir, path
+from os import listdir
+
 import TrainingDataExtractor as tde
+from postprocessing import ActionSequenceReconstruction as asr
 from smatch import smatch_amr
 from smatch import smatch_util
-import ActionSequenceReconstruction as asr
+
 
 def check_smatch_identical(print_info, amrstr1, amrstr2):
     amr2 = smatch_amr.AMR.parse_AMR_line(amrstr2)

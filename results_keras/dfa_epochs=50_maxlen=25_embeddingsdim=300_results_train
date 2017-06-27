@@ -1,0 +1,23 @@
+------------------------------------------------------------------------------------------------
+Train data shape: 
+(1067,)
+Test data shape: 
+(115,)
+Final test data shape
+(109, 25, 15)
+Final train data shape
+(1012, 25, 15)
+Mean train length 12.6513589503 
+Max train length 47 
+Filtered
+55
+Scores for model ./models/dfa_epochs=50_maxlen=25_embeddingsdim=300
+Min: 0.064516
+Max: 1.000000
+Arithm. mean 0.496143822245
+Harm. mean 0.354410817302
+Global smatch f-score 0.472418670438
+Model test accuracy
+0.842568803818
+Errors
+3

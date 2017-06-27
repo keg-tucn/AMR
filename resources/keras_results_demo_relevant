@@ -1,0 +1,153 @@
+--------------------------------------------------------------------------------
+models/xinhua_epochs=40_maxlen=20_embeddingsdim=300
+
+Smatch f-score 1.000000
+Min: 0.000000
+Max: 1.000000
+Arithm. mean 0.607001566897
+Harm. mean 0.00139346580659
+Global smatch f-score 0.293650793651
+14/14 [==============================] - 0s
+Model max. accuracy
+0.774999976158
+Errors
+0
+--------------------------------------------------------------------------------
+Scores for model xinhua_epochs=50_maxlen=25_embeddingsdim=300
+Min: 0.052632
+Max: 1.000000
+Arithm. mean 0.655018500889
+Harm. mean 0.32487384434
+Global smatch f-score 0.376811594203
+13/13 [==============================] - 0s
+Model max. accuracy
+0.766153872013
+Errors
+0
+
+--------------------------------------------------------------------------------
+models/proxy_epochs=40_maxlen=20_embeddingsdim=300
+
+Data set total size 1566
+Training data shape:
+1410
+Test data shape:
+156
+
+Mean length 11.6212765957
+Max length 71
+Filtered
+254
+Final train data shape
+(1410, 20, 15)
+(1410, 20)
+Train on 1269 samples, validate on 141 samples
+
+Min: 0.000000
+Max: 1.000000
+Arithm. mean 0.421571300575
+Harm. mean 0.00759038695305
+Global smatch f-score 0.361021426475
+ 32/156 [=====>........................] - ETA: 0s
+ 64/156 [===========>..................] - ETA: 0s
+ 96/156 [=================>............] - ETA: 0s
+128/156 [=======================>......] - ETA: 0s
+156/156 [==============================] - 1s
+Model max. accuracy
+0.904487191102
+Errors
+0
+
+Good examples:
+
+slow the arms control process .
+
+Predicted
+SH DN SH SH RL SH RL DN RR
+
+Actual
+SH DN SH SH RL SH RL RR DN
+
+Predictions with old labels:
+['SH_slow-01', 'DN', 'SH_arms', 'SH_control-01', 'RL_ARG1', 'SH_process-02', 'RL_ARG1', 'DN', 'RR_ARG1']
+Original Amr
+(s / slow-01~e.0
+      :ARG1 (p / process-02~e.4
+            :ARG1 (c / control-01~e.3
+                  :ARG1 (a / arms~e.2))))
+
+Predicted Amr
+( d1 / slow-01
+	:ARG1  ( d1_1 / process-02
+		:ARG1  ( d1_1_1 / control-01
+			:ARG1  ( d1_1_1_1 / arms )
+		)
+	)
+)
+Smatch f-score 1.000000
+
+upgrade fire control systems of country tanks .
+
+Predicted
+SH SH SH RL SH RL DN SH SH RL RR DN RR
+
+Actual
+SH SH SH RL SH RL DN SH SH RL RR RR DN
+
+Predictions with old labels:
+['SH_upgrade-02', 'SH_fire-01', 'SH_control-01', 'RL_ARG1', 'SH_system', 'RL_ARG0-of', 'DN', 'SH_country', 'SH_tank',
+'RL_mod', 'RR_poss', 'DN', 'RR_ARG1']
+Original Amr
+(u / upgrade-02~e.0
+      :ARG1 (s / system~e.3
+            :ARG0-of (c / control-01~e.2
+                  :ARG1 (f / fire-01~e.1))
+            :poss~e.4 (t / tank~e.6
+                  :mod (c2 / country :wiki "India"
+                        :name (n / name :op1 "India"~e.5)))))
+
+Predicted Amr
+( d1 / upgrade-02
+	:ARG1  ( d1_1 / system
+		:ARG0-of  ( d1_1_1 / control-01
+			:ARG1  ( d1_1_1_1 / fire-01 )
+		)
+		:poss  ( d1_1_2 / tank
+			:mod  ( d1_1_2_1 / country )
+		)
+	)
+)
+Smatch f-score 0.857143
+
+Sentence
+investigation into country 's nuclear activities is now closed .
+
+Predicted
+SH DN SH DN SH SH RL RL DN SH SH RL RR DN RR
+
+Actual
+SH DN SH DN SH SH RL RL RR DN SH SH RL RL DN
+
+Predictions with old labels:
+['SH_investigate-01', 'DN', 'SH_country', 'DN', 'SH_nucleus', 'SH_activity-06', 'RL_mod', 'RL_ARG0', 'DN', 'SH_now',
+'SH_close-01', 'RL_ARG1', 'RR_time', 'DN', 'RR_ARG1']
+Original Amr
+(c / close-01~e.8
+      :ARG1 (i / investigate-01~e.0
+            :ARG1~e.1 (a / activity-06~e.5
+                  :ARG0~e.3 (c2 / country :wiki "Iran"
+                        :name (n3 / name :op1 "Iran"~e.2))
+                  :mod (n2 / nucleus~e.4)))
+      :time (n / now~e.7))
+
+Predicted Amr
+( d1 / investigate-01
+	:ARG1  ( d1_1 / activity-06
+		:mod  ( d1_1_1 / nucleus )
+		:ARG0  ( d1_1_2 / country )
+		:time  ( d1_1_3 / close-01
+			:ARG1  ( d1_1_3_1 / now )
+		)
+	)
+)
+Smatch f-score 0.642857
