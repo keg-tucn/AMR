@@ -1,31 +1,4 @@
 --------------------------------------------------------------------------------
-models/xinhua_epochs=40_maxlen=20_embeddingsdim=300
-
-Smatch f-score 1.000000
-Min: 0.000000
-Max: 1.000000
-Arithm. mean 0.607001566897
-Harm. mean 0.00139346580659
-Global smatch f-score 0.293650793651
-14/14 [==============================] - 0s
-Model max. accuracy
-0.774999976158
-Errors
-0
---------------------------------------------------------------------------------
-Scores for model xinhua_epochs=50_maxlen=25_embeddingsdim=300
-Min: 0.052632
-Max: 1.000000
-Arithm. mean 0.655018500889
-Harm. mean 0.32487384434
-Global smatch f-score 0.376811594203
-13/13 [==============================] - 0s
-Model max. accuracy
-0.766153872013
-Errors
-0
-
---------------------------------------------------------------------------------
 models/proxy_epochs=40_maxlen=20_embeddingsdim=300
 
 Data set total size 1566
@@ -219,3 +192,250 @@ Predicted Amr
 	)
 )
 Smatch f-score 0.421053
+
+----------------------------------------------------------------------------
+all_epochs=20_maxlen=30_embeddingsdim=300
+could person beat person ?
+
+Predicted
+SH SH DN SH RL SH RR RR
+
+Actual
+SH SH SH RL SH RR RR SH RR
+
+Predictions with old labels:
+['SH_possible-01', 'SH_person', 'DN', 'SH_beat-03', 'RL_ARG0', 'SH_person', 'RR_ARG1', 'RR_ARG1']
+Original Amr
+(p / possible-01~e.0 :mode~e.6 interrogative~e.6
+      :ARG1 (b / beat-03~e.3
+            :ARG0 (p2 / person :wiki "Elizabeth_Warren"
+                  :name (n / name :op1 "Elizabeth"~e.1 :op2 "Warren"~e.2))
+            :ARG1 (p3 / person :wiki "Scott_Brown"
+                  :name (n2 / name :op1 "Scott"~e.4 :op2 "Brown"~e.5))))
+
+Predicted Amr
+( d1 / possible-01
+	:ARG1  ( d1_1 / beat-03
+		:ARG0  ( d1_1_1 / person
+			:wiki "Elizabeth_Warren"
+			:name  ( d1_1_1_1 / name
+				:op1 "Elizabeth"
+				:op2 "Warren"
+			)
+		)
+		:ARG1  ( d1_1_2 / person
+			:wiki "Scott_Brown"
+			:name  ( d1_1_2_1 / name
+				:op1 "Scott"
+				:op2 "Brown"
+			)
+		)
+	)
+)
+
+
+(?)dfa_epochs=20_maxlen=30_embeddingsdim=300
+should person step down for the good of the country ?
+
+Predicted
+SH SH SH RL DN DN DN SH DN DN SH RR RR DN RR
+
+Actual
+SH SH SH RL DN DN DN SH DN DN SH RR RR RR SH RR
+
+Predictions with old labels:
+['SH_recommend-01', 'SH_person', 'SH_step-down-04', 'RL_ARG0', 'DN', 'DN', 'DN', 'SH_good', 'DN', 'DN', 'SH_country', 'RR_poss', 'RR_purpose', 'DN', 'RR_ARG1']
+Original Amr
+(r / recommend-01~e.0 :mode~e.10 interrogative~e.10
+      :ARG1 (s / step-down-04~e.2,3
+            :ARG0 (p / person :wiki "Barack_Obama"
+                  :name (n / name :op1 "Obama"~e.1))
+            :purpose~e.4 (g / good~e.6
+                  :poss~e.7 (c / country~e.9))))
+
+Predicted Amr
+( d1 / recommend-01
+	:ARG1  ( d1_1 / step-down-04
+		:ARG0  ( d1_1_1 / person
+			:wiki "Obama"
+			:name  ( d1_1_1_1 / name
+				:op1 "Obama"
+			)
+		)
+		:purpose  ( d1_1_2 / good
+			:poss  ( d1_1_2_1 / country )
+		)
+	)
+)
+Smatch f-score 0.896552
+
+
+all_epochs=20_maxlen=30_embeddingsdim=300
+it is about perspective frankly .
+
+Predicted
+SH DN DN SH SH RL DN RR
+
+Actual
+SH DN DN SH RR SH RR DN
+
+Predictions with old labels:
+['SH_it', 'DN', 'DN', 'SH_perspective', 'SH_frank', 'RL_topic', 'DN', 'RR_manner']
+Original Amr
+(i / it~e.0
+      :topic~e.2 (p / perspective~e.3)
+      :manner~e.4 (f / frank~e.4))
+
+Predicted Amr
+( d1 / it
+	:manner  ( d1_1 / frank
+		:topic  ( d1_1_1 / perspective )
+	)
+)
+Smatch f-score 0.833333
+
+
+
+all_epochs=20_maxlen=30_embeddingsdim=300
+the ship departed country 's harbor harbor on date-entity .
+
+Predicted
+DN SH SH SH DN SH RL SH DN SH RL RR DN RR RR
+
+Actual
+DN SH SH RL SH DN SH RL RR DN DN SH RR DN
+
+Predictions with old labels:
+['DN', 'SH_ship', 'SH_depart-01', 'SH_country', 'DN', 'SH_harbor', 'RL_ARG0', 'SH_date-entity', 'DN', 'SH_unk', 'RL_mod', 'RR_ARG1', 'DN', 'RR_time', 'RR_unk']
+Original Amr
+(d / depart-01~e.2
+      :ARG0 (s / ship :wiki -
+            :name (n / name :op1 "Kuwolsan"~e.1))
+      :ARG1 (h / harbor~e.7 :wiki "Nampo"
+            :name (n2 / name :op1 "Nampo"~e.6)
+            :mod~e.5 (c / country :wiki "North_Korea"
+                  :name (n3 / name :op1 "North"~e.3 :op2 "Korea"~e.4)))
+      :time~e.8 (d2 / date-entity :year 1999~e.11 :month~e.10 4~e.10 :day 10~e.9))
+
+Predicted Amr
+( d1 / ship
+	:wiki "Kuwolsan"
+	:name  ( d1_1 / name
+		:op1 "Kuwolsan"
+	)
+	:unk  ( d1_2 / depart-01
+		:time  ( d1_2_1 / harbor
+			:ARG0  ( d1_2_1_1 / country
+				:wiki "North_Korea"
+				:name  ( d1_2_1_1_1 / name
+					:op1 "North"
+					:op2 "Korea"
+				)
+			)
+			:ARG1  ( d1_2_1_2 / date-entity
+				:month "4"
+				:day "10"
+				:year "1999"
+				:mod  ( d1_2_1_2_1 / date-entity
+					:wiki "Nampo"
+					:name  ( d1_2_1_2_1_1 / name
+						:op1 "Nampo"
+					)
+				)
+			)
+		)
+	)
+)
+Smatch f-score 0.703704
+
+?? dfa_epochs=20_maxlen=30_embeddingsdim=300
+the concern intensified following the successful date-entity test @-@ firing of an anti @-@ satellite missile .
+
+Predicted
+DN SH SH RL SH DN SH SH RL SH SH RL SH DN DN SH SH RL SH SH RL DN RR RR RR RR RR RR
+
+Actual
+DN SH SH RL SH DN SH SH SH RL DN SH DN DN SH DN SH RR SH RL RR DN SW RL RR RR RR
+
+Predictions with old labels:
+['DN', 'SH_concern-01', 'SH_intensify-01', 'RL_ARG1', 'SH_follow-01', 'DN', 'SH_succeed-01', 'SH_date-entity', 'RL_time', 'SH_test-01', 'SH_fire-01', 'RL_ARG1', 'SH_counter-01', 'DN', 'DN', 'SH_satellite', 'SH_missile', 'RL_ARG0-of', 'SH_unk', 'SH_unk', 'RL_ARG1', 'DN', 'RR_ARG1-of', 'RR_ARG1', 'RR_ARG2', 'RR_ARG1-of', 'RR_unk', 'RR_unk']
+Original Amr
+(i / intensify-01~e.2
+      :ARG1 (c / concern-01~e.1)
+      :ARG1-of (f / follow-01~e.3
+            :ARG2 (t / test-01~e.10
+                  :ARG1 (f2 / fire-01~e.12
+                        :ARG1~e.13 (m / missile~e.18
+                              :ARG0-of (c2 / counter-01~e.15
+                                    :ARG1 (s2 / satellite~e.17)))
+                        :ARG1-of (s / succeed-01~e.5))
+                  :time (d2 / date-entity :year 2007~e.9 :month~e.6 1~e.6 :day 11~e.7))))
+
+Predicted Amr
+( d1 / intensify-01
+	:ARG1  ( d1_1 / concern-01 )
+	:unk  ( d1_2 / follow-01
+		:unk  ( d1_2_1 / date-entity
+			:year "2007"
+			:day "11"
+			:month "1"
+			:time  ( d1_2_1_1 / succeed-01 )
+			:ARG1-of  ( d1_2_1_2 / fire-01
+				:ARG1  ( d1_2_1_2_1 / test-01 )
+				:ARG2  ( d1_2_1_2_2 / counter-01
+					:ARG1  ( d1_2_1_2_2_1 / missile
+						:ARG0-of  ( d1_2_1_2_2_1_1 / satellite )
+						:ARG1-of  ( d1_2_1_2_2_1_2 / unk
+							:ARG1  ( d1_2_1_2_2_1_2_1 / unk )
+						)
+					)
+				)
+			)
+		)
+	)
+)
+Smatch f-score 0.600000
+
+
+?? proxy_epochs=20_maxlen=30_embeddingsdim=300
+he had been a sales and marketing executive with company for temporal-quantity .
+
+Predicted
+SH DN SH DN SH RL SH SH RL SH RL RL DN SH DN SH RR RR DN RR
+
+Actual
+SH SH RL DN DN SH SH RL SH RR SH RL RR DN SH RR DN SH RR DN
+
+Predictions with old labels:
+['SH_he', 'DN', 'SH_have-org-role-91', 'DN', 'SH_sell-01', 'RL_ARG0', 'SH_and', 'SH_market-01', 'RL_op1', 'SH_executive', 'RL_op2', 'RL_topic', 'DN', 'SH_company', 'DN', 'SH_temporal-quantity', 'RR_ARG2', 'RR_ARG1', 'DN', 'RR_duration']
+Original Amr
+(h / have-org-role-91~e.1
+      :ARG0 (h2 / he~e.0)
+      :ARG1 (c / company :wiki "Chrysler"
+            :name (n / name :op1 "Chrysler"~e.9))
+      :ARG2 (e / executive~e.7
+            :topic (a / and~e.5
+                  :op1 (s / sell-01~e.4)
+                  :op2 (m / market-01~e.6)))
+      :duration (t / temporal-quantity :quant 20~e.11
+            :unit (y / year~e.12)))
+
+Predicted Amr
+( d1 / he
+	:duration  ( d1_1 / executive
+		:op2  ( d1_1_1 / market-01
+			:op1  ( d1_1_1_1 / and )
+		)
+		:topic  ( d1_1_2 / sell-01
+			:ARG0  ( d1_1_2_1 / have-org-role-91 )
+		)
+		:ARG1  ( d1_1_3 / company
+			:wiki "Chrysler"
+			:name  ( d1_1_3_1 / name
+				:op1 "Chrysler"
+			)
+			:ARG2  ( d1_1_3_2 / temporal-quantity )
+		)
+	)
+)
+Smatch f-score 0.558140
