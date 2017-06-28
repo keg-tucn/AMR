@@ -1,0 +1,17 @@
+------------------------------------------------------------------------------------------------
+Test data shape: 
+(32,)
+Final test data shape
+(32, 30, 15)
+Filtered
+0
+Scores for model ./models/dfa_epochs=50_maxlen=30_embeddingsdim=200
+Min: 0.250000
+Max: 1.000000
+Arithm. mean 0.529808573493
+Harm. mean 0.48835631924
+Global smatch f-score 0.521739130435
+Model test accuracy
+0.820833325386
+Errors
+2

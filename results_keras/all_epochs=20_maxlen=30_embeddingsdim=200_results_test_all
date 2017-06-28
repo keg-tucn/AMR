@@ -1,0 +1,17 @@
+------------------------------------------------------------------------------------------------
+Test data shape: 
+(267,)
+Final test data shape
+(259, 30, 15)
+Filtered
+8
+Scores for model ./models/all_epochs=20_maxlen=30_embeddingsdim=200
+Min: 0.000000
+Max: 1.000000
+Arithm. mean 0.654783623643
+Harm. mean 0.0253825504375
+Global smatch f-score 0.581942789035
+Model test accuracy
+0.879021883011
+Errors
+1

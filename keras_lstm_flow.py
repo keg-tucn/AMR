@@ -375,6 +375,11 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
 
     dependencies = [d[3] for d in data]
 
+    named_entities = [d[4] for d in data]
+    date_entities = [d[5] for d in data]
+    named_entities = [[(n[3], n[2]) for n in named_entities_list] for named_entities_list in named_entities]
+    date_entities = [[(d[3], d[2], d[1]) for d in date_entities_list] for date_entities_list in date_entities]
+
     tokenizer = pickle.load(open(tokenizer_path, "rb"))
     sequences = np.asarray(tokenizer.texts_to_sequences(sentences))
 
@@ -458,7 +463,7 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
                                             save_weights_only=False,
                                             mode='auto', period=1),
                             EarlyStopping(monitor='val_acc', min_delta=0, patience=3, verbose=0,
-                                                      mode='auto')])
+                                          mode='auto')])
 
     plot_history(history, model_name)
 
@@ -482,7 +487,7 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
             pred_label = act.populate_new_actions(prediction)
             print 'Predictions with old labels: '
             print pred_label
-            predicted_amr_str = asr.reconstruct_all(pred_label)
+            predicted_amr_str = asr.reconstruct_all_ne(pred_label, named_entities[i], date_entities[i])
 
             original_amr = smatch_amr.AMR.parse_AMR_line(amrs_test[i])
             predicted_amr = smatch_amr.AMR.parse_AMR_line(predicted_amr_str)
@@ -529,7 +534,7 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     file.close()
 
 
-def test(model_name, tokenizer_path, data, max_len=30, embedding_dim=100):
+def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding_dim=100, with_reattach=False):
     model_path = './models/{}'.format(model_name)
     print 'Model path is:'
     print model_path
@@ -545,6 +550,11 @@ def test(model_name, tokenizer_path, data, max_len=30, embedding_dim=100):
     action_labels = [[a.label for a in actions_list] for actions_list in actions]
 
     dependencies = [d[3] for d in data]
+
+    named_entities = [d[4] for d in data]
+    date_entities = [d[5] for d in data]
+    named_entities = [[(n[3], n[2]) for n in named_entities_list] for named_entities_list in named_entities]
+    date_entities = [[(d[3], d[2], d[1]) for d in date_entities_list] for date_entities_list in date_entities]
 
     tokenizer = pickle.load(open(tokenizer_path, "rb"))
 
@@ -613,7 +623,10 @@ def test(model_name, tokenizer_path, data, max_len=30, embedding_dim=100):
             pred_label = act.populate_new_actions(prediction)
             print 'Predictions with old labels: '
             print pred_label
-            predicted_amr_str = asr.reconstruct_all(pred_label)
+            if with_reattach is True:
+                predicted_amr_str = asr.reconstruct_all_ne(pred_label, named_entities[i], date_entities[i])
+            else:
+                predicted_amr_str = asr.reconstruct_all(pred_label)
 
             original_amr = smatch_amr.AMR.parse_AMR_line(amrs_test[i])
             predicted_amr = smatch_amr.AMR.parse_AMR_line(predicted_amr_str)
@@ -627,7 +640,7 @@ def test(model_name, tokenizer_path, data, max_len=30, embedding_dim=100):
         else:
             errors += 1
 
-    file = open('./results_keras/{}_results_test'.format(model_name), 'w')
+    file = open('./results_keras/{}_results_test_{}'.format(model_name, test_case_name), 'w')
 
     file.write('------------------------------------------------------------------------------------------------\n')
     file.write('Test data shape: ' + '\n')
@@ -663,38 +676,46 @@ def train_file(model_name, tokenizer_path, train_data_path=None, test_data_path=
     train(model_name, tokenizer_path, train_data, test_data, max_len, train_epochs, embedding_dim)
 
 
-def test_file(model_name, tokenizer_path, test_data_path, max_len=30, embedding_dim=100):
-    data = read_data('test', test_data_path)
-    return test(model_name, tokenizer_path, data, max_len, embedding_dim)
+def test_file(model_name, tokenizer_path, test_case_name, test_data_path, max_len=30, embedding_dim=100, test_source="test",
+              with_reattach=False):
+    data = read_data(test_source, test_data_path)
+    return test(model_name, tokenizer_path, test_case_name, data, max_len, embedding_dim, with_reattach=with_reattach)
 
 
 if __name__ == "__main__":
-    data_sets = ['all']
-    max_lens = [30, 25]
-    embeddings_dims = [300]
+    data_sets = ['xinhua', 'bolt', 'proxy', 'dfa', 'all']
+    max_lens = [30, 30, 30, 30, 30]
+    embeddings_dims = [200, 200, 300, 200, 200]
+    epochs = [50, 50, 50, 50, 20]
+    test_source = 'dev'
 
-    for data_set in data_sets:
-        for embeddings_dim in embeddings_dims:
-            for max_len in max_lens:
-                if embeddings_dim != 200 or max_len != 30:
-                    epochs = 15
-                    model_name = '{}_epochs={}_maxlen={}_embeddingsdim={}'.format(data_set, epochs, max_len, embeddings_dim)
-                    print 'Model name is: '
-                    print model_name
-                    model_path = './models/{}'.format(model_name)
-
-                    if data_set == "all":
-                        train_data_path = None
-                        test_data_path = None
-                    else:
-                        train_data_path = "deft-p2-amr-r1-alignments-training-{}.txt".format(data_set)
-                        test_data_path = "deft-p2-amr-r1-alignments-test-{}.txt".format(data_set)
-
-                    train_file(model_name=model_name,
-                               tokenizer_path="./tokenizers/full_tokenizer.dump",
-                               train_data_path=train_data_path,
-                               test_data_path=test_data_path, max_len=max_len,
-                               train_epochs=epochs, embedding_dim=embeddings_dim)
-
-                    # test_file(model_path, tokenizer_path="./tokenizers/full_tokenizer.dump",
-                    #           test_data_path="deft-p2-amr-r1-alignments-test-xinhua.txt", max_len=max_len, embedding_dim=embeddings_dim)
+    # for data_set in data_sets:
+    #     for embeddings_dim in embeddings_dims:
+    #         for max_len in max_lens:
+    for data_set, max_len, embeddings_dim, epoch in zip(data_sets, max_lens, embeddings_dims, epochs):
+        # epochs = 20
+        model_name = '{}_epochs={}_maxlen={}_embeddingsdim={}'.format(data_set, epoch, max_len, embeddings_dim)
+        # if data_set == "all":
+        test_set_name = None
+    # else:
+    #     test_set_name = 'deft-p2-amr-r1-alignments-test-{}.txt'.format(data_set)
+    # print 'Model name is: '
+    # print model_name
+    # model_path = './models/{}'.format(model_name)
+    #
+    # if data_set == "all":
+    #     train_data_path = None
+    #     test_data_path = None
+    # else:
+    #     train_data_path = "deft-p2-amr-r1-alignments-training-{}.txt".format(data_set)
+    #     test_data_path = "deft-p2-amr-r1-alignments-test-{}.txt".format(data_set)
+    #
+    # train_file(model_name=model_name,
+    #            tokenizer_path="./tokenizers/full_tokenizer.dump",
+    #            train_data_path=train_data_path,
+    #            test_data_path=test_data_path, max_len=max_len,
+    #            train_epochs=epochs, embedding_dim=embeddings_dim)
+        test_file(model_name, tokenizer_path="./tokenizers/full_tokenizer.dump",
+                  test_case_name= test_source,
+                  test_data_path=test_set_name, max_len=max_len,
+                  embedding_dim=embeddings_dim, test_source="dev", with_reattach=True)

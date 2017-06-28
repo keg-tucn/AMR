@@ -1,0 +1,17 @@
+------------------------------------------------------------------------------------------------
+Test data shape: 
+(235,)
+Final test data shape
+(227, 30, 15)
+Filtered
+8
+Scores for model ./models/xinhua_epochs=50_maxlen=30_embeddingsdim=200
+Min: 0.000000
+Max: 1.000000
+Arithm. mean 0.595258820088
+Harm. mean 0.00579505315966
+Global smatch f-score 0.510128291695
+Model test accuracy
+0.749192361002
+Errors
+0

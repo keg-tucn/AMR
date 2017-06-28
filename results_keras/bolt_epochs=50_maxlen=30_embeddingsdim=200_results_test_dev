@@ -1,0 +1,17 @@
+------------------------------------------------------------------------------------------------
+Test data shape: 
+(235,)
+Final test data shape
+(227, 30, 15)
+Filtered
+8
+Scores for model ./models/bolt_epochs=50_maxlen=30_embeddingsdim=200
+Min: 0.000000
+Max: 1.000000
+Arithm. mean 0.595575655132
+Harm. mean 0.0109558308858
+Global smatch f-score 0.522374429224
+Model test accuracy
+0.731718061516
+Errors
+10

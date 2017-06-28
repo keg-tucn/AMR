@@ -1,0 +1,18 @@
+------------------------------------------------------------------------------------------------
+Test data shape: 
+(156,)
+Final test data shape
+(150, 30, 15)
+Filtered
+6
+Scores for model ./models/proxy_epochs=50_maxlen=30_embeddingsdim=200
+Min: 0.052632
+Max: 1.000000
+Arithm. mean 0.701555381523
+Harm. mean 0.544713011199
+Global smatch f-score 0.605480062375
+Model test accuracy
+0.901111105283
+Errors
+0
+

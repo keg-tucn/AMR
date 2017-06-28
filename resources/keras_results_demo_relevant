@@ -151,3 +151,71 @@ Predicted Amr
 	)
 )
 Smatch f-score 0.642857
+
+
+----------------------------------------------------------
+all_epochs=20_maxlen=30_embeddingsdim=300
+
+and there is precious little room for interpretation .
+
+Predicted
+SH DN DN SH SH RL SH RL DN SH RR DN RR
+
+Actual
+SH DN DN SH SH SH RL RL DN SH RR RR DN
+
+Predictions with old labels:
+['SH_and', 'DN', 'DN', 'SH_precious', 'SH_little', 'RL_quant', 'SH_room', 'RL_mod', 'DN', 'SH_interpret-01', 'RR_purpose', 'DN', 'RR_op2']
+Original Amr
+(a / and~e.0
+      :op2 (r / room~e.5
+            :quant (l / little~e.4)
+            :mod (p / precious~e.3)
+            :purpose~e.6 (i / interpret-01~e.7)))
+
+Predicted Amr
+( d1 / and
+	:op2  ( d1_1 / room
+		:mod  ( d1_1_1 / little
+			:quant  ( d1_1_1_1 / precious )
+		)
+		:purpose  ( d1_1_2 / interpret-01 )
+	)
+)
+Smatch f-score 0.800000
+
+
+Sentence
+consensus on country will be difficult to reach when the organization meets in date-entity .
+
+Predicted
+SH DN SH DN DN SH RL DN DN SH DN SH SH RL RL RR DN SH RR DN RR
+
+Actual
+SH DN SH RR DN DN SH DN SH DN DN SH SH RL DN SH RR RR DN SW RL RR
+
+Predictions with old labels:
+['SH_consensus', 'DN', 'SH_country', 'DN', 'DN', 'SH_difficult', 'RL_topic', 'DN', 'DN', 'SH_reach-01', 'DN', 'SH_organization', 'SH_meet-03', 'RL_ARG0', 'RL_time', 'RR_time', 'DN', 'SH_date-entity', 'RR_ARG1', 'DN', 'RR_domain']
+Original Amr
+(d / difficult~e.5
+      :domain~e.4 (r / reach-01~e.7
+            :ARG1 (c / consensus~e.0
+                  :topic~e.1 (c2 / country :wiki "India"
+                        :name (n / name :op1 "India"~e.2)))
+            :time~e.8 (m / meet-03~e.11
+                  :ARG0 (o / organization :wiki "Nuclear_Suppliers_Group"
+                        :name (n2 / name :op1 "NSG"~e.10))
+                  :time~e.12 (d2 / date-entity :year 2007~e.14 :month~e.13 11~e.13))))
+
+Predicted Amr
+( d1 / consensus
+	:domain  ( d1_1 / difficult
+		:topic  ( d1_1_1 / country )
+		:time  ( d1_1_2 / meet-03
+			:ARG0  ( d1_1_2_1 / organization )
+			:time  ( d1_1_2_2 / reach-01 )
+		)
+		:ARG1  ( d1_1_3 / date-entity )
+	)
+)
+Smatch f-score 0.421053

@@ -67,8 +67,8 @@ def reconstruct_all(action_sequence):
     return top.amr_print()
 
 
-def reconstruct_all_ne(action_sequence, named_entities_metadata):
-    rec_obj = MetadataReconstructionState(named_entities_metadata)
+def reconstruct_all_ne(action_sequence, named_entities_metadata, date_entity_metadata):
+    rec_obj = MetadataReconstructionState(named_entities_metadata, date_entity_metadata)
     for action in action_sequence:
         rec_obj.process_action(action[:2], action[3:])
     top = rec_obj.finalize()
@@ -76,8 +76,9 @@ def reconstruct_all_ne(action_sequence, named_entities_metadata):
 
 
 class MetadataReconstructionState:
-    def __init__(self, _named_entity_metadata):
+    def __init__(self, _named_entity_metadata, _date_entity_metadata):
         self.named_entity_metadata = _named_entity_metadata
+        self.date_entity_metadata = _date_entity_metadata
         self.current_token_index = 0
         self.stack = []
 
@@ -93,15 +94,25 @@ class MetadataReconstructionState:
         concept_node.add_child(name_node, "name")
         return concept_node
 
-    def _process_action_ne(self, action, concept):
-        current_ne_index = self.named_entity_metadata[0][0]
+    def _make_date_entity(self, date_relations, quantities):
+        date_entity_node = Node("date-entity")
+        for date_relation, quantity in zip(date_relations, quantities):
+            date_entity_node.add_child(Node(quantity, quantity), date_relation)
+        return date_entity_node
 
+    def process_action(self, action, concept):
+        # execute the action to update the parser state
         if action == 'SH':
-            if self.current_token_index == current_ne_index:
+            if len(self.named_entity_metadata) > 0 and self.current_token_index == self.named_entity_metadata[0][0]:
                 node = self._make_named_entity(concept, self.named_entity_metadata[0][1])
-                self.named_entity_metadata.pop()
+                self.named_entity_metadata.pop(0)
             else:
-                node = Node(concept)
+                if len(self.date_entity_metadata) > 0 and self.current_token_index \
+                        == self.date_entity_metadata[0][0]:
+                    node = self._make_date_entity(self.date_entity_metadata[0][1], self.date_entity_metadata[0][2])
+                    self.date_entity_metadata.pop(0)
+                else:
+                    node = Node(concept)
             self.stack.append(node)
             self.current_token_index += 1
         elif action == 'DN':
@@ -120,32 +131,6 @@ class MetadataReconstructionState:
             head, modifier = (left, right) if action == 'RR' else (right, left)
             head.add_child(modifier, concept)
             self.stack.append(head)
-
-    def process_action(self, action, concept):
-        # execute the action to update the parser state
-        if len(self.named_entity_metadata) > 0:
-            self._process_action_ne(action, concept)
-        else:
-            if action == 'SH':
-                node = Node(concept)
-                self.stack.append(node)
-                self.current_token_index += 1
-            elif action == 'DN':
-                self.current_token_index += 1
-                pass
-            elif action == 'SW':
-                top = self.stack.pop()
-                mid = self.stack.pop()
-                lower = self.stack.pop()
-                self.stack.append(mid)
-                self.stack.append(lower)
-                self.stack.append(top)
-            else:  # one of the reduce actions
-                right = self.stack.pop()
-                left = self.stack.pop()
-                head, modifier = (left, right) if action == 'RR' else (right, left)
-                head.add_child(modifier, concept)
-                self.stack.append(head)
 
     def finalize(self):
         top = self.stack.pop()
@@ -240,4 +225,39 @@ if __name__ == "__main__":
     print acts_short
     print actions_re
 
-    print reconstruct_all_ne(actions, [(5, ["Indian"])])
+    print reconstruct_all_ne(actions, [(5, ["Indian"])], [])
+
+    amr_str = """(d / difficult~e.5
+          :domain~e.4 (r / reach-01~e.7
+                :ARG1 (c / consensus~e.0
+                      :topic~e.1 (c2 / country :wiki "India"
+                            :name (n / name :op1 "India"~e.2)))
+                :time~e.8 (m / meet-03~e.11
+                      :ARG0 (o / organization :wiki "Nuclear_Suppliers_Group"
+                            :name (n2 / name :op1 "NSG"~e.10))
+                      :time~e.12 (d2 / date-entity :year 2007~e.14 :month~e.13 11~e.13))))"""
+    sentence = """Consensus on India will be difficult to reach when the NSG meets in November 2017 ."""
+
+    amr = AMR.parse_string(amr_str)
+    amr_new, sentence_new, named_entities = TokensReplacer.replace_named_entities(amr, sentence)
+    amr_new, sentence_new, date_entities = TokensReplacer.replace_date_entities(amr_new, sentence_new)
+
+    custom_AMR = CustomizedAMR()
+    custom_AMR.create_custom_AMR(amr_new)
+
+    actions = ActionSequenceGenerator.generate_action_sequence(custom_AMR, sentence_new)
+    acts_short = [a[:2] for a in actions]
+    acts_i = [VOCAB_ACTS.index(a) for a in acts_short]
+
+    act = ActionConceptTransfer()
+    act.load_from_verbose(actions)
+    actions_re = act.populate_new_actions(acts_i)
+
+    tokens_to_concepts_dict = custom_AMR.tokens_to_concepts_dict
+
+    print actions
+    print acts_short
+    print actions_re
+    print reconstruct_all(actions)
+
+    print reconstruct_all_ne(actions, [(2, ["India"]), (10, ["NSG"])], [(13, ["month", "year"], [2017, 11])])

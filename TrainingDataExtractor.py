@@ -89,7 +89,8 @@ def generate_training_data(file_path, verbose=True, withStats=False, withDepende
                 except Exception as e:
                     logging.warn("Dependency parsing failed at sentence %s with exception %s.", new_sentence, str(e))
                     deps = {}
-                training_data.append((new_sentence, action_sequence, amr_str, deps))
+                #### For the keras flow, we also attach named_entities, date_entities, to instances
+                training_data.append((new_sentence, action_sequence, amr_str, deps, named_entities, date_entities))
         except Exception as e:
             logging.warn(e)
             fail_sentences.append(sentence)
