@@ -1,0 +1,78 @@
+import nltk
+from nltk.tag import StanfordNERTagger
+
+def extract_entity_names(t):
+    entity_names = []
+
+    if hasattr(t, 'label') and t.label:
+        if t.label() == 'NE':
+            entity_names.append(' '.join([child[0] for child in t]))
+        else:
+            for child in t:
+                entity_names.extend(extract_entity_names(child))
+
+    return entity_names
+
+
+def process_language(content_array):
+    try:
+        for item in content_array:
+            tokenized = nltk.word_tokenize(item)
+            tagged = nltk.pos_tag(tokenized)
+            chunked = nltk.ne_chunk(tagged, binary=True)
+            named_entities = extract_entity_names(chunked)
+            result = ''
+            tokenized_copy = tokenized
+            for i, token in enumerate(tokenized_copy):
+                for entity in named_entities:
+                    if token == entity:
+                        tokenized_copy[i] = 'NAME'
+            for token in tokenized_copy:
+                result = result + token + ' '
+            print result
+
+    except Exception, e:
+        print str(e)
+
+
+def process_sentence(sentence):
+    try:
+        st = StanfordNERTagger(
+            '/home/andreea/stanford-ner-2017-06-09/classifiers/english.all.3class.distsim.crf.ser.gz',
+            '/home/andreea/stanford-ner-2017-06-09/stanford-ner.jar')
+        tagged_list= st.tag(sentence.split())
+        new_sentence = ""
+        new_sentence_list = []
+        named_entities_location = []
+        location = 0
+        for token, tag in tagged_list:
+           if tag == 'O':
+               new_sentence_list.append(token)
+           else:
+               if len(new_sentence_list) == 0:
+                   new_sentence_list.append(tag)
+                   named_entities_location.append((location,[token]))
+               else:
+                   if new_sentence_list[len(new_sentence_list) - 1] != tag:
+                      new_sentence_list.append(tag)
+                      named_entities_location.append((location,[token]))
+                   else:
+                       location -=1
+                       element = named_entities_location.pop(-1)
+                       element[1].append(token)
+                       named_entities_location.append(element)
+
+           location +=1
+        lastWord = new_sentence_list.pop(-1)
+        for item in new_sentence_list:
+            new_sentence =new_sentence + item + ' '
+        new_sentence =new_sentence + lastWord + '.'
+
+        return new_sentence, named_entities_location
+
+    except Exception, e:
+        print str(e)
+
+
+if __name__ == "__main__":
+  print process_sentence('Rami Eid John is studying in San Francisco')
