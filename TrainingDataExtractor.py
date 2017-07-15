@@ -106,5 +106,4 @@ def generate_training_data(file_path, verbose=True, withStats=False, withDepende
         return training_data
 
 
-# generate_training_data(
-#    "/Users/silvianac/personalprojects/date/LDC2015E86_DEFT_Phase_2_AMR_Annotation_R1/data/alignments/unsplit/deft-p2-amr-r1-alignments-xinhua.txt", False)
+#generate_training_data("/home/andreea/LDC2016E25_DEFT_Phase_2_AMR_Annotation_R2/data/alignments/unsplit/deft-p2-amr-r2-alignments-bolt.txt", False)
