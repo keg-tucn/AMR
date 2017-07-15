@@ -312,7 +312,7 @@ def get_embedding_matrix(word_index, embedding_dim=100):
             else:
                 not_found.append(word)
 
-    print 'Not found: {}'.format(not_found)
+    print 'First 2 not found: {}'.format(not_found[2:4])
     return embedding_matrix
 
 
@@ -348,7 +348,7 @@ def get_model(word_index, max_len, embedding_dim, embedding_matrix):
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
 
-    plot_model(model, to_file='model.png')
+    #plot_model(model, to_file='model.png')
 
     print model.summary()
     return model
