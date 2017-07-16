@@ -668,6 +668,71 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
     return predictions
 
 
+def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim=100, with_reattach=False):
+    model_path = './models/{}'.format(model_name)
+    print 'Model path is:'
+    print model_path
+
+    sentences = [d[0] for d in data]
+
+    dependencies = [d[1] for d in data]
+
+    named_entities = [d[2] for d in data]
+
+    tokenizer = pickle.load(open(tokenizer_path, "rb"))
+
+    sequences = np.asarray(tokenizer.texts_to_sequences(sentences))
+
+    word_index = tokenizer.word_index
+    print 'Word index len: '
+    print len(word_index)
+
+    indices = np.arange(sequences.shape[0])
+    sequences = sequences[indices]
+
+    dependencies = [dependencies[i] for i in indices]
+
+    x_test = sequences
+    dependencies_test = dependencies
+
+    print 'Test data shape: '
+    print x_test.shape
+    print len(dependencies_test)
+
+    embedding_matrix = get_embedding_matrix(word_index, embedding_dim)
+
+    no_word_index = (len(word_index)) + 1
+    model = get_model(word_index, max_len, embedding_dim, embedding_matrix)
+
+    print model.summary()
+
+    model.load_weights(model_path, by_name=False)
+    index_to_word_map = {v: k for k, v in tokenizer.word_index.iteritems()}
+
+    for i in range(len(x_test)):
+        prediction = make_prediction(model, x_test[i], dependencies_test[i], no_word_index, max_len)
+        print 'Sentence'
+        pretty_print_sentence(x_test[i], index_to_word_map)
+        print 'Predicted'
+        pretty_print_actions(prediction)
+
+        if len(prediction) > 0:
+            act = asr.ActionConceptTransfer()
+            pred_label = act.populate_new_actions(prediction)
+            print 'AMR skeleton without labels: '
+            print pred_label
+
+            if with_reattach is True:
+                predicted_amr_str = asr.reconstruct_all_ne(pred_label, named_entities, [])
+            else:
+                predicted_amr_str = asr.reconstruct_all(pred_label)
+
+            print 'Predicted Amr'
+            print predicted_amr_str
+
+    return prediction
+
+
 def train_file(model_name, tokenizer_path, train_data_path=None, test_data_path=None, max_len=30, train_epochs=35,
                embedding_dim=100):
     test_data = read_data('test', test_data_path)
@@ -699,23 +764,23 @@ if __name__ == "__main__":
         test_set_name = None
     # else:
     #     test_set_name = 'deft-p2-amr-r1-alignments-test-{}.txt'.format(data_set)
-    # print 'Model name is: '
-    # print model_name
-    # model_path = './models/{}'.format(model_name)
-    #
-    # if data_set == "all":
-    #     train_data_path = None
-    #     test_data_path = None
-    # else:
-    #     train_data_path = "deft-p2-amr-r1-alignments-training-{}.txt".format(data_set)
-    #     test_data_path = "deft-p2-amr-r1-alignments-test-{}.txt".format(data_set)
-    #
-    # train_file(model_name=model_name,
-    #            tokenizer_path="./tokenizers/full_tokenizer.dump",
-    #            train_data_path=train_data_path,
-    #            test_data_path=test_data_path, max_len=max_len,
-    #            train_epochs=epochs, embedding_dim=embeddings_dim)
-        test_file(model_name, tokenizer_path="./tokenizers/full_tokenizer.dump",
-                  test_case_name= test_source,
-                  test_data_path=test_set_name, max_len=max_len,
-                  embedding_dim=embeddings_dim, test_source="dev", with_reattach=True)
+        print 'Model name is: '
+        print model_name
+        model_path = './models/{}'.format(model_name)
+
+        if data_set == "all":
+            train_data_path = None
+            test_data_path = None
+        else:
+            train_data_path = "deft-p2-amr-r1-alignments-training-{}.txt".format(data_set)
+            test_data_path = "deft-p2-amr-r1-alignments-test-{}.txt".format(data_set)
+
+    train_file(model_name=model_name,
+               tokenizer_path="./tokenizers/full_tokenizer.dump",
+               train_data_path=train_data_path,
+               test_data_path=test_data_path, max_len=max_len,
+               train_epochs=epochs, embedding_dim=embeddings_dim)
+    #     test_file(model_name, tokenizer_path="./tokenizers/full_tokenizer.dump",
+    #               test_case_name= test_source,
+    #               test_data_path=test_set_name, max_len=max_len,
+    #               embedding_dim=embeddings_dim, test_source="dev", with_reattach=True)

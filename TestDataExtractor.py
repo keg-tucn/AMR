@@ -42,4 +42,4 @@ def generate_test_data(file_path, verbose=True):
     return test_data
 
 
-print generate_test_data("/home/andreea/LDC2016E25_DEFT_Phase_2_AMR_Annotation_R2/data/alignments/unsplit/toySet.txt", False)
+#print generate_test_data("/home/andreea/LDC2016E25_DEFT_Phase_2_AMR_Annotation_R2/data/alignments/unsplit/toySet.txt", False)
