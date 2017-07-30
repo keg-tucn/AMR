@@ -12,16 +12,16 @@ def generate_test_data(file_path, verbose=True):
     if verbose is False:
         logging.disable(logging.WARN)
 
-    sentence_amr_pairs = SentenceAMRPairsExtractor.extract_sentence_amr_pairs(file_path)
+    sentence_amr_triples = SentenceAMRPairsExtractor.extract_sentence_amr_pairs(file_path)
     fail_sentences = []
     test_data = []
     named_entity_exceptions = 0
 
-    for i in tqdm(range(0, len(sentence_amr_pairs))):
+    for i in tqdm(range(0, len(sentence_amr_triples))):
         try:
             logging.warn("Started processing example %d", i)
             concepts_metadata = {}
-            (sentence, amr_str) = sentence_amr_pairs[i]
+            (sentence, amr_str, amr_id) = sentence_amr_triples[i]
             amr = AMR.parse_string(amr_str)
 
             try:

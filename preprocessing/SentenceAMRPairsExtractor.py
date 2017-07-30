@@ -7,8 +7,8 @@ def extract_sentence_amr_pairs(file_path):
     token_regex = re.compile('^(?:# ::tok )(.*)$')
     amr_start_indices = [index for index in range(0, len(lines)) if token_regex.match(lines[index])]
 
-    pairs = map(lambda i: (token_regex.match(lines[i]).group(1), get_amr(lines, i)), amr_start_indices)
-    return pairs
+    triples = map(lambda i: (token_regex.match(lines[i]).group(1), get_amr(lines, i), get_id(lines, i)), amr_start_indices)
+    return triples
 
 
 def get_amr(lines, sentence_index):
@@ -18,3 +18,7 @@ def get_amr(lines, sentence_index):
         amr += lines[i]
         i += 1
     return amr
+
+
+def get_id(lines, sentence_index):
+    return lines[sentence_index - 1]
