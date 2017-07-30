@@ -111,16 +111,18 @@ if __name__ == "__main__":
     from os import listdir, path, makedirs
     data = []
     mypath = 'resources/alignments/split/' + "dev"
+    original_path = 'resources/amrs/split/' + "dev"
     print(mypath)
     for f in listdir(mypath):
         if not "dump" in f and "deft" in f:
             mypath_f = mypath + "/" + f
+            original_path_f = original_path + "/" + f.replace("alignments","amrs")
             print(mypath_f)
             new_data = generate_training_data(mypath_f, False)
             data += new_data
-            with open(mypath_f) as input_file:
+            with open(original_path_f) as input_file:
                 lines = input_file.readlines()
-            audit_f = mypath + "/audit/" + f + ".audit"
+            audit_f = original_path + "/audit/" + f + ".audit"
             if not path.exists(path.dirname(audit_f)):
                 makedirs(path.dirname(audit_f))
             processed_ids = []
@@ -128,10 +130,11 @@ if __name__ == "__main__":
                 processed_ids.append(processed_id)
             with open(audit_f, "wb") as audit:
                 for processed_id in processed_ids:
-                    audit.write("%s" % processed_id)
+                    audit.write("%s\n" % processed_id)
             amr_inputs = []
             for processed_id in processed_ids:
-                i = lines.index(processed_id)
+                line = filter(lambda k: processed_id in k, lines)
+                i = lines.index(line[0])
                 amr_input = ""
                 while i < len(lines) and len(lines[i]) > 1:
                     amr_input += lines[i]

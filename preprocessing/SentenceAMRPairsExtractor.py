@@ -21,4 +21,8 @@ def get_amr(lines, sentence_index):
 
 
 def get_id(lines, sentence_index):
-    return lines[sentence_index - 1]
+    id_line = lines[sentence_index - 1]
+    id_regex = re.compile("^# ::id ([^ ]+) ::(.*)$")
+    if id_regex.match(id_line):
+        return id_regex.search(id_line).group(1)
+    return id_line
