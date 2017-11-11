@@ -118,12 +118,37 @@ class SmatchAccumulator:
         if self.n == 0:
           print ("No results")
         else:
-            print("Min: %f" % np.min(self.smatch_scores))
-            print("Max: %f" % np.max(self.smatch_scores))
-            print ("Arithm. mean %s" % (self.smatch_sum / self.n))
-            print ("Harm. mean %s" % (self.n / self.inv_smatch_sum))
-            print ("Global smatch f-score %s" % self.smatch_per_node_mean())
+            result = self.get_result()
+            print("Min: %f" % result.min)
+            print("Max: %f" % result.max)
+            print ("Arithm. mean %s" % result.arith_mean)
+            print ("Harm. mean %s" % result.harm_mean)
+            print ("Global smatch f-score %s" % result.global_smatch_f_score)
 
+    def get_result(self):
+        return AMRSmatchResult(
+            np.min(self.smatch_scores),
+            np.max(self.smatch_scores),
+            self.smatch_sum / self.n,
+            self.n / self.inv_smatch_sum,
+            self.smatch_per_node_mean()
+        )
+
+
+class AMRSmatchResult:
+    def __init__(self, min, max, arith_mean, harm_mean, global_smatch_f_score):
+        self.min = min
+        self.max = max
+        self.arith_mean = arith_mean
+        self.harm_mean = harm_mean
+        self.global_smatch_f_score = global_smatch_f_score
+
+    def __str__(self):
+        return "%f,%f,%f,%f,%f" % (self.min, self.max, self.arith_mean, self.harm_mean, self.global_smatch_f_score)
+
+    @staticmethod
+    def headers():
+        return "min,max,arith_mean,harm_mean,global_smatch_f_score"
 
 if __name__ == "__main__":
     smatch.veryVerbose=False
