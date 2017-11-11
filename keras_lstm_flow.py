@@ -473,6 +473,7 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     smatch_results = smatch_util.SmatchAccumulator()
     errors = 0
     for i in range(len(x_test)):
+        #Step1: input a processed test entity test
         prediction = make_prediction(model, x_test[i], dependencies_test[i], no_word_index, max_len)
         print 'Sentence'
         pretty_print_sentence(x_test[i], index_to_word_map)
@@ -487,8 +488,15 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
             pred_label = act.populate_new_actions(prediction)
             print 'Predictions with old labels: '
             print pred_label
+
+         #Step2: output: Graph respecting the predicted structure
+            #Step2': predict concepts
+            #Step2'': predict relations
+         #Step3: replace named entitities & date date_entities
+
             predicted_amr_str = asr.reconstruct_all_ne(pred_label, named_entities[i], date_entities[i])
 
+            #Step4: compute smatch
             original_amr = smatch_amr.AMR.parse_AMR_line(amrs_test[i])
             predicted_amr = smatch_amr.AMR.parse_AMR_line(predicted_amr_str)
             smatch_f_score = smatch_results.compute_and_add(predicted_amr, original_amr)

@@ -70,6 +70,7 @@ def reconstruct_all(action_sequence):
 def reconstruct_all_ne(action_sequence, named_entities_metadata, date_entity_metadata):
     rec_obj = MetadataReconstructionState(named_entities_metadata, date_entity_metadata)
     for action in action_sequence:
+        #SH_concept
         rec_obj.process_action(action[:2], action[3:])
     top = rec_obj.finalize()
     return top.amr_print()
@@ -102,6 +103,8 @@ class MetadataReconstructionState:
 
     def process_action(self, action, concept):
         # execute the action to update the parser state
+        #TODO: split named/date entitits replacement of concept after we reconstruct the graph
+        #TODO: reference named/date entitites by concept instead of by index
         if action == 'SH':
             if len(self.named_entity_metadata) > 0 and self.current_token_index == self.named_entity_metadata[0][0]:
                 node = self._make_named_entity(concept, self.named_entity_metadata[0][1])
