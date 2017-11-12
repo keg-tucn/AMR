@@ -17,7 +17,10 @@ class Node:
             elif child.tag is not None:
                 child_representation = ":%s \"%s\"" % (relation, child.tag)
             else:
-                child_representation = ":%s  %s" % (relation, child.amr_print(depth + 1, idx + "_" + str(child_cnt)))
+                if depth < 50:
+                    child_representation = ":%s  %s" % (relation, child.amr_print(depth + 1, idx + "_" + str(child_cnt)))
+                else:
+                    child_representation = ":%s %s" % (relation, "too_deep")
                 child_cnt += 1
             representation += "\n".ljust(depth + 1, "\t") + child_representation
 

@@ -3,6 +3,7 @@ from operator import itemgetter
 import dynet as dy
 
 from amr_util.Node import Node
+import logging
 
 WORD_DIM = 64
 LSTM_DIM = 64
@@ -16,6 +17,15 @@ RR = 2
 DN = 3
 SW = 4
 NUM_ACTIONS = len(acts)
+
+# TODO: think of training  a model for each action and have an ensamble decide the next one ?
+
+def conv_action(action):
+    return acts[action]
+
+
+def conv_actions(actions):
+    return map(lambda x: conv_action(x), actions)
 
 
 class TransitionParser:
@@ -36,15 +46,22 @@ class TransitionParser:
         nwords = vocab.size()
         self.WORDS_LOOKUP = model.add_lookup_parameters((nwords, WORD_DIM))
 
+    def convert_token(self, tok):
+        return self.vocab.i2w[tok]
+
+    def preety_tokens(self, tokens):
+        return map(lambda t: self.convert_token(t), tokens)
+
     # returns an expression of the loss for the sequence of actions
     # (that is, the oracle_actions if present or the predicted sequence otherwise)
-    def parse(self, t, oracle_actions=None, concepts_metadata = None):
+    def parse(self, tokens, oracle_actions=None, concepts_metadata = None, use_model_predictions = False):
+        logging.debug("Parsing with model predictions %s: %s with oracle %s concepts_metadata %s", use_model_predictions, self.preety_tokens(tokens), oracle_actions, concepts_metadata)
         dy.renew_cg()
         if oracle_actions:
             oracle_actions = list(oracle_actions)
             oracle_actions.reverse()
         stack_top = self.stackRNN.initial_state()
-        toks = list(t)
+        toks = list(tokens)
         toks.reverse()
         stack = []
         cur = self.buffRNN.initial_state()
@@ -59,26 +76,30 @@ class TransitionParser:
         bias_act = dy.parameter(self.pb_act)
         losses = []
         good_predictions = []
+        predicted_actions = []
+        invalid_actions = 0
         for tok in toks:
             tok_embedding = self.WORDS_LOOKUP[tok]
             cur = cur.add_input(tok_embedding)
-            buffer.append((cur.output(), tok_embedding, self.vocab.i2w[tok]))
+            buffer.append((cur.output(), tok_embedding,  self.convert_token(tok)))
 
-        while not (len(stack) == 1 and len(buffer) == 0):
+        while not (len(stack) <= 1 and len(buffer) == 0):
             # based on parser state, get valid actions
             valid_actions = []
-            if len(buffer) > 0:  # can only reduce if elements in buffer
-                valid_actions += [SH]
-            if len(buffer) >= 1:
-                valid_actions += [DN]
+            if len(buffer) > 0:  # can only reduce & delete if elements in buffer
+                valid_actions += [SH, DN]
             if len(stack) >= 2:  # can only shift if 2 elements on stack
                 valid_actions += [RL, RR]
-            if len(stack) >= 3:
-                valid_actions += [SW]  # can only swap if we have at least 3 elements on the stack
+            if len(stack) >= 3 and (predicted_actions and predicted_actions[-1] != SW):
+                valid_actions += [SW]  # can only swap if we have at least 3 elements on the stack. don't predict 2 consecutive swaps
 
+            logging.info("valid actions %s", conv_actions(valid_actions))
             # compute probability of each of the actions and choose an action
             # either from the oracle or if there is no oracle, based on the model
+            if not valid_actions:
+                logging.warn("stack" + str(len(stack)) + "buffer" + str(len(buffer)))
             action = valid_actions[0]
+            predicted_action = action
             label = None
             concept_key = None
             log_probs = None
@@ -91,17 +112,37 @@ class TransitionParser:
                 log_probs = dy.log_softmax(logits, valid_actions)
                 predicted_action = max(enumerate(log_probs.vec_value()), key=itemgetter(1))[0]
                 if oracle_actions is None:
-                    print('no oracle!')
+                    logging.warn("no oracle! using predicted action %s", predicted_action)
                     action = predicted_action
             if oracle_actions is not None:
-                oracle_action = oracle_actions.pop()
-                action = oracle_action.index
-                label = oracle_action.label
-                concept_key = oracle_action.key
-                if log_probs is not None:
-                    # append the action-specific loss based on oracle
-                    losses.append(dy.pick(log_probs, action))
-                    good_predictions.append(1 if action == predicted_action else 0)
+                if oracle_actions:
+                    oracle_action = oracle_actions.pop()
+                    action = oracle_action.index
+                    label = oracle_action.label
+                    concept_key = oracle_action.key
+                    if log_probs is not None:
+                        # append the action-specific loss based on oracle
+                        pick = dy.pick(log_probs, action)
+                        losses.append(pick)
+                        # TODO(flo): check if we pick the losses correctly w.r.t the predicted action
+                        good_predictions.append(1 if action == predicted_action else 0)
+                        logging.debug("Predicted %s vs Oracle %s", conv_action(predicted_action), conv_action(action))
+                else:
+                    # consumed all oracle actions and elements still in buffer
+                    logging.warn("invalid action - outside oracle. Predicted %s", predicted_action)
+                    invalid_actions += 1
+                    action = -1
+                    label = "UNKNOWN"
+                    concept_key = "UNNOWN"
+                    if log_probs is not None:
+                        # TODO(flo): add some huge loss
+                        losses.append(losses[-1])
+                        good_predictions.append(0)
+            if use_model_predictions:
+                action = predicted_action
+                predicted_actions.append(predicted_action)
+                logging.debug("predicted %s", conv_action(predicted_action))
+            logging.debug("applying action %s", conv_action(action))
             # execute the action to update the parser state
             if action == SH:
                 _, tok_embedding, token = buffer.pop()
@@ -135,9 +176,9 @@ class TransitionParser:
                     print('{0} --> {1}'.format(head_node.token, mod_node.token))
 
         # the head of the tree that remains at the top of the stack is now the root
-        head = stack.pop()[1]
+        head = stack.pop()[1] if stack else Node("unknown")
         if oracle_actions is None:
-            print('ROOT --> {0}'.format(head))
+            logging.info('ROOT --> {0}'.format(head))
         # print("losses" + str(map(lambda x: x.scalar_value(), losses)))
         # print(head.preety_print())
-        return -dy.esum(losses) if losses else None, head, sum(good_predictions), len(good_predictions)
+        return -dy.esum(losses) if losses else None, head, sum(good_predictions), len(good_predictions), predicted_actions, invalid_actions
