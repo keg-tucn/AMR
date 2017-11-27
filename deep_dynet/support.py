@@ -1,6 +1,3 @@
-import re
-
-
 class Vocab:
     def __init__(self, w2i):
         self.w2i = dict(w2i)
@@ -38,50 +35,5 @@ class Vocab:
             return self.w2i[word]
 
 
-def read_oracle(fname, word_vocab, action_vocab):
-    with file(fname) as fh:
-        for line in fh:
-            line = line.strip()
-            ssent, sacts = re.split(r' \|\|\| ', line)
-            sent = word_sentence_to_vocab_index(ssent.split(), word_vocab)
-            acts = oracle_actions_to_action_index(sacts, action_vocab)
-            yield (sent, acts, ssent, sacts, "")
-
-
 def word_sentence_to_vocab_index(sentence_words, word_vocab):
     return [word_vocab.get_index_or_add(x) for x in sentence_words]
-
-
-def oracle_actions_to_action_index(oracle_action_sequence, action_vocab):
-    if '\'' in oracle_action_sequence:
-        # actions format: ['SH_label', 'RL_label', 'RR_label', 'DN']
-        actions = oracle_action_sequence[2:-2].split('\', \'')
-    elif " " in oracle_action_sequence:
-        actions = oracle_action_sequence.split()
-    else:
-        actions = oracle_action_sequence
-    parser_actions = [AMRAction.from_oracle(x, action_vocab) for x in actions]
-    return parser_actions
-
-
-class AMRAction:
-    def __init__(self, action, label, index, key):
-        self.action = action
-        self.label = label
-        self.index = index
-        self.key = key
-
-    def __repr__(self):
-        return "action: %s label: %s index: %s key: %s" % (self.action, self.label, self.index, self.key)
-
-    @classmethod
-    def from_oracle(cls, labeled_action, va):
-        split_action = labeled_action.split("_")
-        action = split_action[0]
-        label = None
-        key = None
-        if len(split_action) >= 2:
-            label = split_action[1]
-        if len(split_action) == 3:
-            key = split_action[2]
-        return AMRAction(action, label, va.w2i[action], key)

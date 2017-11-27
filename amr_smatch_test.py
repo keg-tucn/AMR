@@ -39,14 +39,17 @@ def check_smatch_identical(print_info, amrstr1, amrstr2):
 data = []
 mypath = 'resources/alignments/split/dev'
 directory_content = listdir(mypath)
-original_corpus = filter(lambda x: "dump" not in x, directory_content)
+original_corpus = filter(lambda x: "dump" not in x and "audit" not in x, directory_content)
 for f in original_corpus:
     mypath_f = mypath + "/" + f
     print(mypath_f)
-    data += tde.generate_training_data(mypath_f, False)
+    data += tde.generate_training_data(mypath_f).data
 
 fail_count = 0
-for (sentence, action_sequence, amr_string) in data:
+for elem in data:
+    sentence = elem.sentence
+    action_sequence = elem.action_sequence
+    amr_string = elem.amr_original
     amr1 = smatch_amr.AMR.parse_AMR_line(amr_string)
     if amr1 is None:
         print 'Could not parse original amr'

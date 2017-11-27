@@ -12,11 +12,11 @@ class AMRAction:
 
     @classmethod
     def build(cls, action):
-        AMRAction(action, "n/a", "n/a")
+        return AMRAction(action, None, None)
 
     @classmethod
     def build_labeled(cls, action, label):
-        AMRAction(action, label, "n/a")
+        return AMRAction(action, label, None)
 
 if __name__ == "__main__":
 

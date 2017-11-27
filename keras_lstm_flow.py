@@ -18,6 +18,7 @@ from deep_dynet import support
 from postprocessing import ActionSequenceReconstruction as asr
 from smatch import smatch_amr
 from smatch import smatch_util
+import amr_util.Actions as act
 
 sys.path.append(path.abspath('./stanford_parser'))
 
@@ -31,6 +32,10 @@ label_binarizer = sklearn.preprocessing.LabelBinarizer()
 label_binarizer.fit(range(5))
 
 
+def read_sentence(type):
+    return [d[0] for d in read_data(type)]
+
+
 # Load data
 def read_data(type, dataset=None):
     data = []
@@ -41,11 +46,11 @@ def read_data(type, dataset=None):
             if not f.endswith(".dump"):
                 mypath_f = mypath + "/" + f
                 print(mypath_f)
-                data += tde.generate_training_data(mypath_f, False, withDependencies=True)
+                data += tde.generate_training_data(mypath_f, compute_dependencies=True).data
     else:
         mypath_f = mypath + "/" + dataset
         print(mypath_f)
-        data = tde.generate_training_data(mypath_f, verbose=False, withDependencies=True)
+        data = tde.generate_training_data(mypath_f, compute_dependencies=True).data
     return data
 
 
@@ -55,9 +60,8 @@ def get_predictions_from_distr(predictions_distr):
 
 
 def pretty_print_actions(acts_i):
-    VOCAB_ACTS = ['SH', 'RL', 'RR', 'DN', 'SW']
     for i in range(len(acts_i)):
-        print VOCAB_ACTS[acts_i[i]], ;
+        print act.acts[acts_i[i]]
     print '\n'
 
 
@@ -271,11 +275,10 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len):
 
 
 def generate_tokenizer(tokenizer_path):
-    test_data = read_data('test')
-    train_data = read_data('training')
-    dev_data = read_data('dev')
-    data = test_data + train_data + dev_data
-    sentences = [d[0] for d in data]
+    test_data = read_sentence('test')
+    train_data = read_sentence('training')
+    dev_data = read_sentence('dev')
+    sentences = test_data + train_data + dev_data
     tokenizer = Tokenizer(filters="", lower=True, split=" ")
     tokenizer.fit_on_texts(sentences)
     pickle.dump(tokenizer, open(tokenizer_path, "wb"))
@@ -366,9 +369,7 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     sentences = [d[0] for d in data]
     amrs = [d[2] for d in data]
 
-    vocab_acts = support.Vocab.from_list(['SH', 'RL', 'RR', 'DN', 'SW'])
-
-    actions = [support.oracle_actions_to_action_index(d[1], vocab_acts) for d in data]
+    actions = [d[1] for d in data]
 
     action_indices = [[a.index for a in actions_list] for actions_list in actions]
     action_labels = [[a.label for a in actions_list] for actions_list in actions]
@@ -550,9 +551,7 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
     sentences = [d[0] for d in data]
     amrs = [d[2] for d in data]
 
-    vocab_acts = support.Vocab.from_list(['SH', 'RL', 'RR', 'DN', 'SW'])
-
-    actions = [support.oracle_actions_to_action_index(d[1], vocab_acts) for d in data]
+    actions = [d[1] for d in data]
 
     action_indices = [[a.index for a in actions_list] for actions_list in actions]
     action_labels = [[a.label for a in actions_list] for actions_list in actions]

@@ -12,6 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import traceback
 from amr_util.Reporting import AMRResult
+import amr_util.Actions as act
 
 
 def generate_parsed_data(parsed_path, dump_path):
@@ -20,7 +21,7 @@ def generate_parsed_data(parsed_path, dump_path):
     if path.exists(dump_path):
         with open(dump_path, "rb") as f:
             return js.load(f)
-    data = tde.generate_training_data(parsed_path, False)
+    data = tde.generate_training_data(parsed_path).data
     if not path.exists(path.dirname(dump_path)):
         makedirs(path.dirname(dump_path))
     with open(dump_path, "wb") as f:
@@ -48,23 +49,24 @@ def process_data(data, vocab_words, vocab_acts):
         sentence = d[0]
         actions = d[1]
         amr_str = d[2]
-        concept_meta = d[3]
+        concept_meta = d.concepts_metadata
         yield (
             ds.word_sentence_to_vocab_index(sentence.split(), vocab_words),
-            ds.oracle_actions_to_action_index(actions, vocab_acts),
+            actions,
             sentence,
             actions,
             amr_str,
             concept_meta
         )
 
-logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.DEBUG)
+logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.WARNING)
 
-vocab_acts = ds.Vocab.from_list(ddtp.acts)
+vocab_acts = ds.Vocab.from_list(act.acts)
 vocab_words = ds.Vocab.from_file('resources/data/vocab.txt')
 
+tests = ["dfa"]
 # tests = ["bolt", "dfa", "proxy", "xinhua", "deft"]
-tests = ["deft"]
+# tests = ["deft"]
 cases = []
 for filter_path in tests:
     training_data = read_data("training", filter_path=filter_path)
@@ -155,7 +157,7 @@ for run in range(1):
                     smatch_f_score = smatch_test_results.compute_and_add(parsed_amr, original_amr)
 
                 except Exception as e:
-                    logging.warn(e)
+                    logging.warn("Exception %s for expected amr %s", e, amr)
                     fail_sentences.append(original_sentence)
                     logging.warn("%s\n with actions %s\n", original_sentence, original_actions)
                     traceback.print_exc()

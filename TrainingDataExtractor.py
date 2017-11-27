@@ -8,14 +8,16 @@ from amr_util import TrainingDataStats
 from preprocessing import SentenceAMRPairsExtractor, ActionSequenceGenerator
 from preprocessing import TokensReplacer
 from preprocessing.DependencyExtractor import extract_dependencies
+from collections import namedtuple
+
+TrainingDataExtraction = namedtuple("TrainingDataExtraction", "data stats")
+TrainingData = namedtuple("TrainingData", "sentence, action_sequence, amr_original, dependencies, named_entities, "
+                                          "date_entities, concepts_metadata, amr_id")
 
 
 # Given a file with sentences and aligned amrs,
-# it returns an array of (sentence, action_sequence, amr_string))
-def generate_training_data(file_path, verbose=True, withStats=False, withDependencies=False):
-    if verbose is False:
-        logging.disable(logging.WARN)
-
+# it returns an array of (TrainingData)
+def generate_training_data(file_path, compute_dependencies=False):
     sentence_amr_triples = SentenceAMRPairsExtractor.extract_sentence_amr_pairs(file_path)
     fail_sentences = []
     unaligned_nodes = {}
@@ -28,10 +30,9 @@ def generate_training_data(file_path, verbose=True, withStats=False, withDepende
     temporal_quantity_exceptions = 0
     quantity_exceptions = 0
     processed_sentence_ids = []
-
     for i in tqdm(range(0, len(sentence_amr_triples))):
         try:
-            logging.warn("Started processing example %d", i)
+            logging.debug("Started processing example %d", i)
             concepts_metadata = {}
             (sentence, amr_str, amr_id) = sentence_amr_triples[i]
             amr = AMR.parse_string(amr_str)
@@ -82,32 +83,40 @@ def generate_training_data(file_path, verbose=True, withStats=False, withDepende
             custom_amr.create_custom_AMR(new_amr)
             coreferences_count += TrainingDataStats.get_coreferences_count(custom_amr)
             action_sequence = ActionSequenceGenerator.generate_action_sequence(custom_amr, new_sentence)
-            if withDependencies is False:
-                training_data.append((new_sentence, action_sequence, amr_str, concepts_metadata, amr_id))
+            if compute_dependencies is False:
+                # training_data.append(TrainingData(new_sentence, action_sequence, amr_str, concepts_metadata, amr_id))
+                named_entities = []
+                date_entities = []
+                deps = {}
             else:
                 try:
                     deps = extract_dependencies(new_sentence)
                 except Exception as e:
                     logging.warn("Dependency parsing failed at sentence %s with exception %s.", new_sentence, str(e))
                     deps = {}
-                #### For the keras flow, we also attach named_entities, date_entities, to instances
-                training_data.append((new_sentence, action_sequence, amr_str, deps, named_entities, date_entities))
+                    #### For the keras flow, we also attach named_entities, date_entities, to instances
+            training_data.append(
+                TrainingData(new_sentence, action_sequence, amr_str, deps, named_entities, date_entities,
+                             concepts_metadata, amr_id))
             processed_sentence_ids.append(amr_id)
         except Exception as e:
-            logging.warn(e)
             fail_sentences.append(sentence)
-            logging.warn("Failed at: %d", i)
-            logging.warn("%s\n", sentence)
+            logging.debug("Exception is: '%s'. Failed at: %d with sentence %s.", e, i, sentence)
 
-    logging.critical("Failed: %d out of %d", len(fail_sentences), len(sentence_amr_triples))
+    logging.info("Failed: %d out of %d", len(fail_sentences), len(sentence_amr_triples))
     # logging.critical("|%s|%d|%d|%d", file_path, len(fail_sentences), len(sentence_amr_pairs), len(sentence_amr_pairs) - len(fail_sentences))
-    if withStats is True:
-        return training_data, unaligned_nodes, unaligned_nodes_after, coreferences_count, \
-               named_entity_exceptions, date_entity_exceptions, temporal_quantity_exceptions, quantity_exceptions, have_org_role_exceptions
-    else:
-        return training_data
+    return TrainingDataExtraction(training_data,
+                                  TrainingDataStats.TrainingDataStatistics(unaligned_nodes, unaligned_nodes_after,
+                                                                           coreferences_count,
+                                                                           named_entity_exceptions,
+                                                                           date_entity_exceptions,
+                                                                           temporal_quantity_exceptions,
+                                                                           quantity_exceptions,
+                                                                           have_org_role_exceptions)
+                                  )
 
-if __name__ == "__main__":
+
+def extract_amr_ids_from_corpus_as_audit_trail():
     from os import listdir, path, makedirs
     data = []
     mypath = 'resources/alignments/split/' + "dev"
@@ -116,9 +125,9 @@ if __name__ == "__main__":
     for f in listdir(mypath):
         if not "dump" in f and "deft" in f:
             mypath_f = mypath + "/" + f
-            original_path_f = original_path + "/" + f.replace("alignments","amrs")
+            original_path_f = original_path + "/" + f.replace("alignments", "amrs")
             print(mypath_f)
-            new_data = generate_training_data(mypath_f, False)
+            new_data = generate_training_data(mypath_f).data
             data += new_data
             with open(original_path_f) as input_file:
                 lines = input_file.readlines()
@@ -126,8 +135,8 @@ if __name__ == "__main__":
             if not path.exists(path.dirname(audit_f)):
                 makedirs(path.dirname(audit_f))
             processed_ids = []
-            for (_,_,_,_,processed_id) in new_data:
-                processed_ids.append(processed_id)
+            for element in new_data:
+                processed_ids.append(element.amr_id)
             with open(audit_f, "wb") as audit:
                 for processed_id in processed_ids:
                     audit.write("%s\n" % processed_id)
@@ -143,7 +152,35 @@ if __name__ == "__main__":
                 amr_inputs.append(amr_input)
             with open(audit_f + "_content", "wb") as content:
                 for amr_input in amr_inputs:
-                    content.write("%s" %amr_input)
-
+                    content.write("%s" % amr_input)
     print len(data)
-#generate_training_data("/home/andreea/LDC2016E25_DEFT_Phase_2_AMR_Annotation_R2/data/alignments/unsplit/deft-p2-amr-r2-alignments-bolt.txt", False)
+
+
+if __name__ == "__main__":
+    # extract_amr_ids_from_corpus_as_audit_trail()
+    logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.WARNING)
+    generated_data = generate_training_data("resources/alignments/split/dev/deft-p2-amr-r1-alignments-dev-bolt.txt")
+    assert isinstance(generated_data, TrainingDataExtraction)
+    assert isinstance(generated_data.data, list)
+    assert isinstance(generated_data.stats, TrainingDataStats.TrainingDataStatistics)
+    data = generated_data.data
+    assert len(data) == 20
+    for elem in data:
+        assert len(elem) == 8
+        assert isinstance(elem, TrainingData)
+        assert isinstance(elem[0], basestring)
+        assert isinstance(elem.sentence, basestring)
+        assert isinstance(elem[1], list)
+        assert isinstance(elem.action_sequence, list)
+        assert isinstance(elem[2], basestring)
+        assert isinstance(elem.amr_original, basestring)
+        assert isinstance(elem[3], dict)
+        assert isinstance(elem.dependencies, dict)
+        assert isinstance(elem[4], list)
+        assert isinstance(elem.named_entities, list)
+        assert isinstance(elem[5], list)
+        assert isinstance(elem.date_entities, list)
+        assert isinstance(elem[6], dict)
+        assert isinstance(elem.concepts_metadata, dict)
+        assert isinstance(elem[7], basestring)
+        assert isinstance(elem.amr_id, basestring)
