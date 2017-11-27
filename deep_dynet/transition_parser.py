@@ -3,6 +3,7 @@ from operator import itemgetter
 import dynet as dy
 
 from amr_util.Node import Node
+import amr_util.Actions as act
 import logging
 
 WORD_DIM = 64
@@ -10,18 +11,18 @@ LSTM_DIM = 64
 ACTION_DIM = 32
 
 # actions the parser can take
-acts = ['SH', 'RL', 'RR', 'DN', 'SW']
 SH = 0
 RL = 1
 RR = 2
 DN = 3
 SW = 4
-NUM_ACTIONS = len(acts)
+NUM_ACTIONS = len(act.acts)
 
 # TODO: think of training  a model for each action and have an ensamble decide the next one ?
 
+
 def conv_action(action):
-    return acts[action]
+    return act.acts[action]
 
 
 def conv_actions(actions):
