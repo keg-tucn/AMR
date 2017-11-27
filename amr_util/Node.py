@@ -15,7 +15,7 @@ class Node:
             if relation == "polarity" or relation == "mode":
                 child_representation = ":%s %s" % (relation, child.label)
             elif child.tag is not None:
-                child_representation = ":%s \"%s\"" % (relation, child.tag)
+                child_representation = ":%s %s" % (relation, child.tag)
             else:
                 if depth < 50:
                     child_representation = ":%s  %s" % (relation, child.amr_print(depth + 1, idx + "_" + str(child_cnt)))
