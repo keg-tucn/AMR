@@ -77,7 +77,7 @@ stanford_parser_home = None
 
 def startJvm():
     import os
-    os.environ.setdefault("STANFORD_PARSER_HOME", "3rdParty/stanford-parser/stanford-parser-2010-08-20")
+    os.environ.setdefault("STANFORD_PARSER_HOME", "../3rdParty/stanford-parser/stanford-parser-2010-08-20")
     global stanford_parser_home
     stanford_parser_home = os.environ["STANFORD_PARSER_HOME"]
     jpype.startJVM(jpype.getDefaultJVMPath(),
