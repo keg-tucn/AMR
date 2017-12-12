@@ -1,6 +1,12 @@
 import logging
 import amr_util.Actions as act
 
+# roxanappop: start
+class SwapException(Exception):
+    pass
+class TokenOnStackException(Exception):
+    pass
+# roxanappop: end
 
 def generate_action_sequence(amr_graph, sentence, verbose=True):
     if verbose is False:
@@ -48,7 +54,8 @@ def generate_action_sequence(amr_graph, sentence, verbose=True):
             # If a swap was performed and we still can't reduce the top two elements we're in a deadlock, return.
             if last_action_swap:
                 logging.debug("Last swap didn't solve the stack. Tokens left on the stack: %s. Actions %s.", stack, actions)
-                raise Exception("Could not generate action sequence. Swap not working")
+                # roxanapppop: modified from Exception to SwapException
+                raise SwapException("Could not generate action sequence. Swap not working")
             if current_token >= len(buffer):
                 if len(stack) >= 3:
                     # we swap the second and third node
@@ -59,7 +66,8 @@ def generate_action_sequence(amr_graph, sentence, verbose=True):
                     last_action_swap = True
                 else:
                     logging.debug("Tokens left on the stack: %s. Actions %s.", stack, actions)
-                    raise Exception("Could not generate action sequence. Tokens left on stack")
+                    # roxanappop: modified from Exception to TokenOnStackException
+                    raise TokenOnStackException("Could not generate action sequence. Tokens left on stack")
             # try to shift the current token
             else:
                 if current_token in amr_graph.tokens_to_concepts_dict.keys():
