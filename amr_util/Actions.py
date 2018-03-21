@@ -1,4 +1,4 @@
-acts = ['SH', 'RL', 'RR', 'DN', 'SW']
+acts = ['SH', 'RL', 'RR', 'DN', 'SW', 'SW_2', 'SW_3', 'SW_4', 'RO']
 
 class AMRAction:
     def __init__(self, action, label, key):
