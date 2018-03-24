@@ -34,8 +34,10 @@ logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=loggi
 vocab_acts = ds.Vocab.from_list(act.acts)
 vocab_words = ds.Vocab.from_file('resources/data/vocab.txt')
 
-tests = ["dfa"]
-# tests = ["bolt", "dfa", "proxy", "xinhua", "deft"]
+test_use_model_prediction = True
+train_use_model_prediction = False
+# tests = ["dfa"]
+tests = ["bolt", "dfa", "proxy", "xinhua", "deft"]
 # tests = ["deft"]
 cases = []
 for filter_path in tests:
@@ -73,7 +75,7 @@ for run in range(1):
             for (sentence, actions, original_sentence, original_actions, amr, concepts_metadata) in train:
                 loss = None
                 try:
-                    parsed = tp.parse(sentence, actions, concepts_metadata)
+                    parsed = tp.parse(sentence, actions, concepts_metadata, use_model_predictions=train_use_model_prediction)
                     loss = parsed[0]
                     parsed_amr = parsed[1]
                     right_predictions += parsed[2]
@@ -112,7 +114,7 @@ for run in range(1):
             for (ds, da, original_sentence, original_actions, amr, concepts_metadata) in test:
                 loss = None
                 try:
-                    parsed_sentence = tp.parse(ds, da, concepts_metadata, use_model_predictions=True)
+                    parsed_sentence = tp.parse(ds, da, concepts_metadata, use_model_predictions=test_use_model_prediction)
                     loss = parsed_sentence[0]
                     parsed_amr = parsed_sentence[1]
                     right_predictions += parsed_sentence[2]
@@ -149,7 +151,8 @@ for run in range(1):
 
 logging.warning("Results")
 logging.warning("Histogram beans: %s", AMRResult.histogram_beans())
-logging.warning("%s", AMRResult.headers())
+output = AMRResult.headers() + "\n"
 for result in amr_dynet_results:
-    logging.warning("%s", result)
+    output += str(result) + "\n"
+logging.warning(output)
 
