@@ -12,7 +12,7 @@ class RotateException(Exception):
 
 
 def generate_action_sequence(amr_graph, sentence, verbose=True):
-   generate_action_sequence_impl(amr_graph, sentence, 1, False, verbose)
+   return generate_action_sequence_impl(amr_graph, sentence, 1, False, verbose)
 
 
 def generate_action_sequence_impl(amr_graph, sentence, no_of_swaps, should_rotate, verbose=True):
@@ -103,6 +103,7 @@ def generate_action_sequence_impl(amr_graph, sentence, no_of_swaps, should_rotat
                     last_action_swap = 0
 
                 current_token += 1
+
     return actions
 
 

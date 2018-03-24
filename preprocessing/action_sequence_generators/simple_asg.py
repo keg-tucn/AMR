@@ -15,12 +15,13 @@ from preprocessing.ActionSequenceGenerator import RotateException
 
 class SimpleASG(ASG):
 
-    def __init__(self, amr_graph, sentence, no_of_swaps, should_rotate):
-        ASG.__init__(self,amr_graph,sentence,no_of_swaps)
+    def __init__(self, no_of_swaps, should_rotate):
+        ASG.__init__(self,no_of_swaps)
         self.should_rotate = should_rotate
-        self.sentence = sentence
 
-    def generate_action_sequence(self):
+    def generate_action_sequence(self, amr_graph, sentence):
+
+        ASG.initialize_fields(self, amr_graph, sentence)
 
         last_action_swap = 0
         last_rotate = False

@@ -10,10 +10,13 @@ ASG: Action sequence generator
 
 class BacktrackingASG(ASG):
 
-    def __init__(self, amr_graph, sentence, no_of_swaps):
-        ASG.__init__(self,amr_graph,sentence,no_of_swaps)
+    def __init__(self, no_of_swaps, max_depth):
+        ASG.__init__(self,no_of_swaps)
+        self.max_depth = max_depth
 
-    def generate_action_sequence(self):
+    def generate_action_sequence(self, amr_graph, sentence):
+
+        ASG.initialize_fields(self, amr_graph, sentence)
 
         could_generate = self.generate_action_sequence_recursive(0)
         if not could_generate:
@@ -22,7 +25,7 @@ class BacktrackingASG(ASG):
 
     def generate_action_sequence_recursive(self, depth):
         depth += 1
-        if depth > 30:
+        if depth > self.max_depth:
             return False
 
         done = False
@@ -199,12 +202,12 @@ Performing reduce and deletes is similar to the deterministic version (reducing 
 
 class BacktrackingASGFixedReduce(BacktrackingASG):
 
-    def __init__(self, amr_graph, sentence, no_of_swaps):
-        BacktrackingASG.__init__(self, amr_graph,sentence,no_of_swaps)
+    def __init__(self, no_of_swaps, max_depth):
+        BacktrackingASG.__init__(self, no_of_swaps, max_depth)
 
     def generate_action_sequence_recursive(self, depth):
         depth += 1
-        if depth > 50:
+        if depth > self.max_depth:
             return False
 
         done = False

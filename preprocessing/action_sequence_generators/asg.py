@@ -4,21 +4,26 @@ import amr_util.Actions as act
 
 class ASG:
 
-    def __init__(self, amr_graph, sentence, no_of_swaps):
+    def __init__(self, no_of_swaps):
+        self.no_of_swaps = no_of_swaps
+        self.initial_amr_graph = {}
+        self.current_amr_graph = {}
+        self.initial_buffer = []
+        self.current_buffer = []
+        self.stack = []
+        self.actions = []
+        self.removed_indices = []
+        self.current_token = 0
+
+    def initialize_fields(self, amr_graph, sentence):
         self.initial_amr_graph = copy.deepcopy(amr_graph)
         self.current_amr_graph = copy.deepcopy(amr_graph)
-        self.no_of_swaps = no_of_swaps
         self.initial_buffer = sentence.split(" ")
         self.current_buffer = copy.deepcopy(self.initial_buffer)
         self.stack = []
         self.actions = []
         self.removed_indices = []
         self.current_token = 0
-
-    def generate_action_sequence(self):
-        raise NotImplementedError("Please Implement this method")
-        # while not self.is_done():
-        #    reduce_succeeded = False
 
     def is_done(self):
         return (self.current_token >= len(self.current_buffer)) and (len(self.stack) == 1)

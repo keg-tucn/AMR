@@ -16,6 +16,9 @@ from AMRGraph import AMR
 from amr_util import TrainingDataStats
 from preprocessing import TokensReplacer
 from ActionSequenceGeneratorStatisticsPlotter import plot_histogram
+from postprocessing import ActionSequenceReconstruction as asr
+from smatch import smatch_util
+from smatch import smatch_amr
 
 success = "success"
 coreference = "coreference"
@@ -30,20 +33,25 @@ sequence_generation_failed="sequence generation failed"
 unknown_sequence_generation_error="unknown sequence generation error"
 amr_parse_fail="amr parse fail"
 amr_pair_extraction_fail="amr pair extraction fail"
+smatch_not_1 = "smatch"
 
+class WrongActionSequenceException(Exception):
+    pass
 
 class ActionSeqGenStatistics:
 
-    def __init__(self, no_of_swaps, should_backtrack):
-        self.histogram_overall = {success: 0, coreference: 0, unaligned: 0, coreference_and_unaligned: 0, unknown: 0}
+    def __init__(self, asg_implementation, min_sentence_len, max_sentence_len):
+        self.histogram_overall = {success: 0, coreference: 0, unaligned: 0, coreference_and_unaligned: 0, smatch_not_1:0, unknown: 0}
         self.histogram_exceptions = {swap: 0, tokens_on_stack: 0, rotate: 0, unknown_sequence_generation_error: 0}
         self.histogram_swap = {coreference: 0, unaligned: 0, coreference_and_unaligned: 0, unknown: 0}
         self.histogram_tokens_on_stack = {coreference: 0, unaligned: 0, coreference_and_unaligned: 0, unknown: 0}
         self.histogram_sentence_fails = {preprocessing_failed: 0, sequence_generation_failed: 0, amr_parse_fail: 0, amr_pair_extraction_fail: 0}
         self.sentence_failed = 0
-        self.no_of_swaps = no_of_swaps
-        self.should_rotate = input_should_rotate
-        self.should_backtrack = should_backtrack
+        self.asg_implementation = asg_implementation
+        self.min_sentence_len = min_sentence_len
+        self.max_sentence_len = max_sentence_len
+        self.named_entities_metadata = []
+        self.date_entities_metadata = []
 
     def preprocessing(self, amr, sentence):
 
@@ -61,16 +69,26 @@ class ActionSeqGenStatistics:
 
         try:
             (new_amr, new_sentence, named_entities) = TokensReplacer.replace_named_entities(amr, sentence)
+
+            self.named_entities_metadata = [(n[3], n[2]) for n in named_entities]
+
             for name_entity in named_entities:
                 concepts_metadata[name_entity[0]] = name_entity[5]
+
+
         except Exception as e:
             # named_entity_exceptions += 1
             raise e
 
         try:
             (new_amr, new_sentence, date_entities) = TokensReplacer.replace_date_entities(new_amr, new_sentence)
+
+            self.date_entities_metadata = [(d[3], d[2], d[1]) for d in date_entities]
+
             for date_entity in date_entities:
                 concepts_metadata[date_entity[0]] = date_entity[5]
+
+
         except Exception as e:
             # date_entity_exceptions += 1
             raise e
@@ -92,7 +110,6 @@ class ActionSeqGenStatistics:
         except Exception as e:
             # quantity_exceptions += 1
             raise e
-
         return (new_amr, new_sentence)
 
     def on_swap_exception(self,is_coreference, is_unaligned):
@@ -158,22 +175,24 @@ class ActionSeqGenStatistics:
             is_coreference = coreferences_count != 0
             is_unaligned = len(unaligned_nodes) != 0
 
-            # default implementation
-            asg_implementation = SimpleASG(custom_amr, new_sentence, self.no_of_swaps, self.should_rotate)
-
             try:
 
-                if self.should_backtrack:
-                    # asg_implementation = BacktrackingASG(custom_amr, new_sentence, self.no_of_swaps)
-                    asg_implementation = BacktrackingASGFixedReduce(custom_amr, new_sentence, self.no_of_swaps)
+                action_sequence = self.asg_implementation.generate_action_sequence(custom_amr, new_sentence)
 
-                action_sequence = asg_implementation.generate_action_sequence()
-                self.histogram_overall[success] += 1
-                # success
-                # print("\nSuccess:")
-                # print(new_sentence)
-                # print(amr_str)
-                # print(action_sequence)
+                generated_amr_str = asr.reconstruct_all_ne(action_sequence,
+                                                           self.named_entities_metadata,
+                                                           self.date_entities_metadata)
+
+                smatch_results = smatch_util.SmatchAccumulator()
+                original_amr = smatch_amr.AMR.parse_AMR_line(amr_str)
+                generated_amr = smatch_amr.AMR.parse_AMR_line(generated_amr_str)
+                smatch_f_score = smatch_results.compute_and_add(generated_amr, original_amr)
+
+                if smatch_f_score != 1:
+                    self.histogram_overall[smatch_not_1] += 1
+                else:
+                    self.histogram_overall[success] += 1
+
             except SwapException as e:
                 # swap exception
                 self.on_swap_exception(is_coreference, is_unaligned)
@@ -187,6 +206,7 @@ class ActionSeqGenStatistics:
                 self.histogram_exceptions[rotate] += 1
             except Exception as e:
                 self.histogram_exceptions[unknown_sequence_generation_error] += 1
+                print(e)
                 self.histogram_sentence_fails[sequence_generation_failed] += 1
 
         except Exception as e:
@@ -200,25 +220,19 @@ class ActionSeqGenStatistics:
             #for i in tqdm(range(0, len(sentence_amr_triples))):
             for i in range(0, len(sentence_amr_triples)):
                 (sentence, amr_str, amr_id) = sentence_amr_triples[i]
-                try:
-                    amr = AMR.parse_string(amr_str)
-                    self.generate_statistics_for_a_sentence(i, amr, sentence, amr_str)
-                except Exception as e:
-                    self.histogram_sentence_fails[amr_parse_fail] += 1
-                    self.sentence_failed +=1
+                sentence_len = len(sentence.split(" "))
+                if self.min_sentence_len <= sentence_len < self.max_sentence_len:
+                    try:
+                        amr = AMR.parse_string(amr_str)
+                        self.generate_statistics_for_a_sentence(i, amr, sentence, amr_str)
+                    except Exception as e:
+                        self.histogram_sentence_fails[amr_parse_fail] += 1
+                        self.sentence_failed +=1
         except Exception as e:
+            # these exceptions maybe shouldn't be counted, I mean at least not added to sentence fails :)
             self.histogram_sentence_fails[amr_pair_extraction_fail] += 1
             self.sentence_failed +=1
             print(e)
-
-    def print_statistics(self):
-
-        ActionSeqGenStatistics.print_histograms(["overall","exceptions","swap","tokens on stack","sentence fails"],
-                                                [self.histogram_overall,
-                                                self.histogram_exceptions,
-                                                self.histogram_swap,
-                                                self.histogram_tokens_on_stack,
-                                                self.histogram_sentence_fails])
 
     def plot_statistics(self,alg_version,split,data_set):
         histogram_data =[
@@ -234,29 +248,16 @@ class ActionSeqGenStatistics:
         histogram_names = ["overall","exceptions","swap","tokens on stack","sentence fails"]
         plot_histogram(histogram_data,histogram_names,alg_version,split,data_set)
 
-    @staticmethod
-    def print_histograms(histogram_names, histogram_list):
-
-        h_list_len = len(histogram_list)
-        for i in range(0,h_list_len):
-            ActionSeqGenStatistics.print_histogram(histogram_names[i], histogram_list[i].keys(), histogram_list[i].values())
-
-    @staticmethod
-    def print_histogram(hist_name, column_names, values):
-        print("Histogram " + hist_name)
-        print(', '.join([str(elem) for elem in column_names]))
-        print(', '.join([str(elem) for elem in values]))
-
-
-
 
 def add_lists(list1, list2):
     return [a + b for a, b in zip(list1, list2)]
+
 
 def add_dicts(d1, d2):
     # return a dictionary with keys the union of the sets of keys of d1 and d2
     # and values the addition of the values in d1 and d2
     return {k: d1.get(k, 0) + d2.get(k,0) for k in set(d1.keys()) | set(d2.keys())}
+
 
 splits = ["training", "dev", "test"]
 data_sets = {"training":["bolt","cctv","dfa","guidelines","mt09sdl","proxy","wb","xinhua"],
@@ -266,21 +267,22 @@ data_sets = {"training":["bolt","cctv","dfa","guidelines","mt09sdl","proxy","wb"
 #data_sets = {"test":["bolt"]}
 
 #alg_version = "swap_1"
+
+"""
+Inputs (command line arguments):
+    argv[1]: the type of alg ("simple","backtrack")
+    argv[2]: the sentence length min (sentence_len >= min)
+    argv[3]: the sentence length max (sentence_len < max)
+    argv[4]: no of swaps
+    argv[5]: should rotate ("yes","no")
+"""
+
 input_should_backtrack = (sys.argv[1] == "backtrack")
-input_no_of_swaps = int(sys.argv[2])
-input_should_rotate = (sys.argv[3] == "yes")
-if input_should_backtrack:
-    alg_version = 'backtrack'
-else:
-    alg_version = "swap_"+str(input_no_of_swaps)
-    if input_should_rotate:
-        alg_version += "_rotate"
-    print("Alg version "+alg_version)
-
-logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
-
-logging.debug('Log')
-logging.debug('Logl')
+input_min_sentence_len = int(sys.argv[2])
+input_max_sentence_len = int(sys.argv[3])
+input_no_of_swaps = int(sys.argv[4])
+input_should_rotate = (sys.argv[5] == "yes")
+alg_version = sys.argv[1]
 
 
 # go over all data (training, dev, tests) and construct histograms for eac dataset
@@ -294,11 +296,16 @@ for split in splits:
     for data_set in data_sets[split]:
         my_file_path = 'resources/alignments/split/'+split+"/"+"deft-p2-amr-r1-alignments-"+split+"-"+data_set+".txt"
         print("Generating statistics for "+my_file_path)
-        acgStatistics = ActionSeqGenStatistics(input_no_of_swaps, input_should_backtrack)
+
+        asg_implementation = SimpleASG(input_no_of_swaps, input_should_rotate)
+
+        if input_should_backtrack:
+            max_depth = 4 * input_max_sentence_len
+            asg_implementation = BacktrackingASGFixedReduce(input_no_of_swaps, max_depth)
+
+        acgStatistics = ActionSeqGenStatistics(asg_implementation, input_min_sentence_len, input_max_sentence_len)
         acgStatistics.generate_statistics(my_file_path)
         acgStatistics.build_overall_histogram()
-        # print statistics per database in split
-        # acgStatistics.print_statistics()
         # plot statistics per database in split
         acgStatistics.plot_statistics(alg_version,split,data_set)
         # update per split statistics
@@ -316,13 +323,7 @@ for split in splits:
                     histogram_swap_split,
                     histogram_tokens_on_stack_split,
                     histogram_sentence_fails_split]
-    # ActionSeqGenStatistics.print_histograms(["overall","exceptions","swap","tokens on stack","sentence fails"],
-    #                                       histogram_data)
     # plot statistics per split
     ActionSeqGenStatistics.plot_statistics_static(histogram_data,alg_version,split,"all-datasets")
 
-    logging.debug("Logging")
-
 print("DONE")
-
-print()
