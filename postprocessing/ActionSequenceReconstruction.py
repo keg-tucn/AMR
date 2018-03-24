@@ -26,11 +26,11 @@ class ActionConceptTransfer:
 
     def load_from_verbose(self, original_actions):
         for action_concept in original_actions:
-            action = action_concept[:2]
+            action = action_concept.action
             if action == 'SH':
-                self.node_concepts.append(action_concept[3:])
+                self.node_concepts.append(action_concept.label)
             elif action == 'RR' or action == 'RL':
-                self.relation_concepts.append(action_concept[3:])
+                self.relation_concepts.append(action_concept.label)
 
     def load_from_action_and_label(self, action_i, label):
         for i in range(len(action_i)):
@@ -62,7 +62,7 @@ class ActionConceptTransfer:
 def reconstruct_all(action_sequence):
     rec_obj = ReconstructionState()
     for action in action_sequence:
-        rec_obj.process_action(action[:2], action[3:])
+        rec_obj.process_action(action.action, action.label)
     top = rec_obj.finalize()
     return top.amr_print()
 
@@ -71,7 +71,7 @@ def reconstruct_all_ne(action_sequence, named_entities_metadata, date_entity_met
     rec_obj = MetadataReconstructionState(named_entities_metadata, date_entity_metadata)
     for action in action_sequence:
         #SH_concept
-        rec_obj.process_action(action[:2], action[3:])
+        rec_obj.process_action(action.action, action.label)
     top = rec_obj.finalize()
     return top.amr_print()
 
@@ -185,8 +185,7 @@ if __name__ == "__main__":
     custom_AMR.create_custom_AMR(amr)
 
     actions = ActionSequenceGenerator.generate_action_sequence(custom_AMR, sentence)
-    acts_short = [a[:2] for a in actions]
-    acts_i = [VOCAB_ACTS.index(a) for a in acts_short]
+    acts_i = [a.index for a in actions]
 
     act = ActionConceptTransfer()
     act.load_from_verbose(actions)
@@ -195,7 +194,6 @@ if __name__ == "__main__":
     tokens_to_concepts_dict = custom_AMR.tokens_to_concepts_dict
 
     print actions
-    print acts_short
     print actions_re
 
     print reconstruct_all(actions)
@@ -215,8 +213,7 @@ if __name__ == "__main__":
     custom_AMR.create_custom_AMR(amr_new)
 
     actions = ActionSequenceGenerator.generate_action_sequence(custom_AMR, sentence)
-    acts_short = [a[:2] for a in actions]
-    acts_i = [VOCAB_ACTS.index(a) for a in acts_short]
+    acts_i = [a.index for a in actions]
 
     act = ActionConceptTransfer()
     act.load_from_verbose(actions)
@@ -225,7 +222,6 @@ if __name__ == "__main__":
     tokens_to_concepts_dict = custom_AMR.tokens_to_concepts_dict
 
     print actions
-    print acts_short
     print actions_re
 
     print reconstruct_all_ne(actions, [(5, ["Indian"])], [])
@@ -249,8 +245,7 @@ if __name__ == "__main__":
     custom_AMR.create_custom_AMR(amr_new)
 
     actions = ActionSequenceGenerator.generate_action_sequence(custom_AMR, sentence_new)
-    acts_short = [a[:2] for a in actions]
-    acts_i = [VOCAB_ACTS.index(a) for a in acts_short]
+    acts_i = [a.index for a in actions]
 
     act = ActionConceptTransfer()
     act.load_from_verbose(actions)
@@ -259,7 +254,6 @@ if __name__ == "__main__":
     tokens_to_concepts_dict = custom_AMR.tokens_to_concepts_dict
 
     print actions
-    print acts_short
     print actions_re
     print reconstruct_all(actions)
 
