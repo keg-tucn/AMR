@@ -62,7 +62,7 @@ class ActionConceptTransfer:
 def reconstruct_all(action_sequence):
     rec_obj = ReconstructionState()
     for action in action_sequence:
-        rec_obj.process_action(action.action, action.label)
+        rec_obj.process_action(action)
     top = rec_obj.finalize()
     return top.amr_print()
 
@@ -71,7 +71,7 @@ def reconstruct_all_ne(action_sequence, named_entities_metadata, date_entity_met
     rec_obj = MetadataReconstructionState(named_entities_metadata, date_entity_metadata)
     for action in action_sequence:
         #SH_concept
-        rec_obj.process_action(action.action, action.label)
+        rec_obj.process_action(action)
     top = rec_obj.finalize()
     return top.amr_print()
 
@@ -101,13 +101,14 @@ class MetadataReconstructionState:
             date_entity_node.add_child(Node(quantity, quantity), date_relation)
         return date_entity_node
 
-    def process_action(self, action, concept):
+    # refactor to receive action object instead of action name and concept
+    def process_action(self, action):
         # execute the action to update the parser state
         #TODO: split named/date entitits replacement of concept after we reconstruct the graph
         #TODO: reference named/date entitites by concept instead of by index
-        if action == 'SH':
+        if action.action == 'SH':
             if len(self.named_entity_metadata) > 0 and self.current_token_index == self.named_entity_metadata[0][0]:
-                node = self._make_named_entity(concept, self.named_entity_metadata[0][1])
+                node = self._make_named_entity(action.label, self.named_entity_metadata[0][1])
                 self.named_entity_metadata.pop(0)
             else:
                 if len(self.date_entity_metadata) > 0 and self.current_token_index \
@@ -115,13 +116,19 @@ class MetadataReconstructionState:
                     node = self._make_date_entity(self.date_entity_metadata[0][1], self.date_entity_metadata[0][2])
                     self.date_entity_metadata.pop(0)
                 else:
-                    node = Node(concept)
+                    node = Node(action.label)
             self.stack.append(node)
             self.current_token_index += 1
-        elif action == 'DN':
+        elif action.action == 'BRK':
+            node1 = Node(action.label)
+            node2 = Node(action.label2)
+            self.stack.append(node1)
+            self.stack.append(node2)
+            self.current_token_index += 1
+        elif action.action == 'DN':
             self.current_token_index += 1
             pass
-        elif action == 'SW':
+        elif action.action == 'SW':
             top = self.stack.pop()
             mid = self.stack.pop()
             lower = self.stack.pop()
@@ -131,8 +138,8 @@ class MetadataReconstructionState:
         else:  # one of the reduce actions
             right = self.stack.pop()
             left = self.stack.pop()
-            head, modifier = (left, right) if action == 'RR' else (right, left)
-            head.add_child(modifier, concept)
+            head, modifier = (left, right) if action.action == 'RR' else (right, left)
+            head.add_child(modifier, action.label)
             self.stack.append(head)
 
     def finalize(self):
@@ -145,14 +152,21 @@ class ReconstructionState:
 
         self.stack = []
 
-    def process_action(self, action, concept):
+    # refactor to receive action object instead of action name and concept
+    def process_action(self, action):
         # execute the action to update the parser state
-        if action == 'SH':
-            node = Node(concept)
+        if action.action == 'SH':
+            node = Node(action.label)
             self.stack.append(node)
-        elif action == 'DN':
+        elif action.action == 'BRK':
+            node1 = Node(action.label)
+            node2 = Node(action.label2)
+            self.stack.append(node1)
+            self.stack.append(node2)
+            self.current_token_index += 1
+        elif action.action == 'DN':
             pass
-        elif action == 'SW':
+        elif action.action == 'SW':
             top = self.stack.pop()
             mid = self.stack.pop()
             lower = self.stack.pop()
@@ -162,8 +176,8 @@ class ReconstructionState:
         else:  # one of the reduce actions
             right = self.stack.pop()
             left = self.stack.pop()
-            head, modifier = (left, right) if action == 'RR' else (right, left)
-            head.add_child(modifier, concept)
+            head, modifier = (left, right) if action.action == 'RR' else (right, left)
+            head.add_child(modifier, action.label)
             self.stack.append(head)
 
     def finalize(self):

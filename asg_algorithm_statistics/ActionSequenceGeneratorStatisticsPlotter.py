@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 from os import path
 
 abs_path = path.abspath('./plots_asg_statistics')
@@ -17,7 +18,7 @@ def plot_histogram(histogram_data, histogram_names, alg_version, subdirectory,fi
     """
 
     no_of_hists = len(histogram_data)
-    p = abs_path + "/"+alg_version+"/" + subdirectory + "/" + filename + ".png";
+    p = abs_path + "/"+alg_version+"/" + subdirectory + "/" + filename + ".png"
     fig, axes = plt.subplots(nrows=no_of_hists, ncols=1, figsize=(10, 5*no_of_hists), sharey=True)
 
     for i in range(0, no_of_hists):
@@ -33,5 +34,25 @@ def plot_histogram(histogram_data, histogram_names, alg_version, subdirectory,fi
         ax.set_xticks(x_data, minor=False)
         ax.set_xticklabels(labels, fontdict=None, minor=False)
 
+    plt.savefig(p)
+    plt.close('all')
+
+
+def plot_2_line_graph(data1, data2, relative_path):
+
+    fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(10, 5 * 2), sharey=True)
+    ax = axes[0]
+    ax.set_title("main graph")
+    x_data = range(0,255)
+    ax.plot(x_data, data1)
+    ax.plot(x_data, data2)
+
+    ax = axes[1]
+    ax.set_title("detailed graph")
+    x_data = range(0, 50)
+    ax.plot(x_data, data1[0:50])
+    ax.plot(x_data, data2[0:50])
+
+    p = abs_path + "/" + relative_path
     plt.savefig(p)
     plt.close('all')

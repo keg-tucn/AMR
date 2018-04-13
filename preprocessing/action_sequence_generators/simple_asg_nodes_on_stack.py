@@ -1,27 +1,28 @@
-from asg import ASG
+from asg_nodes_on_stack import NodesOnStackASG
 import logging
 import amr_util.Actions as act
 
-# should def move the exceptions somewhere else
+""" This is the deterministic version of the algorithm for action sequence generation
+    as described in Silviana Campean's thesis
+    But on the stack I keep (node_variable,token) pairs instead of tokens
+    (in Silviana's implementation on stack the tokens were kept, that is, the indices of the words in the buffer,
+    now I keep the node in the AMR (actually, the variable, for example 'l' for 'like-01') paired with the token 
+    the node is aligned with)
+"""
 from preprocessing.ActionSequenceGenerator import SwapException
 from preprocessing.ActionSequenceGenerator import TokenOnStackException
 from preprocessing.ActionSequenceGenerator import RotateException
 
-""" This is the deterministic version of the algorithm for action sequence generation
-    as described in Silviana Campean's thesis
-    (the code being refactored to use the methods in the ASG class)
-"""
 
-
-class SimpleASG(ASG):
+class SimpleNodesOnStackASG(NodesOnStackASG):
 
     def __init__(self, no_of_swaps, should_rotate):
-        ASG.__init__(self,no_of_swaps)
+        NodesOnStackASG.__init__(self,no_of_swaps)
         self.should_rotate = should_rotate
 
     def generate_action_sequence(self, amr_graph, sentence):
 
-        ASG.initialize_fields(self, amr_graph, sentence)
+        NodesOnStackASG.initialize_fields(self, amr_graph, sentence)
 
         last_action_swap = 0
         last_rotate = False
@@ -82,3 +83,12 @@ class SimpleASG(ASG):
                         self.delete()
         return self.actions
 
+    def can_shift(self):
+        if self.is_buffer_empty():
+            return False
+        return self.current_token in self.amr_graph.tokens_to_concepts_dict.keys()
+
+    def can_delete(self):
+        if self.is_buffer_empty():
+            return False
+        return self.current_token not in self.amr_graph.tokens_to_concepts_dict.keys()

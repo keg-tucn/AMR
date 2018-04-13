@@ -133,10 +133,10 @@ class BacktrackingASG(ASG):
 
         # add back the kid (node_var_first in the list of children of node_var_second)
         top = len(self.stack) - 1
-        node_var_first = BacktrackingASG._get_concept_for_index(self.current_amr_graph, self.stack[top])
-        node_var_second = BacktrackingASG._get_concept_for_index(self.current_amr_graph, self.stack[top - 1])
-        second_parent = self.current_amr_graph.parent_dict[node_var_second]
-        BacktrackingASG._add_child(self.current_amr_graph, node_var_second, second_parent, node_var_first)
+        node_var_first = BacktrackingASG._get_concept_for_index(self.amr_graph, self.stack[top])
+        node_var_second = BacktrackingASG._get_concept_for_index(self.amr_graph, self.stack[top - 1])
+        second_parent = self.amr_graph.parent_dict[node_var_second]
+        BacktrackingASG._add_child(self.amr_graph, node_var_second, second_parent, node_var_first)
 
         #delete action from actions
         self.actions.pop()
@@ -150,10 +150,10 @@ class BacktrackingASG(ASG):
 
         # add back the kid
         top = len(self.stack) - 1
-        node_var_first = BacktrackingASG._get_concept_for_index(self.current_amr_graph, self.stack[top])
-        node_var_second = BacktrackingASG._get_concept_for_index(self.current_amr_graph, self.stack[top - 1])
-        first_parent = self.current_amr_graph.parent_dict[node_var_first]
-        BacktrackingASG._add_child(self.current_amr_graph, node_var_first, first_parent, node_var_second)
+        node_var_first = BacktrackingASG._get_concept_for_index(self.amr_graph, self.stack[top])
+        node_var_second = BacktrackingASG._get_concept_for_index(self.amr_graph, self.stack[top - 1])
+        first_parent = self.amr_graph.parent_dict[node_var_first]
+        BacktrackingASG._add_child(self.amr_graph, node_var_first, first_parent, node_var_second)
 
         # delete action from actions
         self.actions.pop()
@@ -283,3 +283,116 @@ class BacktrackingASGFixedReduce(BacktrackingASG):
                             self.undo_swap_n(i)
 
         return False
+
+"""
+This is a "merge" between BacktrackingASGInformedSwap and SimpleInformedSwapASG
+The alg doesn't choose between shift and swaps only through backtracks, it will
+do swaps whenever they lead to a reduce
+"""
+
+
+class BacktrackingASGInformedSwap(BacktrackingASG):
+
+    def __init__(self, no_of_swaps, max_depth):
+        BacktrackingASG.__init__(self, no_of_swaps, max_depth)
+
+    def generate_action_sequence_recursive(self, depth):
+        depth += 1
+        if depth > self.max_depth:
+            return False
+
+        done = False
+        # conditions are checked before entering recursion, but just to make sure
+        if self.is_done():
+            return True
+
+        # try to reduce right
+        if self.can_reduce_right():
+            self.reduce_right()
+            # the reduce brought the alg into a final state
+            if self.is_done():
+                return True
+            # go deeper
+            done = self.generate_action_sequence_recursive(depth)
+            # the branch led to a solution
+            if done:
+                return True
+            # no solution on this branch => backtrack
+            self.undo_reduce_right()
+
+        else:
+
+            # try to reduce left
+            if self.can_reduce_left():
+                self.reduce_left()
+                # the reduce brought the alg into a final state
+                if self.is_done():
+                    return True
+                # go deeper
+                done = self.generate_action_sequence_recursive(depth)
+                # the branch led to a solution
+                if done:
+                    return True
+                # no solution on this branch => backtrack
+                self.undo_reduce_left()
+
+            else:
+
+                # try to delete
+                if self.can_delete():
+                    self.delete()
+                    # the delete brought the alg into a final state
+                    if self.is_done():
+                        return True
+                    done = self.generate_action_sequence_recursive(depth)
+                    if done:
+                        return True
+                    # this branch doesn't lead to a solution => backtrack
+                    self.undo_delete()
+
+                else:
+
+                    # try to swap
+                    for i in range(1, self.no_of_swaps + 1):
+                        # when I must do the swap, I do it
+                        if self.must_swap_n(i):
+                            self.swap_n(i)
+                            done = self.generate_action_sequence_recursive(depth)
+                            if done:
+                                return True
+                            self.undo_swap_n(i)
+                        else:
+                            # I don't have to do the swap, but I might if I can
+                            if self.can_swap_n(i):
+                                self.swap_n(i)
+                                done = self.generate_action_sequence_recursive(depth)
+                                if done:
+                                    return True
+                                self.undo_swap_n(i)
+
+                            # try to shift
+                            if self.can_shift():
+                                self.shift()
+                                # won't be done by simply shifting => no need to check we're in a final state
+                                # go deeper
+                                done = self.generate_action_sequence_recursive(depth)
+                                # a solution was found
+                                if done:
+                                    return True
+                                # no sol on this branch
+                                self.undo_shift()
+
+        return False
+
+    def must_swap_n(self, n):
+
+        if not self.can_swap_n(n):
+            return False
+
+        # check if my swap leads to a reduce
+        top = len(self.stack) - 1
+        if self.can_reduce(top, top - n - 1) or self.can_reduce(top - n - 1, top):
+            return True
+        else:
+            return False
+

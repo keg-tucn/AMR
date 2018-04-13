@@ -3,11 +3,16 @@ import os
 import copy
 import sys
 from tqdm import tqdm
+import traceback
 
 import AMRData
 from preprocessing import SentenceAMRPairsExtractor, ActionSequenceGenerator
 from preprocessing.action_sequence_generators.backtracking_asg import BacktrackingASG
 from preprocessing.action_sequence_generators.backtracking_asg import BacktrackingASGFixedReduce
+from preprocessing.action_sequence_generators.backtracking_asg import BacktrackingASGInformedSwap
+from preprocessing.action_sequence_generators.simple_asg__informed_swap import SimpleInformedSwapASG
+from preprocessing.action_sequence_generators.simple_asg_nodes_on_stack import SimpleNodesOnStackASG
+from preprocessing.action_sequence_generators.simple_informed_break_nodes_on_stack import SimpleInformedWithBreakNodesOnStackASG
 from preprocessing.action_sequence_generators.simple_asg import SimpleASG
 from preprocessing.ActionSequenceGenerator import SwapException
 from preprocessing.ActionSequenceGenerator import TokenOnStackException
@@ -16,6 +21,7 @@ from AMRGraph import AMR
 from amr_util import TrainingDataStats
 from preprocessing import TokensReplacer
 from ActionSequenceGeneratorStatisticsPlotter import plot_histogram
+from ActionSequenceGeneratorStatisticsPlotter import plot_2_line_graph
 from postprocessing import ActionSequenceReconstruction as asr
 from smatch import smatch_util
 from smatch import smatch_amr
@@ -38,6 +44,8 @@ smatch_not_1 = "smatch"
 class WrongActionSequenceException(Exception):
     pass
 
+MAX_SENTENCE_LEN = 255
+
 class ActionSeqGenStatistics:
 
     def __init__(self, asg_implementation, min_sentence_len, max_sentence_len):
@@ -46,6 +54,12 @@ class ActionSeqGenStatistics:
         self.histogram_swap = {coreference: 0, unaligned: 0, coreference_and_unaligned: 0, unknown: 0}
         self.histogram_tokens_on_stack = {coreference: 0, unaligned: 0, coreference_and_unaligned: 0, unknown: 0}
         self.histogram_sentence_fails = {preprocessing_failed: 0, sequence_generation_failed: 0, amr_parse_fail: 0, amr_pair_extraction_fail: 0}
+        # vector where the sentence lengths are the indices, and the no of sentences with that length is the data
+        # initialize described vector with 0
+        self.sentence_lengths_all = [0] * MAX_SENTENCE_LEN
+        # vector where the sentence lengths are the indices,
+        # and the no of successful sentences with that length is the data
+        self.sentence_lengths_successes = [0] * MAX_SENTENCE_LEN
         self.sentence_failed = 0
         self.asg_implementation = asg_implementation
         self.min_sentence_len = min_sentence_len
@@ -125,6 +139,7 @@ class ActionSeqGenStatistics:
         if (not is_unaligned) and (not is_coreference):
             self.histogram_swap[unknown] += 1
 
+
     def on_tokens_on_stack_exception(self,is_coreference, is_unaligned):
         self.histogram_sentence_fails[sequence_generation_failed] += 1
         #self.sequence_generation_failed += 1
@@ -153,6 +168,7 @@ class ActionSeqGenStatistics:
 
         try:
 
+
             (new_amr,new_sentence) = self.preprocessing(amr,sentence)
 
             unaligned_nodes = {}
@@ -163,9 +179,14 @@ class ActionSeqGenStatistics:
 
             custom_amr = AMRData.CustomizedAMR()
             try:
+
                 custom_amr.create_custom_AMR(new_amr)
-            except:
+            except Exception as ce:
                 print("Exception when creating custom AMR\n") # => twice
+                # print(ce)
+                # print(sentence)
+                # print(amr_str)
+                # print(new_amr.node_to_tokens)
 
             try:
                 coreferences_count = TrainingDataStats.get_coreferences_count(custom_amr)
@@ -188,17 +209,40 @@ class ActionSeqGenStatistics:
                 generated_amr = smatch_amr.AMR.parse_AMR_line(generated_amr_str)
                 smatch_f_score = smatch_results.compute_and_add(generated_amr, original_amr)
 
+
+
                 if smatch_f_score != 1:
                     self.histogram_overall[smatch_not_1] += 1
+                    # print("\n")
+                    # print(sentence)
+                    # print(amr_str)
+                    # print(generated_amr_str)
+                    # print(custom_amr.tokens_to_concepts_dict)
+                    # print(custom_amr.tokens_to_concept_list_dict)
+
                 else:
                     self.histogram_overall[success] += 1
+                    sentence_len = len(sentence.split(" "))
+                    self.sentence_lengths_successes[sentence_len] += 1
 
             except SwapException as e:
                 # swap exception
                 self.on_swap_exception(is_coreference, is_unaligned)
+
             except TokenOnStackException as e:
                 # tokens on stack exception
                 self.on_tokens_on_stack_exception(is_coreference,is_unaligned)
+                # if (not is_unaligned) and (not is_coreference):
+                #     print("\n")
+                #     print(amr_str)
+                #     print(sentence)
+                #     print(custom_amr.tokens_to_concepts_dict)
+                #     print(custom_amr.tokens_to_concept_list_dict)
+                #     print(custom_amr.relations_dict)
+                #     print(custom_amr.parent_dict)
+                #     print(amr.relation_to_tokens)
+                #     print(self.asg_implementation.actions)
+                #     print(self.asg_implementation.stack)
             except RotateException as e:
                 # rotate exception
                 self.histogram_sentence_fails[sequence_generation_failed] += 1
@@ -206,7 +250,6 @@ class ActionSeqGenStatistics:
                 self.histogram_exceptions[rotate] += 1
             except Exception as e:
                 self.histogram_exceptions[unknown_sequence_generation_error] += 1
-                print(e)
                 self.histogram_sentence_fails[sequence_generation_failed] += 1
 
         except Exception as e:
@@ -221,6 +264,7 @@ class ActionSeqGenStatistics:
             for i in range(0, len(sentence_amr_triples)):
                 (sentence, amr_str, amr_id) = sentence_amr_triples[i]
                 sentence_len = len(sentence.split(" "))
+                self.sentence_lengths_all[sentence_len] = self.sentence_lengths_all[sentence_len] + 1
                 if self.min_sentence_len <= sentence_len < self.max_sentence_len:
                     try:
                         amr = AMR.parse_string(amr_str)
@@ -244,14 +288,18 @@ class ActionSeqGenStatistics:
         ActionSeqGenStatistics.plot_statistics_static(histogram_data,alg_version,split,data_set)
 
     @staticmethod
-    def plot_statistics_static( histogram_data, alg_version, split, data_set):
+    def plot_statistics_static(histogram_data, alg_version, split, data_set):
         histogram_names = ["overall","exceptions","swap","tokens on stack","sentence fails"]
         plot_histogram(histogram_data,histogram_names,alg_version,split,data_set)
+
+    @staticmethod
+    def plot_sentence_len_graph(split,  sentence_lengths_all, sentence_lengths_success):
+        graph_relative_path = alg_version+"/"+split+"/"+ "sentence_lengths.png"
+        plot_2_line_graph(sentence_lengths_all,sentence_lengths_success,graph_relative_path)
 
 
 def add_lists(list1, list2):
     return [a + b for a, b in zip(list1, list2)]
-
 
 def add_dicts(d1, d2):
     # return a dictionary with keys the union of the sets of keys of d1 and d2
@@ -265,7 +313,7 @@ data_sets = {"training":["bolt","cctv","dfa","guidelines","mt09sdl","proxy","wb"
              "test":["bolt","consensus","dfa","proxy","xinhua"]}
 #splits = ["test"]
 #data_sets = {"test":["bolt"]}
-
+#data_sets = {"training":["bolt"]}
 #alg_version = "swap_1"
 
 """
@@ -277,7 +325,6 @@ Inputs (command line arguments):
     argv[5]: should rotate ("yes","no")
 """
 
-input_should_backtrack = (sys.argv[1] == "backtrack")
 input_min_sentence_len = int(sys.argv[2])
 input_max_sentence_len = int(sys.argv[3])
 input_no_of_swaps = int(sys.argv[4])
@@ -293,15 +340,29 @@ for split in splits:
     histogram_swap_split = {}
     histogram_tokens_on_stack_split = {}
     histogram_sentence_fails_split = {}
+    sentence_lengths_all = [0]*MAX_SENTENCE_LEN
+    sentence_lengths_success = [0]*MAX_SENTENCE_LEN
     for data_set in data_sets[split]:
         my_file_path = 'resources/alignments/split/'+split+"/"+"deft-p2-amr-r1-alignments-"+split+"-"+data_set+".txt"
         print("Generating statistics for "+my_file_path)
 
         asg_implementation = SimpleASG(input_no_of_swaps, input_should_rotate)
 
-        if input_should_backtrack:
-            max_depth = 4 * input_max_sentence_len
+        max_depth = 4 * input_max_sentence_len
+
+        if alg_version == "backtrack":
             asg_implementation = BacktrackingASGFixedReduce(input_no_of_swaps, max_depth)
+        elif alg_version == "informed_swap":
+            # doesn't really need rotate, does it?
+            asg_implementation = SimpleInformedSwapASG(input_no_of_swaps)
+        elif alg_version == "backtrack_informed_swap":
+            asg_implementation = BacktrackingASGInformedSwap(input_no_of_swaps, max_depth)
+        elif alg_version == "simple_nodes_on_stack":
+            asg_implementation = SimpleNodesOnStackASG(input_no_of_swaps, input_should_rotate)
+        elif alg_version == "simple_nodes_on_stack":
+            asg_implementation = SimpleNodesOnStackASG(input_no_of_swaps, input_should_rotate)
+        elif alg_version == "simple_informed_break_nodes_on_stack":
+            asg_implementation = SimpleInformedWithBreakNodesOnStackASG(input_no_of_swaps, input_should_rotate)
 
         acgStatistics = ActionSeqGenStatistics(asg_implementation, input_min_sentence_len, input_max_sentence_len)
         acgStatistics.generate_statistics(my_file_path)
@@ -314,6 +375,8 @@ for split in splits:
         histogram_swap_split = add_dicts(histogram_swap_split,acgStatistics.histogram_swap)
         histogram_tokens_on_stack_split = add_dicts(histogram_tokens_on_stack_split,acgStatistics.histogram_tokens_on_stack)
         histogram_sentence_fails_split = add_dicts(histogram_sentence_fails_split,acgStatistics.histogram_sentence_fails)
+        sentence_lengths_all = add_lists(sentence_lengths_all,acgStatistics.sentence_lengths_all)
+        sentence_lengths_success = add_lists(sentence_lengths_success, acgStatistics.sentence_lengths_successes)
 
     # print statistics per split
     print("\nStatistics for "+split)
@@ -325,5 +388,6 @@ for split in splits:
                     histogram_sentence_fails_split]
     # plot statistics per split
     ActionSeqGenStatistics.plot_statistics_static(histogram_data,alg_version,split,"all-datasets")
+    ActionSeqGenStatistics.plot_sentence_len_graph(split,sentence_lengths_all,sentence_lengths_success)
 
 print("DONE")
