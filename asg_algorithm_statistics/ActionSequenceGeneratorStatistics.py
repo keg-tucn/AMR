@@ -183,10 +183,6 @@ class ActionSeqGenStatistics:
                 custom_amr.create_custom_AMR(new_amr)
             except Exception as ce:
                 print("Exception when creating custom AMR\n") # => twice
-                # print(ce)
-                # print(sentence)
-                # print(amr_str)
-                # print(new_amr.node_to_tokens)
 
             try:
                 coreferences_count = TrainingDataStats.get_coreferences_count(custom_amr)
@@ -232,6 +228,18 @@ class ActionSeqGenStatistics:
             except TokenOnStackException as e:
                 # tokens on stack exception
                 self.on_tokens_on_stack_exception(is_coreference,is_unaligned)
+                # if (not is_unaligned) and is_coreference:
+                #     print("\n")
+                #     print(amr_str)
+                #     print(sentence)
+                #     print(custom_amr.tokens_to_concepts_dict)
+                #     print(custom_amr.tokens_to_concept_list_dict)
+                #     print(custom_amr.relations_dict)
+                #     print(custom_amr.parent_dict)
+                #     print(amr.relation_to_tokens)
+                #     print(self.asg_implementation.actions)
+                #     print(self.asg_implementation.stack)
+
                 # if (not is_unaligned) and (not is_coreference):
                 #     print("\n")
                 #     print(amr_str)

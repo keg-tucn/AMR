@@ -40,7 +40,7 @@ def plot_histogram(histogram_data, histogram_names, alg_version, subdirectory,fi
 
 def plot_2_line_graph(data1, data2, relative_path):
 
-    fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(10, 5 * 2), sharey=True)
+    fig, axes = plt.subplots(nrows=3, ncols=1, figsize=(10, 5 * 2), sharey=True)
     ax = axes[0]
     ax.set_title("main graph")
     x_data = range(0,255)
@@ -48,10 +48,16 @@ def plot_2_line_graph(data1, data2, relative_path):
     ax.plot(x_data, data2)
 
     ax = axes[1]
-    ax.set_title("detailed graph")
+    ax.set_title("detailed graph (max length 50)")
     x_data = range(0, 50)
     ax.plot(x_data, data1[0:50])
     ax.plot(x_data, data2[0:50])
+
+    ax = axes[2]
+    ax.set_title("detailed graph (max length 15)")
+    x_data = range(0, 15)
+    ax.plot(x_data, data1[0:15])
+    ax.plot(x_data, data2[0:15])
 
     p = abs_path + "/" + relative_path
     plt.savefig(p)
