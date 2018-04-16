@@ -209,12 +209,6 @@ class ActionSeqGenStatistics:
 
                 if smatch_f_score != 1:
                     self.histogram_overall[smatch_not_1] += 1
-                    # print("\n")
-                    # print(sentence)
-                    # print(amr_str)
-                    # print(generated_amr_str)
-                    # print(custom_amr.tokens_to_concepts_dict)
-                    # print(custom_amr.tokens_to_concept_list_dict)
 
                 else:
                     self.histogram_overall[success] += 1
@@ -228,29 +222,6 @@ class ActionSeqGenStatistics:
             except TokenOnStackException as e:
                 # tokens on stack exception
                 self.on_tokens_on_stack_exception(is_coreference,is_unaligned)
-                # if (not is_unaligned) and is_coreference:
-                #     print("\n")
-                #     print(amr_str)
-                #     print(sentence)
-                #     print(custom_amr.tokens_to_concepts_dict)
-                #     print(custom_amr.tokens_to_concept_list_dict)
-                #     print(custom_amr.relations_dict)
-                #     print(custom_amr.parent_dict)
-                #     print(amr.relation_to_tokens)
-                #     print(self.asg_implementation.actions)
-                #     print(self.asg_implementation.stack)
-
-                # if (not is_unaligned) and (not is_coreference):
-                #     print("\n")
-                #     print(amr_str)
-                #     print(sentence)
-                #     print(custom_amr.tokens_to_concepts_dict)
-                #     print(custom_amr.tokens_to_concept_list_dict)
-                #     print(custom_amr.relations_dict)
-                #     print(custom_amr.parent_dict)
-                #     print(amr.relation_to_tokens)
-                #     print(self.asg_implementation.actions)
-                #     print(self.asg_implementation.stack)
             except RotateException as e:
                 # rotate exception
                 self.histogram_sentence_fails[sequence_generation_failed] += 1
