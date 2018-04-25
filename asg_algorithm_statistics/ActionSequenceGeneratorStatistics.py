@@ -302,6 +302,8 @@ Inputs (command line arguments):
     argv[3]: the sentence length max (sentence_len < max)
     argv[4]: no of swaps
     argv[5]: should rotate ("yes","no")
+    argv[6]: read from file/directory
+    argv[7]: file/directory
 """
 
 input_min_sentence_len = int(sys.argv[2])
@@ -311,7 +313,7 @@ input_should_rotate = (sys.argv[5] == "yes")
 alg_version = sys.argv[1]
 
 
-# go over all data (training, dev, tests) and construct histograms for eac dataset
+# go over all data (training, dev, tests) and construct histograms for eac datasetl
 for split in splits:
     # create dictionaries per split
     histogram_overall_split = {}
