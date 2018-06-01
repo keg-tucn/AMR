@@ -262,6 +262,15 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len):
             next_action_prev_action = action
             features_matrix.append(features)
         if tokens_sequence_index != len(tokens_sequence):
+            print("some error due to tokens_sequence_index != len(tokens_sequence)")
+            print("tokens_sequence_index:")
+            print(tokens_sequence_index)
+            print("len(tokens_sequence):")
+            print(len(tokens_sequence))
+            print("sentence:")
+            print(tokens_sequence)
+            print("actions:")
+            print(action_sequence)
             raise Exception("There was a problem at training instance " + str(i) + "\n")
 
         features_matrix = np.concatenate((np.asarray(features_matrix),
@@ -757,7 +766,7 @@ def test_file(model_name, tokenizer_path, test_case_name, test_data_path, max_le
 if __name__ == "__main__":
     data_sets = ['xinhua', 'bolt', 'proxy', 'dfa', 'all']
     max_lens = [30, 30, 30, 30, 30]
-    embeddings_dims = [200, 200, 300, 200, 200]
+    embeddings_dims = [200, 200, 300, 200, 100]
     epochs = [50, 50, 50, 50, 20]
     test_source = 'dev'
 
@@ -786,7 +795,7 @@ if __name__ == "__main__":
                tokenizer_path="./tokenizers/full_tokenizer.dump",
                train_data_path=train_data_path,
                test_data_path=test_data_path, max_len=max_len,
-               train_epochs=epochs, embedding_dim=embeddings_dim)
+               train_epochs=epoch, embedding_dim=embeddings_dim)
     #     test_file(model_name, tokenizer_path="./tokenizers/full_tokenizer.dump",
     #               test_case_name= test_source,
     #               test_data_path=test_set_name, max_len=max_len,

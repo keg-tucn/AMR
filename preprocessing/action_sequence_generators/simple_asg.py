@@ -26,6 +26,7 @@ class SimpleASG(ASG):
         last_action_swap = 0
         last_rotate = False
         while not self.is_done():
+
             reduce_succeeded = False
 
             if self.can_reduce_right():

@@ -135,6 +135,35 @@ class MetadataReconstructionState:
             self.stack.append(mid)
             self.stack.append(lower)
             self.stack.append(top)
+        #for shift 2
+        #TODO: add for shft n
+        elif action.action == "SW_2":
+            top = self.stack.pop()
+            mid = self.stack.pop()
+            mid2 = self.stack.pop()
+            lower = self.stack.pop()
+            self.stack.append(mid)
+            self.stack.append(mid2)
+            self.stack.append(lower)
+            self.stack.append(top)
+        elif action.action == "SW_3":
+            top = self.stack.pop()
+            mid = self.stack.pop()
+            mid2 = self.stack.pop()
+            mid3 = self.stack.pop()
+            lower = self.stack.pop()
+            self.stack.append(mid)
+            self.stack.append(mid3)
+            self.stack.append(mid2)
+            self.stack.append(lower)
+            self.stack.append(top)
+        elif action.action == "RO":
+            top = self.stack.pop()
+            second = self.stack.pop()
+            bottom = self.stack.pop(0)
+            self.stack.insert(0, second)
+            self.stack.append(bottom)
+            self.stack.append(top)
         else:  # one of the reduce actions
             right = self.stack.pop()
             left = self.stack.pop()
@@ -172,6 +201,35 @@ class ReconstructionState:
             lower = self.stack.pop()
             self.stack.append(mid)
             self.stack.append(lower)
+            self.stack.append(top)
+        #for shift 2
+        #TODO: add for shft n
+        elif action.action == "SW_2":
+            top = self.stack.pop()
+            mid = self.stack.pop()
+            mid2 = self.stack.pop()
+            lower = self.stack.pop()
+            self.stack.append(mid)
+            self.stack.append(mid2)
+            self.stack.append(lower)
+            self.stack.append(top)
+        elif action.action == "SW_3":
+            top = self.stack.pop()
+            mid = self.stack.pop()
+            mid2 = self.stack.pop()
+            mid3 = self.stack.pop()
+            lower = self.stack.pop()
+            self.stack.append(mid)
+            self.stack.append(mid3)
+            self.stack.append(mid2)
+            self.stack.append(lower)
+            self.stack.append(top)
+        elif action.action == "RO":
+            top = self.stack.pop()
+            second = self.stack.pop()
+            bottom = self.stack.pop(0)
+            self.stack.insert(0, second)
+            self.stack.append(bottom)
             self.stack.append(top)
         else:  # one of the reduce actions
             right = self.stack.pop()
