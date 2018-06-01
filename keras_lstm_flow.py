@@ -19,6 +19,7 @@ from postprocessing import ActionSequenceReconstruction as asr
 from smatch import smatch_amr
 from smatch import smatch_util
 import amr_util.Actions as act
+from amr_reader import read_data as ra
 
 sys.path.append(path.abspath('./stanford_parser'))
 
@@ -38,20 +39,7 @@ def read_sentence(type):
 
 # Load data
 def read_data(type, dataset=None):
-    data = []
-    mypath = 'resources/alignments/split/' + type
-    print(mypath)
-    if dataset is None:
-        for f in listdir(mypath):
-            if not f.endswith(".dump"):
-                mypath_f = mypath + "/" + f
-                print(mypath_f)
-                data += tde.generate_training_data(mypath_f, compute_dependencies=True).data
-    else:
-        mypath_f = mypath + "/" + dataset
-        print(mypath_f)
-        data = tde.generate_training_data(mypath_f, compute_dependencies=True).data
-    return data
+    return ra(type, dataset)
 
 
 def get_predictions_from_distr(predictions_distr):
@@ -187,7 +175,7 @@ def make_prediction(model, x_test, deps, no_word_index, max_len):
     return final_prediction
 
 
-def generate_dataset(x, y, dependencies, no_word_index, max_len):
+def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids):
     lengths = []
     filtered_count = 0
     for action_sequence in y:
@@ -200,7 +188,7 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len):
     y_full = np.full((len(y) - filtered_count, max_len), dtype=np.int32, fill_value=NONE)
     i = 0
 
-    for action_sequence, tokens_sequence, deps in zip(y, x, dependencies):
+    for action_sequence, tokens_sequence, deps, amr_id in zip(y, x, dependencies, amr_ids):
         next_action_token = tokens_sequence[0]
         next_action_stack = [no_word_index, no_word_index, no_word_index, no_word_index]
         next_action_prev_action = NONE
@@ -262,16 +250,7 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len):
             next_action_prev_action = action
             features_matrix.append(features)
         if tokens_sequence_index != len(tokens_sequence):
-            print("some error due to tokens_sequence_index != len(tokens_sequence)")
-            print("tokens_sequence_index:")
-            print(tokens_sequence_index)
-            print("len(tokens_sequence):")
-            print(len(tokens_sequence))
-            print("sentence:")
-            print(tokens_sequence)
-            print("actions:")
-            print(action_sequence)
-            raise Exception("There was a problem at training instance " + str(i) + "\n")
+            raise Exception("There was a problem at training instance " + str(i) + " at " + amr_id + "\n")
 
         features_matrix = np.concatenate((np.asarray(features_matrix),
                                           np.zeros((max_len - len(features_matrix), 15), dtype=np.int32)))
@@ -389,6 +368,8 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     date_entities = [d[5] for d in data]
     named_entities = [[(n[3], n[2]) for n in named_entities_list] for named_entities_list in named_entities]
     date_entities = [[(d[3], d[2], d[1]) for d in date_entities_list] for date_entities_list in date_entities]
+    train_amr_ids = [d[7] for d in train_data]
+    test_amr_ids = [d[7] for d in test_data]
 
     tokenizer = pickle.load(open(tokenizer_path, "rb"))
     sequences = np.asarray(tokenizer.texts_to_sequences(sentences))
@@ -438,9 +419,9 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
 
     (x_train_full, y_train_full, lengths_train, filtered_count_tr) = generate_dataset(x_train, y_train,
                                                                                       dependencies_train, no_word_index,
-                                                                                      max_len)
+                                                                                      max_len, train_amr_ids)
     (x_test_full, y_test_full, lengths_test, filtered_count_test) = generate_dataset(x_test, y_test, dependencies_test,
-                                                                                     no_word_index, max_len)
+                                                                                     no_word_index, max_len, test_amr_ids)
 
     print "Mean length %s " % np.asarray(lengths_train).mean()
     print "Max length %s" % np.asarray(lengths_train).max()
@@ -559,6 +540,7 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
 
     sentences = [d[0] for d in data]
     amrs = [d[2] for d in data]
+    test_amr_ids = [d[7] for d in data]
 
     actions = [d[1] for d in data]
 
@@ -606,7 +588,7 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
     no_word_index = (len(word_index)) + 1
 
     (x_test_full, y_test_full, lengths_test, filtered_count_test) = generate_dataset(x_test, y_test, dependencies_test,
-                                                                                     no_word_index, max_len)
+                                                                                     no_word_index, max_len, test_amr_ids)
 
     y_test_ohe = np.zeros((y_test_full.shape[0], max_len, 5), dtype='int32')
     for row, i in zip(y_test_full[:, :], range(y_test_full.shape[0])):
@@ -766,7 +748,7 @@ def test_file(model_name, tokenizer_path, test_case_name, test_data_path, max_le
 if __name__ == "__main__":
     data_sets = ['xinhua', 'bolt', 'proxy', 'dfa', 'all']
     max_lens = [30, 30, 30, 30, 30]
-    embeddings_dims = [200, 200, 300, 200, 100]
+    embeddings_dims = [200, 200, 300, 200, 200]
     epochs = [50, 50, 50, 50, 20]
     test_source = 'dev'
 
@@ -788,14 +770,14 @@ if __name__ == "__main__":
             train_data_path = None
             test_data_path = None
         else:
-            train_data_path = "deft-p2-amr-r1-alignments-training-{}.txt".format(data_set)
-            test_data_path = "deft-p2-amr-r1-alignments-test-{}.txt".format(data_set)
+            train_data_path = data_set
+            test_data_path = data_set
 
     train_file(model_name=model_name,
                tokenizer_path="./tokenizers/full_tokenizer.dump",
                train_data_path=train_data_path,
                test_data_path=test_data_path, max_len=max_len,
-               train_epochs=epoch, embedding_dim=embeddings_dim)
+               train_epochs=23, embedding_dim=100)
     #     test_file(model_name, tokenizer_path="./tokenizers/full_tokenizer.dump",
     #               test_case_name= test_source,
     #               test_data_path=test_set_name, max_len=max_len,

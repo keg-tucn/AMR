@@ -3,9 +3,6 @@ import dynet as dy
 import deep_dynet.support as ds
 import deep_dynet.transition_parser as ddtp
 import logging
-from os import listdir, path, makedirs
-import TrainingDataExtractor as tde
-import pickle as js
 from smatch import smatch_amr
 from smatch import smatch_util
 import numpy as np
@@ -13,35 +10,8 @@ import matplotlib.pyplot as plt
 import traceback
 from amr_util.Reporting import AMRResult
 import amr_util.Actions as act
+from amr_reader import read_data
 
-
-def generate_parsed_data(parsed_path, dump_path):
-    dump_path = dump_path + ".dump"
-    # print(dump_path)
-    if path.exists(dump_path):
-        with open(dump_path, "rb") as f:
-            return js.load(f)
-    data = tde.generate_training_data(parsed_path).data
-    if not path.exists(path.dirname(dump_path)):
-        makedirs(path.dirname(dump_path))
-    with open(dump_path, "wb") as f:
-        js.dump(data, f)  # , indent=4, separators=(',', ': ')
-    return data
-
-
-def read_data(type, filter_path = "deft"):
-    mypath = 'resources/alignments/split/' + type
-    print(mypath + " with filter " + filter_path)
-    data = []
-    directory_content = listdir(mypath)
-    original_corpus = filter(lambda x: "dump" not in x, directory_content)
-    original_corpus = filter(lambda x: filter_path in x, original_corpus)
-    for f in original_corpus:
-        mypath_f = mypath + "/" + f
-        dumppath_f = mypath + "/dumps/" + f
-        print(mypath_f)
-        data += generate_parsed_data(mypath_f, dumppath_f)
-    return data
 
 
 def process_data(data, vocab_words, vocab_acts):
