@@ -791,9 +791,10 @@ if __name__ == "__main__":
         else:
             train_data_path = data_set
             test_data_path = data_set
-
+    tokenizer_path = "./tokenizers/full_tokenizer_extended.dump"
+    generate_tokenizer(tokenizer_path)
     train_file(model_name=model_name,
-               tokenizer_path="./tokenizers/full_tokenizer.dump",
+               tokenizer_path=tokenizer_path,
                train_data_path=train_data_path,
                test_data_path=test_data_path, max_len=max_len,
                train_epochs=23, embedding_dim=100)
