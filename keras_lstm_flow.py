@@ -484,12 +484,6 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     for i in range(len(x_test)):
         #Step1: input a processed test entity test
         prediction = make_prediction(model, x_test[i], dependencies_test[i], no_word_index, max_len)
-        # print 'Sentence'
-        # pretty_print_sentence(x_test[i], index_to_word_map)
-        # print 'Predicted'
-        # pretty_print_actions(prediction)
-        # print 'Actual'
-        # pretty_print_actions(y_test[i])
 
         if len(prediction) > 0:
             act = asr.ActionConceptTransfer()
