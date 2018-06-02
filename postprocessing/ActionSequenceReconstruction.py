@@ -5,6 +5,7 @@ from AMRGraph import AMR
 from amr_util.Node import Node
 from preprocessing import ActionSequenceGenerator
 from preprocessing import TokensReplacer
+from amr_util.Actions import AMRAction
 
 VOCAB_ACTS = ['SH', 'RL', 'RR', 'DN', 'SW']
 SH = 0
@@ -39,6 +40,27 @@ class ActionConceptTransfer:
             elif action_i[i] == RR or action_i[i] == RL:
                 self.relation_concepts.append(label[i])
 
+    # def populate_new_actions(self, new_actions):
+    #     result = []
+    #     for action in new_actions:
+    #         if action == SH:
+    #             if len(self.node_concepts) > 0:
+    #                 concept = self.node_concepts.popleft()
+    #             else:
+    #                 concept = 'unk'
+    #             result.append(action_name(action) + '_' + concept)
+    #         elif action == RR or action == RL:
+    #             if len(self.relation_concepts) > 0:
+    #                 concept = self.relation_concepts.popleft()
+    #             else:
+    #                 concept = 'unk'
+    #             result.append(action_name(action) + '_' + concept)
+    #         else:
+    #             result.append(action_name(action))
+    #     return result
+
+    # method that takes the labels for concepts and relations
+    # from the gold actions and puts them
     def populate_new_actions(self, new_actions):
         result = []
         for action in new_actions:
@@ -47,15 +69,18 @@ class ActionConceptTransfer:
                     concept = self.node_concepts.popleft()
                 else:
                     concept = 'unk'
-                result.append(action_name(action) + '_' + concept)
+                predicted_act = AMRAction.build_labeled(action_name(action),concept)
+                result.append(predicted_act)
             elif action == RR or action == RL:
                 if len(self.relation_concepts) > 0:
                     concept = self.relation_concepts.popleft()
                 else:
                     concept = 'unk'
-                result.append(action_name(action) + '_' + concept)
+                predicted_act = AMRAction.build_labeled(action_name(action),concept)
+                result.append(predicted_act)
             else:
-                result.append(action_name(action))
+                predicted_act = AMRAction.build(action_name(action))
+                result.append(predicted_act)
         return result
 
 

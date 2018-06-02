@@ -484,12 +484,12 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     for i in range(len(x_test)):
         #Step1: input a processed test entity test
         prediction = make_prediction(model, x_test[i], dependencies_test[i], no_word_index, max_len)
-        print 'Sentence'
-        pretty_print_sentence(x_test[i], index_to_word_map)
-        print 'Predicted'
-        pretty_print_actions(prediction)
-        print 'Actual'
-        pretty_print_actions(y_test[i])
+        # print 'Sentence'
+        # pretty_print_sentence(x_test[i], index_to_word_map)
+        # print 'Predicted'
+        # pretty_print_actions(prediction)
+        # print 'Actual'
+        # pretty_print_actions(y_test[i])
 
         if len(prediction) > 0:
             act = asr.ActionConceptTransfer()
@@ -502,6 +502,7 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
             #Step2': predict concepts
             #Step2'': predict relations
          #Step3: replace named entitities & date date_entities
+
 
             predicted_amr_str = asr.reconstruct_all_ne(pred_label, named_entities[i], date_entities[i])
 
@@ -518,7 +519,8 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
         else:
             errors += 1
 
-    file = open('./results_keras/{}_results_train'.format(model_name), 'w')
+    #modified to results_train_new
+    file = open('./results_keras/{}_results_train_new'.format(model_name), 'w')
 
     file.write('------------------------------------------------------------------------------------------------\n')
     file.write('Train data shape: \n')
