@@ -82,6 +82,7 @@ def generate_training_data(file_path, compute_dependencies=False):
             custom_amr = AMRData.CustomizedAMR()
             custom_amr.create_custom_AMR(new_amr)
             coreferences_count += TrainingDataStats.get_coreferences_count(custom_amr)
+            #TODO: put here the new version of the action seq generator
             action_sequence = ActionSequenceGenerator.generate_action_sequence(custom_amr, new_sentence)
             if compute_dependencies is False:
                 # training_data.append(TrainingData(new_sentence, action_sequence, amr_str, concepts_metadata, amr_id))
@@ -159,7 +160,7 @@ def extract_amr_ids_from_corpus_as_audit_trail():
 if __name__ == "__main__":
     # extract_amr_ids_from_corpus_as_audit_trail()
     logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.WARNING)
-    generated_data = generate_training_data("resources/alignments/split/dev/deft-p2-amr-r1-alignments-dev-bolt.txt")
+    generated_data = generate_training_data("resources/alignments/split/dev/deft-p2-amr-r2-alignments-dev-bolt.txt")
     assert isinstance(generated_data, TrainingDataExtraction)
     assert isinstance(generated_data.data, list)
     assert isinstance(generated_data.stats, TrainingDataStats.TrainingDataStatistics)

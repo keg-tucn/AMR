@@ -146,3 +146,4 @@ class CustomizedAMR():
                     else:
                         t[2] = value
                     self.relations_dict[(key, item[0][1])] = tuple(t)
+

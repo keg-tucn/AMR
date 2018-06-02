@@ -32,6 +32,7 @@ def generate_action_sequence_impl(amr_graph, sentence, no_of_swaps, should_rotat
     last_action_swap = 0
     last_rotate = False
     while current_token < len(buffer) or len(stack) != 1:
+
         reduce_succeeded = False
         if len(stack) >= 2:
 

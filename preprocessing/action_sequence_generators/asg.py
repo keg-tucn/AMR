@@ -94,6 +94,7 @@ class ASG:
         self.stack.remove(self.stack[top - 1])
 
     def swap_n(self, n):
+
         top = len(self.stack) - 1
         # we swap the second and (n+1)th node
         aux = self.stack[top - 1]
@@ -111,6 +112,7 @@ class ASG:
         self.actions.append(act.AMRAction("SH", tokens_to_concept[1], tokens_to_concept[0]))
         self.current_token += 1
 
+    #TODO: analyze this method (I have the vague impression there should be a tokens_to_concept_list)
     def brk(self):
         self.stack.append(self.current_token)
         tokens_to_concept = self.amr_graph.tokens_to_concepts_dict[self.current_token]

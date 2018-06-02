@@ -222,6 +222,7 @@ class ActionSeqGenStatistics:
             except TokenOnStackException as e:
                 # tokens on stack exception
                 self.on_tokens_on_stack_exception(is_coreference,is_unaligned)
+
             except RotateException as e:
                 # rotate exception
                 self.histogram_sentence_fails[sequence_generation_failed] += 1
@@ -287,11 +288,12 @@ def add_dicts(d1, d2):
 
 
 splits = ["training", "dev", "test"]
-data_sets = {"training":["bolt","cctv","dfa","guidelines","mt09sdl","proxy","wb","xinhua"],
+data_sets = {"training":["bolt","cctv","dfa","dfb","guidelines","mt09sdl","proxy","wb","xinhua"],
              "dev":["bolt","consensus","dfa","proxy","xinhua"],
              "test":["bolt","consensus","dfa","proxy","xinhua"]}
-#splits = ["test"]
-#data_sets = {"test":["bolt"]}
+
+# splits = ["training"]
+# data_sets = {"training":["dfa"]}
 #data_sets = {"training":["bolt"]}
 #alg_version = "swap_1"
 
@@ -302,8 +304,6 @@ Inputs (command line arguments):
     argv[3]: the sentence length max (sentence_len < max)
     argv[4]: no of swaps
     argv[5]: should rotate ("yes","no")
-    argv[6]: read from file/directory
-    argv[7]: file/directory
 """
 
 input_min_sentence_len = int(sys.argv[2])
@@ -324,7 +324,7 @@ for split in splits:
     sentence_lengths_all = [0]*MAX_SENTENCE_LEN
     sentence_lengths_success = [0]*MAX_SENTENCE_LEN
     for data_set in data_sets[split]:
-        my_file_path = 'resources/alignments/split/'+split+"/"+"deft-p2-amr-r1-alignments-"+split+"-"+data_set+".txt"
+        my_file_path = 'resources/alignments/split/'+split+"/"+"deft-p2-amr-r2-alignments-"+split+"-"+data_set+".txt"
         print("Generating statistics for "+my_file_path)
 
         asg_implementation = SimpleASG(input_no_of_swaps, input_should_rotate)
