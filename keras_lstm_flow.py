@@ -11,6 +11,7 @@ from keras.models import Model
 from keras.optimizers import RMSprop, SGD
 from keras.preprocessing.text import Tokenizer
 from keras.utils import plot_model
+import logging
 
 import TrainingDataExtractor as tde
 from amr_util.KerasPlotter import plot_history
@@ -48,16 +49,26 @@ def get_predictions_from_distr(predictions_distr):
 
 
 def pretty_print_actions(acts_i):
-    for i in range(len(acts_i)):
-        print act.acts[acts_i[i]]
-    print '\n'
+    print actions_to_string(acts_i)
+
+
+def actions_to_string(acts_i):
+    str = ""
+    for a in acts_i:
+        str += act.acts[a] + " "
+    str += "\n"
+    return str
 
 
 def pretty_print_sentence(tokens, index_to_word_map):
-    for i in range(len(tokens)):
-        print index_to_word_map[tokens[i]], ;
-    print '\n'
+    print tokens_to_sentence(tokens, index_to_word_map)
 
+def tokens_to_sentence(tokens, index_to_word_map):
+    str = ""
+    for t in tokens:
+        str += index_to_word_map[t] + " "
+    str += "\n"
+    return str
 
 def make_prediction(model, x_test, deps, no_word_index, max_len):
     tokens_buffer = x_test
@@ -175,9 +186,10 @@ def make_prediction(model, x_test, deps, no_word_index, max_len):
     return final_prediction
 
 
-def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids):
+def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids, index_to_word_map):
     lengths = []
     filtered_count = 0
+    exception_count = 0
     for action_sequence in y:
         lengths.append(len(action_sequence))
         if len(action_sequence) > max_len:
@@ -250,7 +262,11 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids):
             next_action_prev_action = action
             features_matrix.append(features)
         if tokens_sequence_index != len(tokens_sequence):
-            raise Exception("There was a problem at training instance " + str(i) + " at " + amr_id + "\n")
+            logging.warn("There was a problem at training instance %d at %s. Actions %s. Tokens %s", i, amr_id,
+                         actions_to_string(action_sequence), tokens_to_sentence(tokens_sequence, index_to_word_map))
+            exception_count += 1
+            continue
+            # raise Exception("There was a problem at training instance " + str(i) + " at " + amr_id + "\n")
 
         features_matrix = np.concatenate((np.asarray(features_matrix),
                                           np.zeros((max_len - len(features_matrix), 15), dtype=np.int32)))
@@ -259,6 +275,7 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids):
         x_full[i, :, :] = features_matrix
         y_full[i, :] = actions
         i += 1
+    logging.warning("Exception count " + str(exception_count))
     return x_full, y_full, lengths, filtered_count
 
 
@@ -417,11 +434,13 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     embedding_matrix = get_embedding_matrix(word_index, embedding_dim)
     no_word_index = (len(word_index)) + 1
 
+    index_to_word_map = {v: k for k, v in tokenizer.word_index.iteritems()}
+
     (x_train_full, y_train_full, lengths_train, filtered_count_tr) = generate_dataset(x_train, y_train,
                                                                                       dependencies_train, no_word_index,
-                                                                                      max_len, train_amr_ids)
+                                                                                      max_len, train_amr_ids, index_to_word_map)
     (x_test_full, y_test_full, lengths_test, filtered_count_test) = generate_dataset(x_test, y_test, dependencies_test,
-                                                                                     no_word_index, max_len, test_amr_ids)
+                                                                                     no_word_index, max_len, test_amr_ids, index_to_word_map)
 
     print "Mean length %s " % np.asarray(lengths_train).mean()
     print "Max length %s" % np.asarray(lengths_train).max()
@@ -459,7 +478,6 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     plot_history(history, model_name)
 
     model.load_weights(model_path, by_name=False)
-    index_to_word_map = {v: k for k, v in tokenizer.word_index.iteritems()}
 
     smatch_results = smatch_util.SmatchAccumulator()
     errors = 0
@@ -583,12 +601,14 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
     print amrs_test.shape
     print len(dependencies_test)
 
+    index_to_word_map = {v: k for k, v in tokenizer.word_index.iteritems()}
+
     embedding_matrix = get_embedding_matrix(word_index, embedding_dim)
 
     no_word_index = (len(word_index)) + 1
 
     (x_test_full, y_test_full, lengths_test, filtered_count_test) = generate_dataset(x_test, y_test, dependencies_test,
-                                                                                     no_word_index, max_len, test_amr_ids)
+                                                                                     no_word_index, max_len, test_amr_ids, index_to_word_map)
 
     y_test_ohe = np.zeros((y_test_full.shape[0], max_len, 5), dtype='int32')
     for row, i in zip(y_test_full[:, :], range(y_test_full.shape[0])):
@@ -600,7 +620,6 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
     print model.summary()
 
     model.load_weights(model_path, by_name=False)
-    index_to_word_map = {v: k for k, v in tokenizer.word_index.iteritems()}
 
     smatch_results = smatch_util.SmatchAccumulator()
     predictions = []
