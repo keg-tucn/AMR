@@ -1,4 +1,4 @@
-acts = ['SH', 'RL', 'RR', 'DN', 'SW', 'SW_2', 'SW_3', 'SW_4', 'RO', 'BRK']
+acts = ['SH', 'RL', 'RR', 'DN', 'SW', 'SW_2', 'SW_3', 'SW_4', 'RO', 'BRK', 'SW_BK']
 
 
 class AMRAction:

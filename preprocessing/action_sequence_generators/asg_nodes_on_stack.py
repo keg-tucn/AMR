@@ -16,6 +16,7 @@ class NodesOnStackASG:
         self.no_of_swaps = no_of_swaps
         self.amr_graph = {}
         self.buffer = []
+        self.buffer_indices = []
         self.stack = []
         self.actions = []
         self.removed_indices = []
@@ -25,6 +26,7 @@ class NodesOnStackASG:
     def initialize_fields(self, amr_graph, sentence):
         self.amr_graph = copy.deepcopy(amr_graph)
         self.buffer = sentence.split(" ")
+        self.buffer_indices = range(len(self.buffer))
         self.stack = []
         self.actions = []
         self.removed_indices = []
@@ -34,11 +36,11 @@ class NodesOnStackASG:
 
         raise NotImplementedError("Please Implement this generate_action_sequence method from NodesOnStackASG")
 
-    def is_done(self):
-        return (self.current_token >= len(self.buffer)) and (len(self.stack) == 1)
-
     def is_buffer_empty(self):
-        return self.current_token >= len(self.buffer)
+        return len(self.buffer_indices) == 0
+
+    def is_done(self):
+        return (self.is_buffer_empty()) and (len(self.stack) == 1)
 
     def can_reduce_right(self):
         if len(self.stack) >= 2:
@@ -141,17 +143,24 @@ class NodesOnStackASG:
         node_token_pair = (node, self.current_token)
         self.stack.append(node_token_pair)
         self.actions.append(act.AMRAction("SH", concept, node))
-        self.current_token += 1
+        self.buffer_indices.pop(0)
+        if len(self.buffer_indices) != 0:
+            self.current_token = self.buffer_indices[0]
 
     def brk(self, no_of_nodes):
         self.stack.append(self.current_token)
         tokens_to_concept = self.amr_graph.tokens_to_concepts_dict[self.current_token]
         self.actions.append(act.AMRAction("BRK", tokens_to_concept[1], tokens_to_concept[0]))
-        self.current_token += 1
+        self.buffer_indices.pop(0)
+        if len(self.buffer_indices) != 0:
+            self.current_token = self.buffer_indices[0]
 
     def delete(self):
         self.actions.append(act.AMRAction.build("DN"))
-        self.current_token += 1
+        i=self.buffer_indices.pop(0)
+        self.removed_indices.append(i)
+        if len(self.buffer_indices) != 0:
+            self.current_token = self.buffer_indices[0]
 
     def rotate(self):
         top = len(self.stack) - 1

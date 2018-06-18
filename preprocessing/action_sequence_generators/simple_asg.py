@@ -44,7 +44,7 @@ class SimpleASG(ASG):
                 last_rotate = False
             else:
                 # def should make sure only either swap or rotate happens
-                if self.current_token >= len(self.buffer):  # this means I can no longer shift or delete
+                if self.is_buffer_empty():  # this means I can no longer shift or delete
 
                     if last_action_swap == self.no_of_swaps:
 

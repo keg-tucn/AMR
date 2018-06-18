@@ -52,7 +52,7 @@ class SimpleInformedSwapASG(ASG):
                             last_action_swap += 1
                         else:
                             # I can still shift or delete
-                            if self.current_token < len(self.buffer):
+                            if not self.is_buffer_empty():
                                 # try to shift the current token
                                 if self.can_shift():
                                     self.shift()

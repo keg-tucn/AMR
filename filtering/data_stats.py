@@ -105,7 +105,7 @@ def generate_statistics(file_path):
     # perfectly aligned trees
     perfect_align_filters = [PerfectALignmentFilter()]
     instances,filtered_instances = generate_dataset_statistics(file_path,perfect_align_filters)
-    print("Filter: PerfectlyAligneAMR, Total number of instances: {0}, Number of filtered instances: {1}".format(instances,filtered_instances))
+    print("Filter: PerfectlyAlignedAMRTree, Total number of instances: {0}, Number of filtered instances: {1}".format(instances,filtered_instances))
 
     # aligned projective tree
     pojective_filters = [ProjectiveTreeFilter()]

@@ -105,6 +105,9 @@ class MetadataReconstructionState:
     def __init__(self, _named_entity_metadata, _date_entity_metadata):
         self.named_entity_metadata = _named_entity_metadata
         self.date_entity_metadata = _date_entity_metadata
+        #255 is the max sentence len
+        max_sen_len = 255
+        self.buffer_indices = range(max_sen_len+1)
         self.current_token_index = 0
         self.stack = []
 
@@ -143,15 +146,24 @@ class MetadataReconstructionState:
                 else:
                     node = Node(action.label)
             self.stack.append(node)
-            self.current_token_index += 1
+            #self.current_token_index += 1
+            self.buffer_indices.pop(0)
+            if len(self.buffer_indices) != 0:
+                self.current_token_index = self.buffer_indices[0]
         elif action.action == 'BRK':
             node1 = Node(action.label)
             node2 = Node(action.label2)
             self.stack.append(node1)
             self.stack.append(node2)
-            self.current_token_index += 1
+            #self.current_token_index += 1
+            self.buffer_indices.pop(0)
+            if len(self.buffer_indices) != 0:
+                self.current_token_index = self.buffer_indices[0]
         elif action.action == 'DN':
-            self.current_token_index += 1
+            #self.current_token_index += 1
+            self.buffer_indices.pop(0)
+            if len(self.buffer_indices) != 0:
+                self.current_token_index = self.buffer_indices[0]
             pass
         elif action.action == 'SW':
             top = self.stack.pop()
@@ -217,7 +229,7 @@ class ReconstructionState:
             node2 = Node(action.label2)
             self.stack.append(node1)
             self.stack.append(node2)
-            self.current_token_index += 1
+            #self.current_token_index += 1
         elif action.action == 'DN':
             pass
         elif action.action == 'SW':

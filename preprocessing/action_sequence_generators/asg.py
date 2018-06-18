@@ -8,6 +8,7 @@ class ASG:
         self.no_of_swaps = no_of_swaps
         self.amr_graph = {}
         self.buffer = []
+        self.buffer_indices = []
         self.stack = []
         self.actions = []
         self.removed_indices = []
@@ -16,13 +17,17 @@ class ASG:
     def initialize_fields(self, amr_graph, sentence):
         self.amr_graph = copy.deepcopy(amr_graph)
         self.buffer = sentence.split(" ")
+        self.buffer_indices = range(len(self.buffer))
         self.stack = []
         self.actions = []
         self.removed_indices = []
         self.current_token = 0
 
+    def is_buffer_empty(self):
+        return len(self.buffer_indices) == 0
+
     def is_done(self):
-        return (self.current_token >= len(self.buffer)) and (len(self.stack) == 1)
+        return (self.is_buffer_empty()) and (len(self.stack) == 1)
 
     def can_reduce_right(self):
         if len(self.stack) >= 2:
@@ -57,12 +62,10 @@ class ASG:
         return len(self.stack) >= n + 2 and self.no_of_swaps != 0
 
     def can_shift(self):
-        return self.current_token < len(
-            self.buffer) and self.current_token in self.amr_graph.tokens_to_concepts_dict.keys()
+        return (not self.is_buffer_empty()) and self.current_token in self.amr_graph.tokens_to_concepts_dict.keys()
 
     def can_delete(self):
-        return self.current_token < len(
-            self.buffer) and (self.current_token not in self.amr_graph.tokens_to_concepts_dict.keys())
+        return (not self.is_buffer_empty()) and (self.current_token not in self.amr_graph.tokens_to_concepts_dict.keys())
 
     def reduce_right(self):
         top = len(self.stack) - 1
@@ -110,18 +113,25 @@ class ASG:
         self.stack.append(self.current_token)
         tokens_to_concept = self.amr_graph.tokens_to_concepts_dict[self.current_token]
         self.actions.append(act.AMRAction("SH", tokens_to_concept[1], tokens_to_concept[0]))
-        self.current_token += 1
+        self.buffer_indices.pop(0)
+        if len(self.buffer_indices) != 0:
+            self.current_token = self.buffer_indices[0]
 
     #TODO: analyze this method (I have the vague impression there should be a tokens_to_concept_list)
     def brk(self):
         self.stack.append(self.current_token)
         tokens_to_concept = self.amr_graph.tokens_to_concepts_dict[self.current_token]
         self.actions.append(act.AMRAction("BRK", tokens_to_concept[1], tokens_to_concept[0]))
-        self.current_token += 1
+        self.buffer_indices.pop(0)
+        if len(self.buffer_indices) != 0:
+            self.current_token = self.buffer_indices[0]
 
     def delete(self):
         self.actions.append(act.AMRAction.build("DN"))
-        self.current_token += 1
+        i = self.buffer_indices.pop(0)
+        self.removed_indices.append(i)
+        if len(self.buffer_indices) != 0:
+            self.current_token = self.buffer_indices[0]
 
     def rotate(self):
         top = len(self.stack) - 1

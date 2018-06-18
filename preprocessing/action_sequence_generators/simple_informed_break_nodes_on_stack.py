@@ -109,7 +109,9 @@ class SimpleInformedWithBreakNodesOnStackASG(NodesOnStackASG):
         node_token_pair = (node, self.current_token)
         self.stack.append(node_token_pair)
         self.actions.append(act.AMRAction("SH", concept, node))
-        self.current_token += 1
+        self.buffer_indices.pop(0)
+        if len(self.buffer_indices) != 0:
+            self.current_token = self.buffer_indices[0]
 
     def brk(self):
         tokens_to_concept_list = self.amr_graph.tokens_to_concept_list_dict[self.current_token]
@@ -122,7 +124,9 @@ class SimpleInformedWithBreakNodesOnStackASG(NodesOnStackASG):
         self.stack.append(node_token_pair_1)
         self.stack.append(node_token_pair_2)
         self.actions.append(act.AMRAction("BRK", concept1, node1, concept2, node2))
-        self.current_token += 1
+        self.buffer_indices.pop(0)
+        if len(self.buffer_indices) != 0:
+            self.current_token = self.buffer_indices[0]
 
     #
     # def can_delete(self):

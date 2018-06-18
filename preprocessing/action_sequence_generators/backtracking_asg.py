@@ -168,13 +168,14 @@ class BacktrackingASG(ASG):
         self.actions.pop()
 
     def undo_shift(self):
-        self.stack.pop()
+        self.current_token = self.stack.pop()
+        self.buffer_indices.insert(0,self.current_token)
         self.actions.pop()
-        self.current_token -= 1
 
     def undo_delete(self):
         self.actions.pop()
-        self.current_token -= 1
+        self.buffer_indices.insert(0,self.current_token)
+        self.current_token = self.removed_indices.pop()
 
     @staticmethod
     def _add_child(amr_graph, node, parent, child):
