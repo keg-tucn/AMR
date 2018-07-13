@@ -3,21 +3,28 @@ import pickle as js
 import TrainingDataExtractor as tde
 
 
-def generate_parsed_data(parsed_path, dump_path):
+def generate_parsed_data(parsed_path, cache, dump_path):
     dump_path = dump_path + ".dump"
     # print(dump_path)
-    if path.exists(dump_path):
-        with open(dump_path, "rb") as f:
-            return js.load(f)
-    data = tde.generate_training_data(parsed_path).data
-    if not path.exists(path.dirname(dump_path)):
-        makedirs(path.dirname(dump_path))
-    with open(dump_path, "wb") as f:
-        js.dump(data, f)  # , indent=4, separators=(',', ': ')
-    return data
+    #don't cache it
+    #if path.exists(dump_path):
+    #    with open(dump_path, "rb") as f:
+    #        return js.load(f)
+    if cache:
+        print("cache")
+        if path.exists(dump_path):
+            with open(dump_path, "rb") as f:
+                return js.load(f)
+    else:
+        data = tde.generate_training_data(parsed_path).data
+        if not path.exists(path.dirname(dump_path)):
+            makedirs(path.dirname(dump_path))
+        with open(dump_path, "wb") as f:
+            js.dump(data, f)  # , indent=4, separators=(',', ': ')
+        return data
 
 
-def read_data(type, filter_path="deft"):
+def read_data(type,cache, filter_path="deft"):
     if filter_path is None:
         filter_path = "deft"
     mypath = 'resources/alignments/split/' + type
@@ -30,5 +37,5 @@ def read_data(type, filter_path="deft"):
         mypath_f = mypath + "/" + f
         dumppath_f = mypath + "/dumps/" + f
         print(mypath_f)
-        data += generate_parsed_data(mypath_f, dumppath_f)
+        data += generate_parsed_data(mypath_f,cache, dumppath_f)
     return data

@@ -165,7 +165,7 @@ class NodesOnStackASG:
     def rotate(self):
         top = len(self.stack) - 1
         # we swap the second and last node
-        last_index = len(self.stack) - 1
+        last_index = 0
         aux = self.stack[top - 1]
         self.stack[top - 1] = self.stack[last_index]
         self.stack[last_index] = aux

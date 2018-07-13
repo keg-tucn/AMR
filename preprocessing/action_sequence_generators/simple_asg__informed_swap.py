@@ -14,12 +14,15 @@ from preprocessing.ActionSequenceGenerator import TokenOnStackException
 
 class SimpleInformedSwapASG(ASG):
 
-    def __init__(self, no_of_swaps):
+    def __init__(self, no_of_swaps,should_rotate):
         ASG.__init__(self,no_of_swaps)
+        self.should_rotate = should_rotate
 
     def generate_action_sequence(self, amr_graph, sentence):
 
         ASG.initialize_fields(self, amr_graph, sentence)
+
+        swapped = False
 
         last_action_swap = 0
         while not self.is_done():
@@ -37,45 +40,33 @@ class SimpleInformedSwapASG(ASG):
             if reduce_succeeded:
                 # reset the last_action_swap to 0 to indicate that the last action was not swap
                 last_action_swap = 0
+                swapped = False
             else:
-                if last_action_swap == self.no_of_swaps:
 
-                    logging.debug(
-                        "Last swap didn't solve the stack. Tokens left on the stack: %s. Actions %s.",
-                        self.stack, self.actions)
-                    raise SwapException("Could not generate action sequence. Swap not working")
-
-                else:
-                    if last_action_swap < self.no_of_swaps:
-                        if self.can_swap_n(last_action_swap + 1):
-                            self.swap_n(last_action_swap + 1)
-                            last_action_swap += 1
+                for i in range(1,self.no_of_swaps+1):
+                    if self.can_swap_n(i):
+                        self.swap_n(i)
+                        swapped = True
+                        break
+                        last_action_swap = i
+                        # I can still shift or delete
+                #try to rotate, which is still a swapping operation
+                if self.should_rotate and self.can_rotate():
+                    self.rotate()
+                    swapped = True
+                if not swapped:
+                    if not self.is_buffer_empty():
+                        # try to shift the current token
+                        if self.can_shift():
+                            self.shift()
                         else:
-                            # I can still shift or delete
-                            if not self.is_buffer_empty():
-                                # try to shift the current token
-                                if self.can_shift():
-                                    self.shift()
-                                else:
-                                    self.delete()
-                            else:
-                                # I still have swaps to perform, but the length is not enough
-                                logging.debug("Tokens left on the stack: %s. Actions %s.", self.stack, self.actions)
-                                raise TokenOnStackException(
-                                    "Could not generate action sequence. Tokens left on stack")
-        return self.actions
+                            self.delete()
+                    else:
+                        logging.debug("Tokens left on the stack: %s. Actions %s.", self.stack, self.actions)
+                        raise TokenOnStackException(
+                            "Could not generate action sequence. Tokens left on stack")
 
-    def can_swap_n(self, n):
-        if len(self.actions) > 0:
-            last_added_action = self.actions[-1]
-            action_name = "SW"
-            if n > 1:
-                suffix = "_" + str(n)
-                action_name += suffix
-            # if I'm trying to perform the same swap
-            if last_added_action.action == action_name:
-                return False
-        return len(self.stack) >= n + 2 and self.no_of_swaps != 0
+        return self.actions
 
     def can_swap_n(self, n):
 
@@ -85,6 +76,18 @@ class SimpleInformedSwapASG(ASG):
             # check if my swap leads to a reduce
         top = len(self.stack) - 1
         if self.can_reduce(top, top - n - 1) or self.can_reduce(top - n - 1, top):
+            return True
+        else:
+            return False
+
+    def can_rotate(self):
+
+        if len(self.stack) < 3:
+            return False
+
+        # check if my swap leads to a reduce
+        top = len(self.stack) - 1
+        if self.can_reduce(top, 0) or self.can_reduce(0, top):
             return True
         else:
             return False

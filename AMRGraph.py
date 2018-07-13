@@ -391,6 +391,19 @@ class AMR(defaultdict):
                 return node.node_label
         return None
 
+    #Anda's lovely method :)))
+    def get_seqID(self):
+        node_seqID = ""
+        node_seqIDList = list()
+        """return variable given postition ID"""
+        reent_var = None
+        seq = self.dfs()[0]
+        # print(seq)
+        for node in seq:
+            node_seqID = node.seqID
+            node_seqIDList.append(node_seqID)
+        return node_seqIDList
+
     def get_match(self, subgraph):
         """find the subgraph"""
 

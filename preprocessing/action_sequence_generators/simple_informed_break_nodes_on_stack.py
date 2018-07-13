@@ -18,6 +18,8 @@ class SimpleInformedWithBreakNodesOnStackASG(NodesOnStackASG):
 
         NodesOnStackASG.initialize_fields(self, amr_graph, sentence)
 
+        swapped = False
+
         last_action_swap = 0
         while not self.is_done():
             reduce_succeeded = False
@@ -34,37 +36,36 @@ class SimpleInformedWithBreakNodesOnStackASG(NodesOnStackASG):
             if reduce_succeeded:
                 # reset the last_action_swap to 0 to indicate that the last action was not swap
                 last_action_swap = 0
+                swapped = False
             else:
-                if last_action_swap == self.no_of_swaps:
 
-                    logging.debug(
-                        "Last swap didn't solve the stack. Tokens left on the stack: %s. Actions %s.",
-                        self.stack, self.actions)
-                    raise SwapException("Could not generate action sequence. Swap not working")
-
-                else:
-                    if last_action_swap < self.no_of_swaps:
-                        if self.can_swap_n(last_action_swap + 1):
-                            self.swap_n(last_action_swap + 1)
-                            last_action_swap += 1
+                for i in range(1,self.no_of_swaps+1):
+                    if self.can_swap_n(i):
+                        self.swap_n(i)
+                        swapped = True
+                        break
+                        last_action_swap = i
+                        # I can still shift or delete
+                if self.should_rotate and self.can_rotate():
+                    self.rotate()
+                    swapped = True
+                if not swapped:
+                    if not self.is_buffer_empty():
+                        # try to "break" the token
+                        if self.can_break(2):
+                            self.brk()
+                        # try to shift the current token
+                        elif self.can_shift():
+                            self.shift()
                         else:
-                            # I can still shift or delete
-                            if not self.is_buffer_empty():
-                                #try to "break" the token
-                                if self.can_break(2):
-                                    self.brk()
-                                # try to shift the current token
-                                elif self.can_shift():
-                                    self.shift()
-                                else:
-                                    self.delete()
-                                    # if not self.can_delete():
-                                    #     print("not good")
-                            else:
-                                # I still have swaps to perform, but the length is not enough
-                                logging.debug("Tokens left on the stack: %s. Actions %s.", self.stack, self.actions)
-                                raise TokenOnStackException(
-                                    "Could not generate action sequence. Tokens left on stack")
+                            self.delete()
+                            # if not self.can_delete():
+                            #     print("not good")
+                    else:
+                        logging.debug("Tokens left on the stack: %s. Actions %s.", self.stack, self.actions)
+                        raise TokenOnStackException(
+                            "Could not generate action sequence. Tokens left on stack")
+
         return self.actions
 
     def can_swap_n(self, n):
@@ -143,3 +144,15 @@ class SimpleInformedWithBreakNodesOnStackASG(NodesOnStackASG):
         if self.is_buffer_empty():
             return False
         return self.current_token not in self.amr_graph.tokens_to_concepts_dict.keys()
+
+    def can_rotate(self):
+
+        if len(self.stack) < 3:
+            return False
+
+        # check if my swap leads to a reduce
+        top = len(self.stack) - 1
+        if self.can_reduce(top, 0) or self.can_reduce(0, top):
+            return True
+        else:
+            return False

@@ -11,6 +11,7 @@ from keras.models import Model
 from keras.optimizers import RMSprop, SGD
 from keras.preprocessing.text import Tokenizer
 from keras.utils import plot_model
+from Baseline import reentrancy_restoring
 import logging
 
 import TrainingDataExtractor as tde
@@ -30,6 +31,7 @@ RR = 2
 DN = 3
 SW = 4
 NONE = 5
+coref_handling = False
 label_binarizer = sklearn.preprocessing.LabelBinarizer()
 label_binarizer.fit(range(5))
 
@@ -37,10 +39,17 @@ label_binarizer.fit(range(5))
 def read_sentence(type):
     return [d[0] for d in read_data(type)]
 
+def read_sentence_test(type):
+    return [d[0] for d in read_test_data(type)]
+
+
+def read_test_data(type, dataset=None):
+    # make sure testing done on same data subset
+    return ra(type, True, dataset)
 
 # Load data
-def read_data(type, dataset=None):
-    return ra(type, dataset)
+def read_data(type, dataset=None,cache=False):
+    return ra(type,cache, dataset)
 
 
 def get_predictions_from_distr(predictions_distr):
@@ -280,9 +289,9 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids, index_
 
 
 def generate_tokenizer(tokenizer_path):
-    test_data = read_sentence('test')
+    test_data = read_sentence_test('test')
     train_data = read_sentence('training')
-    dev_data = read_sentence('dev')
+    dev_data = read_sentence_test('dev')
     sentences = test_data + train_data + dev_data
     tokenizer = Tokenizer(filters="", lower=True, split=" ")
     tokenizer.fit_on_texts(sentences)
@@ -500,6 +509,10 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
 
             predicted_amr_str = asr.reconstruct_all_ne(pred_label, named_entities[i], date_entities[i])
 
+            #handling coreference(postprocessing)
+            if coref_handling:
+                predicted_amr_str = reentrancy_restoring(predicted_amr_str)
+
             #Step4: compute smatch
             original_amr = smatch_amr.AMR.parse_AMR_line(amrs_test[i])
             predicted_amr = smatch_amr.AMR.parse_AMR_line(predicted_amr_str)
@@ -638,8 +651,14 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
             print pred_label
             if with_reattach is True:
                 predicted_amr_str = asr.reconstruct_all_ne(pred_label, named_entities[i], date_entities[i])
+                # handling coreference(postprocessing)
+                if coref_handling:
+                    predicted_amr_str = reentrancy_restoring(predicted_amr_str)
             else:
                 predicted_amr_str = asr.reconstruct_all(pred_label)
+                # handling coreference(postprocessing)
+                if coref_handling:
+                    predicted_amr_str = reentrancy_restoring(predicted_amr_str)
 
             original_amr = smatch_amr.AMR.parse_AMR_line(amrs_test[i])
             predicted_amr = smatch_amr.AMR.parse_AMR_line(predicted_amr_str)
@@ -737,8 +756,14 @@ def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim
 
             if with_reattach is True:
                 predicted_amr_str = asr.reconstruct_all_ne(pred_label, named_entities, [])
+                # handling coreference(postprocessing)
+                if coref_handling:
+                    predicted_amr_str = reentrancy_restoring(predicted_amr_str)
             else:
                 predicted_amr_str = asr.reconstruct_all(pred_label)
+                # handling coreference(postprocessing)
+                if coref_handling:
+                    predicted_amr_str = reentrancy_restoring(predicted_amr_str)
 
             print 'Predicted Amr'
             print predicted_amr_str
@@ -748,15 +773,15 @@ def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim
 
 def train_file(model_name, tokenizer_path, train_data_path=None, test_data_path=None, max_len=30, train_epochs=35,
                embedding_dim=100):
-    test_data = read_data('test', test_data_path)
-    train_data = read_data('training', train_data_path)
+    test_data = read_test_data('test', test_data_path)
+    train_data = read_data('training', train_data_path,cache=False)
 
     train(model_name, tokenizer_path, train_data, test_data, max_len, train_epochs, embedding_dim)
 
 
 def test_file(model_name, tokenizer_path, test_case_name, test_data_path, max_len=30, embedding_dim=100, test_source="test",
               with_reattach=False):
-    data = read_data(test_source, test_data_path)
+    data = read_test_data(test_source, test_data_path)
     return test(model_name, tokenizer_path, test_case_name, data, max_len, embedding_dim, with_reattach=with_reattach)
 
 
@@ -792,8 +817,8 @@ if __name__ == "__main__":
     train_file(model_name=model_name,
                tokenizer_path=tokenizer_path,
                train_data_path=train_data_path,
-               test_data_path=test_data_path, max_len=max_len,
-               train_epochs=23, embedding_dim=100)
+               test_data_path=test_data_path, max_len=30,
+               train_epochs=1, embedding_dim=100)
     #     test_file(model_name, tokenizer_path="./tokenizers/full_tokenizer.dump",
     #               test_case_name= test_source,
     #               test_data_path=test_set_name, max_len=max_len,

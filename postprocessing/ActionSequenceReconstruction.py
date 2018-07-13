@@ -201,6 +201,10 @@ class MetadataReconstructionState:
             self.stack.insert(0, second)
             self.stack.append(bottom)
             self.stack.append(top)
+        elif action.action == "SW_BK":
+            top = len(self.stack) - 1
+            j = self.stack.pop(top - 1)
+            self.buffer_indices.insert(0, j)
         else:  # one of the reduce actions
             right = self.stack.pop()
             left = self.stack.pop()

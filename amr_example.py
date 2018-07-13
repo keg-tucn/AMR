@@ -39,9 +39,9 @@ tests = ["dfa"]
 # tests = ["deft"]
 cases = []
 for filter_path in tests:
-    training_data = read_data("training", filter_path=filter_path)
+    training_data = read_data("training",cache=False, filter_path=filter_path)
     # dev_data = read_data("dev")
-    test_data = read_data("dev", filter_path)
+    test_data = read_data("dev", cache = False, filter_path=filter_path)
     print("%s Training size %d" % (filter_path, len(training_data)))
     print("%s Test size %d" % (filter_path, len(test_data)))
 

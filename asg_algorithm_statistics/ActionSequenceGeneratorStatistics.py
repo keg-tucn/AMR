@@ -14,17 +14,22 @@ from preprocessing.action_sequence_generators.simple_asg__informed_swap import S
 from preprocessing.action_sequence_generators.simple_asg_nodes_on_stack import SimpleNodesOnStackASG
 from preprocessing.action_sequence_generators.simple_informed_break_nodes_on_stack import SimpleInformedWithBreakNodesOnStackASG
 from preprocessing.action_sequence_generators.simple_asg import SimpleASG
+from preprocessing.action_sequence_generators.swap_back_asg import SwapBackASG
 from preprocessing.ActionSequenceGenerator import SwapException
 from preprocessing.ActionSequenceGenerator import TokenOnStackException
 from preprocessing.ActionSequenceGenerator import RotateException
 from AMRGraph import AMR
 from amr_util import TrainingDataStats
+from amr_util import amr_projectivity
 from preprocessing import TokensReplacer
 from ActionSequenceGeneratorStatisticsPlotter import plot_histogram
 from ActionSequenceGeneratorStatisticsPlotter import plot_2_line_graph
 from postprocessing import ActionSequenceReconstruction as asr
 from smatch import smatch_util
 from smatch import smatch_amr
+
+from Baseline import baseline
+from Baseline import reentrancy_restoring
 
 success = "success"
 coreference = "coreference"
@@ -48,7 +53,7 @@ MAX_SENTENCE_LEN = 255
 
 class ActionSeqGenStatistics:
 
-    def __init__(self, asg_implementation, min_sentence_len, max_sentence_len):
+    def __init__(self, asg_implementation, min_sentence_len, max_sentence_len,coreference_handling):
         self.histogram_overall = {success: 0, coreference: 0, unaligned: 0, coreference_and_unaligned: 0, smatch_not_1:0, unknown: 0}
         self.histogram_exceptions = {swap: 0, tokens_on_stack: 0, rotate: 0, unknown_sequence_generation_error: 0}
         self.histogram_swap = {coreference: 0, unaligned: 0, coreference_and_unaligned: 0, unknown: 0}
@@ -66,6 +71,8 @@ class ActionSeqGenStatistics:
         self.max_sentence_len = max_sentence_len
         self.named_entities_metadata = []
         self.date_entities_metadata = []
+        self.coreference_handling = coreference_handling
+        self.coref_handling_errors = 0
 
     def preprocessing(self, amr, sentence):
 
@@ -161,13 +168,21 @@ class ActionSeqGenStatistics:
         self.histogram_overall[coreference_and_unaligned] = self.histogram_swap[coreference_and_unaligned] + self.histogram_tokens_on_stack[coreference_and_unaligned]
         self.histogram_overall[unknown] = self.histogram_swap[unknown] + self.histogram_tokens_on_stack[unknown]
 
-    def generate_statistics_for_a_sentence(self, i, amr, sentence, amr_str):
+    def generate_statistics_for_a_sentence(self, i, amr_id, amr, sentence, amr_str):
         logging.debug("Started processing example %d", i)
 
         action_sequence = []
 
+
         try:
 
+            if self.coreference_handling:
+
+                try:
+                        new_amr_str = baseline(amr_str)
+                        amr = AMR.parse_string(new_amr_str)
+                except:
+                    self.coref_handling_errors += 1
 
             (new_amr,new_sentence) = self.preprocessing(amr,sentence)
 
@@ -178,9 +193,12 @@ class ActionSeqGenStatistics:
                 print("Exception when getting unaligned nodes\n")
 
             custom_amr = AMRData.CustomizedAMR()
+
+
             try:
 
                 custom_amr.create_custom_AMR(new_amr)
+
             except Exception as ce:
                 print("Exception when creating custom AMR\n") # => twice
 
@@ -196,16 +214,18 @@ class ActionSeqGenStatistics:
 
                 action_sequence = self.asg_implementation.generate_action_sequence(custom_amr, new_sentence)
 
+
                 generated_amr_str = asr.reconstruct_all_ne(action_sequence,
                                                            self.named_entities_metadata,
                                                            self.date_entities_metadata)
+
+                if self.coreference_handling:
+                    generated_amr_str = reentrancy_restoring(generated_amr_str)
 
                 smatch_results = smatch_util.SmatchAccumulator()
                 original_amr = smatch_amr.AMR.parse_AMR_line(amr_str)
                 generated_amr = smatch_amr.AMR.parse_AMR_line(generated_amr_str)
                 smatch_f_score = smatch_results.compute_and_add(generated_amr, original_amr)
-
-
 
                 if smatch_f_score != 1:
                     self.histogram_overall[smatch_not_1] += 1
@@ -234,7 +254,6 @@ class ActionSeqGenStatistics:
 
         except Exception as e:
             self.histogram_sentence_fails[preprocessing_failed] += 1
-            #self.preprocessing_failed += 1
             self.sentence_failed += 1
 
     def generate_statistics(self, file_path):
@@ -248,7 +267,7 @@ class ActionSeqGenStatistics:
                 if self.min_sentence_len <= sentence_len < self.max_sentence_len:
                     try:
                         amr = AMR.parse_string(amr_str)
-                        self.generate_statistics_for_a_sentence(i, amr, sentence, amr_str)
+                        self.generate_statistics_for_a_sentence(i, amr_id, amr, sentence, amr_str)
                     except Exception as e:
                         self.histogram_sentence_fails[amr_parse_fail] += 1
                         self.sentence_failed +=1
@@ -313,6 +332,7 @@ input_should_rotate = (sys.argv[5] == "yes")
 alg_version = sys.argv[1]
 
 
+
 # go over all data (training, dev, tests) and construct histograms for eac datasetl
 for split in splits:
     # create dictionaries per split
@@ -335,7 +355,7 @@ for split in splits:
             asg_implementation = BacktrackingASGFixedReduce(input_no_of_swaps, max_depth)
         elif alg_version == "informed_swap":
             # doesn't really need rotate, does it?
-            asg_implementation = SimpleInformedSwapASG(input_no_of_swaps)
+            asg_implementation = SimpleInformedSwapASG(input_no_of_swaps,should_rotate=input_should_rotate)
         elif alg_version == "backtrack_informed_swap":
             asg_implementation = BacktrackingASGInformedSwap(input_no_of_swaps, max_depth)
         elif alg_version == "simple_nodes_on_stack":
@@ -344,8 +364,10 @@ for split in splits:
             asg_implementation = SimpleNodesOnStackASG(input_no_of_swaps, input_should_rotate)
         elif alg_version == "simple_informed_break_nodes_on_stack":
             asg_implementation = SimpleInformedWithBreakNodesOnStackASG(input_no_of_swaps, input_should_rotate)
+        elif alg_version == "simple_swap_back":
+            asg_implementation = SwapBackASG()
 
-        acgStatistics = ActionSeqGenStatistics(asg_implementation, input_min_sentence_len, input_max_sentence_len)
+        acgStatistics = ActionSeqGenStatistics(asg_implementation, input_min_sentence_len, input_max_sentence_len,coreference_handling=False)
         acgStatistics.generate_statistics(my_file_path)
         acgStatistics.build_overall_histogram()
         # plot statistics per database in split
