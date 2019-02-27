@@ -36,8 +36,8 @@ vocab_words = ds.Vocab.from_file('resources/data/vocab.txt')
 
 test_use_model_prediction = True
 train_use_model_prediction = False
-# tests = ["dfa"]
-tests = ["bolt", "dfa", "proxy", "xinhua", "deft"]
+tests = ["dfa"]
+# tests = ["bolt", "dfa", "proxy", "xinhua", "deft"]
 # tests = ["deft"]
 cases = []
 for filter_path in tests:
