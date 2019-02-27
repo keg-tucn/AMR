@@ -76,6 +76,7 @@ class AMR(defaultdict):
 
     @classmethod
     def parse_string(cls, amr_string, RENAME_NODE=False):
+
         """
         Parse a Pennman style string representation for amr and return an AMR
 
@@ -129,13 +130,15 @@ class AMR(defaultdict):
             ("RPAR", '\)'),
             ("COMMA", ','),
             ("SLASH", '/'),
-            ("EDGELABEL", ":[^\s()]+"),
-            ("STRLITERAL", u'("[^"]+"|\u201c[^\u201d]+\u201d)(?:~e.([0-9]+)(?:,([0-9]+))*)?'),
+            # roxanappop: add rule for alignment
+            ("ALIGNMENT", "~e.([0-9]+)((?:,(?:[0-9]+))*)"),
+            ("EDGELABEL", ":[^\s()]+?(?=[~\s])"),
+            ("STRLITERAL", u'("[^"]+"|\u201c[^\u201d]+\u201d)'),
             ("LITERAL", "'[^\s(),]+"),
-            ("INTERROGATIVE", "\s(interrogative|imperative|expressive)(?=[\s\)])"),
-            ("QUANTITY", "[0-9][0-9Ee^+\-\.,:]*(?=[\s\)])"),
-            ("IDENTIFIER", "[^\s()]+"),  # no blank within characters
-            ("POLARITY", "\s(\-|\+)(?:~e.([0-9]+)(?:,([0-9]+))*)?(?=[\s\)])")
+            ("INTERROGATIVE", "\s(interrogative|imperative|expressive)(?=[~\s\)])"),
+            ("QUANTITY", "[0-9][0-9Ee^+\-\.,:]*(?=[~\s\)])"),
+            ("IDENTIFIER", "[^\s()]+?(?=[~\s\)])"),  # no blank within characters
+            ("POLARITY", "\s(\-|\+)(?=[~\s\)])")
         ]
 
         token_re = make_compiled_regex(lex_rules)
@@ -143,15 +146,13 @@ class AMR(defaultdict):
         # lexer = Lexer(lex_rules)
         # amr.reentrance_triples = []
 
+        # modified the code so that the last element in the tuple pushed on stack is the list of aligned tokens
+        # and that an edge node has assocaited a 4 element tuple (3rd element always 0)
+
         for match in token_re.finditer(amr_string):
             token = match.group()
             type = match.lastgroup
 
-            # if type == "STRLITERAL":
-            #    import pdb
-            #    pdb.set_trace()
-
-            # print token.strip(),type
             if state == 0:
                 if type == "LPAR":
                     state = 1
@@ -160,13 +161,13 @@ class AMR(defaultdict):
 
             elif state == 1:
                 if type == "IDENTIFIER":
-                    stack.append((PNODE, token.strip(), None))
+                    stack.append((PNODE, token.strip(), None, []))
                     state = 2
                 elif type == "QUANTITY":
-                    stack.append((PNODE, Quantity(token.strip()), None))
+                    stack.append((PNODE, Quantity(token.strip()), None, []))
                     state = 2
                 elif type == "STRLITERAL":
-                    stack.append((PNODE, StrLiteral(token.strip()), None))
+                    stack.append((PNODE, StrLiteral(token.strip()), None, []))
                     state = 2
                 else:
                     raise ParserError, "Unexpected token %s" % (token.encode('utf8'))
@@ -175,10 +176,10 @@ class AMR(defaultdict):
                 if type == "SLASH":
                     state = 3
                 elif type == "EDGELABEL":
-                    stack.append((EDGE, token[1:]))
+                    stack.append((EDGE, token[1:], None, []))
                     state = 5
                 elif type == "RPAR":
-                    forgetme, parentnodelabel, parentconcept = AMR.popFromStack(stack)
+                    forgetme, parentnodelabel, parentconcept, aligned_tokens = AMR.popFromStack(stack)
                     assert forgetme == PNODE
                     assert parentconcept == None
 
@@ -191,10 +192,11 @@ class AMR(defaultdict):
                     foo = amr[parentnodelabel]
 
                     if stack:
-                        stack.append((CNODE, parentnodelabel, parentconcept))
+                        stack.append((CNODE, parentnodelabel, parentconcept,[]))
                         state = 6
                     else:
                         amr.roots.append(parentnodelabel)
+                        amr._align_root(parentnodelabel, aligned_tokens)
                         state = 0
 
                 else:
@@ -204,17 +206,20 @@ class AMR(defaultdict):
                 if type == "IDENTIFIER" or "QUANTITY":
                     assert stack[-1][0] == PNODE
                     nodelabel = AMR.popFromStack(stack)[1]
-                    stack.append((PNODE, nodelabel, token))
+                    stack.append((PNODE, nodelabel, token, []))
                     state = 4
                 else:
                     raise ParserError, "Unexpected token %s" % (token)
 
             elif state == 4:
-                if type == "EDGELABEL":
-                    stack.append((EDGE, token[1:]))
+                if type == "ALIGNMENT":
+                    amr._push_alignment_on_stack(stack, token)
+                    state = 4
+                elif type == "EDGELABEL":
+                    stack.append((EDGE, token[1:], None, []))
                     state = 5
                 elif type == "RPAR":
-                    forgetme, parentnodelabel, parentconcept = AMR.popFromStack(stack)
+                    forgetme, parentnodelabel, parentconcept, aligned_tokens = AMR.popFromStack(stack)
                     assert forgetme == PNODE
                     foo = amr[parentnodelabel]  # add only the node
                     # print state,parentnodelabel,parentconcept
@@ -222,102 +227,50 @@ class AMR(defaultdict):
                         amr.node_to_concepts[parentnodelabel] = parentconcept
 
                     if stack:
-                        stack.append((CNODE, parentnodelabel, parentconcept))
+                        stack.append((CNODE, parentnodelabel, parentconcept, aligned_tokens))
                         state = 6
                     else:
                         amr.roots.append(parentnodelabel)
+                        amr._align_root(parentnodelabel, aligned_tokens)
                         state = 0
                 else:
-                    print
-                    amr_string
                     raise ParserError, "Unexpected token %s" % (token.encode('utf8'))
 
             elif state == 5:
-                if type == "LPAR":
+                if type == "ALIGNMENT":
+                    amr._push_alignment_on_stack(stack, token)
+                    state = 5
+                elif type == "LPAR":
                     state = 1
                 elif type == "QUANTITY":
-                    stack.append((CNODE, Quantity(token), None))
+                    stack.append((CNODE, Quantity(token), None, []))
                     state = 6
                 elif type == "STRLITERAL":
-                    stack.append((CNODE, StrLiteral(token[1:]), None))
+                    stack.append((CNODE, StrLiteral(token[1:-1]), None, []))
                     state = 6
                 elif type == "INTERROGATIVE":
-                    stack.append((CNODE, Interrogative(token[1:]), None))
+                    stack.append((CNODE, Interrogative(token[1:]), None, []))
                     state = 6
                 elif type == "POLARITY":
-                    stack.append((CNODE, Polarity(token.strip()), None))
+                    stack.append((CNODE, Polarity(token.strip()), None, []))
                     state = 6
                 elif type == "IDENTIFIER":
-                    stack.append((RCNODE, token, None))
+                    stack.append((RCNODE, token, None, []))
                     state = 6
                 elif type == "EDGELABEL":  # Unary edge
-                    stack.append((CNODE, None, None))
-                    stack.append((EDGE, token[1:]))
+                    stack.append((CNODE, None, None, []))
+                    stack.append((EDGE, token[1:], None, []))
                     state = 5
 
                 elif type == "RPAR":
-                    stack.append((CNODE, None, None))
-                    edges = []
-
-                    while stack[-1][0] != PNODE:
-                        children = []
-                        # one edge may have multiple children/tail nodes
-                        while stack[-1][0] == CNODE:
-                            forgetme, childnodelabel, childconcept = AMR.popFromStack(stack)
-                            children.append((childnodelabel, childconcept))
-
-                        assert stack[-1][0] == EDGE
-                        forgetme, edgelabel = AMR.popFromStack(stack)
-                        edges.append((edgelabel, children))
-
-                    forgetme, parentnodelabel, parentconcept = AMR.popFromStack(stack)
-                    # print state,parentnodelabel,parentconcept
-
-                    # check for annotation error
-                    if parentnodelabel in amr.node_to_concepts.keys():
-                        # concept has been defined by the children,
-                        # then they must have different concepts, otherwise the children's concepts should be None
-                        # (coreference)
-                        if amr.node_to_concepts[parentnodelabel] == parentconcept:
-                            sys.stderr.write(
-                                "Wrong annotation format: Revisited concepts %s should be ignored.\n" % parentconcept)
-                        else:
-                            sys.stderr.write(
-                                "Wrong annotation format: Different concepts %s and %s have same node label(index)\n" % (
-                                    amr.node_to_concepts[parentnodelabel], parentconcept))
-                            parentnodelabel = parentnodelabel + "1"
-
-                    if RENAME_NODE:
-                        rename_node(parentnodelabel, parentconcept)
-                    else:
-                        if not parentnodelabel in amr.node_to_concepts or parentconcept is not None:
-                            amr.node_to_concepts[parentnodelabel] = parentconcept
-
-                    for edgelabel, children in reversed(edges):
-                        hypertarget = []
-                        for node, concept in children:
-                            if node is not None and not isinstance(node, (
-                                    Quantity, Polarity, Interrogative,
-                                    StrLiteral)) and not node in amr.node_to_concepts:
-                                if RENAME_NODE:
-                                    rename_node(node, concept)
-                                else:
-                                    if concept:
-                                        amr.node_to_concepts[node] = concept
-
-                            hypertarget.append(node)
-                        hyperchild = tuple(hypertarget)
-                        amr._add_triple(parentnodelabel, edgelabel, hyperchild)
-
-                    if stack:  # we have done with current level
-                        state = 6
-                        stack.append((CNODE, parentnodelabel, parentconcept))
-                    else:  # we have done with this subgraph
-                        state = 0
-                        amr.roots.append(parentlabel)
+                    print("Error: should not have RPAR after EDGELABEL")
+                    raise ParserError, "Unexpected token %s" % (token.encode('utf8'))
 
             elif state == 6:
-                if type == "RPAR":
+                if type == "ALIGNMENT":
+                    amr._push_alignment_on_stack(stack, token)
+                    state = 6
+                elif type == "RPAR":
 
                     edges = []
                     reedges = []
@@ -326,19 +279,18 @@ class AMR(defaultdict):
                         reentrances = []
                         # one edge may have multiple children/tail nodes
                         while stack[-1][0] == CNODE or stack[-1][0] == RCNODE:
-                            CTYPE, childnodelabel, childconcept = AMR.popFromStack(stack)
+                            CTYPE, childnodelabel, childconcept, child_aligned_tokens = AMR.popFromStack(stack)
                             if CTYPE == RCNODE:
                                 reentrances.append((childnodelabel, childconcept))
-                            children.append((childnodelabel, childconcept))
+                            children.append((childnodelabel, childconcept, child_aligned_tokens))
 
                         assert stack[-1][0] == EDGE
-                        forgetme, edgelabel = AMR.popFromStack(stack)
-                        edges.append((edgelabel, children))
+                        forgetme, edgelabel, none, edge_aligned_tokens = AMR.popFromStack(stack)
+                        edges.append((edgelabel, children, edge_aligned_tokens))
                         reedges.append((edgelabel, reentrances))
                         # TODO: check for token
 
-                    forgetme, parentnodelabel, parentconcept = AMR.popFromStack(stack)
-                    # print "PNODE",state,parentnodelabel,parentconcept
+                    forgetme, parentnodelabel, parentconcept, parent_aligned_tokens = AMR.popFromStack(stack)
 
                     # check for annotation error
                     if parentnodelabel in amr.node_to_concepts.keys():
@@ -360,9 +312,9 @@ class AMR(defaultdict):
                         if parentnodelabel not in amr.node_to_concepts and parentconcept is not None:
                             amr.node_to_concepts[parentnodelabel] = parentconcept
 
-                    for edgelabel, children in reversed(edges):
+                    for edgelabel, children, edge_aligned_tokens in reversed(edges):
                         hypertarget = []
-                        for node, concept in children:
+                        for node, concept, aligned_tokens in children:
                             if node is not None and not isinstance(node, (
                                     Quantity, Polarity, Interrogative,
                                     StrLiteral)) and not node in amr.node_to_concepts:
@@ -372,6 +324,16 @@ class AMR(defaultdict):
                                     if concept:
                                         amr.node_to_concepts[node] = concept
                             hypertarget.append(node)
+                            # add alignemnt info to node_to_tokens
+                            # for nodes that don't have a unique variable, will insert (token, parent) elements
+                            # => need parent
+                            if isinstance(node, (Quantity, Polarity, Interrogative, StrLiteral)):
+                                amr._align_non_var_node(node, parentnodelabel, aligned_tokens)
+                            else:
+                                amr._align_var_node(node, aligned_tokens)
+                        #align edge
+                        amr._align_edge(edgelabel, parentnodelabel, edge_aligned_tokens)
+
                         hyperchild = tuple(hypertarget)
                         amr._add_triple(parentnodelabel, edgelabel, hyperchild)
 
@@ -383,21 +345,22 @@ class AMR(defaultdict):
 
                     if stack:  # we have done with current level
                         state = 6
-                        stack.append((CNODE, parentnodelabel, parentconcept))
+                        stack.append((CNODE, parentnodelabel, parentconcept, parent_aligned_tokens))
                     else:  # we have done with this subgraph
-                        state = 0
+                        amr._align_root(parentnodelabel, parent_aligned_tokens)
                         amr.roots.append(parentnodelabel)
+                        state = 0
                 elif type == "COMMA":  # to seperate multiple children/tails
                     state = 7
                 elif type == "EDGELABEL":
-                    stack.append((EDGE, token[1:]))
+                    stack.append((EDGE, token[1:], None, []))
                     state = 5
                 else:
                     raise ParserError, "Unexpected token %s" % (token.encode('utf8'))
 
             elif state == 7:
                 if type == "IDENTIFIER":
-                    stack.append((CNODE, token, None))  # another children
+                    stack.append((CNODE, token, None, []))  # another children
                     state = 6
                 elif type == "LPAR":
                     state = 1
@@ -406,14 +369,18 @@ class AMR(defaultdict):
 
         if state != 0 and stack:
             raise ParserError, "mismatched parenthesis"
-        amr._make_node_alignments()
-        amr._clean_up_keys()
+
         return amr
 
     @classmethod
     def popFromStack(cls, stack):
         pop = stack.pop()
         return pop
+
+    @classmethod
+    def peekFromStack(cls, stack):
+        node = stack[-1]
+        return node
 
     def get_variable(self, posID):
         """return variable given postition ID"""
@@ -423,6 +390,19 @@ class AMR(defaultdict):
             if node.seqID == posID:
                 return node.node_label
         return None
+
+    #Anda's lovely method :)))
+    def get_seqID(self):
+        node_seqID = ""
+        node_seqIDList = list()
+        """return variable given postition ID"""
+        reent_var = None
+        seq = self.dfs()[0]
+        # print(seq)
+        for node in seq:
+            node_seqID = node.seqID
+            node_seqIDList.append(node_seqID)
+        return node_seqIDList
 
     def get_match(self, subgraph):
         """find the subgraph"""
@@ -521,132 +501,54 @@ class AMR(defaultdict):
         if reentrance:
             self.reentrance_triples.append((parent, relation, reentrance[0]))
 
-    def _make_node_alignments(self):
-        alignment_rule = u'^(.+)~e.([0-9]+)((?:,(?:[0-9]+))*)$'
-        alignment_re = re.compile(alignment_rule)
-        for k in self.node_to_concepts.keys():
-            concept = self.node_to_concepts[k]
-            match = alignment_re.match(concept)
-            if match:
-                self.node_to_concepts[k] = match.group(1)
-                self.node_to_tokens[k] = [match.group(2)]
-                if match.group(3) is not None:
-                    extra_tokens = match.group(3).split(',')
-                    if len(extra_tokens)  > 1:
-                        for i in xrange(1, len(extra_tokens)):
-                            self.node_to_tokens[k].append(extra_tokens[i])
+    def _get_aligned_tokens_list(self, token):
+        alignment_rule = "~e.([0-9]+)((?:,(?:[0-9]+))*)"
+        a_re = re.compile(alignment_rule)
+        m = a_re.match(token)
+        l = [m.group(1)]
+        if m.group(2) is not None:
+            extra_tokens = m.group(2).split(',')
+            for i in xrange(1, len(extra_tokens)):
+                l.append(extra_tokens[i])
+        return l
 
-    def _align_edge(self, parent, relation):
-        edgelabel_rule = u'^(.+)~e.([0-9]+)((?:,(?:[0-9]+))*)$'
-        edgelabel_re = re.compile(edgelabel_rule)
-        match = edgelabel_re.match(relation)
-        new_relation = relation
-        if match:
-            new_relation = match.group(1)
-            if new_relation not in self.relation_to_tokens.keys():
-                self.relation_to_tokens[new_relation] = []
-            if match.group(2) is not None:
-                # add the edge token to the edge - (token, edge-parent) map
-                self.relation_to_tokens[new_relation].append([(match.group(2), parent)])
-            if match.group(3) is not None:
-                extra_tokens = match.group(3).split(',')
-                if len(extra_tokens) > 1:
-                    for i in xrange(1, len(extra_tokens)):
-                        self.relation_to_tokens[new_relation].append((extra_tokens[i], parent))
-        return new_relation
+    # add alignment info to the last node on the stack
+    def _push_alignment_on_stack(self, stack, token):
+        aligned_tokens = self._get_aligned_tokens_list(token)
+        CTYPE, label, concept, old_aligned_tokens = self.popFromStack(stack)
+        new_aligned_tokens = old_aligned_tokens + aligned_tokens
+        stack.append((CTYPE, label, concept, new_aligned_tokens))
 
-    def _handle_polarity(self, parent, child, relation):
-        polarity_rule = "(\-|\+)(?:~e.([0-9]+)((?:,(?:[0-9]+))*))*"
-        polarity_re = re.compile(polarity_rule)
+    # this function aligns to a node of type variable/concept
+    # a list of tokens
+    def _align_var_node(self, node, aligned_tokens):
+        if aligned_tokens:
+            if node not in self.node_to_tokens.keys():
+                self.node_to_tokens[node] = []
+            for t in aligned_tokens:
+                self.node_to_tokens[node].append(t)
 
-        new_parent = parent
-        new_child = child[0]
-        if relation == 'polarity':
-            match = polarity_re.match(child[0])
-            new_child = match.group(1)
+    # this function aligns to a node of type strliteral/interogative/imperative/expressive
+    # a list of (token, parent) tuples
+    def _align_non_var_node(self, childnode, parentnode, aligned_tokens):
+        if aligned_tokens:
+            if childnode not in self.node_to_tokens.keys():
+                self.node_to_tokens[childnode] = []
+            for t in aligned_tokens:
+                self.node_to_tokens[childnode].append((t, parentnode))
 
-            if match.group(2) is not None:
-                if new_child not in self.node_to_tokens.keys():
-                    self.node_to_tokens[new_child] = []
-                self.node_to_tokens[new_child].append((match.group(2), new_parent))
-                if match.group(3) is not None:
-                    extra_tokens = match.group(3).split(',')
-                    if len(extra_tokens) > 1:
-                        for i in xrange(1, len(extra_tokens)):
-                            self.node_to_tokens[new_child].append((extra_tokens[i], new_parent))
+    def _align_edge(self, edge, parentnode, aligned_tokens):
+        if aligned_tokens:
+            if edge not in self.relation_to_tokens.keys():
+                self.relation_to_tokens[edge] = []
+            for t in aligned_tokens:
+                self.relation_to_tokens[edge].append((t, parentnode))
+
+    def _align_root(self, root_node, aligned_tokens):
+        if isinstance(root_node, (Quantity, Polarity, Interrogative, StrLiteral)):
+            self._align_non_var_node(root_node, None, aligned_tokens)
         else:
-            match = polarity_re.match(parent)
-            if match:
-                new_parent = match.group(1)
-        return new_parent, (new_child,)
-
-    def _handle_literals(self, parent, child):
-        literal_rule = u'([^"]+"|[^\u201d]+\u201d)(?:~e.([0-9]+)((?:,(?:[0-9]+))*))?'
-        literal_re = re.compile(literal_rule)
-        match = literal_re.match(child[0])
-        new_child = child[0]
-        if match:
-            if len(match.group(1)) > 2:
-                new_child = match.group(1)[:-1]
-            else:
-                new_child = match.group(1)
-            if match.group(2) is not None:
-                if new_child not in self.node_to_tokens.keys():
-                    self.node_to_tokens[new_child] = []
-                self.node_to_tokens[new_child].append((match.group(2), parent))
-            if match.group(3) is not None:
-                extra_tokens = match.group(3).split(',')
-                if len(extra_tokens) > 1:
-                    for i in xrange(1, len(extra_tokens)):
-                        self.node_to_tokens[new_child].append((extra_tokens[i], parent))
-        return (new_child,)
-
-    def _handle_quantity(self, parent, child):
-        quantity_rule = "([0-9][0-9Ee^+\-\.,:]*)(?:~e.([0-9]+)((?:,(?:[0-9]+))*))?"
-        quantity_re = re.compile(quantity_rule)
-        new_child = child[0]
-        match = quantity_re.match(new_child)
-        if match:
-            new_child = match.group(1)
-            if match.group(2) is not None:
-                if new_child not in self.node_to_tokens.keys():
-                    self.node_to_tokens[new_child] = []
-                self.node_to_tokens[new_child].append((match.group(2), parent))
-            if match.group(3) is not None:
-                extra_tokens = match.group(3).split(',')
-                if len(extra_tokens) > 1:
-                    for i in xrange(1, len(extra_tokens)):
-                        self.node_to_tokens[new_child].append((extra_tokens[i], parent))
-        return (new_child,)
-
-    def _handle_interrogative(self, parent, child):
-        interrogative_rule = "(interrogative|imperative|expressive)(?:~e.([0-9]+)((?:,(?:[0-9]+))*))?"
-        interrogative_re = re.compile(interrogative_rule)
-        new_child = child[0]
-        match = interrogative_re.match(new_child)
-        if match:
-            new_child = match.group(1)
-            if match.group(2) is not None:
-                if new_child not in self.node_to_tokens.keys():
-                    self.node_to_tokens[new_child] = []
-                self.node_to_tokens[new_child].append((match.group(2), parent))
-            if match.group(3) is not None:
-                extra_tokens = match.group(3).split(',')
-                if len(extra_tokens) > 1:
-                    for i in xrange(1, len(extra_tokens)):
-                        self.node_to_tokens[new_child].append((extra_tokens[i], parent))
-        return (new_child,)
-
-    def _clean_up_keys(self):
-        alignment_rule = u'^(.+)~e.([0-9]+)((?:,(?:[0-9]+))*)$'
-        alignment_re = re.compile(alignment_rule)
-        for k in self.keys():
-            match = alignment_re.match(k)
-            if match:
-                self[match.group(1)] = self.pop(k)
-                k = match.group(1)
-            if len(k) > 2 and k[0] != "\"" and k[len(k) - 1] == "\"" and k in self.keys():
-                self[k[:-1]] = self.pop(k)
+            self._align_var_node(root_node, aligned_tokens)
 
     def _add_triple(self, parent, relation, child, warn=None):
         """
@@ -676,11 +578,6 @@ class AMR(defaultdict):
 
                             # raise ValueError,"(%s, %s, %s) would produce a cycle with (%s, %s, %s)" % (parent, relation, child, c, rel, test)
 
-        relation = self._align_edge(parent, relation)
-        (parent, child) = self._handle_polarity(parent, child, relation)
-        child = self._handle_literals(parent, child)
-        child = self._handle_quantity(parent, child)
-        child = self._handle_interrogative(parent, child)
         self[parent].append(relation, child)
 
     def set_alignment(self, alignment):

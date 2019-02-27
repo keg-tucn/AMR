@@ -9,11 +9,16 @@ from preprocessing import SentenceAMRPairsExtractor, ActionSequenceGenerator
 from preprocessing import TokensReplacer
 from preprocessing.DependencyExtractor import extract_dependencies
 from collections import namedtuple
+from preprocessing.action_sequence_generators.simple_asg__informed_swap import SimpleInformedSwapASG
+from preprocessing.action_sequence_generators.simple_asg import SimpleASG
 
 TrainingDataExtraction = namedtuple("TrainingDataExtraction", "data stats")
 TrainingData = namedtuple("TrainingData", "sentence, action_sequence, amr_original, dependencies, named_entities, "
                                           "date_entities, concepts_metadata, amr_id")
 
+
+#for coref handling
+from Baseline import baseline
 
 # Given a file with sentences and aligned amrs,
 # it returns an array of (TrainingData)
@@ -30,12 +35,25 @@ def generate_training_data(file_path, compute_dependencies=False):
     temporal_quantity_exceptions = 0
     quantity_exceptions = 0
     processed_sentence_ids = []
+    #change this to true if you want coref handling (graphs trnaformed to trees)
+    coref_handling = False
     for i in tqdm(range(0, len(sentence_amr_triples))):
         try:
             logging.debug("Started processing example %d", i)
             concepts_metadata = {}
             (sentence, amr_str, amr_id) = sentence_amr_triples[i]
+
+
             amr = AMR.parse_string(amr_str)
+
+            #coreference handling
+            if coref_handling:
+                try:
+                    new_amr_str = baseline(amr_str)
+                    amr = AMR.parse_string(new_amr_str)
+                except:
+                    amr = AMR.parse_string(amr_str)
+
             TrainingDataStats.get_unaligned_nodes(amr, unaligned_nodes)
             try:
                 (new_amr, _) = TokensReplacer.replace_have_org_role(amr, "ARG1")
@@ -81,8 +99,14 @@ def generate_training_data(file_path, compute_dependencies=False):
             TrainingDataStats.get_unaligned_nodes(new_amr, unaligned_nodes_after)
             custom_amr = AMRData.CustomizedAMR()
             custom_amr.create_custom_AMR(new_amr)
+
             coreferences_count += TrainingDataStats.get_coreferences_count(custom_amr)
-            action_sequence = ActionSequenceGenerator.generate_action_sequence(custom_amr, new_sentence)
+            #TODO: put here the new version of the action seq generator
+
+            asg_implementation = SimpleInformedSwapASG(1,False)
+            #asg_implementation = SimpleASG(1,False)
+            action_sequence = asg_implementation.generate_action_sequence(custom_amr, new_sentence)
+            #action_sequence = ActionSequenceGenerator.generate_action_sequence(custom_amr, new_sentence)
             if compute_dependencies is False:
                 # training_data.append(TrainingData(new_sentence, action_sequence, amr_str, concepts_metadata, amr_id))
                 named_entities = []
@@ -159,7 +183,7 @@ def extract_amr_ids_from_corpus_as_audit_trail():
 if __name__ == "__main__":
     # extract_amr_ids_from_corpus_as_audit_trail()
     logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.WARNING)
-    generated_data = generate_training_data("resources/alignments/split/dev/deft-p2-amr-r1-alignments-dev-bolt.txt")
+    generated_data = generate_training_data("resources/alignments/split/dev/deft-p2-amr-r2-alignments-dev-bolt.txt")
     assert isinstance(generated_data, TrainingDataExtraction)
     assert isinstance(generated_data.data, list)
     assert isinstance(generated_data.stats, TrainingDataStats.TrainingDataStatistics)

@@ -11,6 +11,8 @@ from keras.models import Model
 from keras.optimizers import RMSprop, SGD
 from keras.preprocessing.text import Tokenizer
 from keras.utils import plot_model
+from Baseline import reentrancy_restoring
+import logging
 
 import TrainingDataExtractor as tde
 from amr_util.KerasPlotter import plot_history
@@ -19,6 +21,7 @@ from postprocessing import ActionSequenceReconstruction as asr
 from smatch import smatch_amr
 from smatch import smatch_util
 import amr_util.Actions as act
+from amr_reader import read_data as ra
 
 sys.path.append(path.abspath('./stanford_parser'))
 
@@ -28,6 +31,7 @@ RR = 2
 DN = 3
 SW = 4
 NONE = 5
+coref_handling = False
 label_binarizer = sklearn.preprocessing.LabelBinarizer()
 label_binarizer.fit(range(5))
 
@@ -35,23 +39,17 @@ label_binarizer.fit(range(5))
 def read_sentence(type):
     return [d[0] for d in read_data(type)]
 
+def read_sentence_test(type):
+    return [d[0] for d in read_test_data(type)]
+
+
+def read_test_data(type, dataset=None):
+    # make sure testing done on same data subset
+    return ra(type, True, dataset)
 
 # Load data
-def read_data(type, dataset=None):
-    data = []
-    mypath = 'resources/alignments/split/' + type
-    print(mypath)
-    if dataset is None:
-        for f in listdir(mypath):
-            if not f.endswith(".dump"):
-                mypath_f = mypath + "/" + f
-                print(mypath_f)
-                data += tde.generate_training_data(mypath_f, compute_dependencies=True).data
-    else:
-        mypath_f = mypath + "/" + dataset
-        print(mypath_f)
-        data = tde.generate_training_data(mypath_f, compute_dependencies=True).data
-    return data
+def read_data(type, dataset=None,cache=False):
+    return ra(type,cache, dataset)
 
 
 def get_predictions_from_distr(predictions_distr):
@@ -60,16 +58,26 @@ def get_predictions_from_distr(predictions_distr):
 
 
 def pretty_print_actions(acts_i):
-    for i in range(len(acts_i)):
-        print act.acts[acts_i[i]]
-    print '\n'
+    print actions_to_string(acts_i)
+
+
+def actions_to_string(acts_i):
+    str = ""
+    for a in acts_i:
+        str += act.acts[a] + " "
+    str += "\n"
+    return str
 
 
 def pretty_print_sentence(tokens, index_to_word_map):
-    for i in range(len(tokens)):
-        print index_to_word_map[tokens[i]], ;
-    print '\n'
+    print tokens_to_sentence(tokens, index_to_word_map)
 
+def tokens_to_sentence(tokens, index_to_word_map):
+    str = ""
+    for t in tokens:
+        str += index_to_word_map[t] + " "
+    str += "\n"
+    return str
 
 def make_prediction(model, x_test, deps, no_word_index, max_len):
     tokens_buffer = x_test
@@ -187,9 +195,10 @@ def make_prediction(model, x_test, deps, no_word_index, max_len):
     return final_prediction
 
 
-def generate_dataset(x, y, dependencies, no_word_index, max_len):
+def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids, index_to_word_map):
     lengths = []
     filtered_count = 0
+    exception_count = 0
     for action_sequence in y:
         lengths.append(len(action_sequence))
         if len(action_sequence) > max_len:
@@ -200,7 +209,7 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len):
     y_full = np.full((len(y) - filtered_count, max_len), dtype=np.int32, fill_value=NONE)
     i = 0
 
-    for action_sequence, tokens_sequence, deps in zip(y, x, dependencies):
+    for action_sequence, tokens_sequence, deps, amr_id in zip(y, x, dependencies, amr_ids):
         next_action_token = tokens_sequence[0]
         next_action_stack = [no_word_index, no_word_index, no_word_index, no_word_index]
         next_action_prev_action = NONE
@@ -262,7 +271,11 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len):
             next_action_prev_action = action
             features_matrix.append(features)
         if tokens_sequence_index != len(tokens_sequence):
-            raise Exception("There was a problem at training instance " + str(i) + "\n")
+            logging.warn("There was a problem at training instance %d at %s. Actions %s. Tokens %s", i, amr_id,
+                         actions_to_string(action_sequence), tokens_to_sentence(tokens_sequence, index_to_word_map))
+            exception_count += 1
+            continue
+            # raise Exception("There was a problem at training instance " + str(i) + " at " + amr_id + "\n")
 
         features_matrix = np.concatenate((np.asarray(features_matrix),
                                           np.zeros((max_len - len(features_matrix), 15), dtype=np.int32)))
@@ -271,13 +284,14 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len):
         x_full[i, :, :] = features_matrix
         y_full[i, :] = actions
         i += 1
+    logging.warning("Exception count " + str(exception_count))
     return x_full, y_full, lengths, filtered_count
 
 
 def generate_tokenizer(tokenizer_path):
-    test_data = read_sentence('test')
+    test_data = read_sentence_test('test')
     train_data = read_sentence('training')
-    dev_data = read_sentence('dev')
+    dev_data = read_sentence_test('dev')
     sentences = test_data + train_data + dev_data
     tokenizer = Tokenizer(filters="", lower=True, split=" ")
     tokenizer.fit_on_texts(sentences)
@@ -380,6 +394,8 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     date_entities = [d[5] for d in data]
     named_entities = [[(n[3], n[2]) for n in named_entities_list] for named_entities_list in named_entities]
     date_entities = [[(d[3], d[2], d[1]) for d in date_entities_list] for date_entities_list in date_entities]
+    train_amr_ids = [d[7] for d in train_data]
+    test_amr_ids = [d[7] for d in test_data]
 
     tokenizer = pickle.load(open(tokenizer_path, "rb"))
     sequences = np.asarray(tokenizer.texts_to_sequences(sentences))
@@ -427,11 +443,13 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     embedding_matrix = get_embedding_matrix(word_index, embedding_dim)
     no_word_index = (len(word_index)) + 1
 
+    index_to_word_map = {v: k for k, v in tokenizer.word_index.iteritems()}
+
     (x_train_full, y_train_full, lengths_train, filtered_count_tr) = generate_dataset(x_train, y_train,
                                                                                       dependencies_train, no_word_index,
-                                                                                      max_len)
+                                                                                      max_len, train_amr_ids, index_to_word_map)
     (x_test_full, y_test_full, lengths_test, filtered_count_test) = generate_dataset(x_test, y_test, dependencies_test,
-                                                                                     no_word_index, max_len)
+                                                                                     no_word_index, max_len, test_amr_ids, index_to_word_map)
 
     print "Mean length %s " % np.asarray(lengths_train).mean()
     print "Max length %s" % np.asarray(lengths_train).max()
@@ -469,19 +487,12 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     plot_history(history, model_name)
 
     model.load_weights(model_path, by_name=False)
-    index_to_word_map = {v: k for k, v in tokenizer.word_index.iteritems()}
 
     smatch_results = smatch_util.SmatchAccumulator()
     errors = 0
     for i in range(len(x_test)):
         #Step1: input a processed test entity test
         prediction = make_prediction(model, x_test[i], dependencies_test[i], no_word_index, max_len)
-        print 'Sentence'
-        pretty_print_sentence(x_test[i], index_to_word_map)
-        print 'Predicted'
-        pretty_print_actions(prediction)
-        print 'Actual'
-        pretty_print_actions(y_test[i])
 
         if len(prediction) > 0:
             act = asr.ActionConceptTransfer()
@@ -495,7 +506,12 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
             #Step2'': predict relations
          #Step3: replace named entitities & date date_entities
 
+
             predicted_amr_str = asr.reconstruct_all_ne(pred_label, named_entities[i], date_entities[i])
+
+            #handling coreference(postprocessing)
+            if coref_handling:
+                predicted_amr_str = reentrancy_restoring(predicted_amr_str)
 
             #Step4: compute smatch
             original_amr = smatch_amr.AMR.parse_AMR_line(amrs_test[i])
@@ -510,7 +526,8 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
         else:
             errors += 1
 
-    file = open('./results_keras/{}_results_train'.format(model_name), 'w')
+    #modified to results_train_new
+    file = open('./results_keras/{}_results_train_new'.format(model_name), 'w')
 
     file.write('------------------------------------------------------------------------------------------------\n')
     file.write('Train data shape: \n')
@@ -550,6 +567,7 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
 
     sentences = [d[0] for d in data]
     amrs = [d[2] for d in data]
+    test_amr_ids = [d[7] for d in data]
 
     actions = [d[1] for d in data]
 
@@ -592,12 +610,14 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
     print amrs_test.shape
     print len(dependencies_test)
 
+    index_to_word_map = {v: k for k, v in tokenizer.word_index.iteritems()}
+
     embedding_matrix = get_embedding_matrix(word_index, embedding_dim)
 
     no_word_index = (len(word_index)) + 1
 
     (x_test_full, y_test_full, lengths_test, filtered_count_test) = generate_dataset(x_test, y_test, dependencies_test,
-                                                                                     no_word_index, max_len)
+                                                                                     no_word_index, max_len, test_amr_ids, index_to_word_map)
 
     y_test_ohe = np.zeros((y_test_full.shape[0], max_len, 5), dtype='int32')
     for row, i in zip(y_test_full[:, :], range(y_test_full.shape[0])):
@@ -609,7 +629,6 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
     print model.summary()
 
     model.load_weights(model_path, by_name=False)
-    index_to_word_map = {v: k for k, v in tokenizer.word_index.iteritems()}
 
     smatch_results = smatch_util.SmatchAccumulator()
     predictions = []
@@ -632,8 +651,14 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
             print pred_label
             if with_reattach is True:
                 predicted_amr_str = asr.reconstruct_all_ne(pred_label, named_entities[i], date_entities[i])
+                # handling coreference(postprocessing)
+                if coref_handling:
+                    predicted_amr_str = reentrancy_restoring(predicted_amr_str)
             else:
                 predicted_amr_str = asr.reconstruct_all(pred_label)
+                # handling coreference(postprocessing)
+                if coref_handling:
+                    predicted_amr_str = reentrancy_restoring(predicted_amr_str)
 
             original_amr = smatch_amr.AMR.parse_AMR_line(amrs_test[i])
             predicted_amr = smatch_amr.AMR.parse_AMR_line(predicted_amr_str)
@@ -731,8 +756,14 @@ def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim
 
             if with_reattach is True:
                 predicted_amr_str = asr.reconstruct_all_ne(pred_label, named_entities, [])
+                # handling coreference(postprocessing)
+                if coref_handling:
+                    predicted_amr_str = reentrancy_restoring(predicted_amr_str)
             else:
                 predicted_amr_str = asr.reconstruct_all(pred_label)
+                # handling coreference(postprocessing)
+                if coref_handling:
+                    predicted_amr_str = reentrancy_restoring(predicted_amr_str)
 
             print 'Predicted Amr'
             print predicted_amr_str
@@ -742,15 +773,15 @@ def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim
 
 def train_file(model_name, tokenizer_path, train_data_path=None, test_data_path=None, max_len=30, train_epochs=35,
                embedding_dim=100):
-    test_data = read_data('test', test_data_path)
-    train_data = read_data('training', train_data_path)
+    test_data = read_test_data('test', test_data_path)
+    train_data = read_data('training', train_data_path,cache=False)
 
     train(model_name, tokenizer_path, train_data, test_data, max_len, train_epochs, embedding_dim)
 
 
 def test_file(model_name, tokenizer_path, test_case_name, test_data_path, max_len=30, embedding_dim=100, test_source="test",
               with_reattach=False):
-    data = read_data(test_source, test_data_path)
+    data = read_test_data(test_source, test_data_path)
     return test(model_name, tokenizer_path, test_case_name, data, max_len, embedding_dim, with_reattach=with_reattach)
 
 
@@ -779,14 +810,15 @@ if __name__ == "__main__":
             train_data_path = None
             test_data_path = None
         else:
-            train_data_path = "deft-p2-amr-r1-alignments-training-{}.txt".format(data_set)
-            test_data_path = "deft-p2-amr-r1-alignments-test-{}.txt".format(data_set)
-
+            train_data_path = data_set
+            test_data_path = data_set
+    tokenizer_path = "./tokenizers/full_tokenizer_extended.dump"
+    generate_tokenizer(tokenizer_path)
     train_file(model_name=model_name,
-               tokenizer_path="./tokenizers/full_tokenizer.dump",
+               tokenizer_path=tokenizer_path,
                train_data_path=train_data_path,
-               test_data_path=test_data_path, max_len=max_len,
-               train_epochs=epochs, embedding_dim=embeddings_dim)
+               test_data_path=test_data_path, max_len=30,
+               train_epochs=1, embedding_dim=100)
     #     test_file(model_name, tokenizer_path="./tokenizers/full_tokenizer.dump",
     #               test_case_name= test_source,
     #               test_data_path=test_set_name, max_len=max_len,
