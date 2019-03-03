@@ -18,6 +18,7 @@ DN = 3
 SW = 4
 NUM_ACTIONS = len(act.acts)
 
+
 # TODO: think of training  a model for each action and have an ensamble decide the next one ?
 
 
@@ -55,8 +56,9 @@ class TransitionParser:
 
     # returns an expression of the loss for the sequence of actions
     # (that is, the oracle_actions if present or the predicted sequence otherwise)
-    def parse(self, tokens, oracle_actions=None, concepts_metadata = None, use_model_predictions = False):
-        logging.debug("Parsing with model predictions %s: %s with oracle %s concepts_metadata %s", use_model_predictions, self.preety_tokens(tokens), oracle_actions, concepts_metadata)
+    def parse(self, tokens, oracle_actions=None, concepts_metadata=None, use_model_predictions=False):
+        logging.debug("Parsing with model predictions %s: %s with oracle %s concepts_metadata %s",
+                      use_model_predictions, self.preety_tokens(tokens), oracle_actions, concepts_metadata)
         dy.renew_cg()
         if oracle_actions:
             oracle_actions = list(oracle_actions)
@@ -82,7 +84,7 @@ class TransitionParser:
         for tok in toks:
             tok_embedding = self.WORDS_LOOKUP[tok]
             cur = cur.add_input(tok_embedding)
-            buffer.append((cur.output(), tok_embedding,  self.convert_token(tok)))
+            buffer.append((cur.output(), tok_embedding, self.convert_token(tok)))
 
         while not (len(stack) <= 1 and len(buffer) == 0):
             # based on parser state, get valid actions
@@ -92,7 +94,8 @@ class TransitionParser:
             if len(stack) >= 2:  # can only shift if 2 elements on stack
                 valid_actions += [RL, RR]
             if len(stack) >= 3 and (predicted_actions and predicted_actions[-1] != SW):
-                valid_actions += [SW]  # can only swap if we have at least 3 elements on the stack. don't predict 2 consecutive swaps
+                valid_actions += [SW]
+                # can only swap if we have at least 3 elements on the stack. don't predict 2 consecutive swaps
 
             logging.info("valid actions %s", conv_actions(valid_actions))
             # compute probability of each of the actions and choose an action
@@ -182,4 +185,5 @@ class TransitionParser:
             logging.info('ROOT --> {0}'.format(head))
         # print("losses" + str(map(lambda x: x.scalar_value(), losses)))
         # print(head.preety_print())
-        return -dy.esum(losses) if losses else None, head, sum(good_predictions), len(good_predictions), predicted_actions, invalid_actions
+        return -dy.esum(losses) if losses else None, head, sum(good_predictions), len(
+            good_predictions), predicted_actions, invalid_actions

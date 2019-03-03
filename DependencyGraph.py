@@ -5,30 +5,34 @@
 @author Chuan Wang
 """
 import codecs
-from util import ListMap,Stack
+from util import ListMap, Stack
+
 
 class DNode(object):
-    def __init__(self,idx,str):
+    def __init__(self, idx, str):
         self.index = idx
         self.str = str
         self.children = []
-        self.parents = [] 
-    def addChildren(self,c):
-        if isinstance(c,list):
+        self.parents = []
+
+    def addChildren(self, c):
+        if isinstance(c, list):
             self.children.extend(c)
         else:
             self.children.append(c)
 
-    def addParent(self,parent):
+    def addParent(self, parent):
         self.parents.append(parent)
 
-    def removeChild(self,child):
+    def removeChild(self, child):
         self.children.remove(child)
-        
-    def removeParent(self,parent):
+
+    def removeParent(self, parent):
         self.parents.remove(parent)
+
     def __str__(self):
-        return 'Node: %s Children: %s'%(self.index,self.children)
+        return 'Node: %s Children: %s' % (self.index, self.children)
+
 
 class DepGraph(object):
     """
@@ -40,13 +44,11 @@ class DepGraph(object):
         self.root = 0
         self.nodes = {}
 
-        
-
     @staticmethod
     def init_graph(stp_deps):
         """Instantiate graph from dependency tuples"""
         dpg = DepGraph()
-        #DepGraph.LABELED = LABELED
+        # DepGraph.LABELED = LABELED
 
         for line in stp_deps:
             line = line.strip()
@@ -55,7 +57,7 @@ class DepGraph(object):
             gov_str = gov_str.strip()
             gov_idx = int(gov_idx)
             if not gov_idx in dpg.nodes.keys():
-                gov_node = DNode(gov_idx,gov_str)
+                gov_node = DNode(gov_idx, gov_str)
                 dpg.addNode(gov_node)
             dep_str, dep_idx = line.strip().split('(')[1].split(',')[1][:-1].split('-')
             dep_str = dep_str.strip()
@@ -63,39 +65,39 @@ class DepGraph(object):
             if not dep_idx in dpg.nodes.keys():
                 dep_node = DNode(dep_idx, dep_str)
                 dpg.addNode(dep_node)
-            dpg.addEdge(gov_idx,dep_idx)
+            dpg.addEdge(gov_idx, dep_idx)
         return dpg
-                
+
     def is_empty(self):
         return len(self.nodes.keys()) == 0
-    
+
     def numNodes(self):
         return len(self.nodes.keys())
 
     def nodes_list(self):
         return self.nodes.keys()
 
-    def addNode(self,node):
+    def addNode(self, node):
         self.nodes[node.index] = node
 
-    def addEdge(self,gov_index,dep_index):
+    def addEdge(self, gov_index, dep_index):
         self.nodes[gov_index].addChildren(dep_index)
         self.nodes[dep_index].addParent(gov_index)
-        
-    def get_direction(self,i,j):
+
+    def get_direction(self, i, j):
         if j in self.nodes[i].children:
             return 0
         elif i in self.nodes[j].children:
             return 1
         else:
             return -1
-        
+
     # ignore the multiedge between same nodes, which does not exist in unlabled mode
-    def remove_edge(self,gov_index,dep_index):
+    def remove_edge(self, gov_index, dep_index):
         self.nodes[gov_index].removeChild(dep_index)
         self.nodes[dep_index].removeParent(gov_index)
 
-    def swap_head(self,gov_index,dep_index):
+    def swap_head(self, gov_index, dep_index):
         """
         make dep head of gov and all current gov's dependents
         """
@@ -115,12 +117,11 @@ class DepGraph(object):
             self.nodes[p].children.remove(gov_index)
             self.nodes[p].children.append(dep_index)
 
-    
     def bfs(self):
         from collections import deque
         visited_nodes = set()
         dep_tuples = []
-        
+
         queue = deque([self.root])
         while queue:
             next = queue.popleft()
@@ -128,25 +129,21 @@ class DepGraph(object):
                 continue
             visited_nodes.add(next)
             for child in self.nodes[next].children:
-                if not (next,child) in dep_tuples:
+                if not (next, child) in dep_tuples:
                     if not child in visited_nodes:
                         queue.append(child)
-                    dep_tuples.append((next,child))
+                    dep_tuples.append((next, child))
         return dep_tuples
 
-    def postorder(self,root,seq=[]):
+    def postorder(self, root, seq=[]):
         if self.nodes[root].children == []:
             seq.append(root)
         else:
             for child in self.nodes[root].children:
-                self.postorder(child,seq)
+                self.postorder(child, seq)
             seq.append(root)
         return seq
-            
-        
+
     def print_tuples(self):
         """print the dependency graph as tuples"""
-        return '\n'.join("(%s,%s)"%(self.nodes[g].str,self.nodes[d].str) for g,d in self.bfs())
-    
-            
-            
+        return '\n'.join("(%s,%s)" % (self.nodes[g].str, self.nodes[d].str) for g, d in self.bfs())

@@ -10,8 +10,8 @@ def get_unaligned_nodes(amr, unaligned_nodes_dict):
                 unaligned_nodes_dict[concept].append(amr[key])
 
 
-def get_coreferences_count(custom_amr):
-    #TODO: fix method
+def get_coreference_count(custom_amr):
+    # TODO: fix method
     # but in case of reentrancy, a variable will have more than one parent (key here is a node-parent pair)
     keys = [k[0] for k in custom_amr.relations_dict.keys()]
     return len(keys) - len(set(keys))

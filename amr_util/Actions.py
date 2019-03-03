@@ -12,14 +12,15 @@ class AMRAction:
         self.index = acts.index(action)
 
     def __repr__(self):
-        return "action: %s label: %s label2: %s index: %s key: %s key2: %s" % (self.action, self.label, self.label2, self.index, self.key, self.key2)
+        return "action: %s label: %s label2: %s index: %s key: %s key2: %s" % (
+            self.action, self.label, self.label2, self.index, self.key, self.key2)
 
     def to_string(self):
         if not self.label:
             return self.action
         if not self.label2:
-            return self.action+"_"+self.label
-        return self.action+"_"+self.label+"_"+self.label2
+            return self.action + "_" + self.label
+        return self.action + "_" + self.label + "_" + self.label2
 
     @classmethod
     def build(cls, action):

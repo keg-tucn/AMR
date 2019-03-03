@@ -39,6 +39,7 @@ class AMR(object):
                node name, attribute value> is used to represent such attribute. It can also be viewed as a relation.
 
     """
+
     def __init__(self, node_list=None, node_value_list=None, relation_list=None, attribute_list=None):
         """
         node_list: names of nodes in AMR graph, e.g. "a11", "n"
@@ -88,7 +89,7 @@ class AMR(object):
         for node_relations in self.relations:
             for i, l in enumerate(node_relations):
                 node_relations[i][1] = node_map_dict[l[1]]
-  
+
     def get_triples(self):
         """
         Get the triples in three lists.
@@ -111,7 +112,6 @@ class AMR(object):
             for l in self.attributes[i]:
                 attribute_triple.append((l[0], self.nodes[i], l[1]))
         return instance_triple, attribute_triple, relation_triple
-
 
     def get_triples2(self):
         """
@@ -139,7 +139,6 @@ class AMR(object):
                 relation_triple.append((l[0], self.nodes[i], l[1]))
         return instance_triple, relation_triple
 
-
     def __str__(self):
         """
         Generate AMR string for better readability
@@ -147,7 +146,7 @@ class AMR(object):
         """
         lines = []
         for i in range(len(self.nodes)):
-            lines.append("Node "+ str(i) + " " + self.nodes[i])
+            lines.append("Node " + str(i) + " " + self.nodes[i])
             lines.append("Value: " + self.node_values[i])
             lines.append("Relations:")
             for relation in self.relations[i]:
@@ -247,7 +246,7 @@ class AMR(object):
                 if state == 2:
                     # in this state, current relation name should be empty
                     if cur_relation_name != "":
-                        print >> ERROR_LOG, "Format error when processing ", line[0:i+1]
+                        print >> ERROR_LOG, "Format error when processing ", line[0:i + 1]
                         return None
                     # update current relation name for future use
                     cur_relation_name = "".join(cur_charseq).strip()
@@ -282,7 +281,7 @@ class AMR(object):
                     cur_charseq[:] = []
                     parts = temp_attr_value.split()
                     if len(parts) < 2:
-                        print >> ERROR_LOG, "Error in processing; part len < 2", line[0:i+1]
+                        print >> ERROR_LOG, "Error in processing; part len < 2", line[0:i + 1]
                         return None
                     # For the above example, node name is "op1", and node value is "w"
                     # Note that this node name might not be encountered before
@@ -342,7 +341,7 @@ class AMR(object):
                         cur_relation_name = ""
                 else:
                     # error if in other state
-                    print >> ERROR_LOG, "Error in parsing AMR", line[0:i+1]
+                    print >> ERROR_LOG, "Error in parsing AMR", line[0:i + 1]
                     return None
                 state = 3
             elif c == ")":
@@ -351,7 +350,7 @@ class AMR(object):
                     continue
                 # stack should be non-empty to find upper level node
                 if len(stack) == 0:
-                    print >> ERROR_LOG, "Unmatched parenthesis at position", i, "in processing", line[0:i+1]
+                    print >> ERROR_LOG, "Unmatched parenthesis at position", i, "in processing", line[0:i + 1]
                     return None
                 # Last significant symbol is ":". Now we encounter ")"
                 # Example:
@@ -362,7 +361,7 @@ class AMR(object):
                     cur_charseq[:] = []
                     parts = temp_attr_value.split()
                     if len(parts) < 2:
-                        print >> ERROR_LOG, "Error processing", line[:i+1], temp_attr_value
+                        print >> ERROR_LOG, "Error processing", line[:i + 1], temp_attr_value
                         return None
                     relation_name = parts[0].strip()
                     relation_value = parts[1].strip()
@@ -394,7 +393,7 @@ class AMR(object):
             else:
                 # not significant symbols, so we just shift.
                 cur_charseq.append(c)
-        #create data structures to initialize an AMR
+        # create data structures to initialize an AMR
         node_value_list = []
         relation_list = []
         attribute_list = []
@@ -429,7 +428,7 @@ class AMR(object):
         result_amr = AMR(node_name_list, node_value_list, relation_list, attribute_list)
         return result_amr
 
-    def pretty_print(self, root_index = 0, depth=1):
+    def pretty_print(self, root_index=0, depth=1):
         if depth == 1:
             self.already_written = []
         name_trimmed = self.node_values[root_index].strip(' \t\n\r')

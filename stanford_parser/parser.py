@@ -2,31 +2,28 @@ import jpype
 import os
 from standoff import TextStandoff
 
+
 class ParserError(Exception):
     def __init__(self, *args, **margs):
-        Exception.__init__(self, *args,**margs)
+        Exception.__init__(self, *args, **margs)
 
 
 def standoffFromToken(txt, token):
     return TextStandoff(txt, (token.beginPosition(), token.endPosition()))
 
 
-                   
-           
-
-
 class Dependencies:
     def __init__(self, sentence, tokens, posTags, dependencies):
         self.sentence = sentence
 
-        self.posTags = posTags        
-        
+        self.posTags = posTags
+
         self.tokens = tokens
 
         self.tokensToPosTags = dict(zip(self.tokens, self.posTags))
 
         self.dependencies = dependencies
-        
+
         self.govToDeps = {}
         self.depToGov = {}
         self.constituentsToRelation = {}
@@ -35,37 +32,33 @@ class Dependencies:
         self.dependencies = [(relation, gov, dep) for relation, gov, dep in self.dependencies
                              if gov != dep]
 
-
         for relation, gov, dep in self.dependencies:
-
             self.govToDeps.setdefault(gov, [])
             self.govToDeps[gov].append(dep)
             assert not dep in self.depToGov, (dep.text, [(key.text, value.text)
                                                          for key, value in self.depToGov.iteritems()])
             self.depToGov[dep] = gov
-            self.constituentsToRelation[(gov,dep)] = relation
-            
+            self.constituentsToRelation[(gov, dep)] = relation
+
         self.checkRep()
 
     def tagForTokenStandoff(self, tokenStandoff):
         return self.tokensToPosTags[tokenStandoff]
-        
-        
+
     def checkRep(self):
-        assert len(self.posTags) == len(self.posTags)        
+        assert len(self.posTags) == len(self.posTags)
         for t in self.tokens:
             assert t.entireText == self.sentence
 
-
-
     def govForDep(self, dep):
         return self.depToGov[dep]
+
     def depsForGov(self, gov):
         return self.govToDeps[gov]
 
     def relForConstituents(self, gov, dep):
         return self.constituentsToRelation((gov, dep))
-    
+
     def __str__(self):
         result = ""
         result += "sentence=" + repr(self.sentence) + "\n"
@@ -73,7 +66,9 @@ class Dependencies:
             result += relation + "(" + gov.text + ", " + dep.text + ")\n"
         return result
 
+
 stanford_parser_home = None
+
 
 def startJvm():
     import os
@@ -83,24 +78,25 @@ def startJvm():
 
     jpype.startJVM(jpype.getDefaultJVMPath(),
                    "-ea",
-                   "-Djava.class.path=%s/stanford-parser.jar" % (stanford_parser_home),)
-startJvm() # one jvm per python instance.
+                   "-Djava.class.path=%s/stanford-parser.jar" % (stanford_parser_home), )
+
+
+startJvm()  # one jvm per python instance.
+
 
 class Parser:
 
     def __init__(self, pcfg_model_fname=None):
         os.environ.setdefault("STANFORD_PARSER_HOME", "../3rdParty/stanford-parser/stanford-parser-2010-08-20")
         if pcfg_model_fname == None:
-            #self.pcfg_model_fname = "%s/englishPCFG.ser" % stanford_parser_home
-            #self.pcfg_model_fname = "%s/englishFactored.ser" % stanford_parser_home
-            self.pcfg_model_fname = "%s/../englishPCFG.July-2010.ser" % stanford_parser_home            
+            # self.pcfg_model_fname = "%s/englishPCFG.ser" % stanford_parser_home
+            # self.pcfg_model_fname = "%s/englishFactored.ser" % stanford_parser_home
+            self.pcfg_model_fname = "%s/../englishPCFG.July-2010.ser" % stanford_parser_home
         else:
             self.pcfg_model_fname = pcfg_model_fname
 
-
-
         self.package_lexparser = jpype.JPackage("edu.stanford.nlp.parser.lexparser")
-        
+
         self.parser = self.package_lexparser.LexicalizedParser(self.pcfg_model_fname)
         self.package = jpype.JPackage("edu.stanford.nlp")
 
@@ -108,12 +104,8 @@ class Parser:
         self.tokenizerFactory = tokenizerFactoryClass.newPTBTokenizerFactory(True, True)
 
         self.documentPreprocessor = self.package.process.DocumentPreprocessor(self.tokenizerFactory)
-        
-        
+
         self.parser.setOptionFlags(["-retainTmpSubcategories"])
-
-
-
 
     def printInfo(self):
 
@@ -133,6 +125,7 @@ class Parser:
         # print "Test parameters"
         self.parser.op.tlpParams.display();
         self.package_lexparser.Test.display()
+
     def parse(self, sentence):
         """
         Parses the sentence string, returning the tokens, and the parse tree as a tuple.
@@ -142,32 +135,31 @@ class Parser:
         tokens = self.documentPreprocessor.getWordsFromString(sentence)
         for token in tokens:
             if token.word() in ["down"]:
-                #print "setting tag"
-                #print "setting tag"
+                # print "setting tag"
+                # print "setting tag"
                 token.setTag("IN")
                 pass
             if token.word().lower() in ["bot"]:
                 token.setTag("NN")
                 pass
-        
+
         wasParsed = self.parser.parse(tokens)
         if not wasParsed:
             raise ParserError("Could not parse " + sentence)
         return tokens, self.parser.getBestParse()
-    
+
     def parseToStanfordDependencies(self, sentence):
 
         tokens, tree = self.parse(sentence)
         standoffTokens = [standoffFromToken(sentence, token)
                           for token in tokens]
         posTags = [token.tag() for token in tree.taggedYield()]
-        #print " ".join(["%s/%s" % (word.text, tag) for word, tag in zip(standoffTokens, posTags)])
-        #print tree.taggedYield().toString(False)
+        # print " ".join(["%s/%s" % (word.text, tag) for word, tag in zip(standoffTokens, posTags)])
+        # print tree.taggedYield().toString(False)
         result = self.package.trees.EnglishGrammaticalStructure(tree)
-        
+
         returnList = []
         for dependency in result.typedDependenciesCollapsedTree():
-
             govStandoff = standoffTokens[dependency.gov().index() - 1]
             depStandoff = standoffTokens[dependency.dep().index() - 1]
 
@@ -175,7 +167,4 @@ class Parser:
                                govStandoff,
                                depStandoff))
 
-
-
         return Dependencies(sentence, standoffTokens, posTags, returnList)
-                              

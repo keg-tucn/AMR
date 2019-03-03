@@ -3,14 +3,16 @@ import AMRData
 from smatch import smatch_util
 from smatch import smatch_amr
 
-#method that returns the customized AMR representation directly from amr_str
+
+# method that returns the customized AMR representation directly from amr_str
 def get_custom_amr(amr_str):
     amr = AMR.parse_string(amr_str)
     custom_amr = AMRData.CustomizedAMR()
     custom_amr.create_custom_AMR(amr)
     return custom_amr
 
-#calculates the smatch of two amrs in string formar
+
+# calculates the smatch of two amrs in string formar
 def get_smatch(amr_str_1, amr_str_2):
     smatch_results = smatch_util.SmatchAccumulator()
     amr1 = smatch_amr.AMR.parse_AMR_line(amr_str_1)

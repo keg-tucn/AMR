@@ -3,6 +3,7 @@ from AMRGraph import AMR
 from preprocessing import TokensReplacer, ActionSequenceGenerator
 from keras import metrics
 
+
 def pretty_print(amr):
     for k in amr.keys():
         print "Key: %s" % (k)
@@ -54,6 +55,7 @@ def generate_custom_amr(amr):
 def generate_amr_with_literals(amr_string, sentence):
     amr = AMR.parse_string(amr_string)
     return TokensReplacer.replace_named_entities(amr, sentence)
+
 
 def generate_amr_with_date_entities(amr_string, sentence):
     amr = AMR.parse_string(amr_string)

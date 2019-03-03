@@ -6,8 +6,8 @@ import TrainingDataExtractor as tde
 def generate_parsed_data(parsed_path, cache, dump_path):
     dump_path = dump_path + ".dump"
     # print(dump_path)
-    #don't cache it
-    #if path.exists(dump_path):
+    # don't cache it
+    # if path.exists(dump_path):
     #    with open(dump_path, "rb") as f:
     #        return js.load(f)
     if cache:
@@ -24,7 +24,7 @@ def generate_parsed_data(parsed_path, cache, dump_path):
         return data
 
 
-def read_data(type,cache, filter_path="deft"):
+def read_data(type, cache, filter_path="deft"):
     if filter_path is None:
         filter_path = "deft"
     mypath = 'resources/alignments/split/' + type
@@ -37,5 +37,5 @@ def read_data(type,cache, filter_path="deft"):
         mypath_f = mypath + "/" + f
         dumppath_f = mypath + "/dumps/" + f
         print(mypath_f)
-        data += generate_parsed_data(mypath_f,cache, dumppath_f)
+        data += generate_parsed_data(mypath_f, cache, dumppath_f)
     return data

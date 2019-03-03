@@ -6,6 +6,7 @@ from AMRGraph import AMR
 from preprocessing import NamedEntitiesReplacer
 from preprocessing import SentenceAMRPairsExtractor
 
+
 # Given a file with sentences and aligned amrs,
 # it returns a list of preprocessed sentences
 def generate_test_data(file_path, verbose=True):
@@ -41,5 +42,4 @@ def generate_test_data(file_path, verbose=True):
 
     return test_data
 
-
-#print generate_test_data("/home/andreea/LDC2016E25_DEFT_Phase_2_AMR_Annotation_R2/data/alignments/unsplit/toySet.txt", False)
+print generate_test_data("/home/iv/Documents/AMR/resources/alignments/split/test/deft-p2-amr-r1-alignments-test-bolt.txt", False)

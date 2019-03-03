@@ -192,7 +192,7 @@ class AMR(defaultdict):
                     foo = amr[parentnodelabel]
 
                     if stack:
-                        stack.append((CNODE, parentnodelabel, parentconcept,[]))
+                        stack.append((CNODE, parentnodelabel, parentconcept, []))
                         state = 6
                     else:
                         amr.roots.append(parentnodelabel)
@@ -331,7 +331,7 @@ class AMR(defaultdict):
                                 amr._align_non_var_node(node, parentnodelabel, aligned_tokens)
                             else:
                                 amr._align_var_node(node, aligned_tokens)
-                        #align edge
+                        # align edge
                         amr._align_edge(edgelabel, parentnodelabel, edge_aligned_tokens)
 
                         hyperchild = tuple(hypertarget)
@@ -391,7 +391,7 @@ class AMR(defaultdict):
                 return node.node_label
         return None
 
-    #Anda's lovely method :)))
+    # Anda's lovely method :)))
     def get_seqID(self):
         node_seqID = ""
         node_seqIDList = list()

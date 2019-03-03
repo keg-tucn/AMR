@@ -18,7 +18,8 @@ class Node:
                 child_representation = ":%s %s" % (relation, child.tag)
             else:
                 if depth < 50:
-                    child_representation = ":%s  %s" % (relation, child.amr_print(depth + 1, idx + "_" + str(child_cnt)))
+                    child_representation = ":%s  %s" % (
+                        relation, child.amr_print(depth + 1, idx + "_" + str(child_cnt)))
                 else:
                     child_representation = ":%s %s" % (relation, "too_deep")
                 child_cnt += 1

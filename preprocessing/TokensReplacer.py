@@ -116,7 +116,8 @@ def replace_named_entities(amr, sentence):
     for literals_triplet in literals_triplets:
         literals_list = literals_triplet[2]
         tokens = [int(amr_copy.node_to_tokens[literal][0][0]) for literal in literals_list]
-        named_entities.append((literals_triplet[0], literals_triplet[1], literals_triplet[2], min(tokens), max(tokens), literals_triplet[3]))
+        named_entities.append((literals_triplet[0], literals_triplet[1], literals_triplet[2], min(tokens), max(tokens),
+                               literals_triplet[3]))
 
     # Remove name vars from node_to_concepts
     name_variables = [n[1] for n in named_entities]
@@ -196,8 +197,8 @@ def replace_temporal_quantities(amr, sentence):
 
         else:
             if not (abs(t[3] - t[4]) == 1 or
-                        (abs(t[3] - t[4]) == 2
-                         and sentence.split(' ')[max(t[3], t[4]) - 1] == '@-@')):
+                    (abs(t[3] - t[4]) == 2
+                     and sentence.split(' ')[max(t[3], t[4]) - 1] == '@-@')):
                 raise ValueError("Quant and unit not consecutive or separated by @-@ for sentence %s" % sentence)
     # Remove units from node_to_concepts
     units = [t[2] for t in quant_unit_tokens_align]
@@ -252,7 +253,7 @@ def replace_quantities_default(amr, sentence, quantities):
 
     # Find all the "quantity" nodes.
     quantity_nodes = [k for k in amr_copy if k in amr_copy.node_to_concepts
-                               and amr_copy.node_to_concepts[k] in quantities]
+                      and amr_copy.node_to_concepts[k] in quantities]
 
     if len(quantity_nodes) == 0:
         return amr, sentence, []
@@ -277,8 +278,8 @@ def replace_quantities_default(amr, sentence, quantities):
 
         else:
             if not (abs(t[3] - t[4]) == 1 or
-                        (abs(t[3] - t[4]) == 2
-                         and sentence.split(' ')[max(t[3], t[4]) - 1] == '@-@')):
+                    (abs(t[3] - t[4]) == 2
+                     and sentence.split(' ')[max(t[3], t[4]) - 1] == '@-@')):
                 raise ValueError("Quant and unit not consecutive or separated by @-@ for sentence %s" % sentence)
     # Remove units from node_to_concepts
     units = [t[2] for t in quant_unit_tokens_align]
@@ -309,7 +310,7 @@ def replace_quantities_default(amr, sentence, quantities):
 
     # Add node_to_tokens for the temporal quantities with token as the "min" token spanned by the quantity and unit
     quantity_spans = [(t[0], min(t[3], t[4]), max(t[3], t[4]))
-                               for t in quant_unit_tokens_align]
+                      for t in quant_unit_tokens_align]
     quantity_spans = sorted(quantity_spans, key=itemgetter(1))
 
     tokens = sentence.split(" ")
@@ -341,7 +342,8 @@ def replace_have_org_role(amr, relation_to_bubble_up):
     if len(have_org_role_nodes) == 0:
         return amr, []
 
-    amr_copy.node_to_concepts = dict((k, v) for k, v in amr_copy.node_to_concepts.iteritems() if k not in have_org_role_nodes)
+    amr_copy.node_to_concepts = dict(
+        (k, v) for k, v in amr_copy.node_to_concepts.iteritems() if k not in have_org_role_nodes)
     for h in have_org_role_nodes:
         node = amr_copy.pop(h)
         new_node = node[relation_to_bubble_up]

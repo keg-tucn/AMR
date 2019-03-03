@@ -5,48 +5,46 @@ from tqdm import tqdm
 import AMRData
 from AMRGraph import AMR
 from amr_util import TrainingDataStats
-from preprocessing import SentenceAMRPairsExtractor, ActionSequenceGenerator
+from preprocessing import SentenceAMRPairsExtractor
 from preprocessing import TokensReplacer
 from preprocessing.DependencyExtractor import extract_dependencies
 from collections import namedtuple
 from preprocessing.action_sequence_generators.simple_asg__informed_swap import SimpleInformedSwapASG
-from preprocessing.action_sequence_generators.simple_asg import SimpleASG
+from Baseline import baseline
 
 TrainingDataExtraction = namedtuple("TrainingDataExtraction", "data stats")
 TrainingData = namedtuple("TrainingData", "sentence, action_sequence, amr_original, dependencies, named_entities, "
                                           "date_entities, concepts_metadata, amr_id")
 
 
-#for coref handling
-from Baseline import baseline
-
-# Given a file with sentences and aligned amrs,
-# it returns an array of (TrainingData)
+# Given a file with sentences and aligned AMRs,
+# return an array of TrainingData instances
 def generate_training_data(file_path, compute_dependencies=False):
     sentence_amr_triples = SentenceAMRPairsExtractor.extract_sentence_amr_pairs(file_path)
     fail_sentences = []
     unaligned_nodes = {}
     unaligned_nodes_after = {}
     training_data = []
-    coreferences_count = 0
+    coreference_count = 0
     have_org_role_exceptions = 0
     named_entity_exceptions = 0
     date_entity_exceptions = 0
     temporal_quantity_exceptions = 0
     quantity_exceptions = 0
     processed_sentence_ids = []
-    #change this to true if you want coref handling (graphs trnaformed to trees)
+
+    # set to True for co-reference handling (graph transformed to trees)
     coref_handling = False
+
     for i in tqdm(range(0, len(sentence_amr_triples))):
         try:
             logging.debug("Started processing example %d", i)
             concepts_metadata = {}
             (sentence, amr_str, amr_id) = sentence_amr_triples[i]
 
-
             amr = AMR.parse_string(amr_str)
 
-            #coreference handling
+            # co-reference handling
             if coref_handling:
                 try:
                     new_amr_str = baseline(amr_str)
@@ -62,6 +60,7 @@ def generate_training_data(file_path, compute_dependencies=False):
                 have_org_role_exceptions += 1
                 raise e
 
+            # replace named entities tokens
             try:
                 (new_amr, new_sentence, named_entities) = TokensReplacer.replace_named_entities(amr, sentence)
                 for name_entity in named_entities:
@@ -70,6 +69,7 @@ def generate_training_data(file_path, compute_dependencies=False):
                 named_entity_exceptions += 1
                 raise e
 
+            # replace date entities tokens
             try:
                 (new_amr, new_sentence, date_entities) = TokensReplacer.replace_date_entities(new_amr, new_sentence)
                 for date_entity in date_entities:
@@ -78,20 +78,18 @@ def generate_training_data(file_path, compute_dependencies=False):
                 date_entity_exceptions += 1
                 raise e
 
+            # replace temporal entities tokens
             try:
                 (new_amr, new_sentence, _) = TokensReplacer.replace_temporal_quantities(new_amr, new_sentence)
             except Exception as e:
                 temporal_quantity_exceptions += 1
                 raise e
+
+            # replace quantity entities tokens
             try:
-                (new_amr, new_sentence, _) = TokensReplacer.replace_quantities_default(new_amr, new_sentence,
-                                                                                       ['monetary-quantity',
-                                                                                        'mass-quantity',
-                                                                                        'energy-quantity',
-                                                                                        'distance-quantity',
-                                                                                        'volume-quantity',
-                                                                                        'power-quantity'
-                                                                                        ])
+                (new_amr, new_sentence, _) = TokensReplacer.replace_quantities_default(new_amr, new_sentence, [
+                    'monetary-quantity', 'mass-quantity', 'energy-quantity', 'distance-quantity', 'volume-quantity',
+                    'power-quantity'])
             except Exception as e:
                 quantity_exceptions += 1
                 raise e
@@ -100,38 +98,40 @@ def generate_training_data(file_path, compute_dependencies=False):
             custom_amr = AMRData.CustomizedAMR()
             custom_amr.create_custom_AMR(new_amr)
 
-            coreferences_count += TrainingDataStats.get_coreferences_count(custom_amr)
-            #TODO: put here the new version of the action seq generator
+            coreference_count += TrainingDataStats.get_coreference_count(custom_amr)
 
-            asg_implementation = SimpleInformedSwapASG(1,False)
-            #asg_implementation = SimpleASG(1,False)
+            # TODO: put here the new version of the action seq generator
+            # action_sequence = ActionSequenceGenerator.generate_action_sequence(custom_amr, new_sentence)
+
+            asg_implementation = SimpleInformedSwapASG(1, False)
             action_sequence = asg_implementation.generate_action_sequence(custom_amr, new_sentence)
-            #action_sequence = ActionSequenceGenerator.generate_action_sequence(custom_amr, new_sentence)
+
             if compute_dependencies is False:
-                # training_data.append(TrainingData(new_sentence, action_sequence, amr_str, concepts_metadata, amr_id))
                 named_entities = []
                 date_entities = []
-                deps = {}
+                dependencies = {}
             else:
                 try:
-                    deps = extract_dependencies(new_sentence)
+                    dependencies = extract_dependencies(new_sentence)
                 except Exception as e:
                     logging.warn("Dependency parsing failed at sentence %s with exception %s.", new_sentence, str(e))
-                    deps = {}
-                    #### For the keras flow, we also attach named_entities, date_entities, to instances
+                    dependencies = {}
+
+            # For the keras flow, also attach named_entities, date_entities, to instances
             training_data.append(
-                TrainingData(new_sentence, action_sequence, amr_str, deps, named_entities, date_entities,
+                TrainingData(new_sentence, action_sequence, amr_str, dependencies, named_entities, date_entities,
                              concepts_metadata, amr_id))
             processed_sentence_ids.append(amr_id)
+
         except Exception as e:
             fail_sentences.append(sentence)
             logging.debug("Exception is: '%s'. Failed at: %d with sentence %s.", e, i, sentence)
 
     logging.info("Failed: %d out of %d", len(fail_sentences), len(sentence_amr_triples))
-    # logging.critical("|%s|%d|%d|%d", file_path, len(fail_sentences), len(sentence_amr_pairs), len(sentence_amr_pairs) - len(fail_sentences))
+
     return TrainingDataExtraction(training_data,
                                   TrainingDataStats.TrainingDataStatistics(unaligned_nodes, unaligned_nodes_after,
-                                                                           coreferences_count,
+                                                                           coreference_count,
                                                                            named_entity_exceptions,
                                                                            date_entity_exceptions,
                                                                            temporal_quantity_exceptions,
@@ -183,12 +183,12 @@ def extract_amr_ids_from_corpus_as_audit_trail():
 if __name__ == "__main__":
     # extract_amr_ids_from_corpus_as_audit_trail()
     logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.WARNING)
-    generated_data = generate_training_data("resources/alignments/split/dev/deft-p2-amr-r2-alignments-dev-bolt.txt")
+    generated_data = generate_training_data("resources/alignments/split/dev/deft-p2-amr-r1-alignments-dev-bolt.txt")
     assert isinstance(generated_data, TrainingDataExtraction)
     assert isinstance(generated_data.data, list)
     assert isinstance(generated_data.stats, TrainingDataStats.TrainingDataStatistics)
     data = generated_data.data
-    assert len(data) == 20
+    assert len(data) == 23
     for elem in data:
         assert len(elem) == 8
         assert isinstance(elem, TrainingData)

@@ -1,13 +1,18 @@
 import re
 
 
+# returns a list of triples containing:
+#   - sentence
+#   - AMR representation
+#   - AMR id
 def extract_sentence_amr_pairs(file_path):
     with open(file_path) as f:
         lines = f.readlines()
     token_regex = re.compile('^(?:# ::tok )(.*)$')
     amr_start_indices = [index for index in range(0, len(lines)) if token_regex.match(lines[index])]
 
-    triples = map(lambda i: (token_regex.match(lines[i]).group(1), get_amr(lines, i), get_id(lines, i)), amr_start_indices)
+    triples = map(lambda i: (token_regex.match(lines[i]).group(1), get_amr(lines, i), get_id(lines, i)),
+                  amr_start_indices)
     return triples
 
 

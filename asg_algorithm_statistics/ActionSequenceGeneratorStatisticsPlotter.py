@@ -1,11 +1,11 @@
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
 from os import path
 
 abs_path = path.abspath('./plots_asg_statistics')
 print abs_path
 
-def plot_histogram(histogram_data, histogram_names, alg_version, subdirectory,filename):
+
+def plot_histogram(histogram_data, histogram_names, alg_version, subdirectory, filename):
     """
        Description:
             plots histograms to a file
@@ -18,8 +18,8 @@ def plot_histogram(histogram_data, histogram_names, alg_version, subdirectory,fi
     """
 
     no_of_hists = len(histogram_data)
-    p = abs_path + "/"+alg_version+"/" + subdirectory + "/" + filename + ".png"
-    fig, axes = plt.subplots(nrows=no_of_hists, ncols=1, figsize=(10, 5*no_of_hists), sharey=True)
+    p = abs_path + "/" + alg_version + "/" + subdirectory + "/" + filename + ".png"
+    fig, axes = plt.subplots(nrows=no_of_hists, ncols=1, figsize=(10, 5 * no_of_hists), sharey=True)
 
     for i in range(0, no_of_hists):
         ax = axes[i]
@@ -27,7 +27,7 @@ def plot_histogram(histogram_data, histogram_names, alg_version, subdirectory,fi
         x_data = range(len(histogram_data[i]))
         y_data = list(histogram_data[i].values())
         labels = list(histogram_data[i].keys())
-        ax.bar(x_data,y_data , align='center')
+        ax.bar(x_data, y_data, align='center')
         # put the value of each bar above the bar
         for x, y in zip(x_data, y_data):
             ax.text(x, y, str(y))
@@ -39,11 +39,10 @@ def plot_histogram(histogram_data, histogram_names, alg_version, subdirectory,fi
 
 
 def plot_2_line_graph(data1, data2, relative_path):
-
     fig, axes = plt.subplots(nrows=3, ncols=1, figsize=(10, 5 * 2), sharey=True)
     ax = axes[0]
     ax.set_title("main graph")
-    x_data = range(0,255)
+    x_data = range(0, 255)
     ax.plot(x_data, data1)
     ax.plot(x_data, data2)
 

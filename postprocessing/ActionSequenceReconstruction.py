@@ -69,14 +69,14 @@ class ActionConceptTransfer:
                     concept = self.node_concepts.popleft()
                 else:
                     concept = 'unk'
-                predicted_act = AMRAction.build_labeled(action_name(action),concept)
+                predicted_act = AMRAction.build_labeled(action_name(action), concept)
                 result.append(predicted_act)
             elif action == RR or action == RL:
                 if len(self.relation_concepts) > 0:
                     concept = self.relation_concepts.popleft()
                 else:
                     concept = 'unk'
-                predicted_act = AMRAction.build_labeled(action_name(action),concept)
+                predicted_act = AMRAction.build_labeled(action_name(action), concept)
                 result.append(predicted_act)
             else:
                 predicted_act = AMRAction.build(action_name(action))
@@ -95,7 +95,7 @@ def reconstruct_all(action_sequence):
 def reconstruct_all_ne(action_sequence, named_entities_metadata, date_entity_metadata):
     rec_obj = MetadataReconstructionState(named_entities_metadata, date_entity_metadata)
     for action in action_sequence:
-        #SH_concept
+        # SH_concept
         rec_obj.process_action(action)
     top = rec_obj.finalize()
     return top.amr_print()
@@ -105,9 +105,9 @@ class MetadataReconstructionState:
     def __init__(self, _named_entity_metadata, _date_entity_metadata):
         self.named_entity_metadata = _named_entity_metadata
         self.date_entity_metadata = _date_entity_metadata
-        #255 is the max sentence len
+        # 255 is the max sentence len
         max_sen_len = 255
-        self.buffer_indices = range(max_sen_len+1)
+        self.buffer_indices = range(max_sen_len + 1)
         self.current_token_index = 0
         self.stack = []
 
@@ -132,8 +132,8 @@ class MetadataReconstructionState:
     # refactor to receive action object instead of action name and concept
     def process_action(self, action):
         # execute the action to update the parser state
-        #TODO: split named/date entitits replacement of concept after we reconstruct the graph
-        #TODO: reference named/date entitites by concept instead of by index
+        # TODO: split named/date entitits replacement of concept after we reconstruct the graph
+        # TODO: reference named/date entitites by concept instead of by index
         if action.action == 'SH':
             if len(self.named_entity_metadata) > 0 and self.current_token_index == self.named_entity_metadata[0][0]:
                 node = self._make_named_entity(action.label, self.named_entity_metadata[0][1])
@@ -146,7 +146,7 @@ class MetadataReconstructionState:
                 else:
                     node = Node(action.label)
             self.stack.append(node)
-            #self.current_token_index += 1
+            # self.current_token_index += 1
             self.buffer_indices.pop(0)
             if len(self.buffer_indices) != 0:
                 self.current_token_index = self.buffer_indices[0]
@@ -155,12 +155,12 @@ class MetadataReconstructionState:
             node2 = Node(action.label2)
             self.stack.append(node1)
             self.stack.append(node2)
-            #self.current_token_index += 1
+            # self.current_token_index += 1
             self.buffer_indices.pop(0)
             if len(self.buffer_indices) != 0:
                 self.current_token_index = self.buffer_indices[0]
         elif action.action == 'DN':
-            #self.current_token_index += 1
+            # self.current_token_index += 1
             self.buffer_indices.pop(0)
             if len(self.buffer_indices) != 0:
                 self.current_token_index = self.buffer_indices[0]
@@ -172,8 +172,8 @@ class MetadataReconstructionState:
             self.stack.append(mid)
             self.stack.append(lower)
             self.stack.append(top)
-        #for shift 2
-        #TODO: add for shft n
+        # for shift 2
+        # TODO: add for shft n
         elif action.action == "SW_2":
             top = self.stack.pop()
             mid = self.stack.pop()
@@ -233,7 +233,7 @@ class ReconstructionState:
             node2 = Node(action.label2)
             self.stack.append(node1)
             self.stack.append(node2)
-            #self.current_token_index += 1
+            # self.current_token_index += 1
         elif action.action == 'DN':
             pass
         elif action.action == 'SW':
@@ -243,8 +243,8 @@ class ReconstructionState:
             self.stack.append(mid)
             self.stack.append(lower)
             self.stack.append(top)
-        #for shift 2
-        #TODO: add for shft n
+        # for shift 2
+        # TODO: add for shft n
         elif action.action == "SW_2":
             top = self.stack.pop()
             mid = self.stack.pop()

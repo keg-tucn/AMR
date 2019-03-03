@@ -79,7 +79,7 @@ class CustomizedAMR():
     #                     self.tokens_to_concept_list_dict[t].append((node_variable, node_variable))
 
     def add_parent_and_edge(self, key, parent, edge, data):
-        if (key, parent) not in self.relations_dict.keys()and (key, "") not in self.relations_dict.keys():
+        if (key, parent) not in self.relations_dict.keys() and (key, "") not in self.relations_dict.keys():
             data.edgeToParent = edge
             self.relations_dict[(key, parent)] = (edge, [], "")
         else:
@@ -94,8 +94,8 @@ class CustomizedAMR():
                 self.relations_dict[(key, parent)] = tuple(t)
 
     def add_child(self, child, concept):
-        if(concept) not in self.parent_dict.keys() and (concept, "") not in self.relations_dict.keys():
-            self.relations_dict[(concept, "")] = ("",[child],"")
+        if (concept) not in self.parent_dict.keys() and (concept, "") not in self.relations_dict.keys():
+            self.relations_dict[(concept, "")] = ("", [child], "")
         else:
             if (concept, "") in self.relations_dict.keys():
                 t = list(self.relations_dict[(concept, "")])
@@ -115,6 +115,7 @@ class CustomizedAMR():
     In the example above, p2 would be connected to m through the ARG0-of edge,
     p2 would be connected through mod to p3 and t
     """
+
     def create_custom_AMR(self, amr_graph):
         self.create_tokens_to_concepts_dict(amr_graph)
         self.create_tokens_to_concept_list_dict(amr_graph)
@@ -146,4 +147,3 @@ class CustomizedAMR():
                     else:
                         t[2] = value
                     self.relations_dict[(key, item[0][1])] = tuple(t)
-

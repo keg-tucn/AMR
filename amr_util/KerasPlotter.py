@@ -4,6 +4,7 @@ from os import path
 abs_path = path.abspath('./plots_keras')
 print abs_path
 
+
 def plot_history(history, model_name):
     plt.clf()
     # summarize history for accuracy

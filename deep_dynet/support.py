@@ -26,7 +26,7 @@ class Vocab:
         return len(self.w2i.keys())
 
     def get_index_or_add(self, word):
-        if not word in self.w2i.keys():
+        if word not in self.w2i.keys():
             idx = self.size()
             self.w2i[word] = idx
             self.i2w[idx] = word

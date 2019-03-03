@@ -146,6 +146,7 @@ amr_str = """(a / allege-01~e.2
             :domain~e.4 (p / person :wiki "Hamid_Karzai"
                   :name (n3 / name :op1 "Karzai"~e.3))))"""
 
+
 def test_literals(amr_str, sentence):
     (new_amr, new_sentence, named_entities) = generate_amr_with_literals(amr_str, sentence)
     custom_amr = generate_custom_amr(new_amr)
@@ -158,5 +159,6 @@ def test_amr(amr_str, sentence):
     custom_amr = generate_custom_amr(amr)
     seq = generate_action_sequence(custom_amr, sentence)
     print seq
+
 
 test_literals(amr_str, sentence)
