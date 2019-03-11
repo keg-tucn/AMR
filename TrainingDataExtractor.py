@@ -1,5 +1,4 @@
 import logging
-
 from tqdm import tqdm
 
 import AMRData
@@ -60,7 +59,9 @@ def generate_training_data(file_path, compute_dependencies=False):
                 have_org_role_exceptions += 1
                 raise e
 
+            #
             # replace named entities tokens
+            #
             try:
                 (new_amr, new_sentence, named_entities) = TokensReplacer.replace_named_entities(amr, sentence)
                 for name_entity in named_entities:
@@ -69,7 +70,9 @@ def generate_training_data(file_path, compute_dependencies=False):
                 named_entity_exceptions += 1
                 raise e
 
+            #
             # replace date entities tokens
+            #
             try:
                 (new_amr, new_sentence, date_entities) = TokensReplacer.replace_date_entities(new_amr, new_sentence)
                 for date_entity in date_entities:
@@ -78,14 +81,18 @@ def generate_training_data(file_path, compute_dependencies=False):
                 date_entity_exceptions += 1
                 raise e
 
+            #
             # replace temporal entities tokens
+            #
             try:
                 (new_amr, new_sentence, _) = TokensReplacer.replace_temporal_quantities(new_amr, new_sentence)
             except Exception as e:
                 temporal_quantity_exceptions += 1
                 raise e
 
+            #
             # replace quantity entities tokens
+            #
             try:
                 (new_amr, new_sentence, _) = TokensReplacer.replace_quantities_default(new_amr, new_sentence, [
                     'monetary-quantity', 'mass-quantity', 'energy-quantity', 'distance-quantity', 'volume-quantity',
@@ -94,6 +101,9 @@ def generate_training_data(file_path, compute_dependencies=False):
                 quantity_exceptions += 1
                 raise e
 
+            #
+            # create CustomAMR data structure
+            #
             TrainingDataStats.get_unaligned_nodes(new_amr, unaligned_nodes_after)
             custom_amr = AMRData.CustomizedAMR()
             custom_amr.create_custom_AMR(new_amr)
@@ -102,10 +112,12 @@ def generate_training_data(file_path, compute_dependencies=False):
 
             # TODO: put here the new version of the action seq generator
             # action_sequence = ActionSequenceGenerator.generate_action_sequence(custom_amr, new_sentence)
-
             asg_implementation = SimpleInformedSwapASG(1, False)
             action_sequence = asg_implementation.generate_action_sequence(custom_amr, new_sentence)
 
+            #
+            # extract dependencies
+            #
             if compute_dependencies is False:
                 named_entities = []
                 date_entities = []

@@ -1,10 +1,12 @@
 import re
 
 
+#
 # returns a list of triples containing:
 #   - sentence
 #   - AMR representation
 #   - AMR id
+#
 def extract_sentence_amr_pairs(file_path):
     with open(file_path) as f:
         lines = f.readlines()

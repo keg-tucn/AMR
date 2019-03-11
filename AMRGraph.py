@@ -574,7 +574,7 @@ class AMR(defaultdict):
                         # print concept1,concept2
                         if concept1 != concept2:
                             warn.write("ANNOTATION ERROR: concepts %s and %s have same node label %s!" % (
-                                concept1, concepts2, parent))
+                                concept1, concept2, parent))
 
                             # raise ValueError,"(%s, %s, %s) would produce a cycle with (%s, %s, %s)" % (parent, relation, child, c, rel, test)
 

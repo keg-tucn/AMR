@@ -1,7 +1,7 @@
 class Node:
     def __init__(self, label, tag=None):
         self.label = label
-        # adds tag to accommodate "opX" and "wiki" inline quoted information
+        # added to accommodate "opX" and "wiki" inline quoted information
         self.tag = tag
         self.children = []
 
