@@ -1,11 +1,12 @@
 from nltk.tag import StanfordNERTagger
 
+from preprocessing import STANFORD_NER_MODEL, STANFORD_NER_JAR
+
 
 def process_sentence(sentence):
     try:
-        st = StanfordNERTagger(
-            '/home/iv/stanford-ner-2018-10-16/classifiers/english.muc.7class.distsim.crf.ser.gz',
-            '/home/iv/stanford-ner-2018-10-16/stanford-ner.jar')
+        st = StanfordNERTagger(STANFORD_NER_MODEL, STANFORD_NER_JAR)
+
         tagged_list = st.tag(sentence.split())
         new_sentence = ""
         new_sentence_list = []

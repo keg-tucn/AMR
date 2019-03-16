@@ -1,5 +1,6 @@
 import jpype
-import os
+
+from stanford_parser import STANFORD_DEP_PARSER_HOME
 from standoff import TextStandoff
 
 
@@ -71,14 +72,9 @@ stanford_parser_home = None
 
 
 def startJvm():
-    import os
-    os.environ.setdefault("STANFORD_PARSER_HOME", "../3rdParty/stanford-parser/stanford-parser-2010-08-20")
-    global stanford_parser_home
-    stanford_parser_home = os.environ["STANFORD_PARSER_HOME"]
-
     jpype.startJVM(jpype.getDefaultJVMPath(),
                    "-ea",
-                   "-Djava.class.path=%s/stanford-parser.jar" % (stanford_parser_home), )
+                   "-Djava.class.path=%s/stanford-parser.jar" % STANFORD_DEP_PARSER_HOME)
 
 
 startJvm()  # one jvm per python instance.
@@ -87,13 +83,10 @@ startJvm()  # one jvm per python instance.
 class Parser:
 
     def __init__(self, pcfg_model_fname=None):
-        os.environ.setdefault("STANFORD_PARSER_HOME", "../3rdParty/stanford-parser/stanford-parser-2010-08-20")
-        if pcfg_model_fname == None:
-            # self.pcfg_model_fname = "%s/englishPCFG.ser" % stanford_parser_home
-            # self.pcfg_model_fname = "%s/englishFactored.ser" % stanford_parser_home
-            self.pcfg_model_fname = "%s/../englishPCFG.July-2010.ser" % stanford_parser_home
+        if pcfg_model_fname is None:
+            self.pcfg_model_fname = "%s/englishPCFG.July-2010.ser" % STANFORD_DEP_PARSER_HOME
         else:
-            self.pcfg_model_fname = pcfg_model_fname
+            self.pcfg_model_fname = "%s/%s" % STANFORD_DEP_PARSER_HOME, pcfg_model_fname
 
         self.package_lexparser = jpype.JPackage("edu.stanford.nlp.parser.lexparser")
 

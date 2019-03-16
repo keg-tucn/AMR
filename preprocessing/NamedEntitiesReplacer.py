@@ -1,6 +1,8 @@
 import nltk
 from nltk.tag import StanfordNERTagger
 
+from preprocessing import STANFORD_NER_MODEL, STANFORD_NER_JAR
+
 
 def extract_entity_names(t):
     entity_names = []
@@ -38,9 +40,8 @@ def process_language(content_array):
 
 def process_sentence(sentence):
     try:
-        st = StanfordNERTagger(
-            '/home/iv/stanford-ner-2018-10-16/classifiers/english.all.3class.distsim.crf.ser.gz',
-            '/home/iv/stanford-ner-2018-10-16/stanford-ner.jar')
+        st = StanfordNERTagger(STANFORD_NER_MODEL, STANFORD_NER_JAR)
+
         tagged_list = st.tag(sentence.split())
         new_sentence = ""
         new_sentence_list = []
