@@ -33,16 +33,16 @@ label_binarizer.fit(range(5))
 
 
 def read_sentence(type):
-    return [d[0] for d in read_data(type)]
+    return [d.sentence for d in read_data(type)]
 
 
 def read_sentence_test(type):
-    return [d[0] for d in read_test_data(type)]
+    return [d.sentence for d in read_test_data(type)]
 
 
 def read_test_data(type, dataset=None):
     # make sure testing done on same data subset
-    return ra(type, True, dataset)
+    return ra(type, False, dataset)
 
 
 # Load data
@@ -380,22 +380,22 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
 
     print "Data set total size %s" % len(data)
 
-    sentences = [d[0] for d in data]
-    amrs = [d[2] for d in data]
+    sentences = [d.sentence for d in data]
+    amrs = [d.original_amr for d in data]
 
-    actions = [d[1] for d in data]
+    actions = [d.action_sequence for d in data]
 
     action_indices = [[a.index for a in actions_list] for actions_list in actions]
     action_labels = [[a.label for a in actions_list] for actions_list in actions]
 
-    dependencies = [d[3] for d in data]
+    dependencies = [d.dependencies for d in data]
 
-    named_entities = [d[4] for d in data]
-    date_entities = [d[5] for d in data]
+    named_entities = [d.named_entities for d in data]
+    date_entities = [d.date_entities for d in data]
     named_entities = [[(n[3], n[2]) for n in named_entities_list] for named_entities_list in named_entities]
     date_entities = [[(d[3], d[2], d[1]) for d in date_entities_list] for date_entities_list in date_entities]
-    train_amr_ids = [d[7] for d in train_data]
-    test_amr_ids = [d[7] for d in test_data]
+    train_amr_ids = [d.amr_id for d in train_data]
+    test_amr_ids = [d.amr_id for d in test_data]
 
     tokenizer = pickle.load(open(tokenizer_path, "rb"))
     sequences = np.asarray(tokenizer.texts_to_sequences(sentences))
@@ -566,19 +566,19 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
     print 'Model path is:'
     print model_path
 
-    sentences = [d[0] for d in data]
-    amrs = [d[2] for d in data]
-    test_amr_ids = [d[7] for d in data]
+    sentences = [d.sentence for d in data]
+    amrs = [d.original_amr for d in data]
+    test_amr_ids = [d.amr_id for d in data]
 
-    actions = [d[1] for d in data]
+    actions = [d.action_sequence for d in data]
 
     action_indices = [[a.index for a in actions_list] for actions_list in actions]
     action_labels = [[a.label for a in actions_list] for actions_list in actions]
 
-    dependencies = [d[3] for d in data]
+    dependencies = [d.dependencies for d in data]
 
-    named_entities = [d[4] for d in data]
-    date_entities = [d[5] for d in data]
+    named_entities = [d.named_entities for d in data]
+    date_entities = [d.date_entities for d in data]
     named_entities = [[(n[3], n[2]) for n in named_entities_list] for named_entities_list in named_entities]
     date_entities = [[(d[3], d[2], d[1]) for d in date_entities_list] for date_entities_list in date_entities]
 
@@ -776,7 +776,7 @@ def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim
 def train_file(model_name, tokenizer_path, train_data_path=None, test_data_path=None, max_len=30, train_epochs=35,
                embedding_dim=100):
     test_data = read_test_data('test', test_data_path)
-    train_data = read_data('training', train_data_path, cache=True)
+    train_data = read_data('training', train_data_path, cache=False)
 
     train(model_name, tokenizer_path, train_data, test_data, max_len, train_epochs, embedding_dim)
 
@@ -822,7 +822,7 @@ if __name__ == "__main__":
                train_data_path=train_data_path,
                test_data_path=test_data_path, max_len=30,
                train_epochs=1, embedding_dim=100)
-    #     test_file(model_name, tokenizer_path="./tokenizers/full_tokenizer.dump",
-    #               test_case_name= test_source,
-    #               test_data_path=test_set_name, max_len=max_len,
-    #               embedding_dim=embeddings_dim, test_source="dev", with_reattach=True)
+    # test_file(model_name, tokenizer_path="./tokenizers/full_tokenizer.dump",
+    #          test_case_name=test_source,
+    #          test_data_path=test_set_name, max_len=max_len,
+    #          embedding_dim=embeddings_dim, test_source="dev", with_reattach=True)

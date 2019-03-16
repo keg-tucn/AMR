@@ -49,7 +49,7 @@ fail_count = 0
 for elem in data:
     sentence = elem.sentence
     action_sequence = elem.action_sequence
-    amr_string = elem.amr_original
+    amr_string = elem.original_amr
     amr1 = smatch_amr.AMR.parse_AMR_line(amr_string)
     if amr1 is None:
         print 'Could not parse original amr'

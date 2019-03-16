@@ -3,6 +3,7 @@ from tqdm import tqdm
 
 from models import AMRData
 from models.AMRGraph import AMR
+from models.TrainData import TrainData
 from amr_util import TrainingDataStats
 from preprocessing import SentenceAMRPairsExtractor
 from preprocessing import TokensReplacer
@@ -12,8 +13,6 @@ from preprocessing.action_sequence_generators.simple_asg__informed_swap import S
 from Baseline import baseline
 
 TrainingDataExtraction = namedtuple("TrainingDataExtraction", "data stats")
-TrainingData = namedtuple("TrainingData", "sentence, action_sequence, amr_original, dependencies, named_entities, "
-                                          "date_entities, concepts_metadata, amr_id")
 
 
 # Given a file with sentences and aligned AMRs,
@@ -131,8 +130,8 @@ def generate_training_data(file_path, compute_dependencies=False):
 
             # For the keras flow, also attach named_entities, date_entities, to instances
             training_data.append(
-                TrainingData(new_sentence, action_sequence, amr_str, dependencies, named_entities, date_entities,
-                             concepts_metadata, amr_id))
+                TrainData(new_sentence, action_sequence, amr_str, dependencies, named_entities, date_entities,
+                          concepts_metadata, amr_id))
             processed_sentence_ids.append(amr_id)
 
         except Exception as e:
@@ -203,13 +202,13 @@ if __name__ == "__main__":
     assert len(data) == 23
     for elem in data:
         assert len(elem) == 8
-        assert isinstance(elem, TrainingData)
+        assert isinstance(elem, TrainData)
         assert isinstance(elem[0], basestring)
         assert isinstance(elem.sentence, basestring)
         assert isinstance(elem[1], list)
         assert isinstance(elem.action_sequence, list)
         assert isinstance(elem[2], basestring)
-        assert isinstance(elem.amr_original, basestring)
+        assert isinstance(elem.original_amr, basestring)
         assert isinstance(elem[3], dict)
         assert isinstance(elem.dependencies, dict)
         assert isinstance(elem[4], list)
