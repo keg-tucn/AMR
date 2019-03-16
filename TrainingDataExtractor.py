@@ -6,7 +6,7 @@ from AMRGraph import AMR
 from amr_util import TrainingDataStats
 from preprocessing import SentenceAMRPairsExtractor
 from preprocessing import TokensReplacer
-from preprocessing.DependencyExtractor import extract_dependencies
+from preprocessing import DependencyExtractor
 from collections import namedtuple
 from preprocessing.action_sequence_generators.simple_asg__informed_swap import SimpleInformedSwapASG
 from Baseline import baseline
@@ -124,7 +124,7 @@ def generate_training_data(file_path, compute_dependencies=False):
                 dependencies = {}
             else:
                 try:
-                    dependencies = extract_dependencies(new_sentence)
+                    dependencies = DependencyExtractor.extract_dependencies(new_sentence)
                 except Exception as e:
                     logging.warn("Dependency parsing failed at sentence %s with exception %s.", new_sentence, str(e))
                     dependencies = {}
