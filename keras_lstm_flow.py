@@ -1,6 +1,4 @@
 import pickle
-import sys
-from os import path
 import numpy as np
 import re
 import sklearn.preprocessing
@@ -18,8 +16,6 @@ from smatch import smatch_amr
 from smatch import smatch_util
 import models.Actions as act
 from amr_reader import read_data as ra
-
-sys.path.append(path.abspath('./stanford_parser'))
 
 SH = 0
 RL = 1

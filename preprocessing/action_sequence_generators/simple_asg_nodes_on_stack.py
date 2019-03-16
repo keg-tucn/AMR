@@ -1,6 +1,6 @@
-from asg_nodes_on_stack import NodesOnStackASG
 import logging
-import amr_util.Actions as act
+
+from asg_nodes_on_stack import NodesOnStackASG
 
 """ This is the deterministic version of the algorithm for action sequence generation
     as described in Silviana Campean's thesis

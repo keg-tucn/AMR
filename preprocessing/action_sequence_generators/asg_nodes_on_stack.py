@@ -1,8 +1,6 @@
 import copy
+
 import models.Actions as act
-
-
-# should def move the exceptions somewhere else
 
 # TO DO: keep on stack (variable,index) pairs
 

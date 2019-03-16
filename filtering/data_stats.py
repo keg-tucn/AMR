@@ -131,5 +131,5 @@ data_sets = {"training": ["bolt", "cctv", "dfa", "dfb", "guidelines", "mt09sdl",
 
 for split in splits:
     for data_set in data_sets[split]:
-        my_file_path = '../resources/alignments/split/' + split + "/" + "deft-p2-amr-r2-alignments-" + split + "-" + data_set + ".txt"
+        my_file_path = '../resources/alignments/split/' + split + "/" + "deft-p2-amr-r1-alignments-" + split + "-" + data_set + ".txt"
         generate_statistics(my_file_path)

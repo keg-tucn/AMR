@@ -1,5 +1,6 @@
-from asg_nodes_on_stack import NodesOnStackASG
 import logging
+
+from asg_nodes_on_stack import NodesOnStackASG
 import models.Actions as act
 
 """ Added break action to simple informed alg
@@ -10,7 +11,7 @@ from preprocessing.ActionSequenceGenerator import TokenOnStackException
 class SimpleInformedWithBreakNodesOnStackASG(NodesOnStackASG):
 
     def __init__(self, no_of_swaps, should_rotate):
-        NodesOnStackASG.__init__(self,no_of_swaps)
+        NodesOnStackASG.__init__(self, no_of_swaps)
         self.should_rotate = should_rotate
 
     def generate_action_sequence(self, amr_graph, sentence):
@@ -38,7 +39,7 @@ class SimpleInformedWithBreakNodesOnStackASG(NodesOnStackASG):
                 swapped = False
             else:
 
-                for i in range(1,self.no_of_swaps+1):
+                for i in range(1, self.no_of_swaps + 1):
                     if self.can_swap_n(i):
                         self.swap_n(i)
                         swapped = True
