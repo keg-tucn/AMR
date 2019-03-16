@@ -113,7 +113,8 @@ class StanfordPOSTagger(StanfordTagger):
         >>> from nltk.tag import StanfordPOSTagger
         >>> st = StanfordPOSTagger('english-bidirectional-distsim.tagger')
         >>> st.tag('What is the airspeed of an unladen swallow ?'.split())
-        [('What', 'WP'), ('is', 'VBZ'), ('the', 'DT'), ('airspeed', 'NN'), ('of', 'IN'), ('an', 'DT'), ('unladen', 'JJ'), ('swallow', 'VB'), ('?', '.')]
+        [('What', 'WP'), ('is', 'VBZ'), ('the', 'DT'), ('airspeed', 'NN'), ('of', 'IN'),
+        ('an', 'DT'), ('unladen', 'JJ'), ('swallow', 'VB'), ('?', '.')]
     """
     _SEPARATOR = '_'
     _JAR = 'stanford-postagger.jar'

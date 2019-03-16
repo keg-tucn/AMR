@@ -80,7 +80,7 @@ class AMR(defaultdict):
         """
         Parse a Pennman style string representation for amr and return an AMR
 
-        >>>x = AMR.parse_string("(a / and :op1(恶化 :ARG0(它) :ARG1(模式 :mod(开发)) :time (已 经)) :op2(堵塞 :ARG0(它) :ARG1(交通 :mod(局部)) :location(a / around :op1(出口)))))")
+        >>>x = AMR.parse_string("(a / and :op1(恶化 :ARG0(它) :ARG1(模式 :msod(开发)) :time (已 经)) :op2(堵塞 :ARG0(它) :ARG1(交通 :mod(局部)) :location(a / around :op1(出口)))))")
         >>>
         .
         """
@@ -834,10 +834,9 @@ if __name__ == "__main__":
     # amr_ch = AMR.parse_string(s)
     amr_en = AMR.parse_string(s1)
 
-    # print str(amr_en)
-    # print amr_en.dfs()
-    print
-    amr_en.to_amr_string()
+    print str(amr_en)
+    print amr_en.dfs()
+    print amr_en.to_amr_string()
     # print amr_ch
     # print amr_ch.dfs()
     # print amr_ch.to_amr_string()

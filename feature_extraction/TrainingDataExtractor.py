@@ -1,40 +1,77 @@
+from os import listdir, path, makedirs
+import pickle as js
 import logging
 from tqdm import tqdm
+from collections import namedtuple
 
+from definitions import PROJECT_ROOT_DIR
 from models import AMRData
-from models.AMRGraph import AMR
+from models.AMRGraph import AMR, ParserError
 from models.TrainData import TrainData
 from amr_util import TrainingDataStats
 from preprocessing import SentenceAMRPairsExtractor
 from preprocessing import TokensReplacer
-from preprocessing import DependencyExtractor
-from collections import namedtuple
+from preprocessing.DependencyExtractor import DependencyExtractor
 from preprocessing.action_sequence_generators.simple_asg__informed_swap import SimpleInformedSwapASG
 from Baseline import baseline
 
 TrainingDataExtraction = namedtuple("TrainingDataExtraction", "data stats")
 
 
+def read_training_data(type, cache, filter_path="deft"):
+    if filter_path is None:
+        filter_path = "deft"
+    dir_path = PROJECT_ROOT_DIR + '/resources/alignments/split/' + type
+    print(dir_path + " with filter " + filter_path)
+
+    parsed_data = []
+
+    directory_content = listdir(dir_path)
+    original_corpus = filter(lambda x: "dump" not in x and filter_path in x, directory_content)
+
+    for file_name in original_corpus:
+        original_file_path = dir_path + "/" + file_name
+        dump_file_path = dir_path + "/dumps/" + file_name + ".dump"
+        print(original_file_path)
+
+        if cache and path.exists(dump_file_path):
+            print("cache")
+            with open(dump_file_path, "rb") as dump_file:
+                parsed_data += js.load(dump_file)
+        else:
+            file_data = generate_training_data(original_file_path).data
+            if not path.exists(path.dirname(dump_file_path)):
+                makedirs(path.dirname(dump_file_path))
+            with open(dump_file_path, "wb") as dump_file:
+                js.dump(file_data, dump_file)  # , indent=4, separators=(',', ': ')
+            parsed_data += file_data
+
+    return parsed_data
+
+
 # Given a file with sentences and aligned AMRs,
 # return an array of TrainingData instances
-def generate_training_data(file_path, compute_dependencies=False):
+def generate_training_data(file_path, compute_dependencies=True):
     sentence_amr_triples = SentenceAMRPairsExtractor.extract_sentence_amr_pairs(file_path)
+
+    training_data = []
+    processed_sentence_ids = []
+
     fail_sentences = []
     unaligned_nodes = {}
     unaligned_nodes_after = {}
-    training_data = []
     coreference_count = 0
+
     have_org_role_exceptions = 0
     named_entity_exceptions = 0
     date_entity_exceptions = 0
     temporal_quantity_exceptions = 0
     quantity_exceptions = 0
-    processed_sentence_ids = []
 
     # set to True for co-reference handling (graph transformed to trees)
     coref_handling = False
 
-    for i in tqdm(range(0, len(sentence_amr_triples))):
+    for i in tqdm(range(len(sentence_amr_triples))):
         try:
             logging.debug("Started processing example %d", i)
             concepts_metadata = {}
@@ -47,10 +84,14 @@ def generate_training_data(file_path, compute_dependencies=False):
                 try:
                     new_amr_str = baseline(amr_str)
                     amr = AMR.parse_string(new_amr_str)
-                except:
+                except ParserError:
                     amr = AMR.parse_string(amr_str)
 
             TrainingDataStats.get_unaligned_nodes(amr, unaligned_nodes)
+
+            #
+            # replace have-org-role tokens
+            #
             try:
                 (new_amr, _) = TokensReplacer.replace_have_org_role(amr, "ARG1")
                 (new_amr, _) = TokensReplacer.replace_have_org_role(amr, "ARG2")
@@ -100,10 +141,11 @@ def generate_training_data(file_path, compute_dependencies=False):
                 quantity_exceptions += 1
                 raise e
 
+            TrainingDataStats.get_unaligned_nodes(new_amr, unaligned_nodes_after)
+
             #
             # create CustomAMR data structure
             #
-            TrainingDataStats.get_unaligned_nodes(new_amr, unaligned_nodes_after)
             custom_amr = AMRData.CustomizedAMR()
             custom_amr.create_custom_AMR(new_amr)
 
@@ -129,9 +171,9 @@ def generate_training_data(file_path, compute_dependencies=False):
                     dependencies = {}
 
             # For the keras flow, also attach named_entities, date_entities, to instances
-            training_data.append(
-                TrainData(new_sentence, action_sequence, amr_str, dependencies, named_entities, date_entities,
-                          concepts_metadata, amr_id))
+            training_data_instance = TrainData(new_sentence, action_sequence, amr_str, dependencies, named_entities,
+                                               date_entities, concepts_metadata, amr_id)
+            training_data.append(training_data_instance)
             processed_sentence_ids.append(amr_id)
 
         except Exception as e:
@@ -140,15 +182,13 @@ def generate_training_data(file_path, compute_dependencies=False):
 
     logging.info("Failed: %d out of %d", len(fail_sentences), len(sentence_amr_triples))
 
-    return TrainingDataExtraction(training_data,
-                                  TrainingDataStats.TrainingDataStatistics(unaligned_nodes, unaligned_nodes_after,
-                                                                           coreference_count,
-                                                                           named_entity_exceptions,
-                                                                           date_entity_exceptions,
-                                                                           temporal_quantity_exceptions,
-                                                                           quantity_exceptions,
-                                                                           have_org_role_exceptions)
-                                  )
+    training_data_stats = TrainingDataStats.TrainingDataStatistics(unaligned_nodes, unaligned_nodes_after,
+                                                                   coreference_count, named_entity_exceptions,
+                                                                   date_entity_exceptions,
+                                                                   temporal_quantity_exceptions,
+                                                                   quantity_exceptions,
+                                                                   have_org_role_exceptions)
+    return TrainingDataExtraction(training_data, training_data_stats)
 
 
 def extract_amr_ids_from_corpus_as_audit_trail():
@@ -201,21 +241,12 @@ if __name__ == "__main__":
     data = generated_data.data
     assert len(data) == 23
     for elem in data:
-        assert len(elem) == 8
         assert isinstance(elem, TrainData)
-        assert isinstance(elem[0], basestring)
         assert isinstance(elem.sentence, basestring)
-        assert isinstance(elem[1], list)
         assert isinstance(elem.action_sequence, list)
-        assert isinstance(elem[2], basestring)
         assert isinstance(elem.original_amr, basestring)
-        assert isinstance(elem[3], dict)
         assert isinstance(elem.dependencies, dict)
-        assert isinstance(elem[4], list)
         assert isinstance(elem.named_entities, list)
-        assert isinstance(elem[5], list)
         assert isinstance(elem.date_entities, list)
-        assert isinstance(elem[6], dict)
         assert isinstance(elem.concepts_metadata, dict)
-        assert isinstance(elem[7], basestring)
         assert isinstance(elem.amr_id, basestring)

@@ -14,9 +14,9 @@ from amr_reader import read_data
 
 def process_data(data, vocab_words, vocab_acts):
     for d in data:
-        sentence = d[0]
-        actions = d[1]
-        amr_str = d[2]
+        sentence = d.sentence
+        actions = d.action_sequence
+        amr_str = d.original_amr
         concept_meta = d.concepts_metadata
         yield (
             ds.word_sentence_to_vocab_index(sentence.split(), vocab_words),

@@ -1,5 +1,4 @@
 import logging
-
 from tqdm import tqdm
 
 from models.AMRGraph import AMR
@@ -42,4 +41,6 @@ def generate_test_data(file_path, verbose=True):
 
     return test_data
 
-print generate_test_data("/home/iv/Documents/AMR/resources/alignments/split/test/deft-p2-amr-r1-alignments-test-bolt.txt", False)
+
+print generate_test_data(
+    "/home/iv/Documents/AMR/resources/alignments/split/test/deft-p2-amr-r1-alignments-test-bolt.txt", False)

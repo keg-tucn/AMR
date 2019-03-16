@@ -1,4 +1,5 @@
-class AMRNode():
+class AMRNode:
+
     def __init__(self):
         self.edgeToParent = ""
         self.children = []
@@ -8,14 +9,15 @@ class AMRNode():
         self.children.append(child)
 
 
-class CustomizedAMR():
+class CustomizedAMR:
+
     def __init__(self):
         self.parent_dict = {}
         self.relations_dict = {}
         self.tokens_to_concepts_dict = {}
         self.tokens_to_concept_list_dict = {}
 
-    # in the first phase we will have a tokens dict which
+    # In the first phase we will have a tokens dict which
     # just takes the first token aligned to a concept and discards all the others
     # It only works on concepts which have variables assigned to them, not on
     # elements such as polarity
@@ -94,7 +96,7 @@ class CustomizedAMR():
                 self.relations_dict[(key, parent)] = tuple(t)
 
     def add_child(self, child, concept):
-        if (concept) not in self.parent_dict.keys() and (concept, "") not in self.relations_dict.keys():
+        if concept not in self.parent_dict.keys() and (concept, "") not in self.relations_dict.keys():
             self.relations_dict[(concept, "")] = ("", [child], "")
         else:
             if (concept, "") in self.relations_dict.keys():
