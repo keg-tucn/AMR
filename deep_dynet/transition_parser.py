@@ -2,8 +2,8 @@ from operator import itemgetter
 
 import dynet as dy
 
-from amr_util.Node import Node
-import amr_util.Actions as act
+from models.Node import Node
+import models.Actions as act
 import logging
 
 WORD_DIM = 64

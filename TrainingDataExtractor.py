@@ -1,8 +1,8 @@
 import logging
 from tqdm import tqdm
 
-import AMRData
-from AMRGraph import AMR
+from models import AMRData
+from models.AMRGraph import AMR
 from amr_util import TrainingDataStats
 from preprocessing import SentenceAMRPairsExtractor
 from preprocessing import TokensReplacer

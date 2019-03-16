@@ -1,5 +1,5 @@
-from AMRGraph import AMR
-import AMRData
+from models.AMRGraph import AMR
+from models import AMRData
 from smatch import smatch_util
 from smatch import smatch_amr
 

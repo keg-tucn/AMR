@@ -1,6 +1,5 @@
 from asg import ASG
 import logging
-import amr_util.Actions as act
 
 # should def move the exceptions somewhere else
 from preprocessing.ActionSequenceGenerator import SwapException

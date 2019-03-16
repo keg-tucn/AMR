@@ -1,11 +1,10 @@
 # test what instances are processed by different asg versions
 from preprocessing import SentenceAMRPairsExtractor
 
-from amr_util.demo_util import get_custom_amr
 from amr_util.demo_util import get_smatch
 from postprocessing import ActionSequenceReconstruction as asr
-from AMRGraph import AMR
-import AMRData
+from models.AMRGraph import AMR
+from models import AMRData
 from preprocessing.action_sequence_generators.simple_asg import SimpleASG
 from preprocessing.action_sequence_generators.simple_asg__informed_swap import SimpleInformedSwapASG
 from preprocessing.action_sequence_generators.simple_informed_break_nodes_on_stack import SimpleInformedWithBreakNodesOnStackASG

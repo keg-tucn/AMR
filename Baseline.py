@@ -1,8 +1,8 @@
-import AMRData
+from models import AMRData
 from postprocessing import ActionSequenceReconstruction
-from preprocessing import SentenceAMRPairsExtractor, ActionSequenceGenerator
+from preprocessing import ActionSequenceGenerator
 import re
-from AMRGraph import AMR
+from models.AMRGraph import AMR
 import copy
 from smatch import smatch_util, smatch_amr
 

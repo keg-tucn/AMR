@@ -1,4 +1,4 @@
-from AMRGraph import AMR
+from models.AMRGraph import AMR
 from utilities import generate_action_sequence, generate_custom_amr, generate_amr_with_literals
 
 # amr = AMR.parse_string("""(a3 / and

@@ -1,5 +1,5 @@
 import copy
-import amr_util.Actions as act
+import models.Actions as act
 
 
 class ASG:

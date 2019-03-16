@@ -8,7 +8,7 @@ from smatch import smatch_util
 import numpy as np
 import traceback
 from amr_util.Reporting import AMRResult
-import amr_util.Actions as act
+import models.Actions as act
 from amr_reader import read_data
 
 

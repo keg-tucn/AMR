@@ -1,7 +1,6 @@
-from AMRData import CustomizedAMR
-from AMRGraph import AMR
+from models.AMRData import CustomizedAMR
+from models.AMRGraph import AMR
 from preprocessing import TokensReplacer, ActionSequenceGenerator
-from keras import metrics
 
 
 def pretty_print(amr):

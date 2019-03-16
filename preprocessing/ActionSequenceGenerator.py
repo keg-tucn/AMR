@@ -1,5 +1,5 @@
 import logging
-import amr_util.Actions as act
+import models.Actions as act
 
 
 # roxanappop: start

@@ -1,11 +1,11 @@
 from data_filtering import DataFiltering
 
 from preprocessing import SentenceAMRPairsExtractor
-from AMRGraph import AMR
+from models.AMRGraph import AMR
 from filters import NoMissingAllignmentInfoFilter, TreeFilter, TokenToNodeAlignmentFilter, ProjectiveTreeFilter, \
     PerfectALignmentFilter
 from preprocessing import TokensReplacer
-import AMRData
+from models import AMRData
 
 
 def generate_dataset_statistics(file_path, filters):

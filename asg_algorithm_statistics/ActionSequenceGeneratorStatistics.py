@@ -2,7 +2,7 @@ import logging
 import copy
 import sys
 
-import AMRData
+from models import AMRData
 from preprocessing import SentenceAMRPairsExtractor
 from preprocessing.action_sequence_generators.backtracking_asg import BacktrackingASGFixedReduce
 from preprocessing.action_sequence_generators.backtracking_asg import BacktrackingASGInformedSwap
@@ -14,7 +14,7 @@ from preprocessing.action_sequence_generators.simple_asg import SimpleASG
 from preprocessing.ActionSequenceGenerator import SwapException
 from preprocessing.ActionSequenceGenerator import TokenOnStackException
 from preprocessing.ActionSequenceGenerator import RotateException
-from AMRGraph import AMR
+from models.AMRGraph import AMR
 from amr_util import TrainingDataStats
 from preprocessing import TokensReplacer
 from ActionSequenceGeneratorStatisticsPlotter import plot_histogram

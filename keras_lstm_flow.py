@@ -1,6 +1,5 @@
 import pickle
 import sys
-from os import listdir
 from os import path
 import numpy as np
 import re
@@ -8,19 +7,16 @@ import sklearn.preprocessing
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.layers import Input, Embedding, LSTM, Dense, concatenate, TimeDistributed
 from keras.models import Model
-from keras.optimizers import RMSprop, SGD
+from keras.optimizers import SGD
 from keras.preprocessing.text import Tokenizer
-from keras.utils import plot_model
 from Baseline import reentrancy_restoring
 import logging
 
-import TrainingDataExtractor as tde
 from amr_util.KerasPlotter import plot_history
-from deep_dynet import support
 from postprocessing import ActionSequenceReconstruction as asr
 from smatch import smatch_amr
 from smatch import smatch_util
-import amr_util.Actions as act
+import models.Actions as act
 from amr_reader import read_data as ra
 
 sys.path.append(path.abspath('./stanford_parser'))
@@ -376,7 +372,7 @@ def get_model(word_index, max_len, embedding_dim, embedding_matrix):
 
 
 def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_epochs=35, embedding_dim=100):
-    model_path = './models/{}'.format(model_name)
+    model_path = './trained_models/{}'.format(model_name)
     print 'Model path is:'
     print model_path
 
@@ -566,7 +562,7 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
 
 
 def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding_dim=100, with_reattach=False):
-    model_path = './models/{}'.format(model_name)
+    model_path = './trained_models/{}'.format(model_name)
     print 'Model path is:'
     print model_path
 
@@ -707,7 +703,7 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
 
 
 def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim=100, with_reattach=False):
-    model_path = './models/{}'.format(model_name)
+    model_path = './trained_models/{}'.format(model_name)
     print 'Model path is:'
     print model_path
 
@@ -780,7 +776,7 @@ def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim
 def train_file(model_name, tokenizer_path, train_data_path=None, test_data_path=None, max_len=30, train_epochs=35,
                embedding_dim=100):
     test_data = read_test_data('test', test_data_path)
-    train_data = read_data('training', train_data_path, cache=False)
+    train_data = read_data('training', train_data_path, cache=True)
 
     train(model_name, tokenizer_path, train_data, test_data, max_len, train_epochs, embedding_dim)
 
@@ -811,7 +807,7 @@ if __name__ == "__main__":
         #     test_set_name = 'deft-p2-amr-r1-alignments-test-{}.txt'.format(data_set)
         print 'Model name is: '
         print model_name
-        model_path = './models/{}'.format(model_name)
+        model_path = './trained_models/{}'.format(model_name)
 
         if data_set == "all":
             train_data_path = None
