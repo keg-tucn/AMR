@@ -19,7 +19,7 @@ EMPTY = None
 NOT_ASSIGNED = None
 NULL_EDGE = 'null_edge'
 NULL_TAG = 'null_tag'
-# MERGE_TAG = '_MERGE_TAG_'
+MERGE_TAG = '_MERGE_TAG_'
 
 ROOT_FORM = '_ROOT_FORM_'
 ROOT_LEMMA = '_ROOT_LEMMA_'
@@ -46,7 +46,7 @@ START_NE = '_START_NE_'
 START_REL = '_START_REL_'
 START_TOKEN = {'form': START_FORM, 'lemma': START_LEMMA, 'pos': START_POS, 'ne': START_NE, 'rel': START_REL}
 START_EDGE = '_START_EDGE_'
-# START_TAG='_START_TAG_'
+START_TAG = '_START_TAG_'
 
 # error types
 NODE_MATCH_ERROR = '#1'
@@ -67,7 +67,7 @@ INFER = 8
 ADDCHILD = 9
 
 PRE_MERGE_NETAG = ['PERSON', 'LOCATION', 'ORGANIZATION', 'MISC', 'DATE']
-INFER_NETAG = set(['PERSON', 'LOCATION', 'ORGANIZATION', 'MISC'])
+INFER_NETAG = ['PERSON', 'LOCATION', 'ORGANIZATION', 'MISC']
 FUNCTION_TAG = ['IN', 'DT', 'TO', 'RP']
 
 WEIGHT_DTYPE = np.float32
@@ -77,8 +77,8 @@ DETERMINE_TREE_TO_GRAPH_ORACLE_SC = 2
 DET_T2G_ORACLE_ABT = 3
 DETERMINE_STRING_TO_GRAPH_ORACLE = None
 
-ACTION_WITH_TAG = set([INFER])
-ACTION_WITH_EDGE = set([NEXT1, REATTACH, SWAP, REENTRANCE])
+ACTION_WITH_TAG = [INFER]
+ACTION_WITH_EDGE = [NEXT1, REATTACH, SWAP, REENTRANCE]
 
 ACTION_TYPE_TABLE = {}
 ACTION_TYPE_TABLE['basic'] = [
@@ -182,6 +182,18 @@ __DEP_AMR_REL_TABLE = _load_rules(DEFAULT_RULE_FILE)
 def get_fake_amr_relation_mapping(dep_rel):
     return __DEP_AMR_REL_TABLE[dep_rel]
 
+
+DEFAULT_AMR_RELATIONS_FILE = './rules/amr_relations'
+
+
+def _load_amr_relations(rule_file):
+    rf = open(rule_file, 'r')
+    relations = map(lambda file_line: file_line.strip(), rf.readlines())
+    rf.close()
+    return relations
+
+
+__AMR_RELATIONS = _load_amr_relations(DEFAULT_AMR_RELATIONS_FILE)
 
 DEFAULT_NOM_FILE = './resources/nombank-dict.1.0'
 
