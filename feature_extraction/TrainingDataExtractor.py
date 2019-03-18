@@ -1,10 +1,7 @@
-from os import listdir, path, makedirs
-import pickle as js
 import logging
 from tqdm import tqdm
 from collections import namedtuple
 
-from definitions import PROJECT_ROOT_DIR
 from models import AMRData
 from models.AMRGraph import AMR, ParserError
 from models.TrainData import TrainData
@@ -18,39 +15,8 @@ from Baseline import baseline
 TrainingDataExtraction = namedtuple("TrainingDataExtraction", "data stats")
 
 
-def read_training_data(type, cache, filter_path="deft"):
-    if filter_path is None:
-        filter_path = "deft"
-    dir_path = PROJECT_ROOT_DIR + '/resources/alignments/split/' + type
-    print(dir_path + " with filter " + filter_path)
-
-    parsed_data = []
-
-    directory_content = listdir(dir_path)
-    original_corpus = filter(lambda x: "dump" not in x and filter_path in x, directory_content)
-
-    for file_name in original_corpus:
-        original_file_path = dir_path + "/" + file_name
-        dump_file_path = dir_path + "/dumps/" + file_name + ".dump"
-        print(original_file_path)
-
-        if cache and path.exists(dump_file_path):
-            print("cache")
-            with open(dump_file_path, "rb") as dump_file:
-                parsed_data += js.load(dump_file)
-        else:
-            file_data = generate_training_data(original_file_path).data
-            if not path.exists(path.dirname(dump_file_path)):
-                makedirs(path.dirname(dump_file_path))
-            with open(dump_file_path, "wb") as dump_file:
-                js.dump(file_data, dump_file)  # , indent=4, separators=(',', ': ')
-            parsed_data += file_data
-
-    return parsed_data
-
-
 # Given a file with sentences and aligned AMRs,
-# return an array of TrainingData instances
+# return an array of TrainData instances
 def generate_training_data(file_path, compute_dependencies=True):
     sentence_amr_triples = SentenceAMRPairsExtractor.extract_sentence_amr_pairs(file_path)
 
@@ -72,10 +38,12 @@ def generate_training_data(file_path, compute_dependencies=True):
     coref_handling = False
 
     for i in tqdm(range(len(sentence_amr_triples))):
+
+        concepts_metadata = {}
+        (sentence, amr_str, amr_id) = sentence_amr_triples[i]
+
         try:
             logging.debug("Started processing example %d", i)
-            concepts_metadata = {}
-            (sentence, amr_str, amr_id) = sentence_amr_triples[i]
 
             amr = AMR.parse_string(amr_str)
 
@@ -234,7 +202,7 @@ def extract_amr_ids_from_corpus_as_audit_trail():
 if __name__ == "__main__":
     # extract_amr_ids_from_corpus_as_audit_trail()
     logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.WARNING)
-    generated_data = generate_training_data("resources/alignments/split/dev/deft-p2-amr-r1-alignments-dev-bolt.txt")
+    generated_data = generate_training_data("../resources/alignments/split/dev/deft-p2-amr-r1-alignments-dev-bolt.txt")
     assert isinstance(generated_data, TrainingDataExtraction)
     assert isinstance(generated_data.data, list)
     assert isinstance(generated_data.stats, TrainingDataStats.TrainingDataStatistics)

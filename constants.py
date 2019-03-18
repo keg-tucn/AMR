@@ -188,7 +188,7 @@ DEFAULT_AMR_RELATIONS_FILE = './rules/amr_relations'
 
 def _load_amr_relations(rule_file):
     rf = open(rule_file, 'r')
-    relations = map(lambda file_line: file_line.strip(), rf.readlines())
+    relations = [line.strip for line in rf.readlines()]
     rf.close()
     return relations
 

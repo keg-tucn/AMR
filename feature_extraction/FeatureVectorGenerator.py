@@ -1,4 +1,9 @@
+import logging
 import numpy as np
+import sklearn
+
+from constants import __AMR_RELATIONS
+import models.Actions as act
 
 SH = 0
 RL = 1
@@ -7,10 +12,16 @@ DN = 3
 SW = 4
 NONE = 5
 
+label_binarizer = sklearn.preprocessing.LabelBinarizer()
+label_binarizer.fit(range(5))
+
+composed_label_binarizer = sklearn.preprocessing.LabelBinarizer()
+composed_label_binarizer.fit(range(5 + 2 * len(__AMR_RELATIONS)))
+
 
 def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids, index_to_word_map):
-
     lengths = []
+
     filtered_count = 0
     exception_count = 0
 
@@ -22,6 +33,7 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids, index_
 
     x_full = np.zeros((len(x) - filtered_count, max_len, 15), dtype=np.int32)
     y_full = np.full((len(y) - filtered_count, max_len), dtype=np.int32, fill_value=NONE)
+    y_temp = []
     i = 0
 
     for action_sequence, tokens_sequence, deps, amr_id in zip(y, x, dependencies, amr_ids):
@@ -35,6 +47,7 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids, index_
             continue
 
         for action, j in zip(action_sequence, range(len(action_sequence))):
+            action = action.index
             if next_action_prev_action != NONE:
                 next_action_prev_action_ohe = label_binarizer.transform([next_action_prev_action])[0, :]
             else:
@@ -94,10 +107,36 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids, index_
 
         features_matrix = np.concatenate((np.asarray(features_matrix),
                                           np.zeros((max_len - len(features_matrix), 15), dtype=np.int32)))
-        actions = np.concatenate((np.asarray(action_sequence),
-                                  np.full((max_len - len(action_sequence)), dtype=np.int32, fill_value=NONE)))
+
+        actions = action_sequence
         x_full[i, :, :] = features_matrix
-        y_full[i, :] = actions
+        y_temp.append(actions)
         i += 1
     logging.warning("Exception count " + str(exception_count))
-    return x_full, y_full, lengths, filtered_count
+
+    y_ohe = np.zeros((y_full.shape[0], max_len, 5), dtype='int32')
+    for row, i in zip(y_temp, range(len(y_temp))):
+        y_train_instance_matrix = []
+        for r in row:
+            y_train_instance_matrix.append(label_binarizer.transform([r.index])[0, :])
+        for j in range(max_len - len(row)):
+            y_train_instance_matrix.append(label_binarizer.transform([5])[0, :])
+        y_ohe[i, :, :] = y_train_instance_matrix
+
+    return x_full, y_ohe, lengths, filtered_count
+
+
+def actions_to_string(acts_i):
+    str = ""
+    for a in acts_i:
+        str += act.acts[a] + " "
+    str += "\n"
+    return str
+
+
+def tokens_to_sentence(tokens, index_to_word_map):
+    str = ""
+    for t in tokens:
+        str += index_to_word_map[t] + " "
+    str += "\n"
+    return str

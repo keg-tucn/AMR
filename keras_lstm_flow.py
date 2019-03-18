@@ -16,6 +16,7 @@ from smatch import smatch_amr
 from smatch import smatch_util
 import models.Actions as act
 from amr_reader import read_data as ra
+import feature_extraction.FeatureVectorGenerator
 
 SH = 0
 RL = 1
@@ -38,7 +39,7 @@ def read_sentence_test(type):
 
 def read_test_data(type, dataset=None):
     # make sure testing done on same data subset
-    return ra(type, False, dataset)
+    return ra(type, True, dataset)
 
 
 # Load data
@@ -403,7 +404,9 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     indices = np.arange(sequences.shape[0])
     sequences = sequences[indices]
 
-    actions = np.asarray(action_indices)[indices]
+    # actions = np.asarray(action_indices)[indices]
+    actions = np.asarray(actions)[indices]
+
     labels = np.asarray(action_labels)[indices]
     dependencies = [dependencies[i] for i in indices]
 
@@ -441,22 +444,17 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
 
     index_to_word_map = {v: k for k, v in tokenizer.word_index.iteritems()}
 
-    (x_train_full, y_train_full, lengths_train, filtered_count_tr) = generate_dataset(x_train, y_train,
-                                                                                      dependencies_train, no_word_index,
-                                                                                      max_len, train_amr_ids,
-                                                                                      index_to_word_map)
-    (x_test_full, y_test_full, lengths_test, filtered_count_test) = generate_dataset(x_test, y_test, dependencies_test,
-                                                                                     no_word_index, max_len,
-                                                                                     test_amr_ids, index_to_word_map)
-
-    print "Mean length %s " % np.asarray(lengths_train).mean()
-    print "Max length %s" % np.asarray(lengths_train).max()
-    print "Filtered"
-    print (filtered_count_tr)
-    print "Final train data shape"
-    print (x_train_full.shape)
-    print "Final test data shape"
-    print (x_test_full.shape)
+    '''
+    (x_train_full, y_train_full, lengths_train,
+     filtered_count_tr) = generate_dataset(x_train, y_train,
+                                           dependencies_train, no_word_index,
+                                           max_len, train_amr_ids,
+                                           index_to_word_map)
+    (x_test_full, y_test_full, lengths_test,
+     filtered_count_test) = generate_dataset(x_test, y_test,
+                                             dependencies_test,
+                                             no_word_index, max_len,
+                                             test_amr_ids, index_to_word_map)
 
     y_train_ohe = np.zeros((y_train_full.shape[0], max_len, 5), dtype='int32')
     for row, i in zip(y_train_full[:, :], range(y_train_full.shape[0])):
@@ -467,6 +465,30 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     for row, i in zip(y_test_full[:, :], range(y_test_full.shape[0])):
         y_test_instance_matrix = label_binarizer.transform(row)
         y_test_ohe[i, :, :] = y_test_instance_matrix
+
+    '''
+    (x_train_full, y_train_full, lengths_train,
+     filtered_count_tr) = feature_extraction.FeatureVectorGenerator.generate_dataset(x_train, y_train,
+                                                                                     dependencies_train, no_word_index,
+                                                                                     max_len, train_amr_ids,
+                                                                                     index_to_word_map)
+    (x_test_full, y_test_full, lengths_test,
+     filtered_count_test) = feature_extraction.FeatureVectorGenerator.generate_dataset(x_test, y_test,
+                                                                                       dependencies_test,
+                                                                                       no_word_index, max_len,
+                                                                                       test_amr_ids, index_to_word_map)
+
+    y_train_ohe = y_train_full
+    y_test_ohe = y_test_full
+
+    print "Mean length %s " % np.asarray(lengths_train).mean()
+    print "Max length %s" % np.asarray(lengths_train).max()
+    print "Filtered"
+    print (filtered_count_tr)
+    print "Final train data shape"
+    print (x_train_full.shape)
+    print "Final test data shape"
+    print (x_test_full.shape)
 
     model = get_model(word_index, max_len, embedding_dim, embedding_matrix)
 
@@ -772,7 +794,7 @@ def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim
 def train_file(model_name, tokenizer_path, train_data_path=None, test_data_path=None, max_len=30, train_epochs=35,
                embedding_dim=100):
     test_data = read_test_data('test', test_data_path)
-    train_data = read_data('training', train_data_path, cache=False)
+    train_data = read_data('training', train_data_path, cache=True)
 
     train(model_name, tokenizer_path, train_data, test_data, max_len, train_epochs, embedding_dim)
 
@@ -812,12 +834,19 @@ if __name__ == "__main__":
             train_data_path = data_set
             test_data_path = data_set
     tokenizer_path = "./tokenizers/full_tokenizer_extended.dump"
-    generate_tokenizer(tokenizer_path)
+    # generate_tokenizer(tokenizer_path)
+    data_set = 'proxy'
+    epoch = 50
+    max_len = 30
+    embeddings_dim = 200
+    train_data_path = 'proxy'
+    test_data_path = 'proxy'
+    model_name = '{}_epochs={}_maxlen={}_embeddingsdim={}'.format(data_set, epoch, max_len, embeddings_dim)
     train_file(model_name=model_name,
                tokenizer_path=tokenizer_path,
                train_data_path=train_data_path,
-               test_data_path=test_data_path, max_len=30,
-               train_epochs=1, embedding_dim=100)
+               test_data_path=test_data_path, max_len=max_len,
+               train_epochs=epoch, embedding_dim=embeddings_dim)
     # test_file(model_name, tokenizer_path="./tokenizers/full_tokenizer.dump",
     #          test_case_name=test_source,
     #          test_data_path=test_set_name, max_len=max_len,
