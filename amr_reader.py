@@ -1,6 +1,7 @@
 from os import listdir, path, makedirs
 import pickle as js
 
+from definitions import PROJECT_ROOT_DIR
 from feature_extraction import TrainingDataExtractor as tde
 
 
@@ -28,7 +29,8 @@ def generate_parsed_data(parsed_path, cache, dump_path):
 def read_data(type, cache, filter_path="deft"):
     if filter_path is None:
         filter_path = "deft"
-    mypath = 'resources/alignments/split/' + type
+    mypath = PROJECT_ROOT_DIR + '/resources/alignments/split/' + type
+    print PROJECT_ROOT_DIR
     print(mypath + " with filter " + filter_path)
     data = []
     directory_content = listdir(mypath)

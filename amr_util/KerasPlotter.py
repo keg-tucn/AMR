@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 from os import path
 
-abs_path = path.abspath('./plots_keras')
+from definitions import PROJECT_ROOT_DIR
+
+abs_path = PROJECT_ROOT_DIR + '/plots_keras'
 print abs_path
 
 

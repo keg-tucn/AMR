@@ -2,6 +2,8 @@ import logging
 from tqdm import tqdm
 from collections import namedtuple
 
+from definitions import PROJECT_ROOT_DIR
+
 from models import AMRData
 from models.AMRGraph import AMR, ParserError
 from models.TrainData import TrainData
@@ -202,7 +204,7 @@ def extract_amr_ids_from_corpus_as_audit_trail():
 if __name__ == "__main__":
     # extract_amr_ids_from_corpus_as_audit_trail()
     logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.WARNING)
-    generated_data = generate_training_data("../resources/alignments/split/dev/deft-p2-amr-r1-alignments-dev-bolt.txt")
+    generated_data = generate_training_data(PROJECT_ROOT_DIR + "/resources/alignments/split/dev/deft-p2-amr-r1-alignments-dev-bolt.txt")
     assert isinstance(generated_data, TrainingDataExtraction)
     assert isinstance(generated_data.data, list)
     assert isinstance(generated_data.stats, TrainingDataStats.TrainingDataStatistics)

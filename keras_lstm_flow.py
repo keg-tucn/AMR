@@ -17,6 +17,8 @@ from smatch import smatch_util
 import models.Actions as act
 from amr_reader import read_data as ra
 import feature_extraction.FeatureVectorGenerator
+from constants import __AMR_RELATIONS
+from definitions import PROJECT_ROOT_DIR
 
 SH = 0
 RL = 1
@@ -37,9 +39,9 @@ def read_sentence_test(type):
     return [d.sentence for d in read_test_data(type)]
 
 
-def read_test_data(type, dataset=None):
+def read_test_data(type, dataset=None, cache=False):
     # make sure testing done on same data subset
-    return ra(type, True, dataset)
+    return ra(type, cache, dataset)
 
 
 # Load data
@@ -302,7 +304,7 @@ def get_optimizer():
 def get_embedding_matrix(word_index, embedding_dim=100):
     special_cases_re = re.compile('''^([a-z])+-(?:entity|quantity)$''')
     embeddings_index = {}
-    f = open('./resources/glove/glove.6B.{}d.txt'.format(embedding_dim))
+    f = open(PROJECT_ROOT_DIR + '/resources/glove/glove.6B.{}d.txt'.format(embedding_dim))
     for line in f:
         values = line.split()
         word = values[0]
@@ -369,7 +371,7 @@ def get_model(word_index, max_len, embedding_dim, embedding_matrix):
 
 
 def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_epochs=35, embedding_dim=100):
-    model_path = './trained_models/{}'.format(model_name)
+    model_path = PROJECT_ROOT_DIR + '/trained_models/{}'.format(model_name)
     print 'Model path is:'
     print model_path
 
@@ -546,7 +548,7 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
             errors += 1
 
     # modified to results_train_new
-    file = open('./results_keras/{}_results_train_new'.format(model_name), 'w')
+    file = open(PROJECT_ROOT_DIR + '/results_keras/{}_results_train_new'.format(model_name), 'w')
 
     file.write('------------------------------------------------------------------------------------------------\n')
     file.write('Train data shape: \n')
@@ -580,7 +582,7 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
 
 
 def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding_dim=100, with_reattach=False):
-    model_path = './trained_models/{}'.format(model_name)
+    model_path = PROJECT_ROOT_DIR + '/trained_models/{}'.format(model_name)
     print 'Model path is:'
     print model_path
 
@@ -692,7 +694,7 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
         else:
             errors += 1
 
-    file = open('./results_keras/{}_results_test_{}'.format(model_name, test_case_name), 'w')
+    file = open(PROJECT_ROOT_DIR + '/results_keras/{}_results_test_{}'.format(model_name, test_case_name), 'w')
 
     file.write('------------------------------------------------------------------------------------------------\n')
     file.write('Test data shape: ' + '\n')
@@ -721,7 +723,7 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
 
 
 def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim=100, with_reattach=False):
-    model_path = './trained_models/{}'.format(model_name)
+    model_path = PROJECT_ROOT_DIR + '/trained_models/{}'.format(model_name)
     print 'Model path is:'
     print model_path
 
@@ -825,7 +827,7 @@ if __name__ == "__main__":
         #     test_set_name = 'deft-p2-amr-r1-alignments-test-{}.txt'.format(data_set)
         print 'Model name is: '
         print model_name
-        model_path = './trained_models/{}'.format(model_name)
+        model_path = PROJECT_ROOT_DIR + '/trained_models/{}'.format(model_name)
 
         if data_set == "all":
             train_data_path = None
@@ -833,7 +835,7 @@ if __name__ == "__main__":
         else:
             train_data_path = data_set
             test_data_path = data_set
-    tokenizer_path = "./tokenizers/full_tokenizer_extended.dump"
+    tokenizer_path = PROJECT_ROOT_DIR + "/tokenizers/full_tokenizer_extended.dump"
     # generate_tokenizer(tokenizer_path)
     data_set = 'proxy'
     epoch = 50

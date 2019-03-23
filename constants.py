@@ -1,8 +1,9 @@
-# all the constants 
 import numpy as np
 import re
 from os import listdir
 from collections import defaultdict
+
+from definitions import PROJECT_ROOT_DIR
 
 # flags
 # TODO using gflag
@@ -160,7 +161,7 @@ FEATS_ABBR['txv'] = 'txv'
 FEATS_ABBR['txn'] = 'txn'
 FEATS_ABBR['txdelta'] = 'txdelta'
 
-DEFAULT_RULE_FILE = './rules/dep2amrLabelRules'
+DEFAULT_RULE_FILE = PROJECT_ROOT_DIR + '/rules/dep2amrLabelRules'
 
 
 def _load_rules(rule_file):
@@ -183,19 +184,19 @@ def get_fake_amr_relation_mapping(dep_rel):
     return __DEP_AMR_REL_TABLE[dep_rel]
 
 
-DEFAULT_AMR_RELATIONS_FILE = './rules/amr_relations'
+DEFAULT_AMR_RELATIONS_FILE = PROJECT_ROOT_DIR + '/rules/amr_relations'
 
 
 def _load_amr_relations(rule_file):
     rf = open(rule_file, 'r')
-    relations = [line.strip for line in rf.readlines()]
+    relations = [line.strip() for line in rf.readlines()]
     rf.close()
     return relations
 
 
 __AMR_RELATIONS = _load_amr_relations(DEFAULT_AMR_RELATIONS_FILE)
 
-DEFAULT_NOM_FILE = './resources/nombank-dict.1.0'
+DEFAULT_NOM_FILE = PROJECT_ROOT_DIR + '/resources/nombank-dict.1.0'
 
 
 def _read_nom_list(nombank_dict_file):
@@ -211,7 +212,7 @@ def _read_nom_list(nombank_dict_file):
 
 NOMLIST = _read_nom_list(DEFAULT_NOM_FILE)
 
-DEFAULT_BROWN_CLUSTER = './resources/wclusters-engiga'
+DEFAULT_BROWN_CLUSTER = PROJECT_ROOT_DIR + '/resources/wclusters-engiga'
 
 
 def _load_brown_cluster(dir_path, cluster_num=1000):
@@ -229,7 +230,7 @@ def _load_brown_cluster(dir_path, cluster_num=1000):
 
 BROWN_CLUSTER = _load_brown_cluster(DEFAULT_BROWN_CLUSTER)
 
-PATH_TO_VERB_LIST = './resources/verbalization-list-v1.01.txt'
+PATH_TO_VERB_LIST = PROJECT_ROOT_DIR + '/resources/verbalization-list-v1.01.txt'
 
 
 def _load_verb_list(path_to_file):
@@ -258,7 +259,7 @@ def _load_verb_list(path_to_file):
 
 VERB_LIST = _load_verb_list(PATH_TO_VERB_LIST)
 
-PATH_TO_COUNTRY_LIST = './resources/country-list.csv'
+PATH_TO_COUNTRY_LIST = PROJECT_ROOT_DIR + '/resources/country-list.csv'
 
 
 def _load_country_list(path_to_file):
