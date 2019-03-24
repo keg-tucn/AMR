@@ -1,12 +1,11 @@
 from os import listdir, path, makedirs
 import pickle as js
 
-from definitions import *
+from definitions import PROJECT_ROOT_DIR
 from TrainingDataExtractor import generate_training_data
-from FeatureVectorGenerator import generate_dataset
 
 
-def read_training_data(type, cache, filter_path="deft"):
+def read_data(type, filter_path="deft", cache=True):
     if filter_path is None:
         filter_path = "deft"
     dir_path = PROJECT_ROOT_DIR + '/resources/alignments/split/' + type
@@ -34,5 +33,4 @@ def read_training_data(type, cache, filter_path="deft"):
                 js.dump(file_data, dump_file)
             parsed_data += file_data
 
-    training_instances = generate_dataset(parsed_data)
-    return training_instances
+    return parsed_data

@@ -7,18 +7,16 @@ from keras.layers import Input, Embedding, LSTM, Dense, concatenate, TimeDistrib
 from keras.models import Model
 from keras.optimizers import SGD
 from keras.preprocessing.text import Tokenizer
-from Baseline import reentrancy_restoring
 import logging
 
+from definitions import PROJECT_ROOT_DIR
+from Baseline import reentrancy_restoring
 from amr_util.KerasPlotter import plot_history
 from postprocessing import ActionSequenceReconstruction as asr
 from smatch import smatch_amr
 from smatch import smatch_util
 import models.Actions as act
-from amr_reader import read_data as ra
-import feature_extraction.FeatureVectorGenerator
-from constants import __AMR_RELATIONS
-from definitions import PROJECT_ROOT_DIR
+from feature_extraction import DatasetLoader, FeatureVectorGenerator
 
 SH = 0
 RL = 1
@@ -26,27 +24,10 @@ RR = 2
 DN = 3
 SW = 4
 NONE = 5
+
 coref_handling = False
 label_binarizer = sklearn.preprocessing.LabelBinarizer()
 label_binarizer.fit(range(5))
-
-
-def read_sentence(type):
-    return [d.sentence for d in read_data(type)]
-
-
-def read_sentence_test(type):
-    return [d.sentence for d in read_test_data(type)]
-
-
-def read_test_data(type, dataset=None, cache=False):
-    # make sure testing done on same data subset
-    return ra(type, cache, dataset)
-
-
-# Load data
-def read_data(type, dataset=None, cache=False):
-    return ra(type, cache, dataset)
 
 
 def get_predictions_from_distr(predictions_distr):
@@ -288,10 +269,10 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids, index_
 
 
 def generate_tokenizer(tokenizer_path):
-    test_data = read_sentence_test('test')
-    train_data = read_sentence('training')
-    dev_data = read_sentence_test('dev')
-    sentences = test_data + train_data + dev_data
+    test_data_sentences = [d.sentence for d in DatasetLoader.read_data('test', cache=False)]
+    train_data_sentences = [d.sentence for d in DatasetLoader.read_data('training', cache=False)]
+    dev_data_sentences = [d.sentence for d in DatasetLoader.read_data('dev', cache=False)]
+    sentences = test_data_sentences + train_data_sentences + dev_data_sentences
     tokenizer = Tokenizer(filters="", lower=True, split=" ")
     tokenizer.fit_on_texts(sentences)
     pickle.dump(tokenizer, open(tokenizer_path, "wb"))
@@ -355,6 +336,7 @@ def get_model(word_index, max_len, embedding_dim, embedding_matrix):
 
     lstm_output = LSTM(1024, return_sequences=True)(x)
 
+    # dense = TimeDistributed(Dense(5 + 2 * len(__AMR_RELATIONS), activation="softmax"))(lstm_output)
     dense = TimeDistributed(Dense(5, activation="softmax"))(lstm_output)
 
     model = Model([buffer_input, stack_input_0, stack_input_1, stack_input_2, prev_action_input, dep_info_input], dense)
@@ -375,6 +357,7 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     print 'Model path is:'
     print model_path
 
+    '''
     data = train_data + test_data
 
     print "Data set total size %s" % len(data)
@@ -419,14 +402,20 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
 
     x_train = sequences[:num_train_samples]
     y_train = actions[:num_train_samples]
+    y_train_old = (np.asarray(action_indices)[indices])[:num_train_samples]
     amrs_train = amrs[:num_train_samples]
     dependencies_train = dependencies[:num_train_samples]
 
     x_test = sequences[num_train_samples:]
     y_test = actions[num_train_samples:]
+    y_test_old = (np.asarray(action_indices)[indices])[num_train_samples:]
     l_test = labels[num_train_samples:]
     amrs_test = amrs[num_train_samples:]
     dependencies_test = dependencies[num_train_samples:]
+    '''
+
+    x_train, y_train, x_test, y_test, dependencies_train, dependencies_test, train_amr_ids, test_amr_ids, \
+    named_entities, date_entities, word_index = FeatureVectorGenerator.extract_data_components(train_data, test_data)
 
     print 'Training data shape: '
     print x_train.shape
@@ -441,48 +430,57 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     # If the current action is shift, the next action will have the next token in the buffer and updated stack elements.
     # Else, the same element on the buffer is fed and the elements from the stack are updated
     # Do not consider instances with more than 30 actions for the moment.
-    embedding_matrix = get_embedding_matrix(word_index, embedding_dim)
-    no_word_index = (len(word_index)) + 1
-
-    index_to_word_map = {v: k for k, v in tokenizer.word_index.iteritems()}
 
     '''
-    (x_train_full, y_train_full, lengths_train,
-     filtered_count_tr) = generate_dataset(x_train, y_train,
+    data = train_data + test_data
+    actions = [d.action_sequence for d in data]
+    action_indices = [[a.index for a in actions_list] for actions_list in actions]
+    y_train_old = (np.asarray(action_indices))[:len(train_data)]
+    y_test_old = (np.asarray(action_indices))[len(train_data):]
+
+    (x_train_full_old, y_train_full_old, lengths_train,
+     filtered_count_tr) = generate_dataset(x_train, y_train_old,
                                            dependencies_train, no_word_index,
                                            max_len, train_amr_ids,
                                            index_to_word_map)
-    (x_test_full, y_test_full, lengths_test,
-     filtered_count_test) = generate_dataset(x_test, y_test,
+    (x_test_full_old, y_test_full_old, lengths_test,
+     filtered_count_test) = generate_dataset(x_test, y_test_old,
                                              dependencies_test,
                                              no_word_index, max_len,
                                              test_amr_ids, index_to_word_map)
 
-    y_train_ohe = np.zeros((y_train_full.shape[0], max_len, 5), dtype='int32')
-    for row, i in zip(y_train_full[:, :], range(y_train_full.shape[0])):
+    y_train_ohe_old = np.zeros((y_train_full_old.shape[0], max_len, 5), dtype='int32')
+    for row, i in zip(y_train_full_old[:, :], range(y_train_full_old.shape[0])):
         y_train_instance_matrix = label_binarizer.transform(row)
-        y_train_ohe[i, :, :] = y_train_instance_matrix
+        y_train_ohe_old[i, :, :] = y_train_instance_matrix
 
-    y_test_ohe = np.zeros((y_test_full.shape[0], max_len, 5), dtype='int32')
-    for row, i in zip(y_test_full[:, :], range(y_test_full.shape[0])):
+    y_test_ohe_old = np.zeros((y_test_full_old.shape[0], max_len, 5), dtype='int32')
+    for row, i in zip(y_test_full_old[:, :], range(y_test_full_old.shape[0])):
         y_test_instance_matrix = label_binarizer.transform(row)
-        y_test_ohe[i, :, :] = y_test_instance_matrix
-
+        y_test_ohe_old[i, :, :] = y_test_instance_matrix
     '''
+
+    index_to_word_map = {v: k for k, v in word_index.iteritems()}
+    no_word_index = (len(word_index)) + 1
+
     (x_train_full, y_train_full, lengths_train,
-     filtered_count_tr) = feature_extraction.FeatureVectorGenerator.generate_dataset(x_train, y_train,
-                                                                                     dependencies_train, no_word_index,
-                                                                                     max_len, train_amr_ids,
-                                                                                     index_to_word_map)
+     filtered_count_tr) = FeatureVectorGenerator.generate_feature_vectors(x_train, y_train,
+                                                                          dependencies_train, train_amr_ids, max_len,
+                                                                          index_to_word_map, no_word_index)
     (x_test_full, y_test_full, lengths_test,
-     filtered_count_test) = feature_extraction.FeatureVectorGenerator.generate_dataset(x_test, y_test,
-                                                                                       dependencies_test,
-                                                                                       no_word_index, max_len,
-                                                                                       test_amr_ids, index_to_word_map)
+     filtered_count_test) = FeatureVectorGenerator.generate_feature_vectors(x_test, y_test,
+                                                                            dependencies_test, test_amr_ids, max_len,
+                                                                            index_to_word_map, no_word_index)
 
     y_train_ohe = y_train_full
     y_test_ohe = y_test_full
 
+    '''
+    print(np.sum(np.subtract(x_train_full, x_train_full_old)))
+    print(np.sum(np.subtract(y_train_ohe, y_train_ohe_old)))
+    print(np.sum(np.subtract(x_test_full, x_test_full_old)))
+    print(np.sum(np.subtract(y_test_ohe, y_test_ohe_old)))
+    '''
     print "Mean length %s " % np.asarray(lengths_train).mean()
     print "Max length %s" % np.asarray(lengths_train).max()
     print "Filtered"
@@ -491,6 +489,8 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     print (x_train_full.shape)
     print "Final test data shape"
     print (x_test_full.shape)
+
+    embedding_matrix = get_embedding_matrix(word_index, embedding_dim)
 
     model = get_model(word_index, max_len, embedding_dim, embedding_matrix)
 
@@ -512,6 +512,12 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
 
     smatch_results = smatch_util.SmatchAccumulator()
     errors = 0
+
+    amrs_test = [d.original_amr for d in test_data]
+
+    test_action_sequences = [d.action_sequence for d in test_data]
+    l_test = [[a.label for a in actions_list] for actions_list in test_action_sequences]
+
     for i in range(len(x_test)):
         # Step1: input a processed test entity test
         prediction = make_prediction(model, x_test[i], dependencies_test[i], no_word_index, max_len)
@@ -795,8 +801,8 @@ def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim
 
 def train_file(model_name, tokenizer_path, train_data_path=None, test_data_path=None, max_len=30, train_epochs=35,
                embedding_dim=100):
-    test_data = read_test_data('test', test_data_path)
-    train_data = read_data('training', train_data_path, cache=True)
+    test_data = DatasetLoader.read_data('test', test_data_path, cache=True)
+    train_data = DatasetLoader.read_data('training', train_data_path, cache=True)
 
     train(model_name, tokenizer_path, train_data, test_data, max_len, train_epochs, embedding_dim)
 
@@ -804,7 +810,7 @@ def train_file(model_name, tokenizer_path, train_data_path=None, test_data_path=
 def test_file(model_name, tokenizer_path, test_case_name, test_data_path, max_len=30, embedding_dim=100,
               test_source="test",
               with_reattach=False):
-    data = read_test_data(test_source, test_data_path)
+    data = DatasetLoader.read_data(test_source, test_data_path)
     return test(model_name, tokenizer_path, test_case_name, data, max_len, embedding_dim, with_reattach=with_reattach)
 
 
@@ -815,9 +821,6 @@ if __name__ == "__main__":
     epochs = [50, 50, 50, 50, 20]
     test_source = 'dev'
 
-    # for data_set in data_sets:
-    #     for embeddings_dim in embeddings_dims:
-    #         for max_len in max_lens:
     for data_set, max_len, embeddings_dim, epoch in zip(data_sets, max_lens, embeddings_dims, epochs):
         # epochs = 20
         model_name = '{}_epochs={}_maxlen={}_embeddingsdim={}'.format(data_set, epoch, max_len, embeddings_dim)
@@ -835,8 +838,10 @@ if __name__ == "__main__":
         else:
             train_data_path = data_set
             test_data_path = data_set
+
     tokenizer_path = PROJECT_ROOT_DIR + "/tokenizers/full_tokenizer_extended.dump"
     # generate_tokenizer(tokenizer_path)
+
     data_set = 'proxy'
     epoch = 50
     max_len = 30
@@ -849,7 +854,7 @@ if __name__ == "__main__":
                train_data_path=train_data_path,
                test_data_path=test_data_path, max_len=max_len,
                train_epochs=epoch, embedding_dim=embeddings_dim)
-    # test_file(model_name, tokenizer_path="./tokenizers/full_tokenizer.dump",
+    # test_file(model_name, tokenizer_path= PROJECT_ROOT_DIR + "/tokenizers/full_tokenizer.dump",
     #          test_case_name=test_source,
     #          test_data_path=test_set_name, max_len=max_len,
     #          embedding_dim=embeddings_dim, test_source="dev", with_reattach=True)

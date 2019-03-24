@@ -1,9 +1,13 @@
 import logging
 import numpy as np
 import sklearn
+import pickle
 
+from definitions import PROJECT_ROOT_DIR
 from constants import __AMR_RELATIONS
 import models.Actions as act
+
+tokenizer_path = PROJECT_ROOT_DIR + "/tokenizers/full_tokenizer_extended.dump"
 
 SH = 0
 RL = 1
@@ -19,7 +23,48 @@ composed_label_binarizer = sklearn.preprocessing.LabelBinarizer()
 composed_label_binarizer.fit(range(5 + 2 * len(__AMR_RELATIONS)))
 
 
-def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids, index_to_word_map):
+def extract_data_components(train_data, test_data):
+    data = train_data + test_data
+
+    sentences = [d.sentence for d in data]
+
+    tokenizer = pickle.load(open(tokenizer_path, "rb"))
+    sequences = np.asarray(tokenizer.texts_to_sequences(sentences))
+
+    actions = [d.action_sequence for d in data]
+
+    dependencies = [d.dependencies for d in data]
+
+    named_entities = [d.named_entities for d in data]
+    named_entities = [[(n[3], n[2]) for n in named_entities_list] for named_entities_list in named_entities]
+
+    date_entities = [d.date_entities for d in data]
+    date_entities = [[(d[3], d[2], d[1]) for d in date_entities_list] for date_entities_list in date_entities]
+
+    amr_ids = [d.amr_id for d in data]
+
+    word_index = tokenizer.word_index
+
+    num_test_samples = int(max(len(test_data), len(train_data) / 10))
+    num_train_samples = int(len(data) - num_test_samples)
+
+    x_train = sequences[:num_train_samples]
+    y_train = actions[:num_train_samples]
+
+    x_test = sequences[num_train_samples:]
+    y_test = actions[num_train_samples:]
+
+    dependencies_train = dependencies[:num_train_samples]
+    dependencies_test = dependencies[num_train_samples:]
+
+    train_amr_ids = amr_ids[:num_train_samples]
+    test_amr_ids = amr_ids[num_train_samples:]
+
+    return x_train, y_train, x_test, y_test, dependencies_train, dependencies_test,\
+           train_amr_ids, test_amr_ids, named_entities, date_entities, word_index
+
+
+def generate_feature_vectors(x, y, dependencies, amr_ids, max_len, index_to_word_map, no_word_index):
     lengths = []
 
     filtered_count = 0
@@ -36,7 +81,7 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids, index_
     y_temp = []
     i = 0
 
-    for action_sequence, tokens_sequence, deps, amr_id in zip(y, x, dependencies, amr_ids):
+    for action_sequence, tokens_sequence, dependencies, amr_id in zip(y, x, dependencies, amr_ids):
         next_action_token = tokens_sequence[0]
         next_action_stack = [no_word_index, no_word_index, no_word_index, no_word_index]
         next_action_prev_action = NONE
@@ -59,17 +104,17 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids, index_
             dep_2_on_0 = 0
             dep_0_on_b = 0
             dep_b_on_0 = 0
-            if next_action_stack[0] in deps.keys() and deps[next_action_stack[0]][0] == next_action_stack[1]:
+            if next_action_stack[0] in dependencies.keys() and dependencies[next_action_stack[0]][0] == next_action_stack[1]:
                 dep_0_on_1 = 1
-            if next_action_stack[1] in deps.keys() and deps[next_action_stack[1]][0] == next_action_stack[0]:
+            if next_action_stack[1] in dependencies.keys() and dependencies[next_action_stack[1]][0] == next_action_stack[0]:
                 dep_1_on_0 = 1
-            if next_action_stack[0] in deps.keys() and deps[next_action_stack[0]][0] == next_action_stack[2]:
+            if next_action_stack[0] in dependencies.keys() and dependencies[next_action_stack[0]][0] == next_action_stack[2]:
                 dep_0_on_2 = 1
-            if next_action_stack[2] in deps.keys() and deps[next_action_stack[2]][0] == next_action_stack[0]:
+            if next_action_stack[2] in dependencies.keys() and dependencies[next_action_stack[2]][0] == next_action_stack[0]:
                 dep_2_on_0 = 1
-            if next_action_stack[0] in deps.keys() and deps[next_action_stack[0]][0] == next_action_token:
+            if next_action_stack[0] in dependencies.keys() and dependencies[next_action_stack[0]][0] == next_action_token:
                 dep_0_on_b = 1
-            if next_action_token in deps.keys() and deps[next_action_token][0] == next_action_stack[0]:
+            if next_action_token in dependencies.keys() and dependencies[next_action_token][0] == next_action_stack[0]:
                 dep_b_on_0 = 1
             features = np.concatenate((np.asarray([next_action_token, next_action_stack[0],
                                                    next_action_stack[1], next_action_stack[2]]),
@@ -114,13 +159,25 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids, index_
         i += 1
     logging.warning("Exception count " + str(exception_count))
 
+    #y_ohe = np.zeros((y_full.shape[0], max_len, 5 + 2 * len(__AMR_RELATIONS)), dtype='int32')
     y_ohe = np.zeros((y_full.shape[0], max_len, 5), dtype='int32')
+
     for row, i in zip(y_temp, range(len(y_temp))):
         y_train_instance_matrix = []
         for r in row:
-            y_train_instance_matrix.append(label_binarizer.transform([r.index])[0, :])
+            if r.index == -10:
+                y_train_instance_matrix.append(
+                    composed_label_binarizer.transform([5 + __AMR_RELATIONS.index(r.label)])[0, :])
+            elif r.index == -20:
+                y_train_instance_matrix.append(
+                    composed_label_binarizer.transform([5 + len(__AMR_RELATIONS) + __AMR_RELATIONS.index(r.label)])[0,
+                    :])
+            else:
+                #y_train_instance_matrix.append(composed_label_binarizer.transform([r.index])[0, :])
+                y_train_instance_matrix.append(label_binarizer.transform([r.index])[0, :])
         for j in range(max_len - len(row)):
-            y_train_instance_matrix.append(label_binarizer.transform([5])[0, :])
+            #y_train_instance_matrix.append(composed_label_binarizer.transform([1000])[0, :])
+            y_train_instance_matrix.append(label_binarizer.transform([1000])[0, :])
         y_ohe[i, :, :] = y_train_instance_matrix
 
     return x_full, y_ohe, lengths, filtered_count

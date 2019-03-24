@@ -3,7 +3,6 @@ from tqdm import tqdm
 from collections import namedtuple
 
 from definitions import PROJECT_ROOT_DIR
-
 from models import AMRData
 from models.AMRGraph import AMR, ParserError
 from models.TrainData import TrainData
