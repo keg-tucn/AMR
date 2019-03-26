@@ -60,7 +60,7 @@ def extract_data_components(train_data, test_data):
     train_amr_ids = amr_ids[:num_train_samples]
     test_amr_ids = amr_ids[num_train_samples:]
 
-    return x_train, y_train, x_test, y_test, dependencies_train, dependencies_test,\
+    return x_train, y_train, x_test, y_test, dependencies_train, dependencies_test, \
            train_amr_ids, test_amr_ids, named_entities, date_entities, word_index
 
 
@@ -77,8 +77,9 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, max_len, index_to_word
             continue
 
     x_full = np.zeros((len(x) - filtered_count, max_len, 15), dtype=np.int32)
-    y_full = np.full((len(y) - filtered_count, max_len), dtype=np.int32, fill_value=NONE)
-    y_temp = []
+    y_full = np.zeros((len(y) - filtered_count, max_len, 5), dtype=np.int32)
+
+    action_sequences = []
     i = 0
 
     for action_sequence, tokens_sequence, dependencies, amr_id in zip(y, x, dependencies, amr_ids):
@@ -104,15 +105,20 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, max_len, index_to_word
             dep_2_on_0 = 0
             dep_0_on_b = 0
             dep_b_on_0 = 0
-            if next_action_stack[0] in dependencies.keys() and dependencies[next_action_stack[0]][0] == next_action_stack[1]:
+            if next_action_stack[0] in dependencies.keys() and dependencies[next_action_stack[0]][0] == \
+                    next_action_stack[1]:
                 dep_0_on_1 = 1
-            if next_action_stack[1] in dependencies.keys() and dependencies[next_action_stack[1]][0] == next_action_stack[0]:
+            if next_action_stack[1] in dependencies.keys() and dependencies[next_action_stack[1]][0] == \
+                    next_action_stack[0]:
                 dep_1_on_0 = 1
-            if next_action_stack[0] in dependencies.keys() and dependencies[next_action_stack[0]][0] == next_action_stack[2]:
+            if next_action_stack[0] in dependencies.keys() and dependencies[next_action_stack[0]][0] == \
+                    next_action_stack[2]:
                 dep_0_on_2 = 1
-            if next_action_stack[2] in dependencies.keys() and dependencies[next_action_stack[2]][0] == next_action_stack[0]:
+            if next_action_stack[2] in dependencies.keys() and dependencies[next_action_stack[2]][0] == \
+                    next_action_stack[0]:
                 dep_2_on_0 = 1
-            if next_action_stack[0] in dependencies.keys() and dependencies[next_action_stack[0]][0] == next_action_token:
+            if next_action_stack[0] in dependencies.keys() and dependencies[next_action_stack[0]][0] == \
+                    next_action_token:
                 dep_0_on_b = 1
             if next_action_token in dependencies.keys() and dependencies[next_action_token][0] == next_action_stack[0]:
                 dep_b_on_0 = 1
@@ -153,34 +159,30 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, max_len, index_to_word
         features_matrix = np.concatenate((np.asarray(features_matrix),
                                           np.zeros((max_len - len(features_matrix), 15), dtype=np.int32)))
 
-        actions = action_sequence
+        action_sequences.append(action_sequence)
         x_full[i, :, :] = features_matrix
-        y_temp.append(actions)
         i += 1
     logging.warning("Exception count " + str(exception_count))
 
-    #y_ohe = np.zeros((y_full.shape[0], max_len, 5 + 2 * len(__AMR_RELATIONS)), dtype='int32')
-    y_ohe = np.zeros((y_full.shape[0], max_len, 5), dtype='int32')
-
-    for row, i in zip(y_temp, range(len(y_temp))):
+    for action_sequence, i in zip(action_sequences, range(len(action_sequences))):
         y_train_instance_matrix = []
-        for r in row:
-            if r.index == -10:
+        for action in action_sequence:
+            if action.index == -1:
                 y_train_instance_matrix.append(
-                    composed_label_binarizer.transform([5 + __AMR_RELATIONS.index(r.label)])[0, :])
-            elif r.index == -20:
-                y_train_instance_matrix.append(
-                    composed_label_binarizer.transform([5 + len(__AMR_RELATIONS) + __AMR_RELATIONS.index(r.label)])[0,
-                    :])
+                    composed_label_binarizer.transform([5 + __AMR_RELATIONS.index(action.label)])[0, :])
+            elif action.index == -1:
+                y_train_instance_matrix \
+                    .append(composed_label_binarizer.transform([5 + len(__AMR_RELATIONS) +
+                                                                __AMR_RELATIONS.index(action.label)])[0, :])
             else:
-                #y_train_instance_matrix.append(composed_label_binarizer.transform([r.index])[0, :])
-                y_train_instance_matrix.append(label_binarizer.transform([r.index])[0, :])
-        for j in range(max_len - len(row)):
-            #y_train_instance_matrix.append(composed_label_binarizer.transform([1000])[0, :])
-            y_train_instance_matrix.append(label_binarizer.transform([1000])[0, :])
-        y_ohe[i, :, :] = y_train_instance_matrix
+                # y_train_instance_matrix.append(composed_label_binarizer.transform([r.index])[0, :])
+                y_train_instance_matrix.append(label_binarizer.transform([action.index])[0, :])
+        for j in range(max_len - len(action_sequence)):
+            # y_train_instance_matrix.append(composed_label_binarizer.transform([1000])[0, :])
+            y_train_instance_matrix.append(label_binarizer.transform([-1])[0, :])
+        y_full[i, :, :] = y_train_instance_matrix
 
-    return x_full, y_ohe, lengths, filtered_count
+    return x_full, y_full, lengths, filtered_count
 
 
 def actions_to_string(acts_i):
