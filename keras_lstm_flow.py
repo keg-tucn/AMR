@@ -431,12 +431,32 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     # Else, the same element on the buffer is fed and the elements from the stack are updated
     # Do not consider instances with more than 30 actions for the moment.
 
+    index_to_word_map = {v: k for k, v in word_index.iteritems()}
+    no_word_index = (len(word_index)) + 1
+
+    (x_train_full, y_train_full, lengths_train,
+     filtered_count_tr) = FeatureVectorGenerator.generate_feature_vectors(x_train, y_train,
+                                                                          dependencies_train, train_amr_ids, max_len,
+                                                                          index_to_word_map, no_word_index)
+
+    (x_test_full, y_test_full, lengths_test,
+     filtered_count_test) = FeatureVectorGenerator.generate_feature_vectors(x_test, y_test,
+                                                                            dependencies_test, test_amr_ids, max_len,
+                                                                            index_to_word_map, no_word_index)
+
+    y_train_ohe = y_train_full
+    y_test_ohe = y_test_full
+
     '''
-    data = train_data + test_data
+    data = np.concatenate((train_data, test_data))
     actions = [d.action_sequence for d in data]
     action_indices = [[a.index for a in actions_list] for actions_list in actions]
-    y_train_old = (np.asarray(action_indices))[:len(train_data)]
-    y_test_old = (np.asarray(action_indices))[len(train_data):]
+
+    num_test_samples = int(max(len(test_data), 0.1 * len(train_data)))
+    num_train_samples = int(len(data) - num_test_samples)
+
+    y_train_old = (np.asarray(action_indices))[:num_train_samples]
+    y_test_old = (np.asarray(action_indices))[num_train_samples:]
 
     (x_train_full_old, y_train_full_old, lengths_train,
      filtered_count_tr) = generate_dataset(x_train, y_train_old,
@@ -458,29 +478,13 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     for row, i in zip(y_test_full_old[:, :], range(y_test_full_old.shape[0])):
         y_test_instance_matrix = label_binarizer.transform(row)
         y_test_ohe_old[i, :, :] = y_test_instance_matrix
-    '''
 
-    index_to_word_map = {v: k for k, v in word_index.iteritems()}
-    no_word_index = (len(word_index)) + 1
-
-    (x_train_full, y_train_full, lengths_train,
-     filtered_count_tr) = FeatureVectorGenerator.generate_feature_vectors(x_train, y_train,
-                                                                          dependencies_train, train_amr_ids, max_len,
-                                                                          index_to_word_map, no_word_index)
-    (x_test_full, y_test_full, lengths_test,
-     filtered_count_test) = FeatureVectorGenerator.generate_feature_vectors(x_test, y_test,
-                                                                            dependencies_test, test_amr_ids, max_len,
-                                                                            index_to_word_map, no_word_index)
-
-    y_train_ohe = y_train_full
-    y_test_ohe = y_test_full
-
-    '''
     print(np.sum(np.subtract(x_train_full, x_train_full_old)))
     print(np.sum(np.subtract(y_train_ohe, y_train_ohe_old)))
     print(np.sum(np.subtract(x_test_full, x_test_full_old)))
     print(np.sum(np.subtract(y_test_ohe, y_test_ohe_old)))
     '''
+
     print "Mean length %s " % np.asarray(lengths_train).mean()
     print "Max length %s" % np.asarray(lengths_train).max()
     print "Filtered"
@@ -503,7 +507,7 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
                             ModelCheckpoint(model_path, monitor='val_acc', verbose=0, save_best_only=True,
                                             save_weights_only=False,
                                             mode='auto', period=1),
-                            EarlyStopping(monitor='val_acc', min_delta=0, patience=3, verbose=0,
+                            EarlyStopping(monitor='val_acc', min_delta=0, patience=50, verbose=0,
                                           mode='auto')])
 
     plot_history(history, model_name)
@@ -801,8 +805,8 @@ def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim
 
 def train_file(model_name, tokenizer_path, train_data_path=None, test_data_path=None, max_len=30, train_epochs=35,
                embedding_dim=100):
-    test_data = DatasetLoader.read_data('test', test_data_path, cache=True)
-    train_data = DatasetLoader.read_data('training', train_data_path, cache=True)
+    test_data = np.asarray(DatasetLoader.read_data('test', test_data_path, cache=True), dtype=object)
+    train_data = np.asarray(DatasetLoader.read_data('training', train_data_path, cache=True), dtype=object)
 
     train(model_name, tokenizer_path, train_data, test_data, max_len, train_epochs, embedding_dim)
 
@@ -821,40 +825,28 @@ if __name__ == "__main__":
     epochs = [50, 50, 50, 50, 20]
     test_source = 'dev'
 
-    for data_set, max_len, embeddings_dim, epoch in zip(data_sets, max_lens, embeddings_dims, epochs):
-        # epochs = 20
-        model_name = '{}_epochs={}_maxlen={}_embeddingsdim={}'.format(data_set, epoch, max_len, embeddings_dim)
-        # if data_set == "all":
-        test_set_name = None
-        # else:
-        #     test_set_name = 'deft-p2-amr-r1-alignments-test-{}.txt'.format(data_set)
-        print 'Model name is: '
-        print model_name
-        model_path = PROJECT_ROOT_DIR + '/trained_models/{}'.format(model_name)
-
-        if data_set == "all":
-            train_data_path = None
-            test_data_path = None
-        else:
-            train_data_path = data_set
-            test_data_path = data_set
-
     tokenizer_path = PROJECT_ROOT_DIR + "/tokenizers/full_tokenizer_extended.dump"
     # generate_tokenizer(tokenizer_path)
 
-    data_set = 'proxy'
+    data_set = 'all'
     epoch = 50
     max_len = 30
     embeddings_dim = 200
-    train_data_path = 'proxy'
-    test_data_path = 'proxy'
+    train_data_path = 'all'
+    test_data_path = 'all'
     model_name = '{}_epochs={}_maxlen={}_embeddingsdim={}'.format(data_set, epoch, max_len, embeddings_dim)
+
+    if train_data_path == 'all':
+        train_data_path = None
+    if test_data_path == 'all':
+        test_data_path = None
+
     train_file(model_name=model_name,
                tokenizer_path=tokenizer_path,
                train_data_path=train_data_path,
                test_data_path=test_data_path, max_len=max_len,
                train_epochs=epoch, embedding_dim=embeddings_dim)
-    # test_file(model_name, tokenizer_path= PROJECT_ROOT_DIR + "/tokenizers/full_tokenizer.dump",
-    #          test_case_name=test_source,
-    #          test_data_path=test_set_name, max_len=max_len,
-    #          embedding_dim=embeddings_dim, test_source="dev", with_reattach=True)
+    test_file(model_name, tokenizer_path=tokenizer_path,
+              test_case_name=test_data_path,
+              test_data_path=test_data_path, max_len=max_len,
+              embedding_dim=embeddings_dim, test_source="dev", with_reattach=True)

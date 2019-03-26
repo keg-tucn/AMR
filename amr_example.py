@@ -11,6 +11,8 @@ from amr_util.Reporting import AMRResult
 import models.Actions as act
 from amr_reader import read_data
 
+from definitions import PROJECT_ROOT_DIR
+
 
 def process_data(data, vocab_words, vocab_acts):
     for d in data:
@@ -31,7 +33,7 @@ def process_data(data, vocab_words, vocab_acts):
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.WARNING)
 
 vocab_acts = ds.Vocab.from_list(act.acts)
-vocab_words = ds.Vocab.from_file('resources/data/vocab.txt')
+vocab_words = ds.Vocab.from_file(PROJECT_ROOT_DIR + '/resources/data/vocab.txt')
 
 test_use_model_prediction = True
 train_use_model_prediction = False
@@ -68,7 +70,9 @@ for run in range(1):
         fail_sentences = []
         right_predictions = 0.0
         total_predictions = 0
-        for epoch in range(10):
+        epochs = 25
+        for epoch in range(epochs):
+            print('Epoch ' + str(epoch) + '/' + str(epochs))
             smatch_train_results = smatch_util.SmatchAccumulator()
             for (sentence, actions, original_sentence, original_actions, amr, concepts_metadata) in train:
                 loss = None

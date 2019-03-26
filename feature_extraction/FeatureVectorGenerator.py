@@ -24,7 +24,7 @@ composed_label_binarizer.fit(range(5 + 2 * len(__AMR_RELATIONS)))
 
 
 def extract_data_components(train_data, test_data):
-    data = train_data + test_data
+    data = np.concatenate((train_data, test_data))
 
     sentences = [d.sentence for d in data]
 
