@@ -61,7 +61,7 @@ def extract_data_components(train_data, test_data):
     test_amr_ids = amr_ids[num_train_samples:]
 
     return x_train, y_train, x_test, y_test, dependencies_train, dependencies_test, \
-           train_amr_ids, test_amr_ids, named_entities, date_entities, word_index
+        train_amr_ids, test_amr_ids, named_entities, date_entities, word_index
 
 
 def generate_feature_vectors(x, y, dependencies, amr_ids, max_len, index_to_word_map, no_word_index):
@@ -78,6 +78,7 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, max_len, index_to_word
 
     x_full = np.zeros((len(x) - filtered_count, max_len, 15), dtype=np.int32)
     y_full = np.zeros((len(y) - filtered_count, max_len, 5), dtype=np.int32)
+    # y_full = np.zeros((len(y) - filtered_count, max_len, 5 + 2 * len(__AMR_RELATIONS)), dtype=np.int32)
 
     action_sequences = []
     i = 0
@@ -151,7 +152,8 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, max_len, index_to_word
             features_matrix.append(features)
         if tokens_sequence_index != len(tokens_sequence):
             logging.warn("There was a problem at training instance %d at %s. Actions %s. Tokens %s", i, amr_id,
-                         actions_to_string(action_sequence), tokens_to_sentence(tokens_sequence, index_to_word_map))
+                         actions_to_string([act.index for act in action_sequence]),
+                         tokens_to_sentence(tokens_sequence, index_to_word_map))
             exception_count += 1
             continue
             # raise Exception("There was a problem at training instance " + str(i) + " at " + amr_id + "\n")
@@ -170,15 +172,15 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, max_len, index_to_word
             if action.index == -1:
                 y_train_instance_matrix.append(
                     composed_label_binarizer.transform([5 + __AMR_RELATIONS.index(action.label)])[0, :])
-            elif action.index == -1:
+            elif action.index == -2:
                 y_train_instance_matrix \
                     .append(composed_label_binarizer.transform([5 + len(__AMR_RELATIONS) +
                                                                 __AMR_RELATIONS.index(action.label)])[0, :])
             else:
-                # y_train_instance_matrix.append(composed_label_binarizer.transform([r.index])[0, :])
+                # y_train_instance_matrix.append(composed_label_binarizer.transform([action.index])[0, :])
                 y_train_instance_matrix.append(label_binarizer.transform([action.index])[0, :])
         for j in range(max_len - len(action_sequence)):
-            # y_train_instance_matrix.append(composed_label_binarizer.transform([1000])[0, :])
+            # y_train_instance_matrix.append(composed_label_binarizer.transform([-1])[0, :])
             y_train_instance_matrix.append(label_binarizer.transform([-1])[0, :])
         y_full[i, :, :] = y_train_instance_matrix
 

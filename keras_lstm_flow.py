@@ -10,6 +10,7 @@ from keras.preprocessing.text import Tokenizer
 import logging
 
 from definitions import PROJECT_ROOT_DIR
+from constants import __AMR_RELATIONS
 from Baseline import reentrancy_restoring
 from amr_util.KerasPlotter import plot_history
 from postprocessing import ActionSequenceReconstruction as asr
@@ -150,23 +151,23 @@ def make_prediction(model, x_test, deps, no_word_index, max_len):
         dep_0_on_b = 0
         dep_b_on_0 = 0
 
-        if stack_token0[0][current_step] in deps.keys() and deps[stack_token0[0][current_step]][0] == stack_token1[0][
-            current_step]:
+        if stack_token0[0][current_step] in deps.keys() and \
+                deps[stack_token0[0][current_step]][0] == stack_token1[0][current_step]:
             dep_0_on_1 = 1
-        if stack_token1[0][current_step] in deps.keys() and deps[stack_token1[0][current_step]][0] == stack_token0[0][
-            current_step]:
+        if stack_token1[0][current_step] in deps.keys() and \
+                deps[stack_token1[0][current_step]][0] == stack_token0[0][current_step]:
             dep_1_on_0 = 1
-        if stack_token0[0][current_step] in deps.keys() and deps[stack_token0[0][current_step]][0] == stack_token2[0][
-            current_step]:
+        if stack_token0[0][current_step] in deps.keys() and \
+                deps[stack_token0[0][current_step]][0] == stack_token2[0][current_step]:
             dep_0_on_2 = 1
-        if stack_token2[0][current_step] in deps.keys() and deps[stack_token2[0][current_step]][0] == stack_token0[0][
-            current_step]:
+        if stack_token2[0][current_step] in deps.keys() and \
+                deps[stack_token2[0][current_step]][0] == stack_token0[0][current_step]:
             dep_2_on_0 = 1
-        if stack_token0[0][current_step] in deps.keys() and deps[stack_token0[0][current_step]][0] == buffer_token[0][
-            current_step]:
+        if stack_token0[0][current_step] in deps.keys() and \
+                deps[stack_token0[0][current_step]][0] == buffer_token[0][current_step]:
             dep_0_on_b = 1
-        if buffer_token[0][current_step] in deps.keys() and deps[buffer_token[0][current_step]][0] == stack_token0[0][
-            current_step]:
+        if buffer_token[0][current_step] in deps.keys() and \
+                deps[buffer_token[0][current_step]][0] == stack_token0[0][current_step]:
             dep_b_on_0 = 1
         dep_info[0][current_step] = [dep_0_on_1, dep_1_on_0, dep_0_on_2, dep_2_on_0, dep_0_on_b, dep_b_on_0]
     print 'Buffer and stack at end of prediction'
@@ -175,6 +176,7 @@ def make_prediction(model, x_test, deps, no_word_index, max_len):
     return final_prediction
 
 
+'''
 def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids, index_to_word_map):
     lengths = []
     filtered_count = 0
@@ -266,16 +268,40 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids, index_
         i += 1
     logging.warning("Exception count " + str(exception_count))
     return x_full, y_full, lengths, filtered_count
+'''
 
 
 def generate_tokenizer(tokenizer_path):
     test_data_sentences = [d.sentence for d in DatasetLoader.read_data('test', cache=False)]
     train_data_sentences = [d.sentence for d in DatasetLoader.read_data('training', cache=False)]
     dev_data_sentences = [d.sentence for d in DatasetLoader.read_data('dev', cache=False)]
+
     sentences = test_data_sentences + train_data_sentences + dev_data_sentences
+
     tokenizer = Tokenizer(filters="", lower=True, split=" ")
     tokenizer.fit_on_texts(sentences)
     pickle.dump(tokenizer, open(tokenizer_path, "wb"))
+
+
+def extract_amr_relations_from_dataset(file_path):
+    test_data_action_sequences = [d.action_sequence for d in DatasetLoader.read_data('test', cache=True)]
+    train_data_action_sequences = [d.action_sequence for d in DatasetLoader.read_data('training', cache=True)]
+    dev_data_action_sequences = [d.action_sequence for d in DatasetLoader.read_data('dev', cache=True)]
+
+    action_sequences = test_data_action_sequences + train_data_action_sequences + dev_data_action_sequences
+
+    amr_relations_set = set()
+    for action_sequence in action_sequences:
+        for action in action_sequence:
+            if action.action == "RL" or action.action == "RR":
+                amr_relations_set.add(action.label)
+
+    amr_relations_list = list(amr_relations_set)
+    amr_relations_list.sort()
+
+    with open(file_path, "w") as f:
+        for rel in amr_relations_list:
+            f.write("%s\n" % rel)
 
 
 def get_optimizer():
@@ -354,8 +380,7 @@ def get_model(word_index, max_len, embedding_dim, embedding_matrix):
 
 def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_epochs=35, embedding_dim=100):
     model_path = PROJECT_ROOT_DIR + '/trained_models/{}'.format(model_name)
-    print 'Model path is:'
-    print model_path
+    print "Model path is: %s" % model_path
 
     '''
     data = train_data + test_data
@@ -414,8 +439,9 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     dependencies_test = dependencies[num_train_samples:]
     '''
 
-    x_train, y_train, x_test, y_test, dependencies_train, dependencies_test, train_amr_ids, test_amr_ids, \
-    named_entities, date_entities, word_index = FeatureVectorGenerator.extract_data_components(train_data, test_data)
+    x_train, y_train, x_test, y_test, dependencies_train, dependencies_test, \
+    train_amr_ids, test_amr_ids, named_entities, date_entities, word_index = \
+        FeatureVectorGenerator.extract_data_components(train_data, test_data)
 
     print 'Training data shape: '
     print x_train.shape
@@ -434,15 +460,13 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     index_to_word_map = {v: k for k, v in word_index.iteritems()}
     no_word_index = (len(word_index)) + 1
 
-    (x_train_full, y_train_full, lengths_train,
-     filtered_count_tr) = FeatureVectorGenerator.generate_feature_vectors(x_train, y_train,
-                                                                          dependencies_train, train_amr_ids, max_len,
-                                                                          index_to_word_map, no_word_index)
+    (x_train_full, y_train_full, lengths_train, filtered_count_tr) = \
+        FeatureVectorGenerator.generate_feature_vectors(x_train, y_train, dependencies_train, train_amr_ids,
+                                                        max_len, index_to_word_map, no_word_index)
 
-    (x_test_full, y_test_full, lengths_test,
-     filtered_count_test) = FeatureVectorGenerator.generate_feature_vectors(x_test, y_test,
-                                                                            dependencies_test, test_amr_ids, max_len,
-                                                                            index_to_word_map, no_word_index)
+    (x_test_full, y_test_full, lengths_test, filtered_count_test) = \
+        FeatureVectorGenerator.generate_feature_vectors(x_test, y_test, dependencies_test, test_amr_ids,
+                                                        max_len, index_to_word_map, no_word_index)
 
     y_train_ohe = y_train_full
     y_test_ohe = y_test_full
@@ -487,8 +511,7 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
 
     print "Mean length %s " % np.asarray(lengths_train).mean()
     print "Max length %s" % np.asarray(lengths_train).max()
-    print "Filtered"
-    print (filtered_count_tr)
+    print "Filtered %s" % filtered_count_tr
     print "Final train data shape"
     print (x_train_full.shape)
     print "Final test data shape"
@@ -515,6 +538,7 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     model.load_weights(model_path, by_name=False)
 
     smatch_results = smatch_util.SmatchAccumulator()
+
     errors = 0
 
     amrs_test = [d.original_amr for d in test_data]
@@ -647,9 +671,9 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
 
     no_word_index = (len(word_index)) + 1
 
-    (x_test_full, y_test_full, lengths_test, filtered_count_test) = generate_dataset(x_test, y_test, dependencies_test,
-                                                                                     no_word_index, max_len,
-                                                                                     test_amr_ids, index_to_word_map)
+    x_test_full, y_test_full, lengths_test, filtered_count_test = \
+        FeatureVectorGenerator.generate_feature_vectors(x_test, y_test, dependencies_test,
+                                                        no_word_index, max_len, test_amr_ids, index_to_word_map)
 
     y_test_ohe = np.zeros((y_test_full.shape[0], max_len, 5), dtype='int32')
     for row, i in zip(y_test_full[:, :], range(y_test_full.shape[0])):
@@ -828,12 +852,12 @@ if __name__ == "__main__":
     tokenizer_path = PROJECT_ROOT_DIR + "/tokenizers/full_tokenizer_extended.dump"
     # generate_tokenizer(tokenizer_path)
 
-    data_set = 'all'
-    epoch = 50
+    data_set = 'xinhua'
+    epoch = 1
     max_len = 30
     embeddings_dim = 200
-    train_data_path = 'all'
-    test_data_path = 'all'
+    train_data_path = 'xinhua'
+    test_data_path = 'xinhua'
     model_name = '{}_epochs={}_maxlen={}_embeddingsdim={}'.format(data_set, epoch, max_len, embeddings_dim)
 
     if train_data_path == 'all':
