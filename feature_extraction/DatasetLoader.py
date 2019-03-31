@@ -1,14 +1,14 @@
 from os import listdir, path, makedirs
 import pickle as js
 
-from definitions import PROJECT_ROOT_DIR
+from definitions import AMR_ALIGNMENTS_SPLIT
 from TrainingDataExtractor import generate_training_data
 
 
 def read_data(type, filter_path="deft", cache=True):
     if filter_path is None:
         filter_path = "deft"
-    dir_path = PROJECT_ROOT_DIR + '/resources/alignments/split/' + type
+    dir_path = AMR_ALIGNMENTS_SPLIT + "/" + type
     print(dir_path + " with filter " + filter_path)
 
     parsed_data = []

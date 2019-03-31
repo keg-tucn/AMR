@@ -7,10 +7,8 @@ from keras.layers import Input, Embedding, LSTM, Dense, concatenate, TimeDistrib
 from keras.models import Model
 from keras.optimizers import SGD
 from keras.preprocessing.text import Tokenizer
-import logging
 
-from definitions import PROJECT_ROOT_DIR
-from constants import __AMR_RELATIONS
+from definitions import PROJECT_ROOT_DIR, GLOVE_EMBEDDINGS, TOKENIZER_PATH
 from Baseline import reentrancy_restoring
 from amr_util.KerasPlotter import plot_history
 from postprocessing import ActionSequenceReconstruction as asr
@@ -170,13 +168,13 @@ def make_prediction(model, x_test, deps, no_word_index, max_len):
                 deps[buffer_token[0][current_step]][0] == stack_token0[0][current_step]:
             dep_b_on_0 = 1
         dep_info[0][current_step] = [dep_0_on_1, dep_1_on_0, dep_0_on_2, dep_2_on_0, dep_0_on_b, dep_b_on_0]
-    print 'Buffer and stack at end of prediction'
+    print "Buffer and stack at end of prediction"
     print tokens_buffer
     print tokens_stack
     return final_prediction
 
 
-'''
+"""
 def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids, index_to_word_map):
     lengths = []
     filtered_count = 0
@@ -268,25 +266,32 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids, index_
         i += 1
     logging.warning("Exception count " + str(exception_count))
     return x_full, y_full, lengths, filtered_count
-'''
+"""
 
 
-def generate_tokenizer(tokenizer_path):
-    test_data_sentences = [d.sentence for d in DatasetLoader.read_data('test', cache=False)]
-    train_data_sentences = [d.sentence for d in DatasetLoader.read_data('training', cache=False)]
-    dev_data_sentences = [d.sentence for d in DatasetLoader.read_data('dev', cache=False)]
+def generate_parsed_data_files():
+    DatasetLoader.read_data("training", cache=False)
+    DatasetLoader.read_data("dev", cache=False)
+    DatasetLoader.read_data("test", cache=False)
+
+
+def generate_tokenizer():
+    test_data_sentences = [d.sentence for d in DatasetLoader.read_data("test", cache=True)]
+    train_data_sentences = [d.sentence for d in DatasetLoader.read_data("training", cache=True)]
+    dev_data_sentences = [d.sentence for d in DatasetLoader.read_data("dev", cache=True)]
 
     sentences = test_data_sentences + train_data_sentences + dev_data_sentences
 
     tokenizer = Tokenizer(filters="", lower=True, split=" ")
     tokenizer.fit_on_texts(sentences)
-    pickle.dump(tokenizer, open(tokenizer_path, "wb"))
+
+    pickle.dump(tokenizer, open(TOKENIZER_PATH, "wb"))
 
 
 def extract_amr_relations_from_dataset(file_path):
-    test_data_action_sequences = [d.action_sequence for d in DatasetLoader.read_data('test', cache=True)]
-    train_data_action_sequences = [d.action_sequence for d in DatasetLoader.read_data('training', cache=True)]
-    dev_data_action_sequences = [d.action_sequence for d in DatasetLoader.read_data('dev', cache=True)]
+    test_data_action_sequences = [d.action_sequence for d in DatasetLoader.read_data("test", cache=True)]
+    train_data_action_sequences = [d.action_sequence for d in DatasetLoader.read_data("training", cache=True)]
+    dev_data_action_sequences = [d.action_sequence for d in DatasetLoader.read_data("dev", cache=True)]
 
     action_sequences = test_data_action_sequences + train_data_action_sequences + dev_data_action_sequences
 
@@ -309,16 +314,16 @@ def get_optimizer():
 
 
 def get_embedding_matrix(word_index, embedding_dim=100):
-    special_cases_re = re.compile('''^([a-z])+-(?:entity|quantity)$''')
+    special_cases_re = re.compile("""^([a-z])+-(?:entity|quantity)$""")
     embeddings_index = {}
-    f = open(PROJECT_ROOT_DIR + '/resources/glove/glove.6B.{}d.txt'.format(embedding_dim))
+    f = open(GLOVE_EMBEDDINGS + "/" + "glove.6B.{}d.txt".format(embedding_dim))
     for line in f:
         values = line.split()
         word = values[0]
-        coefs = np.asarray(values[1:], dtype='float32')
+        coefs = np.asarray(values[1:], dtype="float32")
         embeddings_index[word] = coefs
     f.close()
-    print('Found %s word vectors.' % len(embeddings_index))
+    print("Found %s word vectors." % len(embeddings_index))
 
     embedding_matrix = np.zeros((len(word_index) + 2, embedding_dim))
     not_found = []
@@ -330,22 +335,22 @@ def get_embedding_matrix(word_index, embedding_dim=100):
         else:
             match = re.match(special_cases_re, word)
             if match:
-                print 'Embedding match for {}'.format(word)
+                print "Embedding match for {}".format(word)
                 embedding_vector = embeddings_index.get(match.group(1))
             else:
                 not_found.append(word)
 
-    print 'First 2 not found: {}'.format(not_found[2:4])
+    print "First 2 not found: {}".format(not_found[2:4])
     return embedding_matrix
 
 
 def get_model(word_index, max_len, embedding_dim, embedding_matrix):
-    buffer_input = Input(shape=(max_len,), dtype='int32')
-    stack_input_0 = Input(shape=(max_len,), dtype='int32')
-    stack_input_1 = Input(shape=(max_len,), dtype='int32')
-    stack_input_2 = Input(shape=(max_len,), dtype='int32')
-    prev_action_input = Input(shape=(max_len, 5), dtype='float32')
-    dep_info_input = Input(shape=(max_len, 6), dtype='float32')
+    buffer_input = Input(shape=(max_len,), dtype="int32")
+    stack_input_0 = Input(shape=(max_len,), dtype="int32")
+    stack_input_1 = Input(shape=(max_len,), dtype="int32")
+    stack_input_2 = Input(shape=(max_len,), dtype="int32")
+    prev_action_input = Input(shape=(max_len, 5), dtype="float32")
+    dep_info_input = Input(shape=(max_len, 6), dtype="float32")
 
     embedding = Embedding(len(word_index) + 2,
                           embedding_dim,
@@ -369,20 +374,21 @@ def get_model(word_index, max_len, embedding_dim, embedding_matrix):
 
     optimizer = get_optimizer()
     model.compile(optimizer=optimizer,
-                  loss='categorical_crossentropy',
-                  metrics=['accuracy'])
+                  loss="categorical_crossentropy",
+                  metrics=["accuracy"])
 
-    # plot_model(model, to_file='model.png')
+    # plot_model(model, to_file="model.png")
 
     print model.summary()
     return model
 
 
-def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_epochs=35, embedding_dim=100):
-    model_path = PROJECT_ROOT_DIR + '/trained_models/{}'.format(model_name)
+def train(model_name, train_data, test_data, max_len=30, train_epochs=35, embedding_dim=100,
+          with_output_semantic_labels=False):
+    model_path = PROJECT_ROOT_DIR + "/trained_models/{}".format(model_name)
     print "Model path is: %s" % model_path
 
-    '''
+    """
     data = train_data + test_data
 
     print "Data set total size %s" % len(data)
@@ -408,7 +414,7 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     sequences = np.asarray(tokenizer.texts_to_sequences(sentences))
 
     word_index = tokenizer.word_index
-    print 'Word index len: '
+    print "Word index len: "
     print len(word_index)
 
     indices = np.arange(sequences.shape[0])
@@ -437,16 +443,16 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     l_test = labels[num_train_samples:]
     amrs_test = amrs[num_train_samples:]
     dependencies_test = dependencies[num_train_samples:]
-    '''
+    """
 
     x_train, y_train, x_test, y_test, dependencies_train, dependencies_test, \
     train_amr_ids, test_amr_ids, named_entities, date_entities, word_index = \
         FeatureVectorGenerator.extract_data_components(train_data, test_data)
 
-    print 'Training data shape: '
+    print "Training data shape: "
     print x_train.shape
 
-    print 'Test data shape: '
+    print "Test data shape: "
     print x_test.shape
 
     # Prepare the proper data set:
@@ -462,16 +468,18 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
 
     (x_train_full, y_train_full, lengths_train, filtered_count_tr) = \
         FeatureVectorGenerator.generate_feature_vectors(x_train, y_train, dependencies_train, train_amr_ids,
-                                                        max_len, index_to_word_map, no_word_index)
+                                                        max_len, index_to_word_map, no_word_index,
+                                                        with_output_semantic_labels)
 
     (x_test_full, y_test_full, lengths_test, filtered_count_test) = \
         FeatureVectorGenerator.generate_feature_vectors(x_test, y_test, dependencies_test, test_amr_ids,
-                                                        max_len, index_to_word_map, no_word_index)
+                                                        max_len, index_to_word_map, no_word_index,
+                                                        with_output_semantic_labels)
 
     y_train_ohe = y_train_full
     y_test_ohe = y_test_full
 
-    '''
+    """
     data = np.concatenate((train_data, test_data))
     actions = [d.action_sequence for d in data]
     action_indices = [[a.index for a in actions_list] for actions_list in actions]
@@ -493,12 +501,12 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
                                              no_word_index, max_len,
                                              test_amr_ids, index_to_word_map)
 
-    y_train_ohe_old = np.zeros((y_train_full_old.shape[0], max_len, 5), dtype='int32')
+    y_train_ohe_old = np.zeros((y_train_full_old.shape[0], max_len, 5), dtype="int32")
     for row, i in zip(y_train_full_old[:, :], range(y_train_full_old.shape[0])):
         y_train_instance_matrix = label_binarizer.transform(row)
         y_train_ohe_old[i, :, :] = y_train_instance_matrix
 
-    y_test_ohe_old = np.zeros((y_test_full_old.shape[0], max_len, 5), dtype='int32')
+    y_test_ohe_old = np.zeros((y_test_full_old.shape[0], max_len, 5), dtype="int32")
     for row, i in zip(y_test_full_old[:, :], range(y_test_full_old.shape[0])):
         y_test_instance_matrix = label_binarizer.transform(row)
         y_test_ohe_old[i, :, :] = y_test_instance_matrix
@@ -507,7 +515,7 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     print(np.sum(np.subtract(y_train_ohe, y_train_ohe_old)))
     print(np.sum(np.subtract(x_test_full, x_test_full_old)))
     print(np.sum(np.subtract(y_test_ohe, y_test_ohe_old)))
-    '''
+    """
 
     print "Mean length %s " % np.asarray(lengths_train).mean()
     print "Max length %s" % np.asarray(lengths_train).max()
@@ -527,11 +535,11 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
                         epochs=train_epochs, batch_size=16,
                         validation_split=0.1,
                         callbacks=[
-                            ModelCheckpoint(model_path, monitor='val_acc', verbose=0, save_best_only=True,
+                            ModelCheckpoint(model_path, monitor="val_acc", verbose=0, save_best_only=True,
                                             save_weights_only=False,
-                                            mode='auto', period=1),
-                            EarlyStopping(monitor='val_acc', min_delta=0, patience=50, verbose=0,
-                                          mode='auto')])
+                                            mode="auto", period=1),
+                            EarlyStopping(monitor="val_acc", min_delta=0, patience=50, verbose=0,
+                                          mode="auto")])
 
     plot_history(history, model_name)
 
@@ -547,6 +555,7 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
     l_test = [[a.label for a in actions_list] for actions_list in test_action_sequences]
 
     for i in range(len(x_test)):
+        print "%d/%d" % (i, len(x_test))
         # Step1: input a processed test entity test
         prediction = make_prediction(model, x_test[i], dependencies_test[i], no_word_index, max_len)
 
@@ -554,12 +563,12 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
             act = asr.ActionConceptTransfer()
             act.load_from_action_and_label(y_test[i], l_test[i])
             pred_label = act.populate_new_actions(prediction)
-            print 'Predictions with old labels: '
+            print "Predictions with old labels: "
             print pred_label
 
             # Step2: output: Graph respecting the predicted structure
-            # Step2': predict concepts
-            # Step2'': predict relations
+            # Step2": predict concepts
+            # Step2"": predict relations
             # Step3: replace named entitities & date date_entities
 
             predicted_amr_str = asr.reconstruct_all_ne(pred_label, named_entities[i], date_entities[i])
@@ -573,31 +582,31 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
             predicted_amr = smatch_amr.AMR.parse_AMR_line(predicted_amr_str)
             smatch_f_score = smatch_results.compute_and_add(predicted_amr, original_amr)
 
-            print 'Original Amr'
+            print "Original Amr"
             print amrs_test[i]
-            print 'Predicted Amr'
+            print "Predicted Amr"
             print predicted_amr_str
-            print 'Smatch f-score %f' % smatch_f_score
+            print "Smatch f-score %f" % smatch_f_score
         else:
             errors += 1
 
     # modified to results_train_new
-    file = open(PROJECT_ROOT_DIR + '/results_keras/{}_results_train_new'.format(model_name), 'w')
+    file = open(PROJECT_ROOT_DIR + "/results_keras/{}_results_train_new".format(model_name), "w")
 
-    file.write('------------------------------------------------------------------------------------------------\n')
-    file.write('Train data shape: \n')
-    file.write(str(x_train.shape) + '\n')
-    file.write('Test data shape: ' + '\n')
-    file.write(str(x_test.shape) + '\n')
-    file.write("Final test data shape" + '\n')
-    file.write(str(x_test_full.shape) + '\n')
-    file.write("Final train data shape" + '\n')
-    file.write(str(x_train_full.shape) + '\n')
+    file.write("------------------------------------------------------------------------------------------------\n")
+    file.write("Train data shape: \n")
+    file.write(str(x_train.shape) + "\n")
+    file.write("Test data shape: " + "\n")
+    file.write(str(x_test.shape) + "\n")
+    file.write("Final test data shape" + "\n")
+    file.write(str(x_test_full.shape) + "\n")
+    file.write("Final train data shape" + "\n")
+    file.write(str(x_train_full.shape) + "\n")
     file.write("Mean train length %s \n" % np.asarray(lengths_train).mean())
     file.write("Max train length %s \n" % np.asarray(lengths_train).max())
     file.write("Filtered\n")
-    file.write(str(filtered_count_tr) + '\n')
-    file.write('Scores for model {}\n'.format(model_path))
+    file.write(str(filtered_count_tr) + "\n")
+    file.write("Scores for model {}\n".format(model_path))
 
     file.write("Min: %f\n" % np.min(smatch_results.smatch_scores))
     file.write("Max: %f\n" % np.max(smatch_results.smatch_scores))
@@ -607,18 +616,18 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
 
     accuracy = model.evaluate([x_test_full[:, :, 0], x_test_full[:, :, 1], x_test_full[:, :, 2], x_test_full[:, :, 3],
                                x_test_full[:, :, 4:9], x_test_full[:, :, 9:]], y_test_ohe)
-    file.write('Model test accuracy\n')
-    file.write(str(accuracy[1]) + '\n')
-    file.write('Errors\n')
-    file.write(str(errors) + '\n')
+    file.write("Model test accuracy\n")
+    file.write(str(accuracy[1]) + "\n")
+    file.write("Errors\n")
+    file.write(str(errors) + "\n")
 
     file.close()
 
 
-def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding_dim=100, with_reattach=False):
-    model_path = PROJECT_ROOT_DIR + '/trained_models/{}'.format(model_name)
-    print 'Model path is:'
-    print model_path
+def test(model_name, test_case_name, data, max_len=30, embedding_dim=100, with_reattach=False,
+         with_output_semantic_labels=False):
+    model_path = PROJECT_ROOT_DIR + "/trained_models/{}".format(model_name)
+    print "Model path is: %s" % model_path
 
     sentences = [d.sentence for d in data]
     amrs = [d.original_amr for d in data]
@@ -632,22 +641,24 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
     dependencies = [d.dependencies for d in data]
 
     named_entities = [d.named_entities for d in data]
-    date_entities = [d.date_entities for d in data]
     named_entities = [[(n[3], n[2]) for n in named_entities_list] for named_entities_list in named_entities]
+
+    date_entities = [d.date_entities for d in data]
     date_entities = [[(d[3], d[2], d[1]) for d in date_entities_list] for date_entities_list in date_entities]
 
-    tokenizer = pickle.load(open(tokenizer_path, "rb"))
+    tokenizer = pickle.load(open(TOKENIZER_PATH, "rb"))
+    word_index = tokenizer.word_index
 
     sequences = np.asarray(tokenizer.texts_to_sequences(sentences))
 
-    word_index = tokenizer.word_index
-    print 'Word index len: '
+    print "Word index len: "
     print len(word_index)
 
     indices = np.arange(sequences.shape[0])
     sequences = sequences[indices]
 
-    actions = np.asarray(action_indices)[indices]
+    # actions = np.asarray(action_indices)[indices]
+    actions = np.asarray(actions)[indices]
     labels = np.asarray(action_labels)[indices]
     dependencies = [dependencies[i] for i in indices]
 
@@ -659,7 +670,7 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
     amrs_test = amrs
     dependencies_test = dependencies
 
-    print 'Test data shape: '
+    print "Test data shape: "
     print x_test.shape
     print y_test.shape
     print amrs_test.shape
@@ -672,13 +683,19 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
     no_word_index = (len(word_index)) + 1
 
     x_test_full, y_test_full, lengths_test, filtered_count_test = \
-        FeatureVectorGenerator.generate_feature_vectors(x_test, y_test, dependencies_test,
-                                                        no_word_index, max_len, test_amr_ids, index_to_word_map)
+        FeatureVectorGenerator.generate_feature_vectors(x_test, y_test, dependencies_test, test_amr_ids,
+                                                        max_len, index_to_word_map, no_word_index,
+                                                        with_output_semantic_labels)
 
-    y_test_ohe = np.zeros((y_test_full.shape[0], max_len, 5), dtype='int32')
+    y_test = np.asarray(action_indices)[indices]
+
+    '''
+    y_test_ohe = np.zeros((y_test_full.shape[0], max_len, 5), dtype="int32")
     for row, i in zip(y_test_full[:, :], range(y_test_full.shape[0])):
         y_test_instance_matrix = label_binarizer.transform(row)
         y_test_ohe[i, :, :] = y_test_instance_matrix
+    '''
+    y_test_ohe = y_test_full
 
     model = get_model(word_index, max_len, embedding_dim, embedding_matrix)
 
@@ -692,18 +709,18 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
     for i in range(len(x_test)):
         prediction = make_prediction(model, x_test[i], dependencies_test[i], no_word_index, max_len)
         predictions.append(prediction)
-        print 'Sentence'
+        print "Sentence"
         pretty_print_sentence(x_test[i], index_to_word_map)
-        print 'Predicted'
+        print "Predicted"
         pretty_print_actions(prediction)
-        print 'Actual'
+        print "Actual"
         pretty_print_actions(y_test[i])
 
         if len(prediction) > 0:
             act = asr.ActionConceptTransfer()
             act.load_from_action_and_label(y_test[i], l_test[i])
             pred_label = act.populate_new_actions(prediction)
-            print 'Predictions with old labels: '
+            print "Predictions with old labels: "
             print pred_label
             if with_reattach is True:
                 predicted_amr_str = asr.reconstruct_all_ne(pred_label, named_entities[i], date_entities[i])
@@ -720,24 +737,24 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
             predicted_amr = smatch_amr.AMR.parse_AMR_line(predicted_amr_str)
             smatch_f_score = smatch_results.compute_and_add(predicted_amr, original_amr)
 
-            print 'Original Amr'
+            print "Original Amr"
             print amrs_test[i]
-            print 'Predicted Amr'
+            print "Predicted Amr"
             print predicted_amr_str
-            print 'Smatch f-score %f' % smatch_f_score
+            print "Smatch f-score %f" % smatch_f_score
         else:
             errors += 1
 
-    file = open(PROJECT_ROOT_DIR + '/results_keras/{}_results_test_{}'.format(model_name, test_case_name), 'w')
+    file = open(PROJECT_ROOT_DIR + "/results_keras/{}_results_test_{}".format(model_name, test_case_name), "w")
 
-    file.write('------------------------------------------------------------------------------------------------\n')
-    file.write('Test data shape: ' + '\n')
-    file.write(str(x_test.shape) + '\n')
-    file.write("Final test data shape" + '\n')
-    file.write(str(x_test_full.shape) + '\n')
+    file.write("------------------------------------------------------------------------------------------------\n")
+    file.write("Test data shape: " + "\n")
+    file.write(str(x_test.shape) + "\n")
+    file.write("Final test data shape" + "\n")
+    file.write(str(x_test_full.shape) + "\n")
     file.write("Filtered\n")
-    file.write(str(filtered_count_test) + '\n')
-    file.write('Scores for model {}\n'.format(model_path))
+    file.write(str(filtered_count_test) + "\n")
+    file.write("Scores for model {}\n".format(model_path))
 
     file.write("Min: %f\n" % np.min(smatch_results.smatch_scores))
     file.write("Max: %f\n" % np.max(smatch_results.smatch_scores))
@@ -747,18 +764,18 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
 
     accuracy = model.evaluate([x_test_full[:, :, 0], x_test_full[:, :, 1], x_test_full[:, :, 2], x_test_full[:, :, 3],
                                x_test_full[:, :, 4:9], x_test_full[:, :, 9:]], y_test_ohe)
-    file.write('Model test accuracy\n')
-    file.write(str(accuracy[1]) + '\n')
-    file.write('Errors\n')
-    file.write(str(errors) + '\n')
+    file.write("Model test accuracy\n")
+    file.write(str(accuracy[1]) + "\n")
+    file.write("Errors\n")
+    file.write(str(errors) + "\n")
 
     file.close()
     return predictions
 
 
 def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim=100, with_reattach=False):
-    model_path = PROJECT_ROOT_DIR + '/trained_models/{}'.format(model_name)
-    print 'Model path is:'
+    model_path = PROJECT_ROOT_DIR + "/trained_models/{}".format(model_name)
+    print "Model path is:"
     print model_path
 
     sentences = [d[0] for d in data]
@@ -772,7 +789,7 @@ def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim
     sequences = np.asarray(tokenizer.texts_to_sequences(sentences))
 
     word_index = tokenizer.word_index
-    print 'Word index len: '
+    print "Word index len: "
     print len(word_index)
 
     indices = np.arange(sequences.shape[0])
@@ -783,7 +800,7 @@ def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim
     x_test = sequences
     dependencies_test = dependencies
 
-    print 'Test data shape: '
+    print "Test data shape: "
     print x_test.shape
     print len(dependencies_test)
 
@@ -799,15 +816,15 @@ def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim
 
     for i in range(len(x_test)):
         prediction = make_prediction(model, x_test[i], dependencies_test[i], no_word_index, max_len)
-        print 'Sentence'
+        print "Sentence"
         pretty_print_sentence(x_test[i], index_to_word_map)
-        print 'Predicted'
+        print "Predicted"
         pretty_print_actions(prediction)
 
         if len(prediction) > 0:
             act = asr.ActionConceptTransfer()
             pred_label = act.populate_new_actions(prediction)
-            print 'AMR skeleton without labels: '
+            print "AMR skeleton without labels: "
             print pred_label
 
             if with_reattach is True:
@@ -821,56 +838,55 @@ def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim
                 if coref_handling:
                     predicted_amr_str = reentrancy_restoring(predicted_amr_str)
 
-            print 'Predicted Amr'
+            print "Predicted Amr"
             print predicted_amr_str
 
     return prediction
 
 
-def train_file(model_name, tokenizer_path, train_data_path=None, test_data_path=None, max_len=30, train_epochs=35,
-               embedding_dim=100):
-    test_data = np.asarray(DatasetLoader.read_data('test', test_data_path, cache=True), dtype=object)
-    train_data = np.asarray(DatasetLoader.read_data('training', train_data_path, cache=True), dtype=object)
+def train_file(model_name, train_data_path=None, test_data_path=None, max_len=30, train_epochs=35,
+               embedding_dim=100, with_output_semantic_labels=False):
+    test_data = np.asarray(DatasetLoader.read_data("test", test_data_path, cache=True), dtype=object)
+    train_data = np.asarray(DatasetLoader.read_data("training", train_data_path, cache=True), dtype=object)
 
-    train(model_name, tokenizer_path, train_data, test_data, max_len, train_epochs, embedding_dim)
+    train(model_name, train_data, test_data, max_len, train_epochs, embedding_dim, with_output_semantic_labels)
 
 
-def test_file(model_name, tokenizer_path, test_case_name, test_data_path, max_len=30, embedding_dim=100,
-              test_source="test",
-              with_reattach=False):
-    data = DatasetLoader.read_data(test_source, test_data_path)
-    return test(model_name, tokenizer_path, test_case_name, data, max_len, embedding_dim, with_reattach=with_reattach)
+def test_file(model_name, test_case_name, test_data_path, max_len=30,
+              embedding_dim=100, test_source="test", with_reattach=False, with_output_semantic_labels=False):
+    data = np.asarray(DatasetLoader.read_data(test_source, test_data_path, cache=True), dtype=object)
+    return test(model_name, test_case_name, data, max_len, embedding_dim, with_reattach=with_reattach,
+                with_output_semantic_labels=with_output_semantic_labels)
 
 
 if __name__ == "__main__":
-    data_sets = ['xinhua', 'bolt', 'proxy', 'dfa', 'all']
+    data_sets = ["xinhua", "bolt", "proxy", "dfa", "all"]
     max_lens = [30, 30, 30, 30, 30]
     embeddings_dims = [200, 200, 300, 200, 200]
     epochs = [50, 50, 50, 50, 20]
-    test_source = 'dev'
+    test_source = "dev"
 
-    tokenizer_path = PROJECT_ROOT_DIR + "/tokenizers/full_tokenizer_extended.dump"
-    # generate_tokenizer(tokenizer_path)
+    # generate_parsed_data_files()
+    # generate_tokenizer()
 
-    data_set = 'xinhua'
+    data_set = "xinhua"
     epoch = 1
     max_len = 30
     embeddings_dim = 200
-    train_data_path = 'xinhua'
-    test_data_path = 'xinhua'
-    model_name = '{}_epochs={}_maxlen={}_embeddingsdim={}'.format(data_set, epoch, max_len, embeddings_dim)
+    train_data_path = "xinhua"
+    test_data_path = "xinhua"
+    model_name = "{}_epochs={}_maxlen={}_embeddingsdim={}".format(data_set, epoch, max_len, embeddings_dim)
+    with_output_semantic_labels = False
 
-    if train_data_path == 'all':
+    if train_data_path == "all":
         train_data_path = None
-    if test_data_path == 'all':
+    if test_data_path == "all":
         test_data_path = None
 
-    train_file(model_name=model_name,
-               tokenizer_path=tokenizer_path,
-               train_data_path=train_data_path,
-               test_data_path=test_data_path, max_len=max_len,
-               train_epochs=epoch, embedding_dim=embeddings_dim)
-    test_file(model_name, tokenizer_path=tokenizer_path,
-              test_case_name=test_data_path,
-              test_data_path=test_data_path, max_len=max_len,
-              embedding_dim=embeddings_dim, test_source="dev", with_reattach=True)
+    train_file(model_name=model_name, train_data_path=train_data_path, test_data_path=test_data_path,
+               max_len=max_len, train_epochs=epoch, embedding_dim=embeddings_dim,
+               with_output_semantic_labels=with_output_semantic_labels)
+
+    test_file(model_name, test_case_name=test_data_path, test_data_path=test_data_path,
+              max_len=max_len, embedding_dim=embeddings_dim, test_source="dev", with_reattach=True,
+              with_output_semantic_labels=with_output_semantic_labels)

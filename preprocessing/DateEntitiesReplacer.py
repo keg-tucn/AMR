@@ -1,6 +1,6 @@
 from nltk.tag import StanfordNERTagger
 
-from preprocessing import STANFORD_NER_MODEL, STANFORD_NER_JAR
+from definitions import STANFORD_NER_MODEL, STANFORD_NER_JAR
 
 
 def process_sentence(sentence):

@@ -1,6 +1,6 @@
 import jpype
 
-from stanford_parser import STANFORD_DEP_PARSER_HOME
+from definitions import STANFORD_DEP_PARSER_HOME
 from standoff import TextStandoff
 
 
