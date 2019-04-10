@@ -8,6 +8,7 @@ from keras.models import Model
 from keras.optimizers import SGD
 from keras.preprocessing.text import Tokenizer
 
+from constants import __AMR_RELATIONS
 from definitions import PROJECT_ROOT_DIR, GLOVE_EMBEDDINGS, TOKENIZER_PATH
 from Baseline import reentrancy_restoring
 from amr_util.KerasPlotter import plot_history
@@ -344,13 +345,14 @@ def get_embedding_matrix(word_index, embedding_dim=100):
     return embedding_matrix
 
 
-def get_model(word_index, max_len, embedding_dim, embedding_matrix):
+def get_model(word_index, max_len, embedding_dim, embedding_matrix, with_output_semantic_labels=False):
     buffer_input = Input(shape=(max_len,), dtype="int32")
     stack_input_0 = Input(shape=(max_len,), dtype="int32")
     stack_input_1 = Input(shape=(max_len,), dtype="int32")
     stack_input_2 = Input(shape=(max_len,), dtype="int32")
     prev_action_input = Input(shape=(max_len, 5), dtype="float32")
-    dep_info_input = Input(shape=(max_len, 6), dtype="float32")
+    #dep_info_input = Input(shape=(max_len, 6), dtype="float32")
+    dep_info_input = Input(shape=(max_len, 6 * len(__AMR_RELATIONS)), dtype="float32")
 
     embedding = Embedding(len(word_index) + 2,
                           embedding_dim,
@@ -367,8 +369,10 @@ def get_model(word_index, max_len, embedding_dim, embedding_matrix):
 
     lstm_output = LSTM(1024, return_sequences=True)(x)
 
-    # dense = TimeDistributed(Dense(5 + 2 * len(__AMR_RELATIONS), activation="softmax"))(lstm_output)
-    dense = TimeDistributed(Dense(5, activation="softmax"))(lstm_output)
+    if with_output_semantic_labels:
+        dense = TimeDistributed(Dense(5 + 2 * len(__AMR_RELATIONS), activation="softmax"))(lstm_output)
+    else:
+        dense = TimeDistributed(Dense(5, activation="softmax"))(lstm_output)
 
     model = Model([buffer_input, stack_input_0, stack_input_1, stack_input_2, prev_action_input, dep_info_input], dense)
 
@@ -527,7 +531,7 @@ def train(model_name, train_data, test_data, max_len=30, train_epochs=35, embedd
 
     embedding_matrix = get_embedding_matrix(word_index, embedding_dim)
 
-    model = get_model(word_index, max_len, embedding_dim, embedding_matrix)
+    model = get_model(word_index, max_len, embedding_dim, embedding_matrix, with_output_semantic_labels)
 
     history = model.fit([x_train_full[:, :, 0], x_train_full[:, :, 1], x_train_full[:, :, 2], x_train_full[:, :, 3],
                          x_train_full[:, :, 4:9], x_train_full[:, :, 9:]],
@@ -869,12 +873,12 @@ if __name__ == "__main__":
     # generate_parsed_data_files()
     # generate_tokenizer()
 
-    data_set = "xinhua"
+    data_set = "r2"
     epoch = 1
     max_len = 30
     embeddings_dim = 200
-    train_data_path = "xinhua"
-    test_data_path = "xinhua"
+    train_data_path = "r2"
+    test_data_path = "r2"
     model_name = "{}_epochs={}_maxlen={}_embeddingsdim={}".format(data_set, epoch, max_len, embeddings_dim)
     with_output_semantic_labels = False
 

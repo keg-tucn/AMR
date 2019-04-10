@@ -12,7 +12,7 @@ each filter contains an is_ok method:
 """
 
 
-class NoMissingAllignmentInfoFilter():
+class NoMissingAllignmentInfoFilter:
 
     def __init__(self):
         self.name = "NoMissingAllignmentInfoFilter"
@@ -35,7 +35,7 @@ class NoMissingAllignmentInfoFilter():
         return len(unaligned_nodes) == 0
 
 
-class TreeFilter():
+class TreeFilter:
 
     def __init__(self):
         self.name = "TreeFilter"
@@ -65,9 +65,9 @@ class TreeFilter():
         return no_of_nodes - 1 == no_of_edges
 
 
-class TokenToNodeAlignmentFilter():
+class TokenToNodeAlignmentFilter:
     """
-    this filter checks there is a 1:0..n allignment between the tokens of a sentence and the nodes of the graph
+    this filter checks there is a 1:0..n alignment between the tokens of a sentence and the nodes of the graph
     """
 
     def __init__(self, n):
@@ -84,7 +84,7 @@ class TokenToNodeAlignmentFilter():
         return True
 
 
-class PerfectALignmentFilter():
+class PerfectAlignmentFilter:
     """
     this filter checks that for each token there is at most one node
     and for each node at least one token
@@ -97,7 +97,7 @@ class PerfectALignmentFilter():
         return is_perfectly_aligned(custom_amr)
 
 
-class ProjectiveTreeFilter():
+class ProjectiveTreeFilter:
     """
     this filter checks that the tokens in the sentence are in projective order
     preconditions: amr is an aligned tree

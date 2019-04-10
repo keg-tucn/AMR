@@ -1,58 +1,59 @@
 root	:NONE	---
-dep 	:mod	???
+dep	:mod	???
 
-aux 	:NONE	---
+aux	:NONE	---
 auxpass	:NONE	---
-cop 	:domain	---
+cop	:domain	---
 
-arg     :ARG0	???
+arg	:ARG0	???
 agent	:ARG0	---
 comp	:ARG1	???
 acomp	:ARG1	---
 ccomp	:ARG1	???
 xcomp	:ARG1	---
-obj     :ARG1	???
+obj	:ARG1	???
 dobj	:ARG1	---
 iobj	:ARG2	---
 pobj	:NONE	---
+
 subj	:ARG0	---
 nsubj	:ARG0	---
 nsubjpass	:ARG1	---
 csubj	:ARG0	---
 csubjpass	:ARG1	---
 
-cc	    :NONE	---
+cc	:NONE	---
 conj	:NONE	---
 expl	:NONE	---
 
-mod	    :mod	???
+mod	:mod	???
 amod	:mod	---
 appos	:name	---
 advcl	:mod	???
-det	    :NONE	---
+det	:NONE	---
 predet	:NONE	---
 preconj	:NONE	---
 vmod	:mod	---
-mwe	    :NONE	---
+mwe	:NONE	---
 mark	:NONE	---
 advmod	:mod	---
-neg	    :polarity-	---
-rcmod	:mod	???	
+neg	:polarity	---
+rcmod	:mod	???
 quantmod	:time	---
-nn	    :NONE	---
+nn	:NONE	---
 npadvmod	:mod	---
 tmod	:mod	???
-num	    :quant	---
+num	:quant	---
 number	:quant	---
 prep	:mod	---
 poss	:poss	---
 possessive	:NONE	---
-prt	    :NONE	---
+prt	:NONE	---
 
 parataxis	:NONE	---
 punct	:NONE	---
-ref	    :NONE	---
-sdep	:ARG0	??? 
+ref	:NONE	---
+sdep	:ARG0	???
 xsubj	:ARG0	---
 
 discourse	:NONE	---

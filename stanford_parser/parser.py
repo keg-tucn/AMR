@@ -68,9 +68,6 @@ class Dependencies:
         return result
 
 
-stanford_parser_home = None
-
-
 def startJvm():
     jpype.startJVM(jpype.getDefaultJVMPath(),
                    "-ea",

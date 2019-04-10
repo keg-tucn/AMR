@@ -20,6 +20,9 @@ label_binarizer.fit(range(5))
 composed_label_binarizer = sklearn.preprocessing.LabelBinarizer()
 composed_label_binarizer.fit(range(5 + 2 * len(__AMR_RELATIONS)))
 
+amr_rel_binarizer = sklearn.preprocessing.LabelBinarizer()
+amr_rel_binarizer.fit(range(len(__AMR_RELATIONS)))
+
 
 def extract_data_components(train_data, test_data):
     data = np.concatenate((train_data, test_data))
@@ -62,6 +65,14 @@ def extract_data_components(train_data, test_data):
            train_amr_ids, test_amr_ids, named_entities, date_entities, word_index
 
 
+def embedd_amr_relation(amr_rel):
+    if amr_rel is not None and amr_rel != 'NONE':
+        amr_rel_idx = __AMR_RELATIONS.index(amr_rel)
+        return amr_rel_binarizer.transform([amr_rel_idx])[0, :]
+    else:
+        return amr_rel_binarizer.transform([-1])[0, :]
+
+
 def generate_feature_vectors(x, y, dependencies, amr_ids, max_len,
                              index_to_word_map, no_word_index, with_output_semantic_labels):
     lengths = []
@@ -76,6 +87,7 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, max_len,
             continue
 
     x_full = np.zeros((len(x) - filtered_count, max_len, 15), dtype=np.int32)
+    # x_full = np.zeros((len(x) - filtered_count, max_len, 9 + 6 * len(__AMR_RELATIONS)), dtype=np.int32)
 
     if with_output_semantic_labels:
         y_full = np.zeros((len(y) - filtered_count, max_len, 5 + 2 * len(__AMR_RELATIONS)), dtype=np.int32)
@@ -108,28 +120,55 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, max_len,
             dep_2_on_0 = 0
             dep_0_on_b = 0
             dep_b_on_0 = 0
+            # dep_0_on_1 = None
+            # dep_1_on_0 = None
+            # dep_0_on_2 = None
+            # dep_2_on_0 = None
+            # dep_0_on_b = None
+            # dep_b_on_0 = None
+
             if next_action_stack[0] in dependencies.keys() and dependencies[next_action_stack[0]][0] == \
                     next_action_stack[1]:
                 dep_0_on_1 = 1
+                # dep_0_on_1 = get_fake_amr_relation_mapping(dependencies[next_action_stack[0]][1])
             if next_action_stack[1] in dependencies.keys() and dependencies[next_action_stack[1]][0] == \
                     next_action_stack[0]:
                 dep_1_on_0 = 1
+                # dep_1_on_0 = get_fake_amr_relation_mapping(dependencies[next_action_stack[1]][1])
             if next_action_stack[0] in dependencies.keys() and dependencies[next_action_stack[0]][0] == \
                     next_action_stack[2]:
                 dep_0_on_2 = 1
+                # dep_0_on_2 = get_fake_amr_relation_mapping(dependencies[next_action_stack[0]][1])
             if next_action_stack[2] in dependencies.keys() and dependencies[next_action_stack[2]][0] == \
                     next_action_stack[0]:
                 dep_2_on_0 = 1
+                # dep_2_on_0 = get_fake_amr_relation_mapping(dependencies[next_action_stack[2]][1])
             if next_action_stack[0] in dependencies.keys() and dependencies[next_action_stack[0]][0] == \
                     next_action_token:
                 dep_0_on_b = 1
-            if next_action_token in dependencies.keys() and dependencies[next_action_token][0] == next_action_stack[0]:
+                # dep_0_on_b = get_fake_amr_relation_mapping(dependencies[next_action_stack[0]][1])
+            if next_action_token in dependencies.keys() and dependencies[next_action_token][0] == \
+                    next_action_stack[0]:
                 dep_b_on_0 = 1
+                # dep_b_on_0 = get_fake_amr_relation_mapping(dependencies[next_action_token][1])
+
             features = np.concatenate((np.asarray([next_action_token, next_action_stack[0],
                                                    next_action_stack[1], next_action_stack[2]]),
                                        next_action_prev_action_ohe,
-                                       np.asarray(
-                                           [dep_0_on_1, dep_1_on_0, dep_0_on_2, dep_2_on_0, dep_0_on_b, dep_b_on_0])))
+                                       np.asarray([dep_0_on_1, dep_1_on_0, dep_0_on_2,
+                                                   dep_2_on_0, dep_0_on_b, dep_b_on_0])))
+
+            # features = np.concatenate((np.asarray([next_action_token, next_action_stack[0],
+            #                                        next_action_stack[1], next_action_stack[2]]),
+            #                            next_action_prev_action_ohe,
+            #                            np.concatenate(
+            #                                (embedd_amr_relation(dep_0_on_1),
+            #                                 embedd_amr_relation(dep_1_on_0),
+            #                                 embedd_amr_relation(dep_0_on_2),
+            #                                 embedd_amr_relation(dep_2_on_0),
+            #                                 embedd_amr_relation(dep_0_on_b),
+            #                                 embedd_amr_relation(dep_b_on_0)))))
+
             if action == SH:
                 tokens_sequence_index += 1
                 next_action_stack = [next_action_token] + next_action_stack
@@ -162,6 +201,10 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, max_len,
 
         features_matrix = np.concatenate((np.asarray(features_matrix),
                                           np.zeros((max_len - len(features_matrix), 15), dtype=np.int32)))
+
+        # features_matrix = np.concatenate((np.asarray(features_matrix),
+        #                                  np.zeros((max_len - len(features_matrix), 9 + 6 * len(__AMR_RELATIONS)),
+        #                                           dtype=np.int32)))
 
         action_sequences.append(action_sequence)
         x_full[i, :, :] = features_matrix
