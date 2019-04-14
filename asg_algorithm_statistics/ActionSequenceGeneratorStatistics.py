@@ -2,6 +2,7 @@ import logging
 import copy
 import sys
 
+from definitions import PROJECT_ROOT_DIR
 from models import AMRData
 from preprocessing import SentenceAMRPairsExtractor
 from preprocessing.action_sequence_generators.backtracking_asg import BacktrackingASGFixedReduce
@@ -201,7 +202,7 @@ class ActionSeqGenStatistics:
                 print("Exception when creating custom AMR\n")  # => twice
 
             try:
-                coreferences_count = TrainingDataStats.get_coreferences_count(custom_amr)
+                coreferences_count = TrainingDataStats.get_coreference_count(custom_amr)
             except:
                 print("Exception when getting coreference count\n")
 
@@ -309,25 +310,11 @@ data_sets = {"training": ["bolt", "cctv", "dfa", "dfb", "guidelines", "mt09sdl",
              "dev": ["bolt", "consensus", "dfa", "proxy", "xinhua"],
              "test": ["bolt", "consensus", "dfa", "proxy", "xinhua"]}
 
-# splits = ["training"]
-# data_sets = {"training":["dfa"]}
-# data_sets = {"training":["bolt"]}
-# alg_version = "swap_1"
-
-"""
-Inputs (command line arguments):
-    argv[1]: the type of alg ("simple","backtrack")
-    argv[2]: the sentence length min (sentence_len >= min)
-    argv[3]: the sentence length max (sentence_len < max)
-    argv[4]: no of swaps
-    argv[5]: should rotate ("yes","no")
-"""
-
-input_min_sentence_len = int(sys.argv[2])
-input_max_sentence_len = int(sys.argv[3])
-input_no_of_swaps = int(sys.argv[4])
-input_should_rotate = (sys.argv[5] == "yes")
-alg_version = sys.argv[1]
+input_min_sentence_len = 1
+input_max_sentence_len = 50
+input_no_of_swaps = 2
+input_should_rotate = True
+alg_version = "simple"
 
 # go over all data (training, dev, tests) and construct histograms for eac datasetl
 for split in splits:
@@ -340,7 +327,7 @@ for split in splits:
     sentence_lengths_all = [0] * MAX_SENTENCE_LEN
     sentence_lengths_success = [0] * MAX_SENTENCE_LEN
     for data_set in data_sets[split]:
-        my_file_path = 'resources/alignments/split/' + split + "/" + "deft-p2-amr-r2-alignments-" + split + "-" + data_set + ".txt"
+        my_file_path = PROJECT_ROOT_DIR + '/resources/alignments/split/' + split + "/" + "deft-p2-amr-r2-alignments-" + split + "-" + data_set + ".txt"
         print("Generating statistics for " + my_file_path)
 
         asg_implementation = SimpleASG(input_no_of_swaps, input_should_rotate)

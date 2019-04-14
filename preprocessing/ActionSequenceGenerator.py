@@ -1,22 +1,7 @@
 import logging
 
 import models.Actions as act
-
-
-# roxanappop: start
-class SwapException(Exception):
-    pass
-
-
-class TokenOnStackException(Exception):
-    pass
-
-
-class RotateException(Exception):
-    pass
-
-
-# roxanappop: end
+from action_sequence_generators.asg_exceptions import *
 
 
 def generate_action_sequence(amr_graph, sentence, verbose=True):
