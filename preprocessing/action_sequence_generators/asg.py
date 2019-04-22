@@ -1,5 +1,5 @@
 import copy
-import models.Actions as act
+import models.actions as act
 
 
 class ASG:

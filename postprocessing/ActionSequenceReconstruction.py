@@ -1,11 +1,11 @@
 from collections import deque
 
-from models.AMRData import CustomizedAMR
-from models.AMRGraph import AMR
-from models.Node import Node
+from models.amr_data import CustomizedAMR
+from models.amr_graph import AMR
+from models.node import Node
 from preprocessing import ActionSequenceGenerator
 from preprocessing import TokensReplacer
-from models.Actions import AMRAction
+from models.actions import AMRAction
 
 VOCAB_ACTS = ['SH', 'RL', 'RR', 'DN', 'SW']
 SH = 0

@@ -180,13 +180,6 @@ def _load_rules(rule_file):
 __DEP_AMR_REL_TABLE = _load_rules(DEFAULT_RULE_FILE)
 
 
-def get_fake_amr_relation_mapping(dep_rel):
-    if dep_rel in __DEP_AMR_REL_TABLE:
-        return __DEP_AMR_REL_TABLE[dep_rel]
-    else:
-        return None
-
-
 DEFAULT_AMR_RELATIONS_FILE = PROJECT_ROOT_DIR + '/rules/amr_relations'
 
 

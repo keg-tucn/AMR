@@ -1,4 +1,3 @@
-import pickle
 import numpy as np
 import re
 import sklearn.preprocessing
@@ -6,17 +5,19 @@ from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.layers import Input, Embedding, LSTM, Dense, concatenate, TimeDistributed
 from keras.models import Model
 from keras.optimizers import SGD
-from keras.preprocessing.text import Tokenizer
+from keras.utils import plot_model
 
 from constants import __AMR_RELATIONS
-from definitions import PROJECT_ROOT_DIR, GLOVE_EMBEDDINGS, TOKENIZER_PATH
+from definitions import PROJECT_ROOT_DIR, GLOVE_EMBEDDINGS
 from Baseline import reentrancy_restoring
 from amr_util.KerasPlotter import plot_history
+from amr_util import tokenizer_util
 from postprocessing import ActionSequenceReconstruction as asr
 from smatch import smatch_amr
 from smatch import smatch_util
-import models.Actions as act
-from feature_extraction import DatasetLoader, FeatureVectorGenerator
+import models.actions as act
+from models.model_parameters import ModelParameters
+from feature_extraction import dataset_loader, feature_vector_generator
 
 SH = 0
 RL = 1
@@ -26,6 +27,7 @@ SW = 4
 NONE = 5
 
 coref_handling = False
+
 label_binarizer = sklearn.preprocessing.LabelBinarizer()
 label_binarizer.fit(range(5))
 
@@ -59,25 +61,39 @@ def tokens_to_sentence(tokens, index_to_word_map):
     return str
 
 
-def make_prediction(model, x_test, deps, no_word_index, max_len):
+def make_prediction(model, x_test, dependencies, model_parameters):
     tokens_buffer = x_test
     tokens_stack = []
+
     current_step = 0
+    max_len = model_parameters.max_len
+
+    no_word_index = tokenizer_util.get_no_word_index()
+
     buffer_token = np.zeros((1, max_len))
     stack_token0 = np.zeros((1, max_len))
     stack_token1 = np.zeros((1, max_len))
     stack_token2 = np.zeros((1, max_len))
     prev_action = np.zeros((1, max_len, 5))
-    dep_info = np.zeros((1, max_len, 6))
+
+    if model_parameters.with_enhanced_dep_info:
+        dep_info = np.zeros((1, max_len, 6 * len(__AMR_RELATIONS)))
+    else:
+        dep_info = np.zeros((1, max_len, 6 * 1))
 
     buffer_token[0][current_step] = tokens_buffer[0]
     stack_token0[0][current_step] = no_word_index
     stack_token1[0][current_step] = no_word_index
     stack_token2[0][current_step] = no_word_index
     prev_action[0][current_step] = [0, 0, 0, 0, 0]
-    dep_info[0][current_step] = [0, 0, 0, 0, 0, 0]
+
+    if model_parameters.with_enhanced_dep_info:
+        dep_info[0][current_step] = np.repeat(feature_vector_generator.oh_encode_parser_action(None, True), 6)
+    else:
+        dep_info[0][current_step] = np.repeat(0, 6)
 
     final_prediction = []
+
     while (len(tokens_buffer) != 0 or len(tokens_stack) != 1) and current_step < max_len - 1:
         prediction = model.predict([buffer_token, stack_token0, stack_token1, stack_token2, prev_action, dep_info])
         current_actions_distr_ordered = np.argsort(prediction[0][current_step])[::-1]
@@ -141,158 +157,31 @@ def make_prediction(model, x_test, deps, no_word_index, max_len):
                     stack_token0[0][current_step] = no_word_index
                     stack_token1[0][current_step] = no_word_index
                     stack_token2[0][current_step] = no_word_index
+
         prev_action[0][current_step] = label_binarizer.transform([current_action])[0, :]
 
-        dep_0_on_1 = 0
-        dep_1_on_0 = 0
-        dep_0_on_2 = 0
-        dep_2_on_0 = 0
-        dep_0_on_b = 0
-        dep_b_on_0 = 0
+        dep_info[0][current_step] = feature_vector_generator.get_dependency_features(stack_token0[0][current_step],
+                                                                                     stack_token1[0][current_step],
+                                                                                     stack_token2[0][current_step],
+                                                                                     buffer_token[0][current_step],
+                                                                                     dependencies, model_parameters)
 
-        if stack_token0[0][current_step] in deps.keys() and \
-                deps[stack_token0[0][current_step]][0] == stack_token1[0][current_step]:
-            dep_0_on_1 = 1
-        if stack_token1[0][current_step] in deps.keys() and \
-                deps[stack_token1[0][current_step]][0] == stack_token0[0][current_step]:
-            dep_1_on_0 = 1
-        if stack_token0[0][current_step] in deps.keys() and \
-                deps[stack_token0[0][current_step]][0] == stack_token2[0][current_step]:
-            dep_0_on_2 = 1
-        if stack_token2[0][current_step] in deps.keys() and \
-                deps[stack_token2[0][current_step]][0] == stack_token0[0][current_step]:
-            dep_2_on_0 = 1
-        if stack_token0[0][current_step] in deps.keys() and \
-                deps[stack_token0[0][current_step]][0] == buffer_token[0][current_step]:
-            dep_0_on_b = 1
-        if buffer_token[0][current_step] in deps.keys() and \
-                deps[buffer_token[0][current_step]][0] == stack_token0[0][current_step]:
-            dep_b_on_0 = 1
-        dep_info[0][current_step] = [dep_0_on_1, dep_1_on_0, dep_0_on_2, dep_2_on_0, dep_0_on_b, dep_b_on_0]
     print "Buffer and stack at end of prediction"
     print tokens_buffer
     print tokens_stack
     return final_prediction
 
 
-"""
-def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids, index_to_word_map):
-    lengths = []
-    filtered_count = 0
-    exception_count = 0
-    for action_sequence in y:
-        lengths.append(len(action_sequence))
-        if len(action_sequence) > max_len:
-            filtered_count += 1
-            continue
-
-    x_full = np.zeros((len(x) - filtered_count, max_len, 15), dtype=np.int32)
-    y_full = np.full((len(y) - filtered_count, max_len), dtype=np.int32, fill_value=NONE)
-    i = 0
-
-    for action_sequence, tokens_sequence, deps, amr_id in zip(y, x, dependencies, amr_ids):
-        next_action_token = tokens_sequence[0]
-        next_action_stack = [no_word_index, no_word_index, no_word_index, no_word_index]
-        next_action_prev_action = NONE
-        tokens_sequence_index = 0
-        features_matrix = []
-
-        if len(action_sequence) > max_len:
-            continue
-
-        for action, j in zip(action_sequence, range(len(action_sequence))):
-            if next_action_prev_action != NONE:
-                next_action_prev_action_ohe = label_binarizer.transform([next_action_prev_action])[0, :]
-            else:
-                next_action_prev_action_ohe = [0, 0, 0, 0, 0]
-
-            dep_0_on_1 = 0
-            dep_1_on_0 = 0
-            dep_0_on_2 = 0
-            dep_2_on_0 = 0
-            dep_0_on_b = 0
-            dep_b_on_0 = 0
-            if next_action_stack[0] in deps.keys() and deps[next_action_stack[0]][0] == next_action_stack[1]:
-                dep_0_on_1 = 1
-            if next_action_stack[1] in deps.keys() and deps[next_action_stack[1]][0] == next_action_stack[0]:
-                dep_1_on_0 = 1
-            if next_action_stack[0] in deps.keys() and deps[next_action_stack[0]][0] == next_action_stack[2]:
-                dep_0_on_2 = 1
-            if next_action_stack[2] in deps.keys() and deps[next_action_stack[2]][0] == next_action_stack[0]:
-                dep_2_on_0 = 1
-            if next_action_stack[0] in deps.keys() and deps[next_action_stack[0]][0] == next_action_token:
-                dep_0_on_b = 1
-            if next_action_token in deps.keys() and deps[next_action_token][0] == next_action_stack[0]:
-                dep_b_on_0 = 1
-            features = np.concatenate((np.asarray([next_action_token, next_action_stack[0],
-                                                   next_action_stack[1], next_action_stack[2]]),
-                                       next_action_prev_action_ohe,
-                                       np.asarray(
-                                           [dep_0_on_1, dep_1_on_0, dep_0_on_2, dep_2_on_0, dep_0_on_b, dep_b_on_0])))
-            if action == SH:
-                tokens_sequence_index += 1
-                next_action_stack = [next_action_token] + next_action_stack
-                if tokens_sequence_index < len(tokens_sequence):
-                    next_action_token = tokens_sequence[tokens_sequence_index]
-                else:
-                    next_action_token = no_word_index
-            if action == RL:
-                next_action_stack = [next_action_stack[0]] + next_action_stack[2:]
-            if action == RR:
-                next_action_stack = [next_action_stack[1]] + next_action_stack[2:]
-            if action == DN:
-                tokens_sequence_index += 1
-                if tokens_sequence_index < len(tokens_sequence):
-                    next_action_token = tokens_sequence[tokens_sequence_index]
-                else:
-                    next_action_token = no_word_index
-            if action == SW:
-                next_action_stack = [next_action_stack[0], next_action_stack[2],
-                                     next_action_stack[1]] + next_action_stack[3:]
-            next_action_prev_action = action
-            features_matrix.append(features)
-        if tokens_sequence_index != len(tokens_sequence):
-            logging.warn("There was a problem at training instance %d at %s. Actions %s. Tokens %s", i, amr_id,
-                         actions_to_string(action_sequence), tokens_to_sentence(tokens_sequence, index_to_word_map))
-            exception_count += 1
-            continue
-            # raise Exception("There was a problem at training instance " + str(i) + " at " + amr_id + "\n")
-
-        features_matrix = np.concatenate((np.asarray(features_matrix),
-                                          np.zeros((max_len - len(features_matrix), 15), dtype=np.int32)))
-        actions = np.concatenate((np.asarray(action_sequence),
-                                  np.full((max_len - len(action_sequence)), dtype=np.int32, fill_value=NONE)))
-        x_full[i, :, :] = features_matrix
-        y_full[i, :] = actions
-        i += 1
-    logging.warning("Exception count " + str(exception_count))
-    return x_full, y_full, lengths, filtered_count
-"""
-
-
 def generate_parsed_data_files():
-    DatasetLoader.read_data("training", cache=False)
-    DatasetLoader.read_data("dev", cache=False)
-    DatasetLoader.read_data("test", cache=False)
-
-
-def generate_tokenizer():
-    test_data_sentences = [d.sentence for d in DatasetLoader.read_data("test", cache=True)]
-    train_data_sentences = [d.sentence for d in DatasetLoader.read_data("training", cache=True)]
-    dev_data_sentences = [d.sentence for d in DatasetLoader.read_data("dev", cache=True)]
-
-    sentences = test_data_sentences + train_data_sentences + dev_data_sentences
-
-    tokenizer = Tokenizer(filters="", lower=True, split=" ")
-    tokenizer.fit_on_texts(sentences)
-
-    pickle.dump(tokenizer, open(TOKENIZER_PATH, "wb"))
+    dataset_loader.read_data("training", cache=False)
+    dataset_loader.read_data("dev", cache=False)
+    dataset_loader.read_data("test", cache=False)
 
 
 def extract_amr_relations_from_dataset(file_path):
-    test_data_action_sequences = [d.action_sequence for d in DatasetLoader.read_data("test", cache=True)]
-    train_data_action_sequences = [d.action_sequence for d in DatasetLoader.read_data("training", cache=True)]
-    dev_data_action_sequences = [d.action_sequence for d in DatasetLoader.read_data("dev", cache=True)]
+    test_data_action_sequences = [d.action_sequence for d in dataset_loader.read_data("test", cache=True)]
+    train_data_action_sequences = [d.action_sequence for d in dataset_loader.read_data("training", cache=True)]
+    dev_data_action_sequences = [d.action_sequence for d in dataset_loader.read_data("dev", cache=True)]
 
     action_sequences = test_data_action_sequences + train_data_action_sequences + dev_data_action_sequences
 
@@ -314,20 +203,21 @@ def get_optimizer():
     return SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
 
 
-def get_embedding_matrix(word_index, embedding_dim=100):
+def get_embedding_matrix(word_index, embedding_dim):
     special_cases_re = re.compile("""^([a-z])+-(?:entity|quantity)$""")
     embeddings_index = {}
-    f = open(GLOVE_EMBEDDINGS + "/" + "glove.6B.{}d.txt".format(embedding_dim))
-    for line in f:
+    emb_file = open(GLOVE_EMBEDDINGS + "/" + "glove.6B.{}d.txt".format(embedding_dim))
+    for line in emb_file:
         values = line.split()
         word = values[0]
         coefs = np.asarray(values[1:], dtype="float32")
         embeddings_index[word] = coefs
-    f.close()
+    emb_file.close()
     print("Found %s word vectors." % len(embeddings_index))
 
     embedding_matrix = np.zeros((len(word_index) + 2, embedding_dim))
     not_found = []
+
     for word, i in word_index.items():
         embedding_vector = embeddings_index.get(word)
         if embedding_vector is not None:
@@ -341,24 +231,24 @@ def get_embedding_matrix(word_index, embedding_dim=100):
             else:
                 not_found.append(word)
 
-    print "First 2 not found: {}".format(not_found[2:4])
+    print "First 4 not found: {}".format(not_found[0:4])
     return embedding_matrix
 
 
-def get_model(word_index, max_len, embedding_dim, embedding_matrix, with_output_semantic_labels=False):
+def get_model(embedding_matrix, model_parameters):
     buffer_input = Input(shape=(max_len,), dtype="int32")
     stack_input_0 = Input(shape=(max_len,), dtype="int32")
     stack_input_1 = Input(shape=(max_len,), dtype="int32")
     stack_input_2 = Input(shape=(max_len,), dtype="int32")
     prev_action_input = Input(shape=(max_len, 5), dtype="float32")
-    #dep_info_input = Input(shape=(max_len, 6), dtype="float32")
-    dep_info_input = Input(shape=(max_len, 6 * len(__AMR_RELATIONS)), dtype="float32")
 
-    embedding = Embedding(len(word_index) + 2,
-                          embedding_dim,
-                          weights=[embedding_matrix],
-                          input_length=max_len,
-                          trainable=False)
+    if model_parameters.with_enhanced_dep_info:
+        dep_info_input = Input(shape=(max_len, 6 * len(__AMR_RELATIONS)), dtype="float32")
+    else:
+        dep_info_input = Input(shape=(max_len, 6), dtype="float32")
+
+    embedding = Embedding(len(embedding_matrix), model_parameters.embeddings_dim, weights=[embedding_matrix],
+                          input_length=max_len, trainable=False)
 
     buffer_emb = embedding(buffer_input)
     stack_emb_0 = embedding(stack_input_0)
@@ -367,9 +257,9 @@ def get_model(word_index, max_len, embedding_dim, embedding_matrix, with_output_
 
     x = concatenate([buffer_emb, stack_emb_0, stack_emb_1, stack_emb_2, prev_action_input, dep_info_input])
 
-    lstm_output = LSTM(1024, return_sequences=True)(x)
+    lstm_output = LSTM(model_parameters.hidden_layer_size, return_sequences=True)(x)
 
-    if with_output_semantic_labels:
+    if model_parameters.with_target_semantic_labels:
         dense = TimeDistributed(Dense(5 + 2 * len(__AMR_RELATIONS), activation="softmax"))(lstm_output)
     else:
         dense = TimeDistributed(Dense(5, activation="softmax"))(lstm_output)
@@ -381,77 +271,19 @@ def get_model(word_index, max_len, embedding_dim, embedding_matrix, with_output_
                   loss="categorical_crossentropy",
                   metrics=["accuracy"])
 
-    # plot_model(model, to_file="model.png")
-
+    plot_model(model, to_file="model.png")
     print model.summary()
+
     return model
 
 
-def train(model_name, train_data, test_data, max_len=30, train_epochs=35, embedding_dim=100,
-          with_output_semantic_labels=False):
+def train(model_name, train_data, test_data, model_parameters):
     model_path = PROJECT_ROOT_DIR + "/trained_models/{}".format(model_name)
     print "Model path is: %s" % model_path
 
-    """
-    data = train_data + test_data
-
-    print "Data set total size %s" % len(data)
-
-    sentences = [d.sentence for d in data]
-    amrs = [d.original_amr for d in data]
-
-    actions = [d.action_sequence for d in data]
-
-    action_indices = [[a.index for a in actions_list] for actions_list in actions]
-    action_labels = [[a.label for a in actions_list] for actions_list in actions]
-
-    dependencies = [d.dependencies for d in data]
-
-    named_entities = [d.named_entities for d in data]
-    date_entities = [d.date_entities for d in data]
-    named_entities = [[(n[3], n[2]) for n in named_entities_list] for named_entities_list in named_entities]
-    date_entities = [[(d[3], d[2], d[1]) for d in date_entities_list] for date_entities_list in date_entities]
-    train_amr_ids = [d.amr_id for d in train_data]
-    test_amr_ids = [d.amr_id for d in test_data]
-
-    tokenizer = pickle.load(open(tokenizer_path, "rb"))
-    sequences = np.asarray(tokenizer.texts_to_sequences(sentences))
-
-    word_index = tokenizer.word_index
-    print "Word index len: "
-    print len(word_index)
-
-    indices = np.arange(sequences.shape[0])
-    sequences = sequences[indices]
-
-    # actions = np.asarray(action_indices)[indices]
-    actions = np.asarray(actions)[indices]
-
-    labels = np.asarray(action_labels)[indices]
-    dependencies = [dependencies[i] for i in indices]
-
-    amrs = np.asanyarray(amrs)[indices]
-
-    num_test_samples = int(max(len(test_data), 0.1 * len(train_data)))
-    num_train_samples = int(len(data) - num_test_samples)
-
-    x_train = sequences[:num_train_samples]
-    y_train = actions[:num_train_samples]
-    y_train_old = (np.asarray(action_indices)[indices])[:num_train_samples]
-    amrs_train = amrs[:num_train_samples]
-    dependencies_train = dependencies[:num_train_samples]
-
-    x_test = sequences[num_train_samples:]
-    y_test = actions[num_train_samples:]
-    y_test_old = (np.asarray(action_indices)[indices])[num_train_samples:]
-    l_test = labels[num_train_samples:]
-    amrs_test = amrs[num_train_samples:]
-    dependencies_test = dependencies[num_train_samples:]
-    """
-
-    x_train, y_train, x_test, y_test, dependencies_train, dependencies_test, \
-    train_amr_ids, test_amr_ids, named_entities, date_entities, word_index = \
-        FeatureVectorGenerator.extract_data_components(train_data, test_data)
+    (x_train, y_train, x_test, y_test, dependencies_train, dependencies_test,
+     train_amr_ids, test_amr_ids, named_entities, date_entities) = \
+        feature_vector_generator.extract_data_components(train_data, test_data)
 
     print "Training data shape: "
     print x_train.shape
@@ -467,59 +299,18 @@ def train(model_name, train_data, test_data, max_len=30, train_epochs=35, embedd
     # Else, the same element on the buffer is fed and the elements from the stack are updated
     # Do not consider instances with more than 30 actions for the moment.
 
-    index_to_word_map = {v: k for k, v in word_index.iteritems()}
-    no_word_index = (len(word_index)) + 1
+    word_index_map = tokenizer_util.get_word_index_map()
 
     (x_train_full, y_train_full, lengths_train, filtered_count_tr) = \
-        FeatureVectorGenerator.generate_feature_vectors(x_train, y_train, dependencies_train, train_amr_ids,
-                                                        max_len, index_to_word_map, no_word_index,
-                                                        with_output_semantic_labels)
+        feature_vector_generator.generate_feature_vectors(x_train, y_train, dependencies_train,
+                                                          train_amr_ids, model_parameters)
 
     (x_test_full, y_test_full, lengths_test, filtered_count_test) = \
-        FeatureVectorGenerator.generate_feature_vectors(x_test, y_test, dependencies_test, test_amr_ids,
-                                                        max_len, index_to_word_map, no_word_index,
-                                                        with_output_semantic_labels)
+        feature_vector_generator.generate_feature_vectors(x_test, y_test, dependencies_test,
+                                                          test_amr_ids, model_parameters)
 
     y_train_ohe = y_train_full
     y_test_ohe = y_test_full
-
-    """
-    data = np.concatenate((train_data, test_data))
-    actions = [d.action_sequence for d in data]
-    action_indices = [[a.index for a in actions_list] for actions_list in actions]
-
-    num_test_samples = int(max(len(test_data), 0.1 * len(train_data)))
-    num_train_samples = int(len(data) - num_test_samples)
-
-    y_train_old = (np.asarray(action_indices))[:num_train_samples]
-    y_test_old = (np.asarray(action_indices))[num_train_samples:]
-
-    (x_train_full_old, y_train_full_old, lengths_train,
-     filtered_count_tr) = generate_dataset(x_train, y_train_old,
-                                           dependencies_train, no_word_index,
-                                           max_len, train_amr_ids,
-                                           index_to_word_map)
-    (x_test_full_old, y_test_full_old, lengths_test,
-     filtered_count_test) = generate_dataset(x_test, y_test_old,
-                                             dependencies_test,
-                                             no_word_index, max_len,
-                                             test_amr_ids, index_to_word_map)
-
-    y_train_ohe_old = np.zeros((y_train_full_old.shape[0], max_len, 5), dtype="int32")
-    for row, i in zip(y_train_full_old[:, :], range(y_train_full_old.shape[0])):
-        y_train_instance_matrix = label_binarizer.transform(row)
-        y_train_ohe_old[i, :, :] = y_train_instance_matrix
-
-    y_test_ohe_old = np.zeros((y_test_full_old.shape[0], max_len, 5), dtype="int32")
-    for row, i in zip(y_test_full_old[:, :], range(y_test_full_old.shape[0])):
-        y_test_instance_matrix = label_binarizer.transform(row)
-        y_test_ohe_old[i, :, :] = y_test_instance_matrix
-
-    print(np.sum(np.subtract(x_train_full, x_train_full_old)))
-    print(np.sum(np.subtract(y_train_ohe, y_train_ohe_old)))
-    print(np.sum(np.subtract(x_test_full, x_test_full_old)))
-    print(np.sum(np.subtract(y_test_ohe, y_test_ohe_old)))
-    """
 
     print "Mean length %s " % np.asarray(lengths_train).mean()
     print "Max length %s" % np.asarray(lengths_train).max()
@@ -529,21 +320,19 @@ def train(model_name, train_data, test_data, max_len=30, train_epochs=35, embedd
     print "Final test data shape"
     print (x_test_full.shape)
 
-    embedding_matrix = get_embedding_matrix(word_index, embedding_dim)
+    embedding_dim = model_parameters.embeddings_dim
 
-    model = get_model(word_index, max_len, embedding_dim, embedding_matrix, with_output_semantic_labels)
+    embedding_matrix = get_embedding_matrix(word_index_map, embedding_dim)
+
+    model = get_model(embedding_matrix, model_parameters)
 
     history = model.fit([x_train_full[:, :, 0], x_train_full[:, :, 1], x_train_full[:, :, 2], x_train_full[:, :, 3],
-                         x_train_full[:, :, 4:9], x_train_full[:, :, 9:]],
-                        y_train_ohe,
-                        epochs=train_epochs, batch_size=16,
-                        validation_split=0.1,
+                         x_train_full[:, :, 4:9], x_train_full[:, :, 9:]], y_train_ohe,
+                        epochs=model_parameters.train_epochs, batch_size=16, validation_split=0.1,
                         callbacks=[
                             ModelCheckpoint(model_path, monitor="val_acc", verbose=0, save_best_only=True,
-                                            save_weights_only=False,
-                                            mode="auto", period=1),
-                            EarlyStopping(monitor="val_acc", min_delta=0, patience=50, verbose=0,
-                                          mode="auto")])
+                                            save_weights_only=False, mode="auto", period=1),
+                            EarlyStopping(monitor="val_acc", min_delta=0, patience=50, verbose=0, mode="auto")])
 
     plot_history(history, model_name)
 
@@ -561,7 +350,7 @@ def train(model_name, train_data, test_data, max_len=30, train_epochs=35, embedd
     for i in range(len(x_test)):
         print "%d/%d" % (i, len(x_test))
         # Step1: input a processed test entity test
-        prediction = make_prediction(model, x_test[i], dependencies_test[i], no_word_index, max_len)
+        prediction = make_prediction(model, x_test[i], dependencies_test[i], model_parameters)
 
         if len(prediction) > 0:
             act = asr.ActionConceptTransfer()
@@ -573,7 +362,7 @@ def train(model_name, train_data, test_data, max_len=30, train_epochs=35, embedd
             # Step2: output: Graph respecting the predicted structure
             # Step2": predict concepts
             # Step2"": predict relations
-            # Step3: replace named entitities & date date_entities
+            # Step3: replace named entities & date date_entities
 
             predicted_amr_str = asr.reconstruct_all_ne(pred_label, named_entities[i], date_entities[i])
 
@@ -628,8 +417,7 @@ def train(model_name, train_data, test_data, max_len=30, train_epochs=35, embedd
     file.close()
 
 
-def test(model_name, test_case_name, data, max_len=30, embedding_dim=100, with_reattach=False,
-         with_output_semantic_labels=False):
+def test(model_name, test_case_name, data, model_parameters):
     model_path = PROJECT_ROOT_DIR + "/trained_models/{}".format(model_name)
     print "Model path is: %s" % model_path
 
@@ -650,18 +438,18 @@ def test(model_name, test_case_name, data, max_len=30, embedding_dim=100, with_r
     date_entities = [d.date_entities for d in data]
     date_entities = [[(d[3], d[2], d[1]) for d in date_entities_list] for date_entities_list in date_entities]
 
-    tokenizer = pickle.load(open(TOKENIZER_PATH, "rb"))
-    word_index = tokenizer.word_index
+    tokenizer = tokenizer_util.get_tokenizer()
+    word_index_map = tokenizer_util.get_word_index_map()
+    index_word_map = tokenizer_util.get_index_word_map()
 
     sequences = np.asarray(tokenizer.texts_to_sequences(sentences))
 
     print "Word index len: "
-    print len(word_index)
+    print len(word_index_map)
 
     indices = np.arange(sequences.shape[0])
     sequences = sequences[indices]
 
-    # actions = np.asarray(action_indices)[indices]
     actions = np.asarray(actions)[indices]
     labels = np.asarray(action_labels)[indices]
     dependencies = [dependencies[i] for i in indices]
@@ -680,41 +468,34 @@ def test(model_name, test_case_name, data, max_len=30, embedding_dim=100, with_r
     print amrs_test.shape
     print len(dependencies_test)
 
-    index_to_word_map = {v: k for k, v in tokenizer.word_index.iteritems()}
-
-    embedding_matrix = get_embedding_matrix(word_index, embedding_dim)
-
-    no_word_index = (len(word_index)) + 1
+    embedding_matrix = get_embedding_matrix(word_index_map, model_parameters.embeddings_dim)
 
     x_test_full, y_test_full, lengths_test, filtered_count_test = \
-        FeatureVectorGenerator.generate_feature_vectors(x_test, y_test, dependencies_test, test_amr_ids,
-                                                        max_len, index_to_word_map, no_word_index,
-                                                        with_output_semantic_labels)
+        feature_vector_generator.generate_feature_vectors(x_test, y_test, dependencies_test, test_amr_ids,
+                                                          model_parameters)
 
     y_test = np.asarray(action_indices)[indices]
 
-    '''
-    y_test_ohe = np.zeros((y_test_full.shape[0], max_len, 5), dtype="int32")
-    for row, i in zip(y_test_full[:, :], range(y_test_full.shape[0])):
-        y_test_instance_matrix = label_binarizer.transform(row)
-        y_test_ohe[i, :, :] = y_test_instance_matrix
-    '''
     y_test_ohe = y_test_full
 
-    model = get_model(word_index, max_len, embedding_dim, embedding_matrix)
+    model = get_model(embedding_matrix, model_parameters)
 
     print model.summary()
+    print len(embedding_matrix)
 
     model.load_weights(model_path, by_name=False)
 
     smatch_results = smatch_util.SmatchAccumulator()
+
     predictions = []
     errors = 0
+
     for i in range(len(x_test)):
-        prediction = make_prediction(model, x_test[i], dependencies_test[i], no_word_index, max_len)
+        prediction = make_prediction(model, x_test[i], dependencies_test[i], model_parameters)
+
         predictions.append(prediction)
         print "Sentence"
-        pretty_print_sentence(x_test[i], index_to_word_map)
+        pretty_print_sentence(x_test[i], index_word_map)
         print "Predicted"
         pretty_print_actions(prediction)
         print "Actual"
@@ -726,7 +507,7 @@ def test(model_name, test_case_name, data, max_len=30, embedding_dim=100, with_r
             pred_label = act.populate_new_actions(prediction)
             print "Predictions with old labels: "
             print pred_label
-            if with_reattach is True:
+            if model_parameters.with_reattach is True:
                 predicted_amr_str = asr.reconstruct_all_ne(pred_label, named_entities[i], date_entities[i])
                 # handling coreference(postprocessing)
                 if coref_handling:
@@ -777,7 +558,7 @@ def test(model_name, test_case_name, data, max_len=30, embedding_dim=100, with_r
     return predictions
 
 
-def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim=100, with_reattach=False):
+def test_without_amr(model_name, data, model_parameters):
     model_path = PROJECT_ROOT_DIR + "/trained_models/{}".format(model_name)
     print "Model path is:"
     print model_path
@@ -788,13 +569,13 @@ def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim
 
     named_entities = [d[2] for d in data]
 
-    tokenizer = pickle.load(open(tokenizer_path, "rb"))
+    tokenizer = tokenizer_util.get_tokenizer()
+    word_index_map = tokenizer_util.get_word_index_map()
+    index_word_map = tokenizer_util.get_index_word_map()
+    print "Word index len: "
+    print len(word_index_map)
 
     sequences = np.asarray(tokenizer.texts_to_sequences(sentences))
-
-    word_index = tokenizer.word_index
-    print "Word index len: "
-    print len(word_index)
 
     indices = np.arange(sequences.shape[0])
     sequences = sequences[indices]
@@ -808,20 +589,18 @@ def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim
     print x_test.shape
     print len(dependencies_test)
 
-    embedding_matrix = get_embedding_matrix(word_index, embedding_dim)
+    embedding_matrix = get_embedding_matrix(word_index_map, model_parameters.embeddings_dim)
 
-    no_word_index = (len(word_index)) + 1
-    model = get_model(word_index, max_len, embedding_dim, embedding_matrix)
+    model = get_model(embedding_matrix, model_parameters)
 
     print model.summary()
 
     model.load_weights(model_path, by_name=False)
-    index_to_word_map = {v: k for k, v in tokenizer.word_index.iteritems()}
 
     for i in range(len(x_test)):
-        prediction = make_prediction(model, x_test[i], dependencies_test[i], no_word_index, max_len)
+        prediction = make_prediction(model, x_test[i], dependencies_test[i], model_parameters.max_len)
         print "Sentence"
-        pretty_print_sentence(x_test[i], index_to_word_map)
+        pretty_print_sentence(x_test[i], index_word_map)
         print "Predicted"
         pretty_print_actions(prediction)
 
@@ -831,7 +610,7 @@ def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim
             print "AMR skeleton without labels: "
             print pred_label
 
-            if with_reattach is True:
+            if model_parameters.with_reattach is True:
                 predicted_amr_str = asr.reconstruct_all_ne(pred_label, named_entities, [])
                 # handling coreference(postprocessing)
                 if coref_handling:
@@ -848,19 +627,17 @@ def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim
     return prediction
 
 
-def train_file(model_name, train_data_path=None, test_data_path=None, max_len=30, train_epochs=35,
-               embedding_dim=100, with_output_semantic_labels=False):
-    test_data = np.asarray(DatasetLoader.read_data("test", test_data_path, cache=True), dtype=object)
-    train_data = np.asarray(DatasetLoader.read_data("training", train_data_path, cache=True), dtype=object)
+def train_file(model_name, train_data_path, test_data_path, model_parameters):
+    test_data = np.asarray(dataset_loader.read_data("test", test_data_path, cache=True), dtype=object)
+    train_data = np.asarray(dataset_loader.read_data("training", train_data_path, cache=True), dtype=object)
 
-    train(model_name, train_data, test_data, max_len, train_epochs, embedding_dim, with_output_semantic_labels)
+    train(model_name, train_data, test_data, model_parameters)
 
 
-def test_file(model_name, test_case_name, test_data_path, max_len=30,
-              embedding_dim=100, test_source="test", with_reattach=False, with_output_semantic_labels=False):
-    data = np.asarray(DatasetLoader.read_data(test_source, test_data_path, cache=True), dtype=object)
-    return test(model_name, test_case_name, data, max_len, embedding_dim, with_reattach=with_reattach,
-                with_output_semantic_labels=with_output_semantic_labels)
+def test_file(model_name, test_case_name, test_data_path, test_source, model_parameters):
+    test_data = np.asarray(dataset_loader.read_data(test_source, test_data_path, cache=True), dtype=object)
+
+    return test(model_name, test_case_name, test_data, model_parameters)
 
 
 if __name__ == "__main__":
@@ -870,17 +647,21 @@ if __name__ == "__main__":
     epochs = [50, 50, 50, 50, 20]
     test_source = "dev"
 
-    # generate_parsed_data_files()
     # generate_tokenizer()
+    # generate_parsed_data_files()
 
-    data_set = "r2"
-    epoch = 1
+    data_set = "proxy"
     max_len = 30
     embeddings_dim = 200
-    train_data_path = "r2"
-    test_data_path = "r2"
-    model_name = "{}_epochs={}_maxlen={}_embeddingsdim={}".format(data_set, epoch, max_len, embeddings_dim)
-    with_output_semantic_labels = False
+    train_epochs = 50
+    train_data_path = "proxy"
+    test_data_path = "proxy"
+
+    model_name = "{}_epochs={}_maxlen={}_embeddingsdim={}".format(data_set, train_epochs, max_len, embeddings_dim)
+
+    model_parameters = ModelParameters(max_len=max_len, embeddings_dim=embeddings_dim, train_epochs=train_epochs,
+                                       hidden_layer_size=1024, with_enhanced_dep_info=False,
+                                       with_target_semantic_labels=False, with_reattach=False)
 
     if train_data_path == "all":
         train_data_path = None
@@ -888,9 +669,7 @@ if __name__ == "__main__":
         test_data_path = None
 
     train_file(model_name=model_name, train_data_path=train_data_path, test_data_path=test_data_path,
-               max_len=max_len, train_epochs=epoch, embedding_dim=embeddings_dim,
-               with_output_semantic_labels=with_output_semantic_labels)
+               model_parameters=model_parameters)
 
-    test_file(model_name, test_case_name=test_data_path, test_data_path=test_data_path,
-              max_len=max_len, embedding_dim=embeddings_dim, test_source="dev", with_reattach=True,
-              with_output_semantic_labels=with_output_semantic_labels)
+    test_file(model_name=model_name, test_case_name=test_data_path, test_data_path=test_data_path, test_source="dev",
+              model_parameters=model_parameters)

@@ -9,8 +9,7 @@ import numpy as np
 import copy
 
 
-def smatch_best_match_numbers(amr1, amr2,
-                              doinstance=True, doattribute=True, dorelation=True):
+def smatch_best_match_numbers(amr1, amr2, doinstance=True, doattribute=True, dorelation=True):
     """
     The "best match" number is the number of matching nodes. Larger for larger matching AMRs.
     :param amr1: expected in smatch_amr format
@@ -41,6 +40,7 @@ def smatch_best_match_numbers(amr1, amr2,
 
     test_triple_num = 0
     gold_triple_num = 0
+
     if doinstance:
         test_triple_num += len(instance1)
         gold_triple_num += len(instance2)
@@ -54,12 +54,13 @@ def smatch_best_match_numbers(amr1, amr2,
     return best_match_num, test_triple_num, gold_triple_num
 
 
-def smatch_f_score(amr1, amr2,
-                   doinstance=True, doattribute=True, dorelation=True):
-    best_match_num, test_triple_num, gold_triple_num = smatch_best_match_numbers(amr1, amr2,
-                                                                                 doinstance, doattribute, dorelation)
-    (precision, recall, best_f_score) = smatch.compute_f(
-        best_match_num, test_triple_num, gold_triple_num)
+def smatch_f_score(amr1, amr2, doinstance=True, doattribute=True, dorelation=True):
+    (best_match_num, test_triple_num, gold_triple_num) = \
+        smatch_best_match_numbers(amr1, amr2, doinstance, doattribute, dorelation)
+
+    (precision, recall, best_f_score) = \
+        smatch.compute_f(best_match_num, test_triple_num, gold_triple_num)
+
     return best_f_score
 
 
@@ -86,7 +87,7 @@ class SmatchAccumulator:
         self.total_amr2_num = 0
         self.smatch_sum = 0
         self.inv_smatch_sum = 0
-        self.last_f_score = 0;
+        self.last_f_score = 0
 
     def compute_and_add(self, amr1, amr2):
         self.n += 1
@@ -183,3 +184,4 @@ if __name__ == "__main__":
     print smatch_f_score(amr1, copy.deepcopy(amr1))
     print smatch_f_score(amr2, copy.deepcopy(amr2))
     print smatch_f_score(amr1, amr2)
+    print smatch_f_score(amr2, amr1)

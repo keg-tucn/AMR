@@ -1,5 +1,5 @@
-from models.AMRData import CustomizedAMR
-from models.AMRGraph import AMR
+from models.amr_data import CustomizedAMR
+from models.amr_graph import AMR
 from preprocessing import TokensReplacer, ActionSequenceGenerator
 
 

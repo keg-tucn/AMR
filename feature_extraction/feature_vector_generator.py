@@ -1,0 +1,265 @@
+import logging
+import numpy as np
+import sklearn
+
+from constants import __AMR_RELATIONS, __DEP_AMR_REL_TABLE
+from amr_util import tokenizer_util
+import models.actions as act
+
+SH = 0
+RL = 1
+RR = 2
+DN = 3
+SW = 4
+NONE = 5
+
+simple_target_label_binarizer = sklearn.preprocessing.LabelBinarizer()
+simple_target_label_binarizer.fit(range(5))
+
+composed_target_label_binarizer = sklearn.preprocessing.LabelBinarizer()
+composed_target_label_binarizer.fit(range(5 + 2 * len(__AMR_RELATIONS)))
+
+amr_rel_binarizer = sklearn.preprocessing.LabelBinarizer()
+amr_rel_binarizer.fit(range(len(__AMR_RELATIONS)))
+
+
+def extract_data_components(train_data, test_data):
+    data = np.concatenate((train_data, test_data))
+
+    sentences = [d.sentence for d in data]
+
+    tokenizer = tokenizer_util.get_tokenizer()
+    sequences = np.asarray(tokenizer.texts_to_sequences(sentences))
+
+    actions = [d.action_sequence for d in data]
+
+    dependencies = [d.dependencies for d in data]
+
+    named_entities = [d.named_entities for d in data]
+    named_entities = [[(n[3], n[2]) for n in named_entities_list] for named_entities_list in named_entities]
+
+    date_entities = [d.date_entities for d in data]
+    date_entities = [[(d[3], d[2], d[1]) for d in date_entities_list] for date_entities_list in date_entities]
+
+    amr_ids = [d.amr_id for d in data]
+
+    num_test_samples = int(max(len(test_data), len(train_data) / 10))
+    num_train_samples = int(len(data) - num_test_samples)
+
+    x_train = sequences[:num_train_samples]
+    y_train = actions[:num_train_samples]
+
+    x_test = sequences[num_train_samples:]
+    y_test = actions[num_train_samples:]
+
+    dependencies_train = dependencies[:num_train_samples]
+    dependencies_test = dependencies[num_train_samples:]
+
+    train_amr_ids = amr_ids[:num_train_samples]
+    test_amr_ids = amr_ids[num_train_samples:]
+
+    return (x_train, y_train, x_test, y_test, dependencies_train, dependencies_test,
+            train_amr_ids, test_amr_ids, named_entities, date_entities)
+
+
+def generate_feature_vectors(x, y, dependencies, amr_ids, model_parameters):
+    index_word_map = tokenizer_util.get_index_word_map()
+    no_word_index = tokenizer_util.get_no_word_index()
+
+    max_len = model_parameters.max_len
+    lengths = []
+    filtered_count = 0
+    exception_count = 0
+
+    for action_sequence in y:
+        lengths.append(len(action_sequence))
+        if len(action_sequence) > model_parameters.max_len:
+            filtered_count += 1
+            continue
+
+    if model_parameters.with_enhanced_dep_info:
+        x_full = np.zeros((len(x) - filtered_count, max_len, 9 + 6 * len(__AMR_RELATIONS)), dtype=np.int32)
+    else:
+        x_full = np.zeros((len(x) - filtered_count, max_len, 9 + 6 * 1), dtype=np.int32)
+
+    if model_parameters.with_target_semantic_labels:
+        y_full = np.zeros((len(y) - filtered_count, max_len, 5 + 2 * len(__AMR_RELATIONS)), dtype=np.int32)
+    else:
+        y_full = np.zeros((len(y) - filtered_count, max_len, 5), dtype=np.int32)
+
+    action_sequences = []
+    i = 0
+
+    for action_sequence, tokens_sequence, dependencies, amr_id in zip(y, x, dependencies, amr_ids):
+        next_action_token = tokens_sequence[0]
+        next_action_stack = [no_word_index, no_word_index, no_word_index, no_word_index]
+        next_action_prev_action = NONE
+        tokens_sequence_index = 0
+        features_matrix = []
+
+        if len(action_sequence) > max_len:
+            continue
+
+        for action, j in zip(action_sequence, range(len(action_sequence))):
+            action = action.index
+            if next_action_prev_action != NONE:
+                next_action_prev_action_ohe = simple_target_label_binarizer.transform([next_action_prev_action])[0, :]
+            else:
+                next_action_prev_action_ohe = [0, 0, 0, 0, 0]
+
+            features = np.concatenate(
+                (np.asanyarray((next_action_token, next_action_stack[0], next_action_stack[1], next_action_stack[2])),
+                 next_action_prev_action_ohe,
+                 get_dependency_features(next_action_stack[0], next_action_stack[1], next_action_stack[2],
+                                         next_action_token, dependencies, model_parameters)))
+
+            if action == SH:
+                tokens_sequence_index += 1
+                next_action_stack = [next_action_token] + next_action_stack
+                if tokens_sequence_index < len(tokens_sequence):
+                    next_action_token = tokens_sequence[tokens_sequence_index]
+                else:
+                    next_action_token = no_word_index
+            if action == RL:
+                next_action_stack = [next_action_stack[0]] + next_action_stack[2:]
+            if action == RR:
+                next_action_stack = [next_action_stack[1]] + next_action_stack[2:]
+            if action == DN:
+                tokens_sequence_index += 1
+                if tokens_sequence_index < len(tokens_sequence):
+                    next_action_token = tokens_sequence[tokens_sequence_index]
+                else:
+                    next_action_token = no_word_index
+            if action == SW:
+                next_action_stack = [next_action_stack[0], next_action_stack[2],
+                                     next_action_stack[1]] + next_action_stack[3:]
+            next_action_prev_action = action
+            features_matrix.append(features)
+        if tokens_sequence_index != len(tokens_sequence):
+            logging.warn("There was a problem at training instance %d at %s. Actions %s. Tokens %s", i, amr_id,
+                         actions_to_string([action.index for action in action_sequence]),
+                         tokens_to_sentence(tokens_sequence, index_word_map))
+            exception_count += 1
+            continue
+            # raise Exception("There was a problem at training instance " + str(i) + " at " + amr_id + "\n")
+
+        if model_parameters.with_enhanced_dep_info:
+            features_matrix = np.concatenate((np.asarray(features_matrix),
+                                              np.zeros((max_len - len(features_matrix), 9 + 6 * len(__AMR_RELATIONS)),
+                                                       dtype=np.int32)))
+        else:
+            features_matrix = np.concatenate((np.asarray(features_matrix),
+                                              np.zeros((max_len - len(features_matrix), 9 + 6 * 1), dtype=np.int32)))
+
+        action_sequences.append(action_sequence)
+        x_full[i, :, :] = features_matrix
+        i += 1
+    logging.warning("Exception count " + str(exception_count))
+
+    for action_sequence, i in zip(action_sequences, range(len(action_sequences))):
+        y_train_instance_matrix = []
+        for action in action_sequence:
+            y_train_instance_matrix.append(
+                oh_encode_parser_action(action, model_parameters.with_target_semantic_labels))
+
+        for j in range(max_len - len(action_sequence)):
+            y_train_instance_matrix.append(
+                oh_encode_parser_action(None, model_parameters.with_target_semantic_labels))
+        y_full[i, :, :] = y_train_instance_matrix
+
+    return x_full, y_full, lengths, filtered_count
+
+
+def actions_to_string(acts_i):
+    acts_str = ""
+    for a in acts_i:
+        acts_str += act.acts[a] + " "
+    acts_str += "\n"
+    return str
+
+
+def tokens_to_sentence(tokens, index_to_word_map):
+    tok_str = ""
+    for t in tokens:
+        tok_str += index_to_word_map[t] + " "
+    tok_str += "\n"
+    return str
+
+
+def get_dependency_features(stack_0_idx, stack_1_idx, stack_2_idx, buffer_0_idx, dependencies, model_parameters):
+    if model_parameters.with_enhanced_dep_info:
+        dep_0_on_1 = oh_encode_amr_rel(None)
+        dep_1_on_0 = oh_encode_amr_rel(None)
+        dep_0_on_2 = oh_encode_amr_rel(None)
+        dep_2_on_0 = oh_encode_amr_rel(None)
+        dep_0_on_b = oh_encode_amr_rel(None)
+        dep_b_on_0 = oh_encode_amr_rel(None)
+
+        if stack_0_idx in dependencies.keys() and dependencies[stack_0_idx][0] == stack_1_idx:
+            dep_0_on_1 = oh_encode_amr_rel(get_amr_rel_for_dep_rel(dependencies[stack_0_idx][1]))
+        if stack_1_idx in dependencies.keys() and dependencies[stack_1_idx][0] == stack_0_idx:
+            dep_1_on_0 = oh_encode_amr_rel(get_amr_rel_for_dep_rel(dependencies[stack_1_idx][1]))
+        if stack_0_idx in dependencies.keys() and dependencies[stack_0_idx][0] == stack_2_idx:
+            dep_0_on_2 = oh_encode_amr_rel(get_amr_rel_for_dep_rel(dependencies[stack_0_idx][1]))
+        if stack_2_idx in dependencies.keys() and dependencies[stack_2_idx][0] == stack_0_idx:
+            dep_2_on_0 = oh_encode_amr_rel(get_amr_rel_for_dep_rel(dependencies[stack_2_idx][1]))
+        if stack_0_idx in dependencies.keys() and dependencies[stack_0_idx][0] == buffer_0_idx:
+            dep_0_on_b = oh_encode_amr_rel(get_amr_rel_for_dep_rel(dependencies[stack_0_idx][1]))
+        if buffer_0_idx in dependencies.keys() and dependencies[buffer_0_idx][0] == stack_0_idx:
+            dep_b_on_0 = oh_encode_amr_rel(get_amr_rel_for_dep_rel(dependencies[buffer_0_idx][1]))
+
+        return np.concatenate((dep_0_on_1, dep_1_on_0, dep_0_on_2, dep_2_on_0, dep_0_on_b, dep_b_on_0))
+
+    else:
+        [dep_0_on_1, dep_1_on_0, dep_0_on_2, dep_2_on_0, dep_0_on_b, dep_b_on_0] = np.zeros(6)
+
+        if stack_0_idx in dependencies.keys() and dependencies[stack_0_idx][0] == stack_1_idx:
+            dep_0_on_1 = 1
+        if stack_1_idx in dependencies.keys() and dependencies[stack_1_idx][0] == stack_0_idx:
+            dep_1_on_0 = 1
+        if stack_0_idx in dependencies.keys() and dependencies[stack_0_idx][0] == stack_2_idx:
+            dep_0_on_2 = 1
+        if stack_2_idx in dependencies.keys() and dependencies[stack_2_idx][0] == stack_0_idx:
+            dep_2_on_0 = 1
+        if stack_0_idx in dependencies.keys() and dependencies[stack_0_idx][0] == buffer_0_idx:
+            dep_0_on_b = 1
+        if buffer_0_idx in dependencies.keys() and dependencies[buffer_0_idx][0] == stack_0_idx:
+            dep_b_on_0 = 1
+
+        return np.asanyarray([dep_0_on_1, dep_1_on_0, dep_0_on_2, dep_2_on_0, dep_0_on_b, dep_b_on_0])
+
+
+def get_amr_rel_for_dep_rel(dep_rel):
+    if dep_rel in __DEP_AMR_REL_TABLE:
+        return __DEP_AMR_REL_TABLE[dep_rel]
+    else:
+        return None
+
+
+def oh_encode_parser_action(action, with_target_semantic_labels):
+    if with_target_semantic_labels:
+        if action is not None:
+            if action.action == 1:
+                return composed_target_label_binarizer.transform([5 + __AMR_RELATIONS.index(action.label)])[0, :]
+            elif action.action == 2:
+                return composed_target_label_binarizer.transform([5 + len(__AMR_RELATIONS) +
+                                                                  __AMR_RELATIONS.index(action.label)])[0, :]
+        else:
+            return composed_target_label_binarizer.transform([-1])[0, :]
+    else:
+        if action is not None:
+            return simple_target_label_binarizer.transform([action.index])[0, :]
+        else:
+            return simple_target_label_binarizer.transform([-1])[0, :]
+
+
+def oh_decode_parser_action(action_ohe, with_target_semantic_labels):
+    x = 2
+
+
+def oh_encode_amr_rel(amr_rel):
+    if amr_rel is not None and amr_rel != 'NONE':
+        amr_rel_idx = __AMR_RELATIONS.index(amr_rel)
+        return amr_rel_binarizer.transform([amr_rel_idx])[0, :]
+    else:
+        return amr_rel_binarizer.transform([-1])[0, :]

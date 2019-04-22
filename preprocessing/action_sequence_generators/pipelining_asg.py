@@ -3,8 +3,8 @@ from preprocessing import SentenceAMRPairsExtractor
 
 from amr_util.demo_util import get_smatch
 from postprocessing import ActionSequenceReconstruction as asr
-from models.AMRGraph import AMR
-from models import AMRData
+from models.amr_graph import AMR
+from models import amr_data
 from preprocessing.action_sequence_generators.simple_asg import SimpleASG
 from preprocessing.action_sequence_generators.simple_asg__informed_swap import SimpleInformedSwapASG
 from preprocessing.action_sequence_generators.simple_informed_break_nodes_on_stack import \
@@ -27,7 +27,7 @@ for i in range(len(datasets)):
         if sentence_len < 20:
             try:
                 amr = AMR.parse_string(amr_str)
-                custom_amr = AMRData.CustomizedAMR()
+                custom_amr = amr_data.CustomizedAMR()
                 custom_amr.create_custom_AMR(amr)
 
                 try:

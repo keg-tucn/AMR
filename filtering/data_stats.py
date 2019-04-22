@@ -1,11 +1,11 @@
 from data_filtering import DataFiltering
 
 from preprocessing import SentenceAMRPairsExtractor
-from models.AMRGraph import AMR
+from models.amr_graph import AMR
 from filters import NoMissingAllignmentInfoFilter, TreeFilter, TokenToNodeAlignmentFilter, ProjectiveTreeFilter, \
-    PerfectALignmentFilter
+    PerfectAlignmentFilter
 from preprocessing import TokensReplacer
-from models import AMRData
+from models import amr_data
 
 
 def generate_dataset_statistics(file_path, filters):
@@ -41,7 +41,7 @@ def generate_dataset_statistics(file_path, filters):
                                                                                     'power-quantity'
                                                                                     ])
 
-            custom_amr = AMRData.CustomizedAMR()
+            custom_amr = amr_data.CustomizedAMR()
             custom_amr.create_custom_AMR(new_amr)
             sentence_amr_id.append((sentence, new_amr, custom_amr, amr_id))
 

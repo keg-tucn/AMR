@@ -3,7 +3,7 @@ import copy
 import sys
 
 from definitions import PROJECT_ROOT_DIR
-from models import AMRData
+from models import amr_data
 from preprocessing import SentenceAMRPairsExtractor
 from preprocessing.action_sequence_generators.backtracking_asg import BacktrackingASGFixedReduce
 from preprocessing.action_sequence_generators.backtracking_asg import BacktrackingASGInformedSwap
@@ -15,7 +15,7 @@ from preprocessing.action_sequence_generators.simple_asg import SimpleASG
 from preprocessing.ActionSequenceGenerator import SwapException
 from preprocessing.ActionSequenceGenerator import TokenOnStackException
 from preprocessing.ActionSequenceGenerator import RotateException
-from models.AMRGraph import AMR
+from models.amr_graph import AMR
 from amr_util import TrainingDataStats
 from preprocessing import TokensReplacer
 from ActionSequenceGeneratorStatisticsPlotter import plot_histogram
@@ -192,7 +192,7 @@ class ActionSeqGenStatistics:
             except:
                 print("Exception when getting unaligned nodes\n")
 
-            custom_amr = AMRData.CustomizedAMR()
+            custom_amr = amr_data.CustomizedAMR()
 
             try:
 

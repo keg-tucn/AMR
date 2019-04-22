@@ -1,7 +1,7 @@
 import logging
 from tqdm import tqdm
 
-from models.AMRGraph import AMR
+from models.amr_graph import AMR
 from preprocessing import NamedEntitiesReplacer
 from preprocessing import SentenceAMRPairsExtractor
 

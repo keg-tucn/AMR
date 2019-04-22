@@ -1,6 +1,6 @@
 import logging
 
-import models.Actions as act
+import models.actions as act
 from action_sequence_generators.asg_exceptions import *
 
 

@@ -11,7 +11,7 @@ from collections import defaultdict
 from util import *
 import re, sys
 from optparse import OptionParser
-from DependencyGraph import *
+from dependency_graph import *
 
 
 # Error definitions

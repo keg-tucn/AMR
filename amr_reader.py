@@ -2,7 +2,7 @@ from os import listdir, path, makedirs
 import pickle as js
 
 from definitions import PROJECT_ROOT_DIR
-from feature_extraction import TrainingDataExtractor as tde
+from feature_extraction import training_data_extractor as tde
 
 
 def generate_parsed_data(parsed_path, cache, dump_path):

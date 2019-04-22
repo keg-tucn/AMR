@@ -1,7 +1,7 @@
 import logging
 
 from asg_nodes_on_stack import NodesOnStackASG
-import models.Actions as act
+import models.actions as act
 
 """ Added break action to simple informed alg
 """

@@ -1,5 +1,5 @@
-from models.AMRGraph import AMR
-from models import AMRData
+from models.amr_graph import AMR
+from models import amr_data
 from smatch import smatch_util
 from smatch import smatch_amr
 
@@ -7,7 +7,7 @@ from smatch import smatch_amr
 # method that returns the customized AMR representation directly from amr_str
 def get_custom_amr(amr_str):
     amr = AMR.parse_string(amr_str)
-    custom_amr = AMRData.CustomizedAMR()
+    custom_amr = amr_data.CustomizedAMR()
     custom_amr.create_custom_AMR(amr)
     return custom_amr
 

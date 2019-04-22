@@ -1,8 +1,8 @@
-from models import AMRData
+from models import amr_data
 from postprocessing import ActionSequenceReconstruction
 from preprocessing import ActionSequenceGenerator
 import re
-from models.AMRGraph import AMR
+from models.amr_graph import AMR
 import copy
 from smatch import smatch_util, smatch_amr
 
@@ -148,7 +148,7 @@ if __name__ == "__main__":
     # after_post_amr = reentrancy_restoring(new_amr, , variables, n_to_concepts, n_to_tokens,  rel_to_tokens,info_for_coref)
 
     new_amr_parsed = AMR.parse_string(new_amr_str)
-    custom_AMR = AMRData.CustomizedAMR()
+    custom_AMR = amr_data.CustomizedAMR()
     custom_AMR.create_custom_AMR(new_amr_parsed)
 
     print(custom_AMR.tokens_to_concepts_dict)

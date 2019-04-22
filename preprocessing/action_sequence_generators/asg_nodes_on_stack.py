@@ -1,6 +1,6 @@
 import copy
 
-import models.Actions as act
+import models.actions as act
 
 # TO DO: keep on stack (variable,index) pairs
 

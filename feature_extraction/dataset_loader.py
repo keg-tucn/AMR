@@ -2,13 +2,17 @@ from os import listdir, path, makedirs
 import pickle as js
 
 from definitions import AMR_ALIGNMENTS_SPLIT
-from models.AMRGraph import AMR
-from models.AMRData import CustomizedAMR
+from models.amr_graph import AMR
+from models.amr_data import CustomizedAMR
 from preprocessing import SentenceAMRPairsExtractor
-from TrainingDataExtractor import generate_training_data
+from training_data_extractor import generate_training_data
 
 
 def read_original_graphs(type, filter_path="deft", cache=True):
+    """
+        Return a list of (amr_id, sentence, AMR, CustomizedAMR) quadruples
+        Load the list from a dump file if present, else generate it and save it to a dump file
+    """
     if filter_path is None:
         filter_path = "deft"
     dir_path = AMR_ALIGNMENTS_SPLIT + "/" + type
@@ -43,7 +47,7 @@ def read_original_graphs(type, filter_path="deft", cache=True):
 
                     parsed_file_data.append((amr_triple[2], amr_triple[0], camr_graph, custom_amr_graph))
                 except Exception as _:
-                    # print "Exception when parsing AMR with ID: %s in file: %s\n" % (amr_triple[2], original_file_path)
+                    print "Exception when parsing AMR with ID: %s in file: %s\n" % (amr_triple[2], original_file_path)
                     failed_amrs_in_file += 1
 
             if not path.exists(path.dirname(dump_file_path)):
@@ -58,6 +62,10 @@ def read_original_graphs(type, filter_path="deft", cache=True):
 
 
 def read_data(type, filter_path="deft", cache=True):
+    """
+        Return a list of TrainData instances
+        Load the list from a dump file if present, else generate it and save it to a dump file
+    """
     if filter_path is None:
         filter_path = "deft"
     dir_path = AMR_ALIGNMENTS_SPLIT + "/" + type

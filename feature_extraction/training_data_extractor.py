@@ -1,11 +1,12 @@
 import logging
+from os import listdir, makedirs
 from tqdm import tqdm
 from collections import namedtuple
 
 from definitions import PROJECT_ROOT_DIR
-from models import AMRData
-from models.AMRGraph import AMR, ParserError
-from models.TrainData import TrainData
+from models import amr_data
+from models.amr_graph import AMR, ParserError
+from models.train_data import TrainData
 from amr_util import TrainingDataStats
 from preprocessing import SentenceAMRPairsExtractor
 from preprocessing import TokensReplacer
@@ -16,9 +17,10 @@ from Baseline import baseline
 TrainingDataExtraction = namedtuple("TrainingDataExtraction", "data stats")
 
 
-# Given a file with sentences and aligned AMRs,
-# return an array of TrainData instances
 def generate_training_data(file_path, compute_dependencies=True):
+    """
+        Return an array of TrainData instances given a file with sentences and aligned AMRs
+    """
     sentence_amr_triples = SentenceAMRPairsExtractor.extract_sentence_amr_pairs(file_path)
 
     training_data = []
@@ -115,7 +117,7 @@ def generate_training_data(file_path, compute_dependencies=True):
             #
             # create CustomAMR data structure
             #
-            custom_amr = AMRData.CustomizedAMR()
+            custom_amr = amr_data.CustomizedAMR()
             custom_amr.create_custom_AMR(new_amr)
 
             coreference_count += TrainingDataStats.get_coreference_count(custom_amr)
@@ -161,17 +163,16 @@ def generate_training_data(file_path, compute_dependencies=True):
 
 
 def extract_amr_ids_from_corpus_as_audit_trail():
-    from os import listdir, path, makedirs
     data = []
-    mypath = 'resources/alignments/split/' + "dev"
+    path = PROJECT_ROOT_DIR + "/resources/alignments/split/" + "dev"
     original_path = 'resources/amrs/split/' + "dev"
-    print(mypath)
-    for f in listdir(mypath):
-        if not "dump" in f and "deft" in f:
-            mypath_f = mypath + "/" + f
+
+    for f in listdir(path):
+        if "dump" not in f and "deft" in f:
+            path_f = path + "/" + f
             original_path_f = original_path + "/" + f.replace("alignments", "amrs")
-            print(mypath_f)
-            new_data = generate_training_data(mypath_f).data
+            print(path_f)
+            new_data = generate_training_data(path_f).data
             data += new_data
             with open(original_path_f) as input_file:
                 lines = input_file.readlines()
@@ -203,7 +204,8 @@ def extract_amr_ids_from_corpus_as_audit_trail():
 if __name__ == "__main__":
     # extract_amr_ids_from_corpus_as_audit_trail()
     logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.WARNING)
-    generated_data = generate_training_data(PROJECT_ROOT_DIR + "/resources/alignments/split/dev/deft-p2-amr-r1-alignments-dev-bolt.txt")
+    generated_data = generate_training_data(
+        PROJECT_ROOT_DIR + "/resources/alignments/split/dev/deft-p2-amr-r1-alignments-dev-bolt.txt")
     assert isinstance(generated_data, TrainingDataExtraction)
     assert isinstance(generated_data.data, list)
     assert isinstance(generated_data.stats, TrainingDataStats.TrainingDataStatistics)

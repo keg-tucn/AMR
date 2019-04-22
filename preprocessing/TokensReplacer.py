@@ -2,7 +2,7 @@ import copy
 import re
 from operator import itemgetter
 
-from models.Node import Node
+from models.node import Node
 
 
 def replace_date_entities(amr, sentence):
