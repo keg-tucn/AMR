@@ -236,6 +236,8 @@ def get_embedding_matrix(word_index, embedding_dim):
 
 
 def get_model(embedding_matrix, model_parameters):
+    max_len = model_parameters.max_len
+
     buffer_input = Input(shape=(max_len,), dtype="int32")
     stack_input_0 = Input(shape=(max_len,), dtype="int32")
     stack_input_1 = Input(shape=(max_len,), dtype="int32")
@@ -642,9 +644,6 @@ def test_file(model_name, test_case_name, test_data_path, test_source, model_par
 
 if __name__ == "__main__":
     data_sets = ["xinhua", "bolt", "proxy", "dfa", "all"]
-    max_lens = [30, 30, 30, 30, 30]
-    embeddings_dims = [200, 200, 300, 200, 200]
-    epochs = [50, 50, 50, 50, 20]
     test_source = "dev"
 
     # generate_tokenizer()
@@ -654,13 +653,14 @@ if __name__ == "__main__":
     max_len = 30
     embeddings_dim = 200
     train_epochs = 50
+    hidden_layer_size = 1024
     train_data_path = "proxy"
     test_data_path = "proxy"
 
     model_name = "{}_epochs={}_maxlen={}_embeddingsdim={}".format(data_set, train_epochs, max_len, embeddings_dim)
 
     model_parameters = ModelParameters(max_len=max_len, embeddings_dim=embeddings_dim, train_epochs=train_epochs,
-                                       hidden_layer_size=1024, with_enhanced_dep_info=False,
+                                       hidden_layer_size=hidden_layer_size, with_enhanced_dep_info=False,
                                        with_target_semantic_labels=False, with_reattach=False)
 
     if train_data_path == "all":
