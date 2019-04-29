@@ -1,11 +1,35 @@
 from os import listdir, path, makedirs
+import math
 import pickle as js
+import numpy as np
 
 from definitions import AMR_ALIGNMENTS_SPLIT
 from models.amr_graph import AMR
 from models.amr_data import CustomizedAMR
 from preprocessing import SentenceAMRPairsExtractor
 from training_data_extractor import generate_training_data
+
+
+def partition_dataset(original_data_partitions, partition_sizes=None):
+    """
+        Partition a dataset into a set of partitions according to a list of sizes for each partition
+    """
+    if partition_sizes is not None:
+        data = np.concatenate(original_data_partitions)
+        data_len = len(data)
+
+        partition_indices = [part_no + 1 for part_no in range(len(partition_sizes))]
+
+        partition_boundaries = [int(math.floor(data_len * sum(partition_sizes[0:part_index])))
+                                for part_index in partition_indices]
+        partition_boundaries = [0] + partition_boundaries
+
+        data_partitions = [data[partition_boundaries[part_idx - 1]: partition_boundaries[part_idx]]
+                           for part_idx in partition_indices]
+
+        return data_partitions
+    else:
+        return original_data_partitions
 
 
 def read_original_graphs(type, filter_path="deft", cache=True):

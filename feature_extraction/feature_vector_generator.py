@@ -23,43 +23,29 @@ amr_rel_binarizer = sklearn.preprocessing.LabelBinarizer()
 amr_rel_binarizer.fit(range(len(__AMR_RELATIONS)))
 
 
-def extract_data_components(train_data, test_data):
-    data = np.concatenate((train_data, test_data))
-
-    sentences = [d.sentence for d in data]
+def extract_data_components(data):
+    sentences = np.asanyarray([d.sentence for d in data])
 
     tokenizer = tokenizer_util.get_tokenizer()
     sequences = np.asarray(tokenizer.texts_to_sequences(sentences))
 
-    actions = [d.action_sequence for d in data]
+    actions = np.asanyarray([d.action_sequence for d in data])
 
-    dependencies = [d.dependencies for d in data]
+    dependencies = np.asanyarray([d.dependencies for d in data])
 
     named_entities = [d.named_entities for d in data]
     named_entities = [[(n[3], n[2]) for n in named_entities_list] for named_entities_list in named_entities]
+    named_entities = np.asanyarray(named_entities)
 
     date_entities = [d.date_entities for d in data]
     date_entities = [[(d[3], d[2], d[1]) for d in date_entities_list] for date_entities_list in date_entities]
+    date_entities = np.asanyarray(date_entities)
 
-    amr_ids = [d.amr_id for d in data]
+    amr_str = np.asanyarray([d.original_amr for d in data])
 
-    num_test_samples = int(max(len(test_data), len(train_data) / 10))
-    num_train_samples = int(len(data) - num_test_samples)
+    amr_ids = np.asanyarray([d.amr_id for d in data])
 
-    x_train = sequences[:num_train_samples]
-    y_train = actions[:num_train_samples]
-
-    x_test = sequences[num_train_samples:]
-    y_test = actions[num_train_samples:]
-
-    dependencies_train = dependencies[:num_train_samples]
-    dependencies_test = dependencies[num_train_samples:]
-
-    train_amr_ids = amr_ids[:num_train_samples]
-    test_amr_ids = amr_ids[num_train_samples:]
-
-    return (x_train, y_train, x_test, y_test, dependencies_train, dependencies_test,
-            train_amr_ids, test_amr_ids, named_entities, date_entities)
+    return sequences, actions, dependencies, amr_str, amr_ids, named_entities, date_entities
 
 
 def generate_feature_vectors(x, y, dependencies, amr_ids, model_parameters):
@@ -251,10 +237,6 @@ def oh_encode_parser_action(action, with_target_semantic_labels):
             return simple_target_label_binarizer.transform([action.index])[0, :]
         else:
             return simple_target_label_binarizer.transform([-1])[0, :]
-
-
-def oh_decode_parser_action(action_ohe, with_target_semantic_labels):
-    x = 2
 
 
 def oh_encode_amr_rel(amr_rel):

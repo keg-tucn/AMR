@@ -1,14 +1,13 @@
-import numpy as np
 import re
+import numpy as np
 import sklearn.preprocessing
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.layers import Input, Embedding, LSTM, Dense, concatenate, TimeDistributed
 from keras.models import Model
 from keras.optimizers import SGD
-from keras.utils import plot_model
 
 from constants import __AMR_RELATIONS
-from definitions import PROJECT_ROOT_DIR, GLOVE_EMBEDDINGS
+from definitions import GLOVE_EMBEDDINGS, TRAINED_MODELS_DIR, RESULT_METRICS_DIR
 from Baseline import reentrancy_restoring
 from amr_util.KerasPlotter import plot_history
 from amr_util import tokenizer_util
@@ -205,7 +204,9 @@ def get_optimizer():
 
 def get_embedding_matrix(word_index, embedding_dim):
     special_cases_re = re.compile("""^([a-z])+-(?:entity|quantity)$""")
+
     embeddings_index = {}
+
     emb_file = open(GLOVE_EMBEDDINGS + "/" + "glove.6B.{}d.txt".format(embedding_dim))
     for line in emb_file:
         values = line.split()
@@ -213,6 +214,7 @@ def get_embedding_matrix(word_index, embedding_dim):
         coefs = np.asarray(values[1:], dtype="float32")
         embeddings_index[word] = coefs
     emb_file.close()
+
     print("Found %s word vectors." % len(embeddings_index))
 
     embedding_matrix = np.zeros((len(word_index) + 2, embedding_dim))
@@ -273,19 +275,23 @@ def get_model(embedding_matrix, model_parameters):
                   loss="categorical_crossentropy",
                   metrics=["accuracy"])
 
-    plot_model(model, to_file="model.png")
+    # plot_model(model, to_file="model.png")
     print model.summary()
 
     return model
 
 
-def train(model_name, train_data, test_data, model_parameters):
-    model_path = PROJECT_ROOT_DIR + "/trained_models/{}".format(model_name)
+def train(model_name, train_case_name, train_data, test_data, model_parameters):
+    model_path = TRAINED_MODELS_DIR + "/{}".format(model_name)
     print "Model path is: %s" % model_path
 
-    (x_train, y_train, x_test, y_test, dependencies_train, dependencies_test,
-     train_amr_ids, test_amr_ids, named_entities, date_entities) = \
-        feature_vector_generator.extract_data_components(train_data, test_data)
+    [train_data, test_data] = dataset_loader.partition_dataset((train_data, test_data), partition_sizes=[0.9, 0.1])
+
+    (x_train, y_train, dependencies_train, train_amr_str, train_amr_ids, train_named_entities, train_date_entities) = \
+        feature_vector_generator.extract_data_components(train_data)
+
+    (x_test, y_test, dependencies_test, test_amr_str, test_amr_ids, test_named_entities, test_date_entities) = \
+        feature_vector_generator.extract_data_components(test_data)
 
     print "Training data shape: "
     print x_train.shape
@@ -301,9 +307,7 @@ def train(model_name, train_data, test_data, model_parameters):
     # Else, the same element on the buffer is fed and the elements from the stack are updated
     # Do not consider instances with more than 30 actions for the moment.
 
-    word_index_map = tokenizer_util.get_word_index_map()
-
-    (x_train_full, y_train_full, lengths_train, filtered_count_tr) = \
+    (x_train_full, y_train_full, lengths_train, filtered_count_train) = \
         feature_vector_generator.generate_feature_vectors(x_train, y_train, dependencies_train,
                                                           train_amr_ids, model_parameters)
 
@@ -311,25 +315,21 @@ def train(model_name, train_data, test_data, model_parameters):
         feature_vector_generator.generate_feature_vectors(x_test, y_test, dependencies_test,
                                                           test_amr_ids, model_parameters)
 
-    y_train_ohe = y_train_full
-    y_test_ohe = y_test_full
-
     print "Mean length %s " % np.asarray(lengths_train).mean()
     print "Max length %s" % np.asarray(lengths_train).max()
-    print "Filtered %s" % filtered_count_tr
+    print "Filtered %s" % filtered_count_train
     print "Final train data shape"
     print (x_train_full.shape)
     print "Final test data shape"
     print (x_test_full.shape)
 
-    embedding_dim = model_parameters.embeddings_dim
-
-    embedding_matrix = get_embedding_matrix(word_index_map, embedding_dim)
+    word_index_map = tokenizer_util.get_word_index_map()
+    embedding_matrix = get_embedding_matrix(word_index_map, model_parameters.embeddings_dim)
 
     model = get_model(embedding_matrix, model_parameters)
 
     history = model.fit([x_train_full[:, :, 0], x_train_full[:, :, 1], x_train_full[:, :, 2], x_train_full[:, :, 3],
-                         x_train_full[:, :, 4:9], x_train_full[:, :, 9:]], y_train_ohe,
+                         x_train_full[:, :, 4:9], x_train_full[:, :, 9:]], y_train_full,
                         epochs=model_parameters.train_epochs, batch_size=16, validation_split=0.1,
                         callbacks=[
                             ModelCheckpoint(model_path, monitor="val_acc", verbose=0, save_best_only=True,
@@ -344,10 +344,7 @@ def train(model_name, train_data, test_data, model_parameters):
 
     errors = 0
 
-    amrs_test = [d.original_amr for d in test_data]
-
-    test_action_sequences = [d.action_sequence for d in test_data]
-    l_test = [[a.label for a in actions_list] for actions_list in test_action_sequences]
+    y_test_labels = [[a.label for a in action_sequence] for action_sequence in y_test]
 
     for i in range(len(x_test)):
         print "%d/%d" % (i, len(x_test))
@@ -356,7 +353,7 @@ def train(model_name, train_data, test_data, model_parameters):
 
         if len(prediction) > 0:
             act = asr.ActionConceptTransfer()
-            act.load_from_action_and_label(y_test[i], l_test[i])
+            act.load_from_action_and_label([action.index for action in y_test[i]], y_test_labels[i])
             pred_label = act.populate_new_actions(prediction)
             print "Predictions with old labels: "
             print pred_label
@@ -366,109 +363,50 @@ def train(model_name, train_data, test_data, model_parameters):
             # Step2"": predict relations
             # Step3: replace named entities & date date_entities
 
-            predicted_amr_str = asr.reconstruct_all_ne(pred_label, named_entities[i], date_entities[i])
+            predicted_amr_str = asr.reconstruct_all_ne(pred_label, test_named_entities[i], test_date_entities[i])
 
             # handling coreference(postprocessing)
             if coref_handling:
                 predicted_amr_str = reentrancy_restoring(predicted_amr_str)
 
             # Step4: compute smatch
-            original_amr = smatch_amr.AMR.parse_AMR_line(amrs_test[i])
+            original_amr = smatch_amr.AMR.parse_AMR_line(test_amr_str[i])
             predicted_amr = smatch_amr.AMR.parse_AMR_line(predicted_amr_str)
             smatch_f_score = smatch_results.compute_and_add(predicted_amr, original_amr)
 
             print "Original Amr"
-            print amrs_test[i]
+            print test_amr_str[i]
             print "Predicted Amr"
             print predicted_amr_str
             print "Smatch f-score %f" % smatch_f_score
         else:
             errors += 1
 
-    # modified to results_train_new
-    file = open(PROJECT_ROOT_DIR + "/results_keras/{}_results_train_new".format(model_name), "w")
+    model_accuracy = model.evaluate([x_test_full[:, :, 0], x_test_full[:, :, 1], x_test_full[:, :, 2],
+                                     x_test_full[:, :, 3], x_test_full[:, :, 4:9], x_test_full[:, :, 9:]], y_test_full)
 
-    file.write("------------------------------------------------------------------------------------------------\n")
-    file.write("Train data shape: \n")
-    file.write(str(x_train.shape) + "\n")
-    file.write("Test data shape: " + "\n")
-    file.write(str(x_test.shape) + "\n")
-    file.write("Final test data shape" + "\n")
-    file.write(str(x_test_full.shape) + "\n")
-    file.write("Final train data shape" + "\n")
-    file.write(str(x_train_full.shape) + "\n")
-    file.write("Mean train length %s \n" % np.asarray(lengths_train).mean())
-    file.write("Max train length %s \n" % np.asarray(lengths_train).max())
-    file.write("Filtered\n")
-    file.write(str(filtered_count_tr) + "\n")
-    file.write("Scores for model {}\n".format(model_path))
-
-    file.write("Min: %f\n" % np.min(smatch_results.smatch_scores))
-    file.write("Max: %f\n" % np.max(smatch_results.smatch_scores))
-    file.write("Arithm. mean %s\n" % (smatch_results.smatch_sum / smatch_results.n))
-    file.write("Harm. mean %s\n" % (smatch_results.n / smatch_results.inv_smatch_sum))
-    file.write("Global smatch f-score %s\n" % smatch_results.smatch_per_node_mean())
-
-    accuracy = model.evaluate([x_test_full[:, :, 0], x_test_full[:, :, 1], x_test_full[:, :, 2], x_test_full[:, :, 3],
-                               x_test_full[:, :, 4:9], x_test_full[:, :, 9:]], y_test_ohe)
-    file.write("Model test accuracy\n")
-    file.write(str(accuracy[1]) + "\n")
-    file.write("Errors\n")
-    file.write(str(errors) + "\n")
-
-    file.close()
+    save_trial_results(train_data_shape=x_train.shape, filtered_train_data_shape=x_train_full.shape,
+                       train_lengths=lengths_train, test_data_shape=x_test.shape,
+                       filtered_test_data_shape=x_test_full.shape, test_lengths=lengths_test,
+                       model_accuracy=model_accuracy, smatch_results=smatch_results, errors=errors,
+                       trial_name=train_case_name)
 
 
 def test(model_name, test_case_name, data, model_parameters):
-    model_path = PROJECT_ROOT_DIR + "/trained_models/{}".format(model_name)
+    model_path = TRAINED_MODELS_DIR + "/{}".format(model_name)
     print "Model path is: %s" % model_path
 
-    sentences = [d.sentence for d in data]
-    amrs = [d.original_amr for d in data]
-    test_amr_ids = [d.amr_id for d in data]
-
-    actions = [d.action_sequence for d in data]
-
-    action_indices = [[a.index for a in actions_list] for actions_list in actions]
-    action_labels = [[a.label for a in actions_list] for actions_list in actions]
-
-    dependencies = [d.dependencies for d in data]
-
-    named_entities = [d.named_entities for d in data]
-    named_entities = [[(n[3], n[2]) for n in named_entities_list] for named_entities_list in named_entities]
-
-    date_entities = [d.date_entities for d in data]
-    date_entities = [[(d[3], d[2], d[1]) for d in date_entities_list] for date_entities_list in date_entities]
-
-    tokenizer = tokenizer_util.get_tokenizer()
     word_index_map = tokenizer_util.get_word_index_map()
     index_word_map = tokenizer_util.get_index_word_map()
-
-    sequences = np.asarray(tokenizer.texts_to_sequences(sentences))
 
     print "Word index len: "
     print len(word_index_map)
 
-    indices = np.arange(sequences.shape[0])
-    sequences = sequences[indices]
-
-    actions = np.asarray(actions)[indices]
-    labels = np.asarray(action_labels)[indices]
-    dependencies = [dependencies[i] for i in indices]
-
-    amrs = np.asanyarray(amrs)[indices]
-
-    x_test = sequences
-    y_test = actions
-    l_test = labels
-    amrs_test = amrs
-    dependencies_test = dependencies
+    (x_test, y_test, dependencies_test, test_amr_str, test_amr_ids, test_named_entities, test_date_entities) = \
+        feature_vector_generator.extract_data_components(data)
 
     print "Test data shape: "
     print x_test.shape
-    print y_test.shape
-    print amrs_test.shape
-    print len(dependencies_test)
 
     embedding_matrix = get_embedding_matrix(word_index_map, model_parameters.embeddings_dim)
 
@@ -476,9 +414,7 @@ def test(model_name, test_case_name, data, model_parameters):
         feature_vector_generator.generate_feature_vectors(x_test, y_test, dependencies_test, test_amr_ids,
                                                           model_parameters)
 
-    y_test = np.asarray(action_indices)[indices]
-
-    y_test_ohe = y_test_full
+    y_test_labels = [[a.label for a in action_sequence] for action_sequence in y_test]
 
     model = get_model(embedding_matrix, model_parameters)
 
@@ -493,6 +429,7 @@ def test(model_name, test_case_name, data, model_parameters):
     errors = 0
 
     for i in range(len(x_test)):
+        print "%d/%d" % (i, len(x_test))
         prediction = make_prediction(model, x_test[i], dependencies_test[i], model_parameters)
 
         predictions.append(prediction)
@@ -501,16 +438,16 @@ def test(model_name, test_case_name, data, model_parameters):
         print "Predicted"
         pretty_print_actions(prediction)
         print "Actual"
-        pretty_print_actions(y_test[i])
+        pretty_print_actions([action.index for action in y_test[i]])
 
         if len(prediction) > 0:
             act = asr.ActionConceptTransfer()
-            act.load_from_action_and_label(y_test[i], l_test[i])
+            act.load_from_action_and_label([action.index for action in y_test[i]], y_test_labels[i])
             pred_label = act.populate_new_actions(prediction)
             print "Predictions with old labels: "
             print pred_label
             if model_parameters.with_reattach is True:
-                predicted_amr_str = asr.reconstruct_all_ne(pred_label, named_entities[i], date_entities[i])
+                predicted_amr_str = asr.reconstruct_all_ne(pred_label, test_named_entities[i], test_date_entities[i])
                 # handling coreference(postprocessing)
                 if coref_handling:
                     predicted_amr_str = reentrancy_restoring(predicted_amr_str)
@@ -520,48 +457,85 @@ def test(model_name, test_case_name, data, model_parameters):
                 if coref_handling:
                     predicted_amr_str = reentrancy_restoring(predicted_amr_str)
 
-            original_amr = smatch_amr.AMR.parse_AMR_line(amrs_test[i])
+            original_amr = smatch_amr.AMR.parse_AMR_line(test_amr_str[i])
             predicted_amr = smatch_amr.AMR.parse_AMR_line(predicted_amr_str)
             smatch_f_score = smatch_results.compute_and_add(predicted_amr, original_amr)
 
             print "Original Amr"
-            print amrs_test[i]
+            print test_amr_str[i]
             print "Predicted Amr"
             print predicted_amr_str
             print "Smatch f-score %f" % smatch_f_score
         else:
             errors += 1
 
-    file = open(PROJECT_ROOT_DIR + "/results_keras/{}_results_test_{}".format(model_name, test_case_name), "w")
+    model_accuracy = model.evaluate([x_test_full[:, :, 0], x_test_full[:, :, 1], x_test_full[:, :, 2],
+                                     x_test_full[:, :, 3], x_test_full[:, :, 4:9], x_test_full[:, :, 9:]], y_test_full)
 
-    file.write("------------------------------------------------------------------------------------------------\n")
-    file.write("Test data shape: " + "\n")
-    file.write(str(x_test.shape) + "\n")
-    file.write("Final test data shape" + "\n")
-    file.write(str(x_test_full.shape) + "\n")
-    file.write("Filtered\n")
-    file.write(str(filtered_count_test) + "\n")
-    file.write("Scores for model {}\n".format(model_path))
+    save_trial_results(train_data_shape=None, filtered_train_data_shape=None, train_lengths=None,
+                       test_data_shape=x_test.shape, filtered_test_data_shape=x_test_full.shape,
+                       test_lengths=lengths_test, model_accuracy=model_accuracy, smatch_results=smatch_results,
+                       errors=errors, trial_name=test_case_name)
 
-    file.write("Min: %f\n" % np.min(smatch_results.smatch_scores))
-    file.write("Max: %f\n" % np.max(smatch_results.smatch_scores))
-    file.write("Arithm. mean %s\n" % (smatch_results.smatch_sum / smatch_results.n))
-    file.write("Harm. mean %s\n" % (smatch_results.n / smatch_results.inv_smatch_sum))
-    file.write("Global smatch f-score %s\n" % smatch_results.smatch_per_node_mean())
-
-    accuracy = model.evaluate([x_test_full[:, :, 0], x_test_full[:, :, 1], x_test_full[:, :, 2], x_test_full[:, :, 3],
-                               x_test_full[:, :, 4:9], x_test_full[:, :, 9:]], y_test_ohe)
-    file.write("Model test accuracy\n")
-    file.write(str(accuracy[1]) + "\n")
-    file.write("Errors\n")
-    file.write(str(errors) + "\n")
-
-    file.close()
     return predictions
 
 
+def save_trial_results(train_data_shape, filtered_train_data_shape, train_lengths,
+                       test_data_shape, filtered_test_data_shape, test_lengths,
+                       model_accuracy, smatch_results, errors, trial_name):
+    model_path = TRAINED_MODELS_DIR + "/{}".format(model_name)
+
+    if train_data_shape is not None:
+        trial_type = "train"
+    else:
+        trial_type = "test"
+
+    file_name = RESULT_METRICS_DIR + "/{}_results_{}_{}".format(model_name, trial_type, trial_name)
+
+    with open(file_name, "w") as f:
+        f.write("------------------------------------------------------------------------------------------------\n")
+        if train_data_shape is not None:
+            f.write("Train data shape: \n")
+            f.write(str(train_data_shape) + "\n")
+        f.write("Test data shape: " + "\n")
+        f.write(str(test_data_shape) + "\n")
+
+        if filtered_train_data_shape is not None:
+            f.write("Final train data shape:" + "\n")
+            f.write(str(filtered_train_data_shape) + "\n")
+        f.write("Final test data shape:" + "\n")
+        f.write(str(filtered_test_data_shape) + "\n")
+
+        if train_data_shape is not None and filtered_train_data_shape is not None:
+            f.write("Filtered train: \n")
+            f.write(str(train_data_shape[0] - filtered_train_data_shape[0]) + "\n")
+
+        f.write("Filtered test: \n")
+        f.write(str(test_data_shape[0] - filtered_test_data_shape[0]) + "\n")
+
+        if train_lengths is not None:
+            f.write("Mean train length: %s \n" % np.asarray(train_lengths).mean())
+            f.write("Max train length: %s \n" % np.asarray(train_lengths).max())
+
+        f.write("Mean test length: %s \n" % np.asarray(test_lengths).mean())
+        f.write("Max test length: %s \n" % np.asarray(test_lengths).max())
+
+        f.write("Scores for model {}\n".format(model_path))
+
+        f.write("Min: %f\n" % np.min(smatch_results.smatch_scores))
+        f.write("Max: %f\n" % np.max(smatch_results.smatch_scores))
+        f.write("Arithm. mean %s\n" % (smatch_results.smatch_sum / smatch_results.n))
+        f.write("Harm. mean %s\n" % (smatch_results.n / smatch_results.inv_smatch_sum))
+        f.write("Global smatch f-score %s\n" % smatch_results.smatch_per_node_mean())
+
+        f.write("Model test accuracy\n")
+        f.write(str(model_accuracy[1]) + "\n")
+        f.write("Errors\n")
+        f.write(str(errors) + "\n")
+
+
 def test_without_amr(model_name, data, model_parameters):
-    model_path = PROJECT_ROOT_DIR + "/trained_models/{}".format(model_name)
+    model_path = TRAINED_MODELS_DIR + "/{}".format(model_name)
     print "Model path is:"
     print model_path
 
@@ -629,11 +603,11 @@ def test_without_amr(model_name, data, model_parameters):
     return prediction
 
 
-def train_file(model_name, train_data_path, test_data_path, model_parameters):
-    test_data = np.asarray(dataset_loader.read_data("test", test_data_path, cache=True), dtype=object)
+def train_file(model_name, train_case_name, train_data_path, test_data_path, model_parameters):
     train_data = np.asarray(dataset_loader.read_data("training", train_data_path, cache=True), dtype=object)
+    test_data = np.asarray(dataset_loader.read_data("test", test_data_path, cache=True), dtype=object)
 
-    train(model_name, train_data, test_data, model_parameters)
+    train(model_name, train_case_name, train_data, test_data, model_parameters)
 
 
 def test_file(model_name, test_case_name, test_data_path, test_source, model_parameters):
@@ -644,7 +618,7 @@ def test_file(model_name, test_case_name, test_data_path, test_source, model_par
 
 if __name__ == "__main__":
     data_sets = ["xinhua", "bolt", "proxy", "dfa", "all"]
-    test_source = "dev"
+    test_source = "test"
 
     # generate_tokenizer()
     # generate_parsed_data_files()
@@ -652,7 +626,7 @@ if __name__ == "__main__":
     data_set = "proxy"
     max_len = 30
     embeddings_dim = 200
-    train_epochs = 50
+    train_epochs = 2
     hidden_layer_size = 1024
     train_data_path = "proxy"
     test_data_path = "proxy"
@@ -668,8 +642,8 @@ if __name__ == "__main__":
     if test_data_path == "all":
         test_data_path = None
 
-    train_file(model_name=model_name, train_data_path=train_data_path, test_data_path=test_data_path,
-               model_parameters=model_parameters)
+    train_file(model_name=model_name, train_case_name=train_data_path, train_data_path=train_data_path,
+               test_data_path=test_data_path, model_parameters=model_parameters)
 
     test_file(model_name=model_name, test_case_name=test_data_path, test_data_path=test_data_path, test_source="dev",
               model_parameters=model_parameters)

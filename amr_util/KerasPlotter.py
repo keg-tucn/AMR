@@ -1,11 +1,6 @@
 import matplotlib.pyplot as plt
-from os import path
 
-from definitions import PROJECT_ROOT_DIR
-
-abs_path = PROJECT_ROOT_DIR + '/plots_keras'
-print abs_path
-
+from definitions import RESULT_PLOTS_DIR
 
 def plot_history(history, model_name):
     plt.clf()
@@ -16,7 +11,7 @@ def plot_history(history, model_name):
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
-    plt.savefig(abs_path + '/accuracy_{}.png'.format(model_name))
+    plt.savefig(RESULT_PLOTS_DIR + '/accuracy_{}.png'.format(model_name))
     plt.clf()
     # summarize history for loss
     plt.plot(history.history['loss'])
@@ -25,4 +20,4 @@ def plot_history(history, model_name):
     plt.ylabel('loss')
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
-    plt.savefig(abs_path + '/loss_{}.png'.format(model_name))
+    plt.savefig(RESULT_PLOTS_DIR + '/loss_{}.png'.format(model_name))
