@@ -118,3 +118,16 @@ def read_data(type, filter_path="deft", cache=True):
             parsed_data += file_data
 
     return parsed_data
+
+
+def generate_parsed_data_files():
+    """
+        Initialize all the parsed data files (dumps) by regenerating them
+    """
+    read_original_graphs("training", cache=False)
+    read_original_graphs("dev", cache=False)
+    read_original_graphs("test", cache=False)
+
+    read_data("training", cache=False)
+    read_data("dev", cache=False)
+    read_data("test", cache=False)

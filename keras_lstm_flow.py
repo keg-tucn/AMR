@@ -27,9 +27,6 @@ NONE = 5
 
 coref_handling = False
 
-label_binarizer = sklearn.preprocessing.LabelBinarizer()
-label_binarizer.fit(range(5))
-
 
 def get_predictions_from_distr(predictions_distr):
     predictions = [np.argmax(p) for p in predictions_distr]
@@ -87,7 +84,7 @@ def make_prediction(model, x_test, dependencies, model_parameters):
     prev_action[0][current_step] = [0, 0, 0, 0, 0]
 
     if model_parameters.with_enhanced_dep_info:
-        dep_info[0][current_step] = np.repeat(feature_vector_generator.oh_encode_parser_action(None, True), 6)
+        dep_info[0][current_step] = np.repeat(feature_vector_generator.oh_encode_amr_rel(None), 6)
     else:
         dep_info[0][current_step] = np.repeat(0, 6)
 
@@ -157,7 +154,8 @@ def make_prediction(model, x_test, dependencies, model_parameters):
                     stack_token1[0][current_step] = no_word_index
                     stack_token2[0][current_step] = no_word_index
 
-        prev_action[0][current_step] = label_binarizer.transform([current_action])[0, :]
+        prev_action[0][current_step] = feature_vector_generator \
+            .oh_encode_parser_action(current_action, model_parameters.with_target_semantic_labels)
 
         dep_info[0][current_step] = feature_vector_generator.get_dependency_features(stack_token0[0][current_step],
                                                                                      stack_token1[0][current_step],
@@ -169,12 +167,6 @@ def make_prediction(model, x_test, dependencies, model_parameters):
     print tokens_buffer
     print tokens_stack
     return final_prediction
-
-
-def generate_parsed_data_files():
-    dataset_loader.read_data("training", cache=False)
-    dataset_loader.read_data("dev", cache=False)
-    dataset_loader.read_data("test", cache=False)
 
 
 def extract_amr_relations_from_dataset(file_path):
@@ -282,7 +274,7 @@ def get_model(embedding_matrix, model_parameters):
 
 
 def train(model_name, train_case_name, train_data, test_data, model_parameters):
-    model_path = TRAINED_MODELS_DIR + "/{}".format(model_name)
+    model_path = TRAINED_MODELS_DIR + "/{}_{}".format(model_name, train_case_name)
     print "Model path is: %s" % model_path
 
     [train_data, test_data] = dataset_loader.partition_dataset((train_data, test_data), partition_sizes=[0.9, 0.1])
@@ -336,7 +328,7 @@ def train(model_name, train_case_name, train_data, test_data, model_parameters):
                                             save_weights_only=False, mode="auto", period=1),
                             EarlyStopping(monitor="val_acc", min_delta=0, patience=50, verbose=0, mode="auto")])
 
-    plot_history(history, model_name)
+    plot_history(history, model_name, train_case_name)
 
     model.load_weights(model_path, by_name=False)
 
@@ -372,13 +364,15 @@ def train(model_name, train_case_name, train_data, test_data, model_parameters):
             # Step4: compute smatch
             original_amr = smatch_amr.AMR.parse_AMR_line(test_amr_str[i])
             predicted_amr = smatch_amr.AMR.parse_AMR_line(predicted_amr_str)
-            smatch_f_score = smatch_results.compute_and_add(predicted_amr, original_amr)
 
             print "Original Amr"
             print test_amr_str[i]
             print "Predicted Amr"
             print predicted_amr_str
-            print "Smatch f-score %f" % smatch_f_score
+
+            if original_amr is not None and predicted_amr is not None:
+                smatch_f_score = smatch_results.compute_and_add(predicted_amr, original_amr)
+                print "Smatch f-score %f" % smatch_f_score
         else:
             errors += 1
 
@@ -389,11 +383,11 @@ def train(model_name, train_case_name, train_data, test_data, model_parameters):
                        train_lengths=lengths_train, test_data_shape=x_test.shape,
                        filtered_test_data_shape=x_test_full.shape, test_lengths=lengths_test,
                        model_accuracy=model_accuracy, smatch_results=smatch_results, errors=errors,
-                       trial_name=train_case_name)
+                       model_name=model_name, trial_name=train_case_name)
 
 
 def test(model_name, test_case_name, data, model_parameters):
-    model_path = TRAINED_MODELS_DIR + "/{}".format(model_name)
+    model_path = TRAINED_MODELS_DIR + "/{}_{}".format(model_name, test_case_name)
     print "Model path is: %s" % model_path
 
     word_index_map = tokenizer_util.get_word_index_map()
@@ -459,13 +453,15 @@ def test(model_name, test_case_name, data, model_parameters):
 
             original_amr = smatch_amr.AMR.parse_AMR_line(test_amr_str[i])
             predicted_amr = smatch_amr.AMR.parse_AMR_line(predicted_amr_str)
-            smatch_f_score = smatch_results.compute_and_add(predicted_amr, original_amr)
 
             print "Original Amr"
             print test_amr_str[i]
             print "Predicted Amr"
             print predicted_amr_str
-            print "Smatch f-score %f" % smatch_f_score
+
+            if original_amr is not None and predicted_amr is not None:
+                smatch_f_score = smatch_results.compute_and_add(predicted_amr, original_amr)
+                print "Smatch f-score %f" % smatch_f_score
         else:
             errors += 1
 
@@ -475,14 +471,14 @@ def test(model_name, test_case_name, data, model_parameters):
     save_trial_results(train_data_shape=None, filtered_train_data_shape=None, train_lengths=None,
                        test_data_shape=x_test.shape, filtered_test_data_shape=x_test_full.shape,
                        test_lengths=lengths_test, model_accuracy=model_accuracy, smatch_results=smatch_results,
-                       errors=errors, trial_name=test_case_name)
+                       errors=errors, model_name=model_name, trial_name=test_case_name)
 
     return predictions
 
 
 def save_trial_results(train_data_shape, filtered_train_data_shape, train_lengths,
                        test_data_shape, filtered_test_data_shape, test_lengths,
-                       model_accuracy, smatch_results, errors, trial_name):
+                       model_accuracy, smatch_results, errors, model_name, trial_name):
     model_path = TRAINED_MODELS_DIR + "/{}".format(model_name)
 
     if train_data_shape is not None:
@@ -617,33 +613,36 @@ def test_file(model_name, test_case_name, test_data_path, test_source, model_par
 
 
 if __name__ == "__main__":
-    data_sets = ["xinhua", "bolt", "proxy", "dfa", "all"]
-    test_source = "test"
+    data_sets = ["bolt", "consensus", "dfa", "proxy", "xinhua", "all"]
+    test_source = "dev"
 
-    # generate_tokenizer()
-    # generate_parsed_data_files()
+    # tokenizer_util.generate_tokenizer()
+    # dataset_loader.generate_parsed_data_files()
 
-    data_set = "proxy"
-    max_len = 30
-    embeddings_dim = 200
-    train_epochs = 2
-    hidden_layer_size = 1024
     train_data_path = "proxy"
     test_data_path = "proxy"
 
-    model_name = "{}_epochs={}_maxlen={}_embeddingsdim={}".format(data_set, train_epochs, max_len, embeddings_dim)
+    trial_name = ""
+
+    max_len = 30
+    embeddings_dim = 200
+    train_epochs = 50
+    hidden_layer_size = 1024
+
+    model_name = "{}_epochs={}_maxlen={}_embeddingsdim={}" \
+        .format(train_data_path, train_epochs, max_len, embeddings_dim)
 
     model_parameters = ModelParameters(max_len=max_len, embeddings_dim=embeddings_dim, train_epochs=train_epochs,
                                        hidden_layer_size=hidden_layer_size, with_enhanced_dep_info=False,
-                                       with_target_semantic_labels=False, with_reattach=False)
+                                       with_target_semantic_labels=False, with_reattach=True)
 
     if train_data_path == "all":
         train_data_path = None
     if test_data_path == "all":
         test_data_path = None
 
-    train_file(model_name=model_name, train_case_name=train_data_path, train_data_path=train_data_path,
+    train_file(model_name=model_name, train_case_name=trial_name, train_data_path=train_data_path,
                test_data_path=test_data_path, model_parameters=model_parameters)
 
-    test_file(model_name=model_name, test_case_name=test_data_path, test_data_path=test_data_path, test_source="dev",
+    test_file(model_name=model_name, test_case_name=trial_name, test_data_path=test_data_path, test_source=test_source,
               model_parameters=model_parameters)

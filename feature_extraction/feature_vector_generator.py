@@ -1,6 +1,6 @@
 import logging
 import numpy as np
-import sklearn
+from sklearn.preprocessing import LabelBinarizer
 
 from constants import __AMR_RELATIONS, __DEP_AMR_REL_TABLE
 from amr_util import tokenizer_util
@@ -13,17 +13,23 @@ DN = 3
 SW = 4
 NONE = 5
 
-simple_target_label_binarizer = sklearn.preprocessing.LabelBinarizer()
+simple_target_label_binarizer = LabelBinarizer()
 simple_target_label_binarizer.fit(range(5))
 
-composed_target_label_binarizer = sklearn.preprocessing.LabelBinarizer()
+composed_target_label_binarizer = LabelBinarizer()
 composed_target_label_binarizer.fit(range(5 + 2 * len(__AMR_RELATIONS)))
 
-amr_rel_binarizer = sklearn.preprocessing.LabelBinarizer()
+amr_rel_binarizer = LabelBinarizer()
 amr_rel_binarizer.fit(range(len(__AMR_RELATIONS)))
 
 
 def extract_data_components(data):
+    """
+    Return the components of a list of TrainData instances as separate arrays
+    :param data: array of TrainData instances
+    :return: numpy arrays for sequences of indices (corresponding to sentence words), actions, dependencies, AMRs as
+            strings, AMR IDs, named entities pairs and date entities pairs
+    """
     sentences = np.asanyarray([d.sentence for d in data])
 
     tokenizer = tokenizer_util.get_tokenizer()
@@ -49,7 +55,16 @@ def extract_data_components(data):
 
 
 def generate_feature_vectors(x, y, dependencies, amr_ids, model_parameters):
-    index_word_map = tokenizer_util.get_index_word_map()
+    """
+    Return the encoded feature vectors for the trainer, for each training instance
+    :param x: list of sequences of indices corresponding to the words of the sentences
+    :param y: list of sequences of AMRAction objects
+    :param dependencies: list of dictionaries of dependencies
+    :param amr_ids: list of strings corresponding to the IDs of the AMRs in the data set
+    :param model_parameters: collection of model properties
+    :return: list of encoded and padded features for the trainer
+    """
+    tokenizer = tokenizer_util.get_tokenizer()
     no_word_index = tokenizer_util.get_no_word_index()
 
     max_len = model_parameters.max_len
@@ -124,7 +139,7 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, model_parameters):
         if tokens_sequence_index != len(tokens_sequence):
             logging.warn("There was a problem at training instance %d at %s. Actions %s. Tokens %s", i, amr_id,
                          actions_to_string([action.index for action in action_sequence]),
-                         tokens_to_sentence(tokens_sequence, index_word_map))
+                         tokenizer.sequences_to_texts(tokens_sequence))
             exception_count += 1
             continue
             # raise Exception("There was a problem at training instance " + str(i) + " at " + amr_id + "\n")
@@ -164,15 +179,20 @@ def actions_to_string(acts_i):
     return str
 
 
-def tokens_to_sentence(tokens, index_to_word_map):
-    tok_str = ""
-    for t in tokens:
-        tok_str += index_to_word_map[t] + " "
-    tok_str += "\n"
-    return str
-
-
 def get_dependency_features(stack_0_idx, stack_1_idx, stack_2_idx, buffer_0_idx, dependencies, model_parameters):
+    """
+    Return the dependency features (stack_0_on_stack_1, stack_0_on_stack_2, stack_0_on_buffer and vice-versa) given
+    a configuration of the stack, the buffer, known sentence dependencies and model parameters;
+    Depending on model parameters values, features may encode only the presence of a dependency or the expected AMR
+    relation corresponding to the dependency relation
+    :param stack_0_idx: first element on stack
+    :param stack_1_idx: second element on stack
+    :param stack_2_idx: third element on stack
+    :param buffer_0_idx: first element on buffer
+    :param dependencies: dependencies between sentence tokens
+    :param model_parameters: collection of model properties
+    :return: encoded dependency features
+    """
     if model_parameters.with_enhanced_dep_info:
         dep_0_on_1 = oh_encode_amr_rel(None)
         dep_1_on_0 = oh_encode_amr_rel(None)
@@ -237,6 +257,10 @@ def oh_encode_parser_action(action, with_target_semantic_labels):
             return simple_target_label_binarizer.transform([action.index])[0, :]
         else:
             return simple_target_label_binarizer.transform([-1])[0, :]
+
+
+def oh_decode_parser_action(action_ohe, with_target_semantic_labels):
+    print action_ohe
 
 
 def oh_encode_amr_rel(amr_rel):
