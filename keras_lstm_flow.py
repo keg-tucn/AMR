@@ -1,15 +1,15 @@
 import re
 import numpy as np
-import sklearn.preprocessing
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.layers import Input, Embedding, LSTM, Dense, concatenate, TimeDistributed
 from keras.models import Model
 from keras.optimizers import SGD
+from sklearn.preprocessing import LabelBinarizer
 
 from constants import __AMR_RELATIONS
 from definitions import GLOVE_EMBEDDINGS, TRAINED_MODELS_DIR, RESULT_METRICS_DIR
 from Baseline import reentrancy_restoring
-from amr_util.KerasPlotter import plot_history
+from amr_util.keras_plotter import plot_history
 from amr_util import tokenizer_util
 from postprocessing import ActionSequenceReconstruction as asr
 from smatch import smatch_amr
@@ -26,6 +26,9 @@ SW = 4
 NONE = 5
 
 coref_handling = False
+
+label_binarizer = LabelBinarizer()
+label_binarizer.fit(range(5))
 
 
 def get_predictions_from_distr(predictions_distr):
@@ -154,8 +157,7 @@ def make_prediction(model, x_test, dependencies, model_parameters):
                     stack_token1[0][current_step] = no_word_index
                     stack_token2[0][current_step] = no_word_index
 
-        prev_action[0][current_step] = feature_vector_generator \
-            .oh_encode_parser_action(current_action, model_parameters.with_target_semantic_labels)
+        prev_action[0][current_step] = label_binarizer.transform([current_action])[0, :]
 
         dep_info[0][current_step] = feature_vector_generator.get_dependency_features(stack_token0[0][current_step],
                                                                                      stack_token1[0][current_step],
