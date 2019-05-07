@@ -22,8 +22,8 @@ def _plot_accuracy(history, model_name, trial_name):
 
 def _plot_loss(history, model_name, trial_name):
     _config_plot(history.params.get('epochs'))
-    plt.title('{} accuracy'.format(model_name))
-    plt.ylabel('accuracy')
+    plt.title('{} loss'.format(model_name))
+    plt.ylabel('loss')
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
     plt.legend(['train', 'test'], loc='upper left')
