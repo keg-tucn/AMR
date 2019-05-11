@@ -2,8 +2,7 @@ from data_filtering import DataFiltering
 
 from preprocessing import SentenceAMRPairsExtractor
 from models.amr_graph import AMR
-from filters import NoMissingAllignmentInfoFilter, TreeFilter, TokenToNodeAlignmentFilter, ProjectiveTreeFilter, \
-    PerfectAlignmentFilter
+from filters import NoMissingAllignmentInfoFilter, TreeFilter, TokenToNodeAlignmentFilter, ProjectiveTreeFilter
 from preprocessing import TokensReplacer
 from models import amr_data
 

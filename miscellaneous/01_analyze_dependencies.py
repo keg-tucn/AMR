@@ -1,5 +1,4 @@
 from constants import __DEP_AMR_REL_TABLE, __AMR_RELATIONS
-
 from feature_extraction import dataset_loader
 
 training_data = dataset_loader.read_data("training")
