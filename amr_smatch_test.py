@@ -4,8 +4,8 @@ Checks that printing a parsed AMR yields the same thing.
 
 from os import listdir
 
-from feature_extraction import training_data_extractor as tde
-from postprocessing import ActionSequenceReconstruction as asr
+from data_extraction import training_data_extractor as tde
+from postprocessing import action_sequence_reconstruction as asr
 from smatch import smatch_amr
 from smatch import smatch_util
 

@@ -4,19 +4,21 @@ from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.layers import Input, Embedding, LSTM, Dense, concatenate, TimeDistributed
 from keras.models import Model
 from keras.optimizers import SGD
+from keras.utils import plot_model
 from sklearn.preprocessing import LabelBinarizer
 
 from constants import __AMR_RELATIONS
-from definitions import GLOVE_EMBEDDINGS, TRAINED_MODELS_DIR, RESULT_METRICS_DIR
+from definitions import PROJECT_ROOT_DIR, GLOVE_EMBEDDINGS, TRAINED_MODELS_DIR, RESULT_METRICS_DIR
 from Baseline import reentrancy_restoring
 from amr_util.keras_plotter import plot_history
 from amr_util import tokenizer_util
-from postprocessing import ActionSequenceReconstruction as asr
+from postprocessing import action_sequence_reconstruction as asr
 from smatch import smatch_amr
 from smatch import smatch_util
 import models.actions as act
 from models.model_parameters import ModelParameters
-from feature_extraction import dataset_loader, feature_vector_generator
+from feature_extraction import feature_vector_generator
+from data_extraction import dataset_loader
 
 SH = 0
 RL = 1
@@ -281,6 +283,10 @@ def train(model_name, train_case_name, train_data, test_data, model_parameters):
 
     [train_data, test_data] = dataset_loader.partition_dataset((train_data, test_data), partition_sizes=[0.9, 0.1])
 
+    print "Overlapping instances before: %d" % dataset_loader.check_data_partitions_overlap(train_data, test_data)
+    train_data, test_data = dataset_loader.remove_overlapping_instances(train_data, test_data)
+    print "Overlapping instances after: %d" % dataset_loader.check_data_partitions_overlap(train_data, test_data)
+
     (x_train, y_train, dependencies_train, train_amr_str, train_amr_ids, train_named_entities, train_date_entities) = \
         feature_vector_generator.extract_data_components(train_data)
 
@@ -321,6 +327,7 @@ def train(model_name, train_case_name, train_data, test_data, model_parameters):
     embedding_matrix = get_embedding_matrix(word_index_map, model_parameters.embeddings_dim)
 
     model = get_model(embedding_matrix, model_parameters)
+    plot_model(model, to_file=PROJECT_ROOT_DIR + "/model.png")
 
     history = model.fit([x_train_full[:, :, 0], x_train_full[:, :, 1], x_train_full[:, :, 2], x_train_full[:, :, 3],
                          x_train_full[:, :, 4:9], x_train_full[:, :, 9:]], y_train_full,
@@ -328,7 +335,8 @@ def train(model_name, train_case_name, train_data, test_data, model_parameters):
                         callbacks=[
                             ModelCheckpoint(model_path, monitor="val_acc", verbose=0, save_best_only=True,
                                             save_weights_only=False, mode="auto", period=1),
-                            EarlyStopping(monitor="val_acc", min_delta=0, patience=50, verbose=0, mode="auto")])
+                            EarlyStopping(monitor="val_acc", min_delta=0, patience=model_parameters.train_epochs,
+                                          verbose=0, mode="auto")])
 
     plot_history(history, model_name, train_case_name)
 
@@ -603,26 +611,25 @@ def test_without_amr(model_name, data, model_parameters):
 
 def train_file(model_name, train_case_name, train_data_path, test_data_path, model_parameters):
     train_data = np.asarray(dataset_loader.read_data("training", train_data_path, cache=True), dtype=object)
-    test_data = np.asarray(dataset_loader.read_data("test", test_data_path, cache=True), dtype=object)
+    test_data = np.asarray(dataset_loader.read_data("dev", test_data_path, cache=True), dtype=object)
 
     train(model_name, train_case_name, train_data, test_data, model_parameters)
 
 
-def test_file(model_name, test_case_name, test_data_path, test_source, model_parameters):
-    test_data = np.asarray(dataset_loader.read_data(test_source, test_data_path, cache=True), dtype=object)
+def test_file(model_name, test_case_name, test_data_path, model_parameters):
+    test_data = np.asarray(dataset_loader.read_data("test", test_data_path, cache=True), dtype=object)
 
     return test(model_name, test_case_name, test_data, model_parameters)
 
 
 if __name__ == "__main__":
     data_sets = ["bolt", "consensus", "dfa", "proxy", "xinhua", "all"]
-    test_source = "dev"
 
     # tokenizer_util.generate_tokenizer()
     # dataset_loader.generate_parsed_data_files()
 
-    train_data_path = "proxy"
-    test_data_path = "proxy"
+    train_data_path = "all"
+    test_data_path = "all"
 
     trial_name = ""
 
@@ -646,5 +653,5 @@ if __name__ == "__main__":
     train_file(model_name=model_name, train_case_name=trial_name, train_data_path=train_data_path,
                test_data_path=test_data_path, model_parameters=model_parameters)
 
-    test_file(model_name=model_name, test_case_name=trial_name, test_data_path=test_data_path, test_source=test_source,
+    test_file(model_name=model_name, test_case_name=trial_name, test_data_path=test_data_path,
               model_parameters=model_parameters)

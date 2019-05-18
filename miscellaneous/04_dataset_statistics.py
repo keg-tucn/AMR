@@ -1,8 +1,7 @@
 from os import listdir
 
 from definitions import AMR_ALIGNMENTS_SPLIT, PROJECT_ROOT_DIR
-from preprocessing import SentenceAMRPairsExtractor
-from feature_extraction import dataset_loader
+from data_extraction import dataset_loader, input_file_parser
 
 dataset_partitions = ["training", "dev", "test"]
 
@@ -19,7 +18,7 @@ for dataset_partition in dataset_partitions:
         for file_name in directory_content_filtered:
             file_path = partition_path + "/" + file_name
             dataset_name = file_name.split('-')[6].split('.')[0]
-            file_length = len(SentenceAMRPairsExtractor.extract_sentence_amr_pairs(file_path))
+            file_length = len(input_file_parser.extract_data_records(file_path))
             parsed_AMR = len(dataset_loader.read_original_graphs(dataset_partition, file_name))
             act_seq_gen = len(dataset_loader.read_data(dataset_partition, file_name))
 

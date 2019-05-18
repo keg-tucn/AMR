@@ -1,10 +1,9 @@
 import logging
 import copy
-import sys
 
 from definitions import PROJECT_ROOT_DIR
 from models import amr_data
-from preprocessing import SentenceAMRPairsExtractor
+from data_extraction import input_file_parser
 from preprocessing.action_sequence_generators.backtracking_asg import BacktrackingASGFixedReduce
 from preprocessing.action_sequence_generators.backtracking_asg import BacktrackingASGInformedSwap
 from preprocessing.action_sequence_generators.simple_asg__informed_swap import SimpleInformedSwapASG
@@ -20,7 +19,7 @@ from amr_util import TrainingDataStats
 from preprocessing import TokensReplacer
 from ActionSequenceGeneratorStatisticsPlotter import plot_histogram
 from ActionSequenceGeneratorStatisticsPlotter import plot_2_line_graph
-from postprocessing import ActionSequenceReconstruction as asr
+from postprocessing import action_sequence_reconstruction as asr
 from smatch import smatch_util
 from smatch import smatch_amr
 
@@ -256,7 +255,7 @@ class ActionSeqGenStatistics:
 
     def generate_statistics(self, file_path):
         try:
-            sentence_amr_triples = SentenceAMRPairsExtractor.extract_sentence_amr_pairs(file_path)
+            sentence_amr_triples = input_file_parser.extract_data_records(file_path)
             # for i in tqdm(range(0, len(sentence_amr_triples))):
             for i in range(0, len(sentence_amr_triples)):
                 (sentence, amr_str, amr_id) = sentence_amr_triples[i]

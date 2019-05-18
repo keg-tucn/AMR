@@ -2,7 +2,7 @@ from os import path
 import pickle as js
 
 from definitions import CONCEPTS_RELATIONS_DICT
-from feature_extraction import dataset_loader
+from data_extraction import dataset_loader
 
 
 def get_concepts_relations_pairs():
@@ -24,7 +24,7 @@ def extract_concepts_relations_pairs():
     concepts_relations_dict = dict()
 
     for data_split in dataset_splits:
-        graphs_data = dataset_loader.read_original_graphs(type=data_split, filter_path=dataset_identifier)
+        graphs_data = dataset_loader.read_original_graphs(file_type=data_split, filter_path=dataset_identifier)
 
         for graph_data in graphs_data:
             amr_graph = graph_data[2]

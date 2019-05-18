@@ -58,7 +58,7 @@ class Dependencies:
         return self.govToDeps[gov]
 
     def relForConstituents(self, gov, dep):
-        return self.constituentsToRelation((gov, dep))
+        return self.constituentsToRelation[(gov, dep)]
 
     def __str__(self):
         result = ""
@@ -113,7 +113,7 @@ class Parser:
         # print "Tags are: ", Numberer.getGlobalNumberer("tags")
         self.parser.op.display()
         # print "Test parameters"
-        self.parser.op.tlpParams.display();
+        self.parser.op.tlpParams.display()
         self.package_lexparser.Test.display()
 
     def parse(self, sentence):

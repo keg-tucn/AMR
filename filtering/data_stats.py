@@ -1,6 +1,6 @@
 from data_filtering import DataFiltering
 
-from preprocessing import SentenceAMRPairsExtractor
+from data_extraction import input_file_parser
 from models.amr_graph import AMR
 from filters import NoMissingAllignmentInfoFilter, TreeFilter, TokenToNodeAlignmentFilter, ProjectiveTreeFilter
 from preprocessing import TokensReplacer
@@ -16,7 +16,7 @@ def generate_dataset_statistics(file_path, filters):
     sentence_amr_id = []
     amr_preprocessing_fails = 0
 
-    sentence_amr_str_triples = SentenceAMRPairsExtractor.extract_sentence_amr_pairs(file_path)
+    sentence_amr_str_triples = input_file_parser.extract_data_records(file_path)
 
     for i in range(0, len(sentence_amr_str_triples)):
         (sentence, amr_str, amr_id) = sentence_amr_str_triples[i]

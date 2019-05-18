@@ -8,9 +8,9 @@ from models import amr_data
 from models.amr_graph import AMR, ParserError
 from models.train_data import TrainData
 from amr_util import TrainingDataStats
-from preprocessing import SentenceAMRPairsExtractor
+from data_extraction import input_file_parser
 from preprocessing import TokensReplacer
-from preprocessing.DependencyExtractor import DependencyExtractor
+from data_extraction.dependency_extractor import DependencyExtractor
 from preprocessing.action_sequence_generators.simple_asg__informed_swap import SimpleInformedSwapASG
 from Baseline import baseline
 
@@ -21,7 +21,7 @@ def generate_training_data(file_path, compute_dependencies=True):
     """
         Return an array of TrainData instances given a file with sentences and aligned AMRs
     """
-    sentence_amr_triples = SentenceAMRPairsExtractor.extract_sentence_amr_pairs(file_path)
+    sentence_amr_triples = input_file_parser.extract_data_records(file_path)
 
     training_data = []
     processed_sentence_ids = []

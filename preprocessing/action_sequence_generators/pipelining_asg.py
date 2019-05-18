@@ -1,8 +1,8 @@
 # test what instances are processed by different asg versions
-from preprocessing import SentenceAMRPairsExtractor
+from data_extraction import input_file_parser
 
 from amr_util.demo_util import get_smatch
-from postprocessing import ActionSequenceReconstruction as asr
+from postprocessing import action_sequence_reconstruction as asr
 from models.amr_graph import AMR
 from models import amr_data
 from preprocessing.action_sequence_generators.simple_asg import SimpleASG
@@ -20,7 +20,7 @@ for i in range(len(datasets)):
     file_path = '/home/andrei/dynet-base/AMR_lic/resources/alignments/split/training/deft-p2-amr-r2-alignments-training-' + \
                 datasets[i] + '.txt'
 
-    sentence_amr_triples = SentenceAMRPairsExtractor.extract_sentence_amr_pairs(file_path)
+    sentence_amr_triples = input_file_parser.extract_data_records(file_path)
     for i in range(0, len(sentence_amr_triples)):
         (sentence, amr_str, amr_id) = sentence_amr_triples[i]
         sentence_len = len(sentence.split(" "))

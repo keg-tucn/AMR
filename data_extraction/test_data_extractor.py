@@ -3,7 +3,7 @@ from tqdm import tqdm
 
 from models.amr_graph import AMR
 from preprocessing import NamedEntitiesReplacer
-from preprocessing import SentenceAMRPairsExtractor
+from data_extraction import input_file_parser
 
 
 # Given a file with sentences and aligned amrs,
@@ -12,7 +12,7 @@ def generate_test_data(file_path, verbose=True):
     if verbose is False:
         logging.disable(logging.WARN)
 
-    sentence_amr_triples = SentenceAMRPairsExtractor.extract_sentence_amr_pairs(file_path)
+    sentence_amr_triples = input_file_parser.extract_data_records(file_path)
     fail_sentences = []
     test_data = []
     named_entity_exceptions = 0

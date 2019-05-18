@@ -1,5 +1,5 @@
 from models import amr_data
-from postprocessing import ActionSequenceReconstruction
+from postprocessing import action_sequence_reconstruction
 from preprocessing import ActionSequenceGenerator
 import re
 from models.amr_graph import AMR
@@ -159,7 +159,7 @@ if __name__ == "__main__":
     action_sequence = ActionSequenceGenerator.generate_action_sequence(custom_AMR, sentence)
     print action_sequence
 
-    generated_amr_str = ActionSequenceReconstruction.reconstruct_all(action_sequence)
+    generated_amr_str = action_sequence_reconstruction.reconstruct_all(action_sequence)
 
     after_post_amr = reentrancy_restoring(generated_amr_str)
 

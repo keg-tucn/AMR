@@ -36,6 +36,7 @@ def process_sentence(sentence):
             new_sentence = new_sentence + item + ' '
 
         print tagged_list
+        print new_sentence_list
         print new_sentence
         print named_entities_location
 
@@ -46,4 +47,4 @@ def process_sentence(sentence):
 
 
 if __name__ == "__main__":
-    print process_sentence('Andrea leaves on monday and returns in July in New York')
+    print process_sentence('Andrea leaves on Monday and returns in July in New York')

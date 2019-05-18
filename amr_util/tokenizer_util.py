@@ -2,7 +2,7 @@ import pickle
 from keras.preprocessing.text import Tokenizer
 
 from definitions import TOKENIZER_PATH
-from feature_extraction import dataset_loader
+from data_extraction import dataset_loader
 
 
 def get_tokenizer():
