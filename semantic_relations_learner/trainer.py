@@ -2,11 +2,11 @@ import math
 
 from sklearn.neural_network import MLPClassifier
 
-import DatasetExtractor
+import concepts_relations_extractor
 
 
 def train(train_split_percentage=0.8):
-    data = DatasetExtractor.get_concepts_relations_pairs()
+    data = concepts_relations_extractor.get_concepts_relations_pairs()
 
     train_size = math.floor(len(data) * train_split_percentage)
 
