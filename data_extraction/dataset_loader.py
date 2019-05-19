@@ -15,7 +15,7 @@ def read_data(file_type, filter_path="deft", cache=True):
         Loads the list from a dump file if present, else generates it and saves it to a dump file
         :param file_type - dataset partition (training, dev or test)
         :param filter_path - filtering criteria for data files
-        :param ache - allow to load from dump file if true, else calculate from original file and save new dump
+        :param cache - allow to load from dump file if true, else calculate from original file and save new dump
     """
     if filter_path is None:
         filter_path = "deft"

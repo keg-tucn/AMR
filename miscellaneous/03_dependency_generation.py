@@ -15,4 +15,4 @@ data_orig = training_data_orig + dev_data_orig + test_data_orig
 
 for id, sentence, amr_graph, amr_data in data_orig:
     stanford_deps = DependencyExtractor.extract_dependencies(sentence)
-    spaCy_deps = DependencyExtractor.extract_dependencies_spaCy(sentence)
+    spaCy_deps = DependencyExtractor.extract_dependencies_spacy(sentence)

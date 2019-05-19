@@ -1,9 +1,9 @@
 from feature_extraction import feature_vector_generator
 from data_extraction import dataset_loader
 
-training_data = dataset_loader.read_data("training", cache=False)
-dev_data = dataset_loader.read_data("dev", cache=False)
-test_data = dataset_loader.read_data("test", cache=False)
+training_data = dataset_loader.read_data("training")
+dev_data = dataset_loader.read_data("dev")
+test_data = dataset_loader.read_data("test")
 
 data = training_data + dev_data + test_data
 

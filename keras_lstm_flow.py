@@ -194,8 +194,9 @@ def extract_amr_relations_from_dataset(file_path):
             f.write("%s\n" % rel)
 
 
-def get_optimizer():
-    return SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+def get_optimizer(model_parameters):
+    lr = model_parameters.learning_rate
+    return SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)
 
 
 def get_embedding_matrix(word_index, embedding_dim):
@@ -256,8 +257,9 @@ def get_model(embedding_matrix, model_parameters):
     stack_emb_2 = embedding(stack_input_2)
 
     x = concatenate([buffer_emb, stack_emb_0, stack_emb_1, stack_emb_2, prev_action_input, dep_info_input])
-
-    lstm_output = LSTM(model_parameters.hidden_layer_size, return_sequences=True)(x)
+    
+    lstm_output = LSTM(model_parameters.hidden_layer_size, return_sequences=True, dropout=model_parameters.dropout,
+                       recurrent_dropout=model_parameters.recurrent_dropout)(x)
 
     if model_parameters.with_target_semantic_labels:
         dense = TimeDistributed(Dense(5 + 2 * len(__AMR_RELATIONS), activation="softmax"))(lstm_output)
@@ -266,7 +268,7 @@ def get_model(embedding_matrix, model_parameters):
 
     model = Model([buffer_input, stack_input_0, stack_input_1, stack_input_2, prev_action_input, dep_info_input], dense)
 
-    optimizer = get_optimizer()
+    optimizer = get_optimizer(model_parameters)
     model.compile(optimizer=optimizer,
                   loss="categorical_crossentropy",
                   metrics=["accuracy"])
@@ -642,8 +644,8 @@ if __name__ == "__main__":
         .format(train_data_path, train_epochs, max_len, embeddings_dim)
 
     model_parameters = ModelParameters(max_len=max_len, embeddings_dim=embeddings_dim, train_epochs=train_epochs,
-                                       hidden_layer_size=hidden_layer_size, with_enhanced_dep_info=False,
-                                       with_target_semantic_labels=False, with_reattach=True)
+                                       with_enhanced_dep_info=False, with_target_semantic_labels=False,
+                                       with_reattach=True)
 
     if train_data_path == "all":
         train_data_path = None
