@@ -60,5 +60,5 @@ for sequence, deps, amr, sentence in zip(sequences, dependencies, amrs, sentence
 print "Total number of dependencies between tokens: %d" % total_deps
 print "Total number of dependencies between tokens that have an AMR relation: %d" % present_deps
 print "Percentage of mapped dependency relations: %f" % (float(present_deps) / total_deps)
-print "Percentage of direct dependencies: %f" % (float(direct_deps) / total_deps)
-print "Percentage of inverse dependencies: %f" % (float(inverse_deps) / total_deps)
+print "Percentage of direct dependencies: %f" % (float(direct_deps) / present_deps)
+print "Percentage of inverse dependencies: %f" % (float(inverse_deps) / present_deps)

@@ -12,7 +12,7 @@ def print_frameset(frameset):
             print "\t", role.index, role.description
 
 
-frameset_word = "buy"
+frameset_word = "run"
 
 propbank_path = "%s/%s.xml" % (PROPBANK_FRAMES, frameset_word)
 propbank_tree = ET.parse(propbank_path)

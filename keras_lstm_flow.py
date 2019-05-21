@@ -257,7 +257,7 @@ def get_model(embedding_matrix, model_parameters):
     stack_emb_2 = embedding(stack_input_2)
 
     x = concatenate([buffer_emb, stack_emb_0, stack_emb_1, stack_emb_2, prev_action_input, dep_info_input])
-    
+
     lstm_output = LSTM(model_parameters.hidden_layer_size, return_sequences=True, dropout=model_parameters.dropout,
                        recurrent_dropout=model_parameters.recurrent_dropout)(x)
 

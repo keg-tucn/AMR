@@ -26,6 +26,11 @@ class ActionConceptTransfer:
         self.relation_concepts = deque()
 
     def load_from_verbose(self, original_actions):
+        """
+        Load AMR concept and relation labels from the gold AMR actions into the internal dictionaries
+        :param original_actions: list of AMRAction instances
+        :return: none
+        """
         for action_concept in original_actions:
             action = action_concept.action
             if action == 'SH':
@@ -34,34 +39,24 @@ class ActionConceptTransfer:
                 self.relation_concepts.append(action_concept.label)
 
     def load_from_action_and_label(self, action_i, label):
+        """
+        Load AMR concepts and relation labels from the gold AMR labels into the internal dictionaries
+        :param action_i: list of action indices
+        :param label: list of action labels
+        :return: none
+        """
         for i in range(len(action_i)):
             if action_i[i] == SH:
                 self.node_concepts.append(label[i])
             elif action_i[i] == RR or action_i[i] == RL:
                 self.relation_concepts.append(label[i])
 
-    # def populate_new_actions(self, new_actions):
-    #     result = []
-    #     for action in new_actions:
-    #         if action == SH:
-    #             if len(self.node_concepts) > 0:
-    #                 concept = self.node_concepts.popleft()
-    #             else:
-    #                 concept = 'unk'
-    #             result.append(action_name(action) + '_' + concept)
-    #         elif action == RR or action == RL:
-    #             if len(self.relation_concepts) > 0:
-    #                 concept = self.relation_concepts.popleft()
-    #             else:
-    #                 concept = 'unk'
-    #             result.append(action_name(action) + '_' + concept)
-    #         else:
-    #             result.append(action_name(action))
-    #     return result
-
-    # method that takes the labels for concepts and relations
-    # from the gold actions and puts them
     def populate_new_actions(self, new_actions):
+        """
+        Populate the action indices given as input with the concepts and labels from the dictionaries
+        :param new_actions: list of action indices to be populated with labels
+        :return: list of AMRAction instances
+        """
         result = []
         for action in new_actions:
             if action == SH:
@@ -92,10 +87,9 @@ def reconstruct_all(action_sequence):
     return top.amr_print()
 
 
-def reconstruct_all_ne(action_sequence, named_entities_metadata, date_entity_metadata):
-    rec_obj = MetadataReconstructionState(named_entities_metadata, date_entity_metadata)
+def reconstruct_all_ne(action_sequence, named_entities_metadata, date_entities_metadata):
+    rec_obj = MetadataReconstructionState(named_entities_metadata, date_entities_metadata)
     for action in action_sequence:
-        # SH_concept
         rec_obj.process_action(action)
     top = rec_obj.finalize()
     return top.amr_print()
@@ -105,7 +99,6 @@ class MetadataReconstructionState:
     def __init__(self, _named_entity_metadata, _date_entity_metadata):
         self.named_entity_metadata = _named_entity_metadata
         self.date_entity_metadata = _date_entity_metadata
-        # 255 is the max sentence len
         max_sen_len = 255
         self.buffer_indices = range(max_sen_len + 1)
         self.current_token_index = 0
@@ -139,8 +132,7 @@ class MetadataReconstructionState:
                 node = self._make_named_entity(action.label, self.named_entity_metadata[0][1])
                 self.named_entity_metadata.pop(0)
             else:
-                if len(self.date_entity_metadata) > 0 and self.current_token_index \
-                        == self.date_entity_metadata[0][0]:
+                if len(self.date_entity_metadata) > 0 and self.current_token_index == self.date_entity_metadata[0][0]:
                     node = self._make_date_entity(self.date_entity_metadata[0][1], self.date_entity_metadata[0][2])
                     self.date_entity_metadata.pop(0)
                 else:
@@ -219,10 +211,8 @@ class MetadataReconstructionState:
 
 class ReconstructionState:
     def __init__(self):
-
         self.stack = []
 
-    # refactor to receive action object instead of action name and concept
     def process_action(self, action):
         # execute the action to update the parser state
         if action.action == 'SH':

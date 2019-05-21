@@ -9,13 +9,13 @@ class Frameset:
     @classmethod
     def build_from_XML(cls, frame_tree):
         frameset_node = frame_tree.getroot()
-        predicate_node = frameset_node._children[0]
+        predicate_node = next((x for x in frameset_node if x.tag == "predicate"), None)
 
         lemma = predicate_node.attrib["lemma"]
-
         instance = cls(lemma)
 
-        for roleset in predicate_node:
+        roleset_nodes_list = [x for x in predicate_node if x.tag == "roleset"]
+        for roleset in roleset_nodes_list:
             instance.add_roleset(Roleset.build_from_XML(roleset))
 
         return instance
@@ -37,10 +37,11 @@ class Roleset:
     @classmethod
     def build_from_XML(cls, roleset_tree):
         instance = cls(roleset_tree.attrib["id"], roleset_tree.attrib["name"])
-        roles_list = next((x for x in roleset_tree._children if x.tag == "roles"), None)
-        for role in roles_list:
-            instance.add_role(Role.build_from_XML(role))
 
+        roles_node = next((x for x in roleset_tree if x.tag == "roles"), None)
+        role_nodes_list = [x for x in roles_node if x.tag == "role"]
+        for role in role_nodes_list:
+            instance.add_role(Role.build_from_XML(role))
         return instance
 
     def add_role(self, role):

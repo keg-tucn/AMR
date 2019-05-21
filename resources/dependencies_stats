@@ -1,0 +1,13 @@
+With Stanford Parser
+Total number of dependencies between tokens: 78403
+Total number of dependencies between tokens that have an AMR relation: 4190
+Percentage of mapped dependency relations: 0.053442
+Percentage of direct dependencies: 0.375179
+Percentage of inverse dependencies: 0.624821
+
+With SpaCy Parser
+Total number of dependencies between tokens: 129953
+Total number of dependencies between tokens that have an AMR relation: 6085
+Percentage of mapped dependency relations: 0.046825
+Percentage of direct dependencies: 0.447329
+Percentage of inverse dependencies: 0.552671
