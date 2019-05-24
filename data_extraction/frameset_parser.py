@@ -1,3 +1,4 @@
+import os
 import xml.etree.ElementTree as ET
 
 from definitions import PROPBANK_FRAMES, NOMBANK_FRAMES
@@ -11,12 +12,23 @@ def get_frameset(token):
     return Frameset.merge_framesets(propbank, nombank)
 
 
+def get_frameset_from_bank(token, source):
+    if source == "propbank":
+        return get_propbank_frameset(token)
+    if source == "nombank":
+        return get_nombank_frameset(token)
+    return None
+
+
 def get_propbank_frameset(token):
     propbank_path = "%s/%s.xml" % (PROPBANK_FRAMES, token)
-    propbank_tree = ET.parse(propbank_path)
-    propbank_instance = Frameset.build_from_XML(propbank_tree)
+    if os.path.isfile(propbank_path):
+        propbank_tree = ET.parse(propbank_path)
+        propbank_instance = Frameset.build_from_XML(propbank_tree)
 
-    return propbank_instance
+        return propbank_instance
+    else:
+        return None
 
 
 def get_nombank_frameset(token):

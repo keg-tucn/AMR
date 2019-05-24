@@ -1,4 +1,3 @@
-import re
 import numpy as np
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.layers import Input, Embedding, LSTM, Dense, concatenate, TimeDistributed
@@ -199,41 +198,6 @@ def get_optimizer(model_parameters):
     return SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)
 
 
-def get_embedding_matrix(word_index, embedding_dim):
-    special_cases_re = re.compile("""^([a-z])+-(?:entity|quantity)$""")
-
-    embeddings_index = {}
-
-    emb_file = open(GLOVE_EMBEDDINGS + "/" + "glove.6B.{}d.txt".format(embedding_dim))
-    for line in emb_file:
-        values = line.split()
-        word = values[0]
-        coefs = np.asarray(values[1:], dtype="float32")
-        embeddings_index[word] = coefs
-    emb_file.close()
-
-    print("Found %s word vectors." % len(embeddings_index))
-
-    embedding_matrix = np.zeros((len(word_index) + 2, embedding_dim))
-    not_found = []
-
-    for word, i in word_index.items():
-        embedding_vector = embeddings_index.get(word)
-        if embedding_vector is not None:
-            # words not found in embedding index will be all-zeros.
-            embedding_matrix[i] = embedding_vector
-        else:
-            match = re.match(special_cases_re, word)
-            if match:
-                print "Embedding match for {}".format(word)
-                embedding_vector = embeddings_index.get(match.group(1))
-            else:
-                not_found.append(word)
-
-    print "First 4 not found: {}".format(not_found[0:4])
-    return embedding_matrix
-
-
 def get_model(embedding_matrix, model_parameters):
     max_len = model_parameters.max_len
 
@@ -325,8 +289,7 @@ def train(model_name, train_case_name, train_data, test_data, model_parameters):
     print "Final test data shape"
     print (x_test_full.shape)
 
-    word_index_map = tokenizer_util.get_word_index_map()
-    embedding_matrix = get_embedding_matrix(word_index_map, model_parameters.embeddings_dim)
+    embedding_matrix = word_embeddings_util.get_embedding_matrix(model_parameters.embeddings_dim)
 
     model = get_model(embedding_matrix, model_parameters)
     plot_model(model, to_file=PROJECT_ROOT_DIR + "/model.png")
@@ -414,7 +377,7 @@ def test(model_name, test_case_name, data, model_parameters):
     print "Test data shape: "
     print x_test.shape
 
-    embedding_matrix = get_embedding_matrix(word_index_map, model_parameters.embeddings_dim)
+    embedding_matrix = word_embeddings_util.get_embeddings_matrix(model_parameters.embeddings_dim)
 
     x_test_full, y_test_full, lengths_test, filtered_count_test = \
         feature_vector_generator.generate_feature_vectors(x_test, y_test, dependencies_test, test_amr_ids,
@@ -573,7 +536,7 @@ def test_without_amr(model_name, data, model_parameters):
     print x_test.shape
     print len(dependencies_test)
 
-    embedding_matrix = get_embedding_matrix(word_index_map, model_parameters.embeddings_dim)
+    embedding_matrix = word_embeddings_util.get_embeddings_matrix(model_parameters.embeddings_dim)
 
     model = get_model(embedding_matrix, model_parameters)
 
@@ -646,6 +609,8 @@ if __name__ == "__main__":
     model_parameters = ModelParameters(max_len=max_len, embeddings_dim=embeddings_dim, train_epochs=train_epochs,
                                        with_enhanced_dep_info=False, with_target_semantic_labels=False,
                                        with_reattach=True)
+
+    word_embeddings_util.init_embeddings_matrix(model_parameters.embeddings_dim)
 
     if train_data_path == "all":
         train_data_path = None
