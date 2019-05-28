@@ -4,14 +4,14 @@ from data_extraction import frameset_parser
 from amr_util import word_embeddings_util
 
 
-def compute_best_roleset(token, token_context):
+def compute_best_roleset(token, token_context, source):
     """
     Determine the roleset best matching a word, given the context of that word
     :param token: word for which to determine the best matching roleset
     :param token_context: the words that are related to the given word in the AMR graph
     :return: the beset roleset and the matching degree
     """
-    token_frameset = frameset_parser.get_frameset_from_bank(token, "propbank")
+    token_frameset = frameset_parser.get_frameset_from_bank(token, source)
 
     if token_frameset is not None and len(token_frameset.rolesets):
         similarities = [(r, compute_context_roleset_similarity(token_context, r)) for r in
@@ -55,8 +55,8 @@ if __name__ == "__main__":
     emb_dim = 200
     word_embeddings_util.init_embeddings_matrix(emb_dim)
 
-    roleset, sim = compute_best_roleset("run", ["factory"])
+    roleset, sim = compute_best_roleset("run", ["factory"], "propbank")
     print roleset.id, roleset.name, sim
 
-    roleset, sim = compute_best_roleset("run", ["marathon"])
+    roleset, sim = compute_best_roleset("run", ["marathon"], "propbank")
     print roleset.id, roleset.name, sim

@@ -1,13 +1,13 @@
-from collections import deque
-
-from models.amr_data import CustomizedAMR
 from models.amr_graph import AMR
+from models.amr_data import CustomizedAMR
 from models.node import Node
+from models.parser_parameters import ParserParameters
 from preprocessing import ActionSequenceGenerator
 from preprocessing import TokensReplacer
-from models.actions import AMRAction
+from postprocessing.action_concept_transfer import ActionConceptTransfer
+from amr_util import frameset_util, tokenizer_util, node_box_util, pos_convert_util
 
-VOCAB_ACTS = ['SH', 'RL', 'RR', 'DN', 'SW']
+VOCAB_ACTS = ["SH", "RL", "RR", "DN", "SW"]
 SH = 0
 RL = 1
 RR = 2
@@ -20,89 +20,164 @@ def action_name(index):
     return VOCAB_ACTS[index]
 
 
-class ActionConceptTransfer:
-    def __init__(self):
-        self.node_concepts = deque()
-        self.relation_concepts = deque()
+def reconstruct_all_ne(tokens, action_sequence, named_entities_metadata, date_entities_metadata, parser_parameters):
+    rec_obj = MetadataReconstructionState(tokens, named_entities_metadata, date_entities_metadata, parser_parameters)
 
-    def load_from_verbose(self, original_actions):
-        """
-        Load AMR concept and relation labels from the gold AMR actions into the internal dictionaries
-        :param original_actions: list of AMRAction instances
-        :return: none
-        """
-        for action_concept in original_actions:
-            action = action_concept.action
-            if action == 'SH':
-                self.node_concepts.append(action_concept.label)
-            elif action == 'RR' or action == 'RL':
-                self.relation_concepts.append(action_concept.label)
-
-    def load_from_action_and_label(self, action_i, label):
-        """
-        Load AMR concepts and relation labels from the gold AMR labels into the internal dictionaries
-        :param action_i: list of action indices
-        :param label: list of action labels
-        :return: none
-        """
-        for i in range(len(action_i)):
-            if action_i[i] == SH:
-                self.node_concepts.append(label[i])
-            elif action_i[i] == RR or action_i[i] == RL:
-                self.relation_concepts.append(label[i])
-
-    def populate_new_actions(self, new_actions):
-        """
-        Populate the action indices given as input with the concepts and labels from the dictionaries
-        :param new_actions: list of action indices to be populated with labels
-        :return: list of AMRAction instances
-        """
-        result = []
-        for action in new_actions:
-            if action == SH:
-                if len(self.node_concepts) > 0:
-                    concept = self.node_concepts.popleft()
-                else:
-                    concept = 'unk'
-                predicted_act = AMRAction.build_labeled(action_name(action), concept)
-                result.append(predicted_act)
-            elif action == RR or action == RL:
-                if len(self.relation_concepts) > 0:
-                    concept = self.relation_concepts.popleft()
-                else:
-                    concept = 'unk'
-                predicted_act = AMRAction.build_labeled(action_name(action), concept)
-                result.append(predicted_act)
-            else:
-                predicted_act = AMRAction.build(action_name(action))
-                result.append(predicted_act)
-        return result
-
-
-def reconstruct_all(action_sequence):
-    rec_obj = ReconstructionState()
     for action in action_sequence:
         rec_obj.process_action(action)
     top = rec_obj.finalize()
-    return top.amr_print()
 
+    if not parser_parameters.with_gold_concept_labels:
+        annotate_node_concepts(top)
 
-def reconstruct_all_ne(action_sequence, named_entities_metadata, date_entities_metadata):
-    rec_obj = MetadataReconstructionState(named_entities_metadata, date_entities_metadata)
-    for action in action_sequence:
-        rec_obj.process_action(action)
-    top = rec_obj.finalize()
-    return top.amr_print()
+    return top
 
 
 class MetadataReconstructionState:
-    def __init__(self, _named_entity_metadata, _date_entity_metadata):
+    def __init__(self, tokens, _named_entity_metadata, _date_entity_metadata, parser_parameters):
+        self.tokens = tokens
         self.named_entity_metadata = _named_entity_metadata
         self.date_entity_metadata = _date_entity_metadata
-        max_sen_len = 255
-        self.buffer_indices = range(max_sen_len + 1)
+        self.parser_parameters = parser_parameters
+        self.buffer_indices = range(256)
         self.current_token_index = 0
         self.stack = []
+        self.index_word_map = tokenizer_util.get_index_word_map()
+
+    def process_action(self, action):
+        # execute the action to update the parser state
+        # TODO: split named/date entities replacement of concept after we reconstruct the graph
+        # TODO: reference named/date entitites by concept instead of by index
+        if action.action == "SH":
+            self._process_shift(action)
+        elif action.action == "RL":
+            self._process_reduce_left(action)
+        elif action.action == "RR":
+            self._process_reduce_right(action)
+        elif action.action == "DN":
+            self._process_delete(action)
+        elif action.action == "BRK":
+            self._process_break(action)
+        elif action.action == "SW":
+            self._process_swap(action)
+        elif action.action == "SW_2":
+            self._process_swap_2(action)
+        elif action.action == "SW_3":
+            self._process_swap_3(action)
+        elif action.action == "RO":
+            self._process_rotate(action)
+        elif action.action == "SW_BK":
+            self._process_swap_break(action)
+
+    def finalize(self):
+        top = self.stack.pop()
+
+        if not self.parser_parameters.with_gold_concept_labels:
+            annotate_node_concepts(top)
+
+        return top
+
+    def _process_shift(self, action):
+        current_token = self.tokens[self.current_token_index]
+
+        if self.parser_parameters.with_reattach and self._is_named_entity():
+            if self.parser_parameters.with_gold_concept_labels:
+                node = self._make_named_entity(action.label, self.named_entity_metadata[0][1])
+            else:
+                node = self._make_named_entity(self.index_word_map[current_token], self.named_entity_metadata[0][1])
+            self.named_entity_metadata.pop(0)
+        elif self.parser_parameters.with_reattach and self._is_date_entity():
+            node = self._make_date_entity(self.date_entity_metadata[0][1], self.date_entity_metadata[0][2])
+            self.date_entity_metadata.pop(0)
+        else:
+            if self.parser_parameters.with_gold_concept_labels:
+                node = Node(action.label)
+            else:
+                node = Node(self.index_word_map[current_token])
+
+        self.stack.append(node)
+
+        self.buffer_indices.pop(0)
+        if len(self.buffer_indices) != 0:
+            self.current_token_index = self.buffer_indices[0]
+
+    def _process_reduce_left(self, action):
+        right = self.stack.pop()
+        left = self.stack.pop()
+        head, modifier = right, left
+        head.add_child(modifier, action.label)
+        self.stack.append(head)
+
+    def _process_reduce_right(self, action):
+        right = self.stack.pop()
+        left = self.stack.pop()
+        head, modifier = left, right
+        head.add_child(modifier, action.label)
+        self.stack.append(head)
+
+    def _process_delete(self, action):
+        self.buffer_indices.pop(0)
+        if len(self.buffer_indices) != 0:
+            self.current_token_index = self.buffer_indices[0]
+
+    def _process_break(self, action):
+        node1 = Node(action.label)
+        node2 = Node(action.label2)
+        self.stack.append(node1)
+        self.stack.append(node2)
+
+        self.buffer_indices.pop(0)
+        if len(self.buffer_indices) != 0:
+            self.current_token_index = self.buffer_indices[0]
+
+    def _process_swap(self, action):
+        top = self.stack.pop()
+        mid = self.stack.pop()
+        lower = self.stack.pop()
+        self.stack.append(mid)
+        self.stack.append(lower)
+        self.stack.append(top)
+
+    def _process_swap_2(self, action):
+        top = self.stack.pop()
+        mid = self.stack.pop()
+        mid2 = self.stack.pop()
+        lower = self.stack.pop()
+        self.stack.append(mid)
+        self.stack.append(mid2)
+        self.stack.append(lower)
+        self.stack.append(top)
+
+    def _process_swap_3(self, action):
+        top = self.stack.pop()
+        mid = self.stack.pop()
+        mid2 = self.stack.pop()
+        mid3 = self.stack.pop()
+        lower = self.stack.pop()
+        self.stack.append(mid)
+        self.stack.append(mid3)
+        self.stack.append(mid2)
+        self.stack.append(lower)
+        self.stack.append(top)
+
+    def _process_rotate(self, action):
+        top = self.stack.pop()
+        second = self.stack.pop()
+        bottom = self.stack.pop(0)
+        self.stack.insert(0, second)
+        self.stack.append(bottom)
+        self.stack.append(top)
+
+    def _process_swap_break(self, action):
+        top = len(self.stack) - 1
+        j = self.stack.pop(top - 1)
+        self.buffer_indices.insert(0, j)
+
+    def _is_named_entity(self):
+        return len(self.named_entity_metadata) > 0 and self.current_token_index == self.named_entity_metadata[0][0]
+
+    def _is_date_entity(self):
+        return len(self.date_entity_metadata) > 0 and self.current_token_index == self.date_entity_metadata[0][0]
 
     def _make_named_entity(self, concept, literals):
         wiki_tag = "_".join(literals)
@@ -122,159 +197,52 @@ class MetadataReconstructionState:
             date_entity_node.add_child(Node(quantity, quantity), date_relation)
         return date_entity_node
 
-    # refactor to receive action object instead of action name and concept
-    def process_action(self, action):
-        # execute the action to update the parser state
-        # TODO: split named/date entitits replacement of concept after we reconstruct the graph
-        # TODO: reference named/date entitites by concept instead of by index
-        if action.action == 'SH':
-            if len(self.named_entity_metadata) > 0 and self.current_token_index == self.named_entity_metadata[0][0]:
-                node = self._make_named_entity(action.label, self.named_entity_metadata[0][1])
-                self.named_entity_metadata.pop(0)
-            else:
-                if len(self.date_entity_metadata) > 0 and self.current_token_index == self.date_entity_metadata[0][0]:
-                    node = self._make_date_entity(self.date_entity_metadata[0][1], self.date_entity_metadata[0][2])
-                    self.date_entity_metadata.pop(0)
-                else:
-                    node = Node(action.label)
-            self.stack.append(node)
-            # self.current_token_index += 1
-            self.buffer_indices.pop(0)
-            if len(self.buffer_indices) != 0:
-                self.current_token_index = self.buffer_indices[0]
-        elif action.action == 'BRK':
-            node1 = Node(action.label)
-            node2 = Node(action.label2)
-            self.stack.append(node1)
-            self.stack.append(node2)
-            # self.current_token_index += 1
-            self.buffer_indices.pop(0)
-            if len(self.buffer_indices) != 0:
-                self.current_token_index = self.buffer_indices[0]
-        elif action.action == 'DN':
-            # self.current_token_index += 1
-            self.buffer_indices.pop(0)
-            if len(self.buffer_indices) != 0:
-                self.current_token_index = self.buffer_indices[0]
-            pass
-        elif action.action == 'SW':
-            top = self.stack.pop()
-            mid = self.stack.pop()
-            lower = self.stack.pop()
-            self.stack.append(mid)
-            self.stack.append(lower)
-            self.stack.append(top)
-        # for shift 2
-        # TODO: add for shft n
-        elif action.action == "SW_2":
-            top = self.stack.pop()
-            mid = self.stack.pop()
-            mid2 = self.stack.pop()
-            lower = self.stack.pop()
-            self.stack.append(mid)
-            self.stack.append(mid2)
-            self.stack.append(lower)
-            self.stack.append(top)
-        elif action.action == "SW_3":
-            top = self.stack.pop()
-            mid = self.stack.pop()
-            mid2 = self.stack.pop()
-            mid3 = self.stack.pop()
-            lower = self.stack.pop()
-            self.stack.append(mid)
-            self.stack.append(mid3)
-            self.stack.append(mid2)
-            self.stack.append(lower)
-            self.stack.append(top)
-        elif action.action == "RO":
-            top = self.stack.pop()
-            second = self.stack.pop()
-            bottom = self.stack.pop(0)
-            self.stack.insert(0, second)
-            self.stack.append(bottom)
-            self.stack.append(top)
-        elif action.action == "SW_BK":
-            top = len(self.stack) - 1
-            j = self.stack.pop(top - 1)
-            self.buffer_indices.insert(0, j)
-        else:  # one of the reduce actions
-            right = self.stack.pop()
-            left = self.stack.pop()
-            head, modifier = (left, right) if action.action == 'RR' else (right, left)
-            head.add_child(modifier, action.label)
-            self.stack.append(head)
 
-    def finalize(self):
-        top = self.stack.pop()
-        return top
+def annotate_node_concepts(node):
+    node_label = node.label
 
+    node_label = node_box_util.simplify_word(node_label)
 
-class ReconstructionState:
-    def __init__(self):
-        self.stack = []
+    children_tokens = [node_box_util.simplify_word(n[0].label) for n in node.children]
 
-    def process_action(self, action):
-        # execute the action to update the parser state
-        if action.action == 'SH':
-            node = Node(action.label)
-            self.stack.append(node)
-        elif action.action == 'BRK':
-            node1 = Node(action.label)
-            node2 = Node(action.label2)
-            self.stack.append(node1)
-            self.stack.append(node2)
-            # self.current_token_index += 1
-        elif action.action == 'DN':
-            pass
-        elif action.action == 'SW':
-            top = self.stack.pop()
-            mid = self.stack.pop()
-            lower = self.stack.pop()
-            self.stack.append(mid)
-            self.stack.append(lower)
-            self.stack.append(top)
-        # for shift 2
-        # TODO: add for shft n
-        elif action.action == "SW_2":
-            top = self.stack.pop()
-            mid = self.stack.pop()
-            mid2 = self.stack.pop()
-            lower = self.stack.pop()
-            self.stack.append(mid)
-            self.stack.append(mid2)
-            self.stack.append(lower)
-            self.stack.append(top)
-        elif action.action == "SW_3":
-            top = self.stack.pop()
-            mid = self.stack.pop()
-            mid2 = self.stack.pop()
-            mid3 = self.stack.pop()
-            lower = self.stack.pop()
-            self.stack.append(mid)
-            self.stack.append(mid3)
-            self.stack.append(mid2)
-            self.stack.append(lower)
-            self.stack.append(top)
-        elif action.action == "RO":
-            top = self.stack.pop()
-            second = self.stack.pop()
-            bottom = self.stack.pop(0)
-            self.stack.insert(0, second)
-            self.stack.append(bottom)
-            self.stack.append(top)
-        else:  # one of the reduce actions
-            right = self.stack.pop()
-            left = self.stack.pop()
-            head, modifier = (left, right) if action.action == 'RR' else (right, left)
-            head.add_child(modifier, action.label)
-            self.stack.append(head)
+    if node_box_util.is_verb(node_label):
+        node_label_verb = node_label
+        node_label_noun = pos_convert_util.convert(node_label, "v", "n")
+    else:
+        node_label_noun = node_label
+        node_label_verb = pos_convert_util.convert(node_label, "n", "v")
 
-    def finalize(self):
-        top = self.stack.pop()
-        return top
+    roleset_v, sim_v = frameset_util.compute_best_roleset(node_label_verb, children_tokens, "propbank")
+    roleset_n, sim_n = frameset_util.compute_best_roleset(node_label_noun, children_tokens, "nombank")
+
+    if roleset_v is not None and roleset_n is not None:
+        if sim_v >= sim_n:
+            roleset = roleset_v
+        else:
+            roleset = roleset_n
+    else:
+        if roleset_v is not None:
+            roleset = roleset_v
+        else:
+            roleset = roleset_n
+
+    if roleset is not None:
+        if roleset == roleset_v:
+            node.label = roleset.id.replace(".", "-")
+        else:
+            node.label = roleset.id.split(".")[0]
+
+    for child in node.children:
+        annotate_node_concepts(child[0])
 
 
 if __name__ == "__main__":
+    tokenizer = tokenizer_util.get_tokenizer()
+
+    parser_parameters = ParserParameters(max_len=50, with_enhanced_dep_info=False,
+                                         with_target_semantic_labels=False, with_reattach=True,
+                                         with_gold_concept_labels=True, with_gold_relation_labels=True)
+
     sentence = "It looks like we will also bring in whales ."
     amr = AMR.parse_string("""
     (l / look-02~e.1
@@ -291,15 +259,15 @@ if __name__ == "__main__":
     acts_i = [a.index for a in actions]
 
     act = ActionConceptTransfer()
-    act.load_from_verbose(actions)
+    act.load_from_action_objects(actions)
     actions_re = act.populate_new_actions(acts_i)
 
-    tokens_to_concepts_dict = custom_AMR.tokens_to_concepts_dict
+    tokens = tokenizer.texts_to_sequences([sentence])[0]
 
     print actions
     print actions_re
 
-    print reconstruct_all(actions)
+    print reconstruct_all_ne(tokens, actions, [], [], parser_parameters=parser_parameters)
 
     sentence = "upgrade fire control systems of Indian tanks ."
 
@@ -311,7 +279,7 @@ if __name__ == "__main__":
                       :mod (c2 / country :wiki "India"
                             :name (n / name :op1 "India"~e.5)))))"""
     amr = AMR.parse_string(amr_str)
-    amr_new, sentence_new, named_entities = TokensReplacer.replace_named_entities(amr, sentence)
+    amr_new, sentence_new, _ = TokensReplacer.replace_named_entities(amr, sentence)
     custom_AMR = CustomizedAMR()
     custom_AMR.create_custom_AMR(amr_new)
 
@@ -319,7 +287,7 @@ if __name__ == "__main__":
     acts_i = [a.index for a in actions]
 
     act = ActionConceptTransfer()
-    act.load_from_verbose(actions)
+    act.load_from_action_objects(actions)
     actions_re = act.populate_new_actions(acts_i)
 
     tokens_to_concepts_dict = custom_AMR.tokens_to_concepts_dict
@@ -327,7 +295,7 @@ if __name__ == "__main__":
     print actions
     print actions_re
 
-    print reconstruct_all_ne(actions, [(5, ["Indian"])], [])
+    print reconstruct_all_ne(actions, [(5, ["Indian"])], [], [], parser_parameters)
 
     amr_str = """(d / difficult~e.5
           :domain~e.4 (r / reach-01~e.7
@@ -341,7 +309,7 @@ if __name__ == "__main__":
     sentence = """Consensus on India will be difficult to reach when the NSG meets in November 2017 ."""
 
     amr = AMR.parse_string(amr_str)
-    amr_new, sentence_new, named_entities = TokensReplacer.replace_named_entities(amr, sentence)
+    amr_new, _, named_entities = TokensReplacer.replace_named_entities(amr, sentence)
     amr_new, sentence_new, date_entities = TokensReplacer.replace_date_entities(amr_new, sentence_new)
 
     custom_AMR = CustomizedAMR()
@@ -351,13 +319,14 @@ if __name__ == "__main__":
     acts_i = [a.index for a in actions]
 
     act = ActionConceptTransfer()
-    act.load_from_verbose(actions)
+    act.load_from_action_objects(actions)
     actions_re = act.populate_new_actions(acts_i)
 
-    tokens_to_concepts_dict = custom_AMR.tokens_to_concepts_dict
+    tokens = tokenizer.texts_to_sequences([sentence])[0]
 
     print actions
     print actions_re
-    print reconstruct_all(actions)
+    print reconstruct_all_ne(tokens, actions, [], [], parser_parameters)
 
-    print reconstruct_all_ne(actions, [(2, ["India"]), (10, ["NSG"])], [(13, ["month", "year"], [2017, 11])])
+    print reconstruct_all_ne(tokens, actions, [(2, ["India"]), (10, ["NSG"])], [(13, ["month", "year"], [2017, 11])],
+                             parser_parameters)

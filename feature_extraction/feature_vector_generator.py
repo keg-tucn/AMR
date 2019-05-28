@@ -37,53 +37,53 @@ def extract_data_components(data):
 
     actions = np.asanyarray([d.action_sequence for d in data])
 
-    dependencies = np.asanyarray([d.dependencies for d in data])
+    dependencies = np.asarray([d.dependencies for d in data])
 
     named_entities = [d.named_entities for d in data]
     named_entities = [[(n[3], n[2]) for n in named_entities_list] for named_entities_list in named_entities]
-    named_entities = np.asanyarray(named_entities)
+    named_entities = np.asarray(named_entities)
 
     date_entities = [d.date_entities for d in data]
     date_entities = [[(d[3], d[2], d[1]) for d in date_entities_list] for date_entities_list in date_entities]
-    date_entities = np.asanyarray(date_entities)
+    date_entities = np.asarray(date_entities)
 
-    amr_str = np.asanyarray([d.original_amr for d in data])
+    amr_str = np.asarray([d.original_amr for d in data])
 
-    amr_ids = np.asanyarray([d.amr_id for d in data])
+    amr_ids = np.asarray([d.amr_id for d in data])
 
     return sequences, actions, dependencies, amr_str, amr_ids, named_entities, date_entities
 
 
-def generate_feature_vectors(x, y, dependencies, amr_ids, model_parameters):
+def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
     """
     Return the encoded feature vectors for the trainer, for each training instance
     :param x: list of sequences of indices corresponding to the words of the sentences
     :param y: list of sequences of AMRAction objects
     :param dependencies: list of dictionaries of dependencies
     :param amr_ids: list of strings corresponding to the IDs of the AMRs in the data set
-    :param model_parameters: collection of model properties
+    :param parser_parameters: collection of model properties
     :return: list of encoded and padded features for the trainer
     """
     tokenizer = tokenizer_util.get_tokenizer()
     no_word_index = tokenizer_util.get_no_word_index()
 
-    max_len = model_parameters.max_len
+    max_len = parser_parameters.max_len
     lengths = []
     filtered_count = 0
     exception_count = 0
 
     for action_sequence in y:
         lengths.append(len(action_sequence))
-        if len(action_sequence) > model_parameters.max_len:
+        if len(action_sequence) > parser_parameters.max_len:
             filtered_count += 1
             continue
 
-    if model_parameters.with_enhanced_dep_info:
+    if parser_parameters.with_enhanced_dep_info:
         x_full = np.zeros((len(x) - filtered_count, max_len, 9 + 6 * len(__AMR_RELATIONS)), dtype=np.int32)
     else:
         x_full = np.zeros((len(x) - filtered_count, max_len, 9 + 6 * 1), dtype=np.int32)
 
-    if model_parameters.with_target_semantic_labels:
+    if parser_parameters.with_target_semantic_labels:
         y_full = np.zeros((len(y) - filtered_count, max_len, 5 + 2 * len(__AMR_RELATIONS)), dtype=np.int32)
     else:
         y_full = np.zeros((len(y) - filtered_count, max_len, 5), dtype=np.int32)
@@ -112,7 +112,7 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, model_parameters):
                 (np.asanyarray((next_action_token, next_action_stack[0], next_action_stack[1], next_action_stack[2])),
                  next_action_prev_action_ohe,
                  get_dependency_features(next_action_stack[0], next_action_stack[1], next_action_stack[2],
-                                         next_action_token, dependencies, model_parameters)))
+                                         next_action_token, dependencies, parser_parameters)))
 
             if action == SH:
                 tokens_sequence_index += 1
@@ -144,7 +144,7 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, model_parameters):
             continue
             # raise Exception("There was a problem at training instance " + str(i) + " at " + amr_id + "\n")
 
-        if model_parameters.with_enhanced_dep_info:
+        if parser_parameters.with_enhanced_dep_info:
             features_matrix = np.concatenate((np.asarray(features_matrix),
                                               np.zeros((max_len - len(features_matrix), 9 + 6 * len(__AMR_RELATIONS)),
                                                        dtype=np.int32)))
@@ -161,11 +161,11 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, model_parameters):
         y_train_instance_matrix = []
         for action in action_sequence:
             y_train_instance_matrix.append(
-                oh_encode_parser_action(action, model_parameters.with_target_semantic_labels))
+                oh_encode_parser_action(action, parser_parameters.with_target_semantic_labels))
 
         for j in range(max_len - len(action_sequence)):
             y_train_instance_matrix.append(
-                oh_encode_parser_action(None, model_parameters.with_target_semantic_labels))
+                oh_encode_parser_action(None, parser_parameters.with_target_semantic_labels))
         y_full[i, :, :] = y_train_instance_matrix
 
     return x_full, y_full, lengths, filtered_count
@@ -179,7 +179,7 @@ def actions_to_string(acts_i):
     return str
 
 
-def get_dependency_features(stack_0_idx, stack_1_idx, stack_2_idx, buffer_0_idx, dependencies, model_parameters):
+def get_dependency_features(stack_0_idx, stack_1_idx, stack_2_idx, buffer_0_idx, dependencies, parser_parameters):
     """
     Return the dependency features (stack_0_on_stack_1, stack_0_on_stack_2, stack_0_on_buffer and vice-versa) given
     a configuration of the stack, the buffer, known sentence dependencies and model parameters;
@@ -190,10 +190,10 @@ def get_dependency_features(stack_0_idx, stack_1_idx, stack_2_idx, buffer_0_idx,
     :param stack_2_idx: third element on stack
     :param buffer_0_idx: first element on buffer
     :param dependencies: dependencies between sentence tokens
-    :param model_parameters: collection of model properties
+    :param parser_parameters: collection of model properties
     :return: encoded dependency features
     """
-    if model_parameters.with_enhanced_dep_info:
+    if parser_parameters.with_enhanced_dep_info:
         dep_0_on_1 = oh_encode_amr_rel(None)
         dep_1_on_0 = oh_encode_amr_rel(None)
         dep_0_on_2 = oh_encode_amr_rel(None)
@@ -257,10 +257,6 @@ def oh_encode_parser_action(action, with_target_semantic_labels):
             return simple_target_label_binarizer.transform([action.index])[0, :]
         else:
             return simple_target_label_binarizer.transform([-1])[0, :]
-
-
-def oh_decode_parser_action(action_ohe, with_target_semantic_labels):
-    print action_ohe
 
 
 def oh_encode_amr_rel(amr_rel):

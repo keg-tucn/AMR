@@ -5,10 +5,12 @@ def simplify_word(word):
     try:
         if word != simplify_verb(word):
             return simplify_verb(word)
-
-        if word != simplify_noun(word):
-            return simplify_noun(word)
     except:
+        try:
+            if word != simplify_noun(word):
+                return simplify_noun(word)
+        except:
+            return word
         return word
 
 
@@ -20,10 +22,22 @@ def simplify_verb(word):
     return en.verb.present(word)
 
 
-if __name__ == "__main__":
-    print en.is_noun("particles")
-    print en.is_verb("negotiated")
+def is_noun(word):
+    return en.is_noun(word)
 
+
+def is_verb(word):
+    return en.is_verb(word)
+
+
+if __name__ == "__main__":
     print simplify_word("particles")
     print simplify_word("negotiated")
     print simplify_word("-)")
+
+    print
+
+    print is_noun("particles")
+    print is_noun(simplify_word("particles"))
+    print is_verb("negotiated")
+    print is_verb(simplify_word("negotiated"))

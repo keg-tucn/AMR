@@ -1,0 +1,83 @@
+With gold AMR concept and relation labels
+------------------------------------------------------------------------------------------------
+Test data shape: 
+(349,)
+Final test data shape:
+(325, 30, 15)
+Filtered test: 
+24
+Mean test length: 13.363896848137536 
+Max test length: 63 
+Scores for model /home/iv/Documents/AMR/trained_models/proxy_epochs=50_maxlen=30_embeddingsdim=200
+Min: 0.044444
+Max: 1.000000
+Arithm. mean 0.657814435311
+Harm. mean 0.456374747156
+Global smatch f-score 0.569542412733
+Model test accuracy
+0.9005128202071556
+Errors
+0
+
+With inferred concept labels and no relation labels
+------------------------------------------------------------------------------------------------
+Test data shape: 
+(349,)
+Final test data shape:
+(325, 30, 15)
+Filtered test: 
+24
+Mean test length: 13.363896848137536 
+Max test length: 63 
+Scores for model /home/iv/Documents/AMR/trained_models/proxy_epochs=50_maxlen=30_embeddingsdim=200
+Min: 0.000000
+Max: 1.000000
+Arithm. mean 0.549747963934
+Harm. mean 0.00314808971437
+Global smatch f-score 0.451258003427
+Model test accuracy
+0.9005128202071556
+Errors
+0
+
+------------------------------------------------------------------------------------------------
+Test data shape: 
+(349,)
+Final test data shape:
+(325, 30, 15)
+Filtered test: 
+24
+Mean test length: 13.363896848137536 
+Max test length: 63 
+Scores for model /home/iv/Documents/AMR/trained_models/proxy_epochs=50_maxlen=30_embeddingsdim=200
+Min: 0.000000
+Max: 1.000000
+Arithm. mean 0.583068967067
+Harm. mean 0.00492730745527
+Global smatch f-score 0.490142882981
+Model test accuracy
+0.9005128202071556
+Errors
+0
+
+Without concept or relation labels
+------------------------------------------------------------------------------------------------
+Test data shape: 
+(349,)
+Final test data shape:
+(325, 30, 15)
+Filtered test: 
+24
+Mean test length: 13.363896848137536 
+Max test length: 63 
+Scores for model /home/iv/Documents/AMR/trained_models/proxy_epochs=50_maxlen=30_embeddingsdim=200
+Min: 0.000000
+Max: 1.000000
+Arithm. mean 0.488871692082
+Harm. mean 0.000994846698799
+Global smatch f-score 0.374425105961
+Model test accuracy
+0.9005128202071556
+Errors
+0
+

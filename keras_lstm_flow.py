@@ -7,15 +7,14 @@ from keras.utils import plot_model
 from sklearn.preprocessing import LabelBinarizer
 
 from constants import __AMR_RELATIONS
-from definitions import PROJECT_ROOT_DIR, GLOVE_EMBEDDINGS, TRAINED_MODELS_DIR, RESULT_METRICS_DIR
+from definitions import PROJECT_ROOT_DIR, TRAINED_MODELS_DIR, RESULT_METRICS_DIR
 from Baseline import reentrancy_restoring
-from amr_util.keras_plotter import plot_history
-from amr_util import tokenizer_util
+from amr_util import tokenizer_util, word_embeddings_util, keras_plotter
 from postprocessing import action_sequence_reconstruction as asr
-from smatch import smatch_amr
-from smatch import smatch_util
+from smatch import smatch_amr, smatch_util
 import models.actions as act
 from models.model_parameters import ModelParameters
+from models.parser_parameters import ParserParameters
 from feature_extraction import feature_vector_generator
 from data_extraction import dataset_loader
 
@@ -61,12 +60,12 @@ def tokens_to_sentence(tokens, index_to_word_map):
     return str
 
 
-def make_prediction(model, x_test, dependencies, model_parameters):
+def make_prediction(model, x_test, dependencies, parser_parameters):
     tokens_buffer = x_test
     tokens_stack = []
 
     current_step = 0
-    max_len = model_parameters.max_len
+    max_len = parser_parameters.max_len
 
     no_word_index = tokenizer_util.get_no_word_index()
 
@@ -76,7 +75,7 @@ def make_prediction(model, x_test, dependencies, model_parameters):
     stack_token2 = np.zeros((1, max_len))
     prev_action = np.zeros((1, max_len, 5))
 
-    if model_parameters.with_enhanced_dep_info:
+    if parser_parameters.with_enhanced_dep_info:
         dep_info = np.zeros((1, max_len, 6 * len(__AMR_RELATIONS)))
     else:
         dep_info = np.zeros((1, max_len, 6 * 1))
@@ -87,7 +86,7 @@ def make_prediction(model, x_test, dependencies, model_parameters):
     stack_token2[0][current_step] = no_word_index
     prev_action[0][current_step] = [0, 0, 0, 0, 0]
 
-    if model_parameters.with_enhanced_dep_info:
+    if parser_parameters.with_enhanced_dep_info:
         dep_info[0][current_step] = np.repeat(feature_vector_generator.oh_encode_amr_rel(None), 6)
     else:
         dep_info[0][current_step] = np.repeat(0, 6)
@@ -164,7 +163,7 @@ def make_prediction(model, x_test, dependencies, model_parameters):
                                                                                      stack_token1[0][current_step],
                                                                                      stack_token2[0][current_step],
                                                                                      buffer_token[0][current_step],
-                                                                                     dependencies, model_parameters)
+                                                                                     dependencies, parser_parameters)
 
     print "Buffer and stack at end of prediction"
     print tokens_buffer
@@ -198,8 +197,8 @@ def get_optimizer(model_parameters):
     return SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)
 
 
-def get_model(embedding_matrix, model_parameters):
-    max_len = model_parameters.max_len
+def get_model(embedding_matrix, parser_parameters, model_parameters):
+    max_len = parser_parameters.max_len
 
     buffer_input = Input(shape=(max_len,), dtype="int32")
     stack_input_0 = Input(shape=(max_len,), dtype="int32")
@@ -207,7 +206,7 @@ def get_model(embedding_matrix, model_parameters):
     stack_input_2 = Input(shape=(max_len,), dtype="int32")
     prev_action_input = Input(shape=(max_len, 5), dtype="float32")
 
-    if model_parameters.with_enhanced_dep_info:
+    if parser_parameters.with_enhanced_dep_info:
         dep_info_input = Input(shape=(max_len, 6 * len(__AMR_RELATIONS)), dtype="float32")
     else:
         dep_info_input = Input(shape=(max_len, 6), dtype="float32")
@@ -225,7 +224,7 @@ def get_model(embedding_matrix, model_parameters):
     lstm_output = LSTM(model_parameters.hidden_layer_size, return_sequences=True, dropout=model_parameters.dropout,
                        recurrent_dropout=model_parameters.recurrent_dropout)(x)
 
-    if model_parameters.with_target_semantic_labels:
+    if parser_parameters.with_target_semantic_labels:
         dense = TimeDistributed(Dense(5 + 2 * len(__AMR_RELATIONS), activation="softmax"))(lstm_output)
     else:
         dense = TimeDistributed(Dense(5, activation="softmax"))(lstm_output)
@@ -243,11 +242,12 @@ def get_model(embedding_matrix, model_parameters):
     return model
 
 
-def train(model_name, train_case_name, train_data, test_data, model_parameters):
+def train(model_name, train_case_name, train_data, test_data, parser_parameters, model_parameters):
     model_path = TRAINED_MODELS_DIR + "/{}_{}".format(model_name, train_case_name)
     print "Model path is: %s" % model_path
 
-    [train_data, test_data] = dataset_loader.partition_dataset((train_data, test_data), partition_sizes=[0.9, 0.1])
+    [train_data, test_data] = dataset_loader.partition_dataset((train_data, test_data), partition_sizes=[0.9, 0.1],
+                                                               shuffle_data=True)
 
     print "Overlapping instances before: %d" % dataset_loader.check_data_partitions_overlap(train_data, test_data)
     train_data, test_data = dataset_loader.remove_overlapping_instances(train_data, test_data)
@@ -274,12 +274,12 @@ def train(model_name, train_case_name, train_data, test_data, model_parameters):
     # Do not consider instances with more than 30 actions for the moment.
 
     (x_train_full, y_train_full, lengths_train, filtered_count_train) = \
-        feature_vector_generator.generate_feature_vectors(x_train, y_train, dependencies_train,
-                                                          train_amr_ids, model_parameters)
+        feature_vector_generator.generate_feature_vectors(x_train, y_train, dependencies_train, train_amr_ids,
+                                                          parser_parameters)
 
     (x_test_full, y_test_full, lengths_test, filtered_count_test) = \
-        feature_vector_generator.generate_feature_vectors(x_test, y_test, dependencies_test,
-                                                          test_amr_ids, model_parameters)
+        feature_vector_generator.generate_feature_vectors(x_test, y_test, dependencies_test, test_amr_ids,
+                                                          parser_parameters)
 
     print "Mean length %s " % np.asarray(lengths_train).mean()
     print "Max length %s" % np.asarray(lengths_train).max()
@@ -289,9 +289,9 @@ def train(model_name, train_case_name, train_data, test_data, model_parameters):
     print "Final test data shape"
     print (x_test_full.shape)
 
-    embedding_matrix = word_embeddings_util.get_embedding_matrix(model_parameters.embeddings_dim)
+    embedding_matrix = word_embeddings_util.get_embeddings_matrix(model_parameters.embeddings_dim)
 
-    model = get_model(embedding_matrix, model_parameters)
+    model = get_model(embedding_matrix, parser_parameters, model_parameters)
     plot_model(model, to_file=PROJECT_ROOT_DIR + "/model.png")
 
     history = model.fit([x_train_full[:, :, 0], x_train_full[:, :, 1], x_train_full[:, :, 2], x_train_full[:, :, 3],
@@ -303,7 +303,7 @@ def train(model_name, train_case_name, train_data, test_data, model_parameters):
                             EarlyStopping(monitor="val_acc", min_delta=0, patience=model_parameters.train_epochs,
                                           verbose=0, mode="auto")])
 
-    plot_history(history, model_name, train_case_name)
+    keras_plotter.plot_history(history, model_name, train_case_name)
 
     model.load_weights(model_path, by_name=False)
 
@@ -311,16 +311,14 @@ def train(model_name, train_case_name, train_data, test_data, model_parameters):
 
     errors = 0
 
-    y_test_labels = [[a.label for a in action_sequence] for action_sequence in y_test]
-
     for i in range(len(x_test)):
         print "%d/%d" % (i, len(x_test))
         # Step1: input a processed test entity test
-        prediction = make_prediction(model, x_test[i], dependencies_test[i], model_parameters)
+        prediction = make_prediction(model, x_test[i], dependencies_test[i], parser_parameters)
 
         if len(prediction) > 0:
             act = asr.ActionConceptTransfer()
-            act.load_from_action_and_label([action.index for action in y_test[i]], y_test_labels[i])
+            act.load_from_action_objects(y_test[i])
             pred_label = act.populate_new_actions(prediction)
             print "Predictions with old labels: "
             print pred_label
@@ -330,7 +328,9 @@ def train(model_name, train_case_name, train_data, test_data, model_parameters):
             # Step2"": predict relations
             # Step3: replace named entities & date date_entities
 
-            predicted_amr_str = asr.reconstruct_all_ne(pred_label, test_named_entities[i], test_date_entities[i])
+            predicted_amr = asr.reconstruct_all_ne(x_test[i], pred_label, test_named_entities[i],
+                                                   test_date_entities[i], parser_parameters)
+            predicted_amr_str = predicted_amr.amr_print()
 
             # handling coreference(postprocessing)
             if coref_handling:
@@ -361,7 +361,7 @@ def train(model_name, train_case_name, train_data, test_data, model_parameters):
                        model_name=model_name, trial_name=train_case_name)
 
 
-def test(model_name, test_case_name, data, model_parameters):
+def test(model_name, test_case_name, data, parser_parameters, model_parameters):
     model_path = TRAINED_MODELS_DIR + "/{}_{}".format(model_name, test_case_name)
     print "Model path is: %s" % model_path
 
@@ -381,13 +381,12 @@ def test(model_name, test_case_name, data, model_parameters):
 
     x_test_full, y_test_full, lengths_test, filtered_count_test = \
         feature_vector_generator.generate_feature_vectors(x_test, y_test, dependencies_test, test_amr_ids,
-                                                          model_parameters)
+                                                          parser_parameters)
 
-    y_test_labels = [[a.label for a in action_sequence] for action_sequence in y_test]
-
-    model = get_model(embedding_matrix, model_parameters)
+    model = get_model(embedding_matrix, parser_parameters, model_parameters)
 
     print model.summary()
+    print "Word embeddings matrix len: "
     print len(embedding_matrix)
 
     model.load_weights(model_path, by_name=False)
@@ -399,7 +398,7 @@ def test(model_name, test_case_name, data, model_parameters):
 
     for i in range(len(x_test)):
         print "%d/%d" % (i, len(x_test))
-        prediction = make_prediction(model, x_test[i], dependencies_test[i], model_parameters)
+        prediction = make_prediction(model, x_test[i], dependencies_test[i], parser_parameters)
 
         predictions.append(prediction)
         print "Sentence"
@@ -411,32 +410,30 @@ def test(model_name, test_case_name, data, model_parameters):
 
         if len(prediction) > 0:
             act = asr.ActionConceptTransfer()
-            act.load_from_action_and_label([action.index for action in y_test[i]], y_test_labels[i])
+            act.load_from_action_objects(y_test[i])
             pred_label = act.populate_new_actions(prediction)
             print "Predictions with old labels: "
             print pred_label
-            if model_parameters.with_reattach is True:
-                predicted_amr_str = asr.reconstruct_all_ne(pred_label, test_named_entities[i], test_date_entities[i])
-                # handling coreference(postprocessing)
-                if coref_handling:
-                    predicted_amr_str = reentrancy_restoring(predicted_amr_str)
-            else:
-                predicted_amr_str = asr.reconstruct_all(pred_label)
-                # handling coreference(postprocessing)
-                if coref_handling:
-                    predicted_amr_str = reentrancy_restoring(predicted_amr_str)
+
+            predicted_amr = asr.reconstruct_all_ne(x_test[i], pred_label, test_named_entities[i], test_date_entities[i],
+                                                   parser_parameters)
+            predicted_amr_str = predicted_amr.amr_print()
+
+            if coref_handling:
+                predicted_amr_str = reentrancy_restoring(predicted_amr_str)
 
             original_amr = smatch_amr.AMR.parse_AMR_line(test_amr_str[i])
             predicted_amr = smatch_amr.AMR.parse_AMR_line(predicted_amr_str)
 
             print "Original Amr"
             print test_amr_str[i]
-            print "Predicted Amr"
+            print "Predicted AMR"
             print predicted_amr_str
 
             if original_amr is not None and predicted_amr is not None:
                 smatch_f_score = smatch_results.compute_and_add(predicted_amr, original_amr)
                 print "Smatch f-score %f" % smatch_f_score
+
         else:
             errors += 1
 
@@ -505,7 +502,7 @@ def save_trial_results(train_data_shape, filtered_train_data_shape, train_length
         f.write(str(errors) + "\n")
 
 
-def test_without_amr(model_name, data, model_parameters):
+def test_without_amr(model_name, data, parser_parameters, model_parameters):
     model_path = TRAINED_MODELS_DIR + "/{}".format(model_name)
     print "Model path is:"
     print model_path
@@ -538,14 +535,14 @@ def test_without_amr(model_name, data, model_parameters):
 
     embedding_matrix = word_embeddings_util.get_embeddings_matrix(model_parameters.embeddings_dim)
 
-    model = get_model(embedding_matrix, model_parameters)
+    model = get_model(embedding_matrix, parser_parameters, model_parameters)
 
     print model.summary()
 
     model.load_weights(model_path, by_name=False)
 
     for i in range(len(x_test)):
-        prediction = make_prediction(model, x_test[i], dependencies_test[i], model_parameters.max_len)
+        prediction = make_prediction(model, x_test[i], dependencies_test[i], parser_parameters.max_len)
         print "Sentence"
         pretty_print_sentence(x_test[i], index_word_map)
         print "Predicted"
@@ -557,13 +554,13 @@ def test_without_amr(model_name, data, model_parameters):
             print "AMR skeleton without labels: "
             print pred_label
 
-            if model_parameters.with_reattach is True:
-                predicted_amr_str = asr.reconstruct_all_ne(pred_label, named_entities, [])
+            if parser_parameters.with_reattach is True:
+                predicted_amr_str = asr.reconstruct_all_ne(x_test[i], pred_label, named_entities, [], parser_parameters)
                 # handling coreference(postprocessing)
                 if coref_handling:
                     predicted_amr_str = reentrancy_restoring(predicted_amr_str)
             else:
-                predicted_amr_str = asr.reconstruct_all(pred_label)
+                predicted_amr_str = asr.reconstruct_all_ne(x_test[i], pred_label, [], [], parser_parameters)
                 # handling coreference(postprocessing)
                 if coref_handling:
                     predicted_amr_str = reentrancy_restoring(predicted_amr_str)
@@ -574,17 +571,17 @@ def test_without_amr(model_name, data, model_parameters):
     return prediction
 
 
-def train_file(model_name, train_case_name, train_data_path, test_data_path, model_parameters):
-    train_data = np.asarray(dataset_loader.read_data("training", train_data_path, cache=True), dtype=object)
-    test_data = np.asarray(dataset_loader.read_data("dev", test_data_path, cache=True), dtype=object)
+def train_file(model_name, train_case_name, train_data_path, test_data_path, parser_parameters, model_parameters):
+    train_data = dataset_loader.read_data("training", train_data_path, cache=True)
+    test_data = dataset_loader.read_data("dev", test_data_path, cache=True)
 
-    train(model_name, train_case_name, train_data, test_data, model_parameters)
+    train(model_name, train_case_name, train_data, test_data, parser_parameters, model_parameters)
 
 
-def test_file(model_name, test_case_name, test_data_path, model_parameters):
-    test_data = np.asarray(dataset_loader.read_data("test", test_data_path, cache=True), dtype=object)
+def test_file(model_name, test_case_name, test_data_path, parser_parameters, model_parameters):
+    test_data = dataset_loader.read_data("test", test_data_path, cache=True)
 
-    return test(model_name, test_case_name, test_data, model_parameters)
+    return test(model_name, test_case_name, test_data, parser_parameters, model_parameters)
 
 
 if __name__ == "__main__":
@@ -593,10 +590,8 @@ if __name__ == "__main__":
     # tokenizer_util.generate_tokenizer()
     # dataset_loader.generate_parsed_data_files()
 
-    train_data_path = "all"
-    test_data_path = "all"
-
-    trial_name = ""
+    train_data_path = test_data_path = "proxy"
+    trial_name = "full_deoverlapped"
 
     max_len = 30
     embeddings_dim = 200
@@ -606,9 +601,11 @@ if __name__ == "__main__":
     model_name = "{}_epochs={}_maxlen={}_embeddingsdim={}" \
         .format(train_data_path, train_epochs, max_len, embeddings_dim)
 
-    model_parameters = ModelParameters(max_len=max_len, embeddings_dim=embeddings_dim, train_epochs=train_epochs,
-                                       with_enhanced_dep_info=False, with_target_semantic_labels=False,
-                                       with_reattach=True)
+    model_parameters = ModelParameters(embeddings_dim=embeddings_dim, train_epochs=train_epochs)
+
+    parser_parameters = ParserParameters(max_len=max_len, with_enhanced_dep_info=False,
+                                         with_target_semantic_labels=False, with_reattach=True,
+                                         with_gold_concept_labels=True, with_gold_relation_labels=True)
 
     word_embeddings_util.init_embeddings_matrix(model_parameters.embeddings_dim)
 
@@ -618,7 +615,7 @@ if __name__ == "__main__":
         test_data_path = None
 
     train_file(model_name=model_name, train_case_name=trial_name, train_data_path=train_data_path,
-               test_data_path=test_data_path, model_parameters=model_parameters)
+               test_data_path=test_data_path, parser_parameters=parser_parameters, model_parameters=model_parameters)
 
     test_file(model_name=model_name, test_case_name=trial_name, test_data_path=test_data_path,
-              model_parameters=model_parameters)
+              parser_parameters=parser_parameters, model_parameters=model_parameters)

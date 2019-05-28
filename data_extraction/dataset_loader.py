@@ -103,11 +103,12 @@ def read_original_graphs(file_type, filter_path="deft", cache=True):
     return parsed_data
 
 
-def partition_dataset(original_data_partitions, partition_sizes=None):
+def partition_dataset(original_data_partitions, partition_sizes=None, shuffle_data=True):
     """
         Partition a dataset into a set of partitions according to a list of sizes for each partition
         :param original_data_partitions - list of original dataset partitions
         :param partition_sizes - list of percentages of each result partition relative to the whole data size
+        :param shuffle_data - specifies whether the data should be shuffled before being partitioned
     """
     if partition_sizes is not None:
         data = np.concatenate(original_data_partitions)
@@ -119,7 +120,8 @@ def partition_dataset(original_data_partitions, partition_sizes=None):
                                 for part_index in partition_indices]
         partition_boundaries = [0] + partition_boundaries
 
-        np.random.shuffle(data)
+        if shuffle_data:
+            np.random.shuffle(data)
 
         data_partitions = [data[partition_boundaries[part_idx - 1]: partition_boundaries[part_idx]]
                            for part_idx in partition_indices]

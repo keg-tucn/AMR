@@ -3,7 +3,8 @@ import logging
 from asg import ASG
 from asg_exceptions import *
 
-""" This is the deterministic version of the algorithm for action sequence generation
+""" 
+    This is the deterministic version of the algorithm for action sequence generation
     as described in Silviana Campean's thesis
     (the code being refactored to use the methods in the ASG class)
 """
