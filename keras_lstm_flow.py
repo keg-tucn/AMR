@@ -60,6 +60,12 @@ def tokens_to_sentence(tokens, index_to_word_map):
     return str
 
 
+def generate_parsed_files():
+    dataset_loader.generate_parsed_graphs_files()
+    tokenizer_util.generate_tokenizer()
+    dataset_loader.generate_parsed_data_files()
+
+
 def make_prediction(model, x_test, dependencies, parser_parameters):
     tokens_buffer = x_test
     tokens_stack = []
@@ -247,7 +253,7 @@ def train(model_name, train_case_name, train_data, test_data, parser_parameters,
     print "Model path is: %s" % model_path
 
     [train_data, test_data] = dataset_loader.partition_dataset((train_data, test_data), partition_sizes=[0.9, 0.1],
-                                                               shuffle_data=True)
+                                                               shuffle_data=parser_parameters.shuffle_data)
 
     print "Overlapping instances before: %d" % dataset_loader.check_data_partitions_overlap(train_data, test_data)
     train_data, test_data = dataset_loader.remove_overlapping_instances(train_data, test_data)
@@ -587,8 +593,7 @@ def test_file(model_name, test_case_name, test_data_path, parser_parameters, mod
 if __name__ == "__main__":
     data_sets = ["bolt", "consensus", "dfa", "proxy", "xinhua", "all"]
 
-    # tokenizer_util.generate_tokenizer()
-    # dataset_loader.generate_parsed_data_files()
+    # generate_parsed_files()
 
     train_data_path = test_data_path = "proxy"
     trial_name = "full_deoverlapped"

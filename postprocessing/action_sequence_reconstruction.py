@@ -237,7 +237,6 @@ def annotate_node_concepts(node):
 
 
 if __name__ == "__main__":
-    tokenizer = tokenizer_util.get_tokenizer()
 
     parser_parameters = ParserParameters(max_len=50, with_enhanced_dep_info=False,
                                          with_target_semantic_labels=False, with_reattach=True,
@@ -262,12 +261,17 @@ if __name__ == "__main__":
     act.load_from_action_objects(actions)
     actions_re = act.populate_new_actions(acts_i)
 
-    tokens = tokenizer.texts_to_sequences([sentence])[0]
+    tokens = tokenizer_util.text_to_sequence(sentence)
 
-    print actions
-    print actions_re
+    print "Original actions:"
+    for act in actions:
+        print act
+    print "Reconstructed actions:"
+    for act in actions_re:
+        print act
 
-    print reconstruct_all_ne(tokens, actions, [], [], parser_parameters=parser_parameters)
+    amr_re = reconstruct_all_ne(tokens, actions, [], [], parser_parameters=parser_parameters)
+    print amr_re.amr_print()
 
     sentence = "upgrade fire control systems of Indian tanks ."
 
@@ -283,7 +287,7 @@ if __name__ == "__main__":
     custom_AMR = CustomizedAMR()
     custom_AMR.create_custom_AMR(amr_new)
 
-    actions = ActionSequenceGenerator.generate_action_sequence(custom_AMR, sentence)
+    actions = ActionSequenceGenerator.generate_action_sequence(custom_AMR, sentence_new)
     acts_i = [a.index for a in actions]
 
     act = ActionConceptTransfer()
@@ -295,7 +299,8 @@ if __name__ == "__main__":
     print actions
     print actions_re
 
-    print reconstruct_all_ne(actions, [(5, ["Indian"])], [], [], parser_parameters)
+    amr_re = reconstruct_all_ne(tokens, actions, [(5, ["Indian"])], [], parser_parameters)
+    print amr_re.amr_print()
 
     amr_str = """(d / difficult~e.5
           :domain~e.4 (r / reach-01~e.7
@@ -309,7 +314,7 @@ if __name__ == "__main__":
     sentence = """Consensus on India will be difficult to reach when the NSG meets in November 2017 ."""
 
     amr = AMR.parse_string(amr_str)
-    amr_new, _, named_entities = TokensReplacer.replace_named_entities(amr, sentence)
+    amr_new, sentence_new, named_entities = TokensReplacer.replace_named_entities(amr, sentence)
     amr_new, sentence_new, date_entities = TokensReplacer.replace_date_entities(amr_new, sentence_new)
 
     custom_AMR = CustomizedAMR()
@@ -322,7 +327,7 @@ if __name__ == "__main__":
     act.load_from_action_objects(actions)
     actions_re = act.populate_new_actions(acts_i)
 
-    tokens = tokenizer.texts_to_sequences([sentence])[0]
+    tokens = tokenizer_util.text_to_sequence(sentence)
 
     print actions
     print actions_re

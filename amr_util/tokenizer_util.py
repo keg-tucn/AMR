@@ -6,14 +6,24 @@ from data_extraction import dataset_loader
 
 
 def get_tokenizer():
-    tokenizer = pickle.load(open(TOKENIZER_PATH, "rb"))
-    return tokenizer
+    return pickle.load(open(TOKENIZER_PATH, "rb"))
+
+
+tokenizer = get_tokenizer()
 
 
 def generate_tokenizer():
-    train_data_sentences = [d.sentence for d in dataset_loader.read_data("training", cache=True)]
-    dev_data_sentences = [d.sentence for d in dataset_loader.read_data("dev", cache=True)]
-    test_data_sentences = [d.sentence for d in dataset_loader.read_data("test", cache=True)]
+    train_data_sentences = \
+        [d[1] for d in dataset_loader.read_original_graphs("training", cache=True)] + \
+        [d.sentence for d in dataset_loader.read_data("training", cache=True)]
+
+    dev_data_sentences = \
+        [d[1] for d in dataset_loader.read_original_graphs("dev", cache=True)] + \
+        [d.sentence for d in dataset_loader.read_data("dev", cache=True)]
+
+    test_data_sentences = \
+        [d[1] for d in dataset_loader.read_original_graphs("test", cache=True)] + \
+        [d.sentence for d in dataset_loader.read_data("test", cache=True)]
 
     sentences = train_data_sentences + dev_data_sentences + test_data_sentences
 
@@ -37,6 +47,14 @@ def get_no_word_index():
     return len(get_word_index_map()) + 1
 
 
+def text_to_sequence(sentence):
+    return tokenizer.texts_to_sequences([sentence])[0]
+
+
+def sequence_to_text(sequence):
+    return tokenizer.sequences_to_texts([sequence])[0]
+
+
 if __name__ == "__main__":
     word_index_map = get_word_index_map()
     print "Words to indices map: %d" % len(word_index_map)
@@ -46,3 +64,10 @@ if __name__ == "__main__":
 
     index_word_map_copy = {v: k for k, v in word_index_map.items()}
     print cmp(index_word_map, index_word_map_copy)
+
+    sentence = "\nHe went to the store to buy wood for a new fence ."
+    tokens_sequence = text_to_sequence(sentence)
+
+    print "Original sentence:", sentence
+    print "Tokens sequence:", tokens_sequence
+    print "Reconstructed sentence:", sequence_to_text(tokens_sequence)

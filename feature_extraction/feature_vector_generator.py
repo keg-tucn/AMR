@@ -64,7 +64,6 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
     :param parser_parameters: collection of model properties
     :return: list of encoded and padded features for the trainer
     """
-    tokenizer = tokenizer_util.get_tokenizer()
     no_word_index = tokenizer_util.get_no_word_index()
 
     max_len = parser_parameters.max_len
@@ -139,7 +138,7 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
         if tokens_sequence_index != len(tokens_sequence):
             logging.warn("There was a problem at training instance %d at %s. Actions %s. Tokens %s", i, amr_id,
                          actions_to_string([action.index for action in action_sequence]),
-                         tokenizer.sequences_to_texts(tokens_sequence))
+                         tokenizer_util.sequence_to_text(tokens_sequence))
             exception_count += 1
             continue
             # raise Exception("There was a problem at training instance " + str(i) + " at " + amr_id + "\n")

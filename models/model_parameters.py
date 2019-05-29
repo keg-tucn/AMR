@@ -3,9 +3,9 @@ class ModelParameters:
                  embeddings_dim=200,
                  train_epochs=50,
                  hidden_layer_size=1024,
-                 learning_rate=0.005,  # original value: 0.01
-                 dropout=0.25,
-                 recurrent_dropout=0.25,
+                 learning_rate=0.01,
+                 dropout=0.0,
+                 recurrent_dropout=0.0,
                  ):
         self.embeddings_dim = embeddings_dim
         self.train_epochs = train_epochs

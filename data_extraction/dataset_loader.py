@@ -88,8 +88,8 @@ def read_original_graphs(file_type, filter_path="deft", cache=True):
                     custom_amr_graph.create_custom_AMR(camr_graph)
 
                     parsed_file_data.append((amr_triple[2], amr_triple[0], camr_graph, custom_amr_graph))
-                except Exception as _:
-                    print "Exception when parsing AMR with ID: %s in file: %s\n" % (amr_triple[2], original_file_path)
+                except Exception as e:
+                    # print "Exception when parsing AMR with ID: %s in file %s with error: %s\n" % (amr_triple[2], file_name, e)
                     failed_amrs_in_file += 1
 
             if not path.exists(path.dirname(dump_file_path)):
@@ -131,14 +131,19 @@ def partition_dataset(original_data_partitions, partition_sizes=None, shuffle_da
         return original_data_partitions
 
 
-def generate_parsed_data_files():
+def generate_parsed_graphs_files():
     """
-        Initialize all the parsed data files (dumps) by regenerating them
+        Initialize all the parsed data files (dumps) with the AMRGraphs and AMRData structures
     """
     read_original_graphs("training", cache=False)
     read_original_graphs("dev", cache=False)
     read_original_graphs("test", cache=False)
 
+
+def generate_parsed_data_files():
+    """
+        Initialize all the parsed data files (dumps) with the TrainData structures
+    """
     read_data("training", cache=False)
     read_data("dev", cache=False)
     read_data("test", cache=False)
