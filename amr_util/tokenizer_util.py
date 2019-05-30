@@ -13,17 +13,26 @@ tokenizer = get_tokenizer()
 
 
 def generate_tokenizer():
+    train_data_sentences = [d.sentence for d in dataset_loader.read_data("training", cache=True)]
+    '''
     train_data_sentences = \
         [d[1] for d in dataset_loader.read_original_graphs("training", cache=True)] + \
         [d.sentence for d in dataset_loader.read_data("training", cache=True)]
+    '''
 
+    dev_data_sentences = [d.sentence for d in dataset_loader.read_data("dev", cache=True)]
+    '''
     dev_data_sentences = \
         [d[1] for d in dataset_loader.read_original_graphs("dev", cache=True)] + \
         [d.sentence for d in dataset_loader.read_data("dev", cache=True)]
+    '''
 
+    test_data_sentences = [d.sentence for d in dataset_loader.read_data("test", cache=True)]
+    '''
     test_data_sentences = \
         [d[1] for d in dataset_loader.read_original_graphs("test", cache=True)] + \
         [d.sentence for d in dataset_loader.read_data("test", cache=True)]
+    '''
 
     sentences = train_data_sentences + dev_data_sentences + test_data_sentences
 

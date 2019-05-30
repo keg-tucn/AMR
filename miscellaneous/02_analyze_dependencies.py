@@ -1,19 +1,21 @@
 from feature_extraction import feature_vector_generator
 from data_extraction import dataset_loader
 
-training_data = dataset_loader.read_data("training")
-dev_data = dataset_loader.read_data("dev")
-test_data = dataset_loader.read_data("test")
+training_data = dataset_loader.read_data("training", "r2")
+dev_data = dataset_loader.read_data("dev", "r2")
+test_data = dataset_loader.read_data("test", "r2")
 
 data = training_data + dev_data + test_data
 
-sequences, _, dependencies, _, _, _, _ = feature_vector_generator.extract_data_components(data)
+sequences, _, dependencies, _, amr_ids, _, _ = feature_vector_generator.extract_data_components(data)
 
-training_data_orig = dataset_loader.read_original_graphs("training")
-dev_data_orig = dataset_loader.read_original_graphs("dev")
-test_data_orig = dataset_loader.read_original_graphs("test")
+training_data_orig = dataset_loader.read_original_graphs("training", "r2")
+dev_data_orig = dataset_loader.read_original_graphs("dev", "r2")
+test_data_orig = dataset_loader.read_original_graphs("test", "r2")
 
 data_orig = training_data_orig + dev_data_orig + test_data_orig
+
+data_orig = [d for d in data_orig if d[0] in amr_ids]
 
 sentences = [d[1] for d in data_orig]
 amrs = [d[2] for d in data_orig]
@@ -29,8 +31,6 @@ for sequence, deps, amr, sentence in zip(sequences, dependencies, amrs, sentence
     total_deps += len(deps)
 
     for dep_parent, (dep_child, dep_type) in deps.iteritems():
-
-        print str(dep_parent) + " -> " + dep_type + " -> " + str(dep_child)
 
         parent_node = None
         for key, value in amr.node_to_tokens.iteritems():
@@ -57,6 +57,7 @@ for sequence, deps, amr, sentence in zip(sequences, dependencies, amrs, sentence
                         present_deps += 1
                         inverse_deps += 1
 
+print "Data length: %d" % len(data)
 print "Total number of dependencies between tokens: %d" % total_deps
 print "Total number of dependencies between tokens that have an AMR relation: %d" % present_deps
 print "Percentage of mapped dependency relations: %f" % (float(present_deps) / total_deps)

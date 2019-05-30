@@ -11,7 +11,7 @@ from amr_util import TrainingDataStats
 from data_extraction import input_file_parser
 from preprocessing import TokensReplacer
 from data_extraction.dependency_extractor import DependencyExtractor
-from preprocessing.action_sequence_generators.simple_asg import SimpleASG
+from preprocessing.action_sequence_generators.simple_asg__informed_swap import SimpleInformedSwapASG
 from Baseline import baseline
 
 TrainingDataExtraction = namedtuple("TrainingDataExtraction", "data stats")
@@ -122,9 +122,7 @@ def generate_training_data(file_path, compute_dependencies=True):
 
             coreference_count += TrainingDataStats.get_coreference_count(custom_amr)
 
-            # TODO: put here the new version of the action seq generator
-            # action_sequence = ActionSequenceGenerator.generate_action_sequence(custom_amr, new_sentence)
-            asg_implementation = SimpleASG(1, False)
+            asg_implementation = SimpleInformedSwapASG(1, False)
             action_sequence = asg_implementation.generate_action_sequence(custom_amr, new_sentence)
 
             #

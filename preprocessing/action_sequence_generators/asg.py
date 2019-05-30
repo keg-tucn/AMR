@@ -1,12 +1,14 @@
 import copy
+
 import models.actions as act
+from models.amr_data import CustomizedAMR
 
 
 class ASG:
 
     def __init__(self, no_of_swaps):
         self.no_of_swaps = no_of_swaps
-        self.amr_graph = {}
+        self.amr_graph = CustomizedAMR()
         self.buffer = []
         self.buffer_indices = []
         self.stack = []
@@ -62,10 +64,10 @@ class ASG:
         return len(self.stack) >= n + 2 and self.no_of_swaps != 0
 
     def can_shift(self):
-        return (not self.is_buffer_empty()) and self.current_token in self.amr_graph.tokens_to_concepts_dict.keys()
+        return not self.is_buffer_empty() and self.current_token in self.amr_graph.tokens_to_concepts_dict.keys()
 
     def can_delete(self):
-        return (not self.is_buffer_empty()) and (self.current_token not in self.amr_graph.tokens_to_concepts_dict.keys())
+        return not self.is_buffer_empty() and self.current_token not in self.amr_graph.tokens_to_concepts_dict.keys()
 
     def reduce_right(self):
         top = len(self.stack) - 1
@@ -117,7 +119,7 @@ class ASG:
         if len(self.buffer_indices) != 0:
             self.current_token = self.buffer_indices[0]
 
-    #TODO: analyze this method (I have the vague impression there should be a tokens_to_concept_list)
+    # TODO: analyze this method (I have the vague impression there should be a tokens_to_concept_list)
     def brk(self):
         self.stack.append(self.current_token)
         tokens_to_concept = self.amr_graph.tokens_to_concepts_dict[self.current_token]
@@ -154,5 +156,5 @@ class ASG:
             if child in list_of_children:
                 amr_graph.relations_dict[(node, parent)][1].remove(child)
 
-        except Exception as e:
+        except Exception as _:
             raise Exception("Cannot remove child")
