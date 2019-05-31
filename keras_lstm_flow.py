@@ -454,6 +454,40 @@ def test(model_name, test_case_name, data, parser_parameters, model_parameters):
     return predictions
 
 
+def test_one_sentence(i, amr_str, x, y, named_entities, date_entities, model, dependencies, parser_parameters,
+                      smatch_results):
+    print "%d" % i
+    prediction = make_prediction(model, x, dependencies, parser_parameters)
+
+    if len(prediction) > 0:
+        act = asr.ActionConceptTransfer()
+        act.load_from_action_objects(y)
+        pred_label = act.populate_new_actions(prediction)
+        print "Predictions with old labels: "
+        print pred_label
+
+        predicted_amr = asr.reconstruct_all_ne(x, pred_label, named_entities, date_entities, parser_parameters)
+        predicted_amr_str = predicted_amr.amr_print()
+
+        if coref_handling:
+            predicted_amr_str = reentrancy_restoring(predicted_amr_str)
+
+        original_amr = smatch_amr.AMR.parse_AMR_line(amr_str)
+        predicted_amr = smatch_amr.AMR.parse_AMR_line(predicted_amr_str)
+
+        print "Original Amr"
+        print amr_str
+        print "Predicted AMR"
+        print predicted_amr_str
+
+        if original_amr is not None and predicted_amr is not None:
+            smatch_f_score = smatch_results.compute_and_add(predicted_amr, original_amr)
+            print "Smatch f-score %f" % smatch_f_score
+        return 0
+    else:
+        return 1
+
+
 def save_trial_results(train_data_shape, filtered_train_data_shape, train_lengths,
                        test_data_shape, filtered_test_data_shape, test_lengths,
                        model_accuracy, smatch_results, errors, model_name, trial_name):
@@ -610,7 +644,7 @@ if __name__ == "__main__":
 
     parser_parameters = ParserParameters(max_len=max_len, with_enhanced_dep_info=False,
                                          with_target_semantic_labels=False, with_reattach=True,
-                                         with_gold_concept_labels=True, with_gold_relation_labels=True)
+                                         with_gold_concept_labels=False, with_gold_relation_labels=False)
 
     word_embeddings_util.init_embeddings_matrix(model_parameters.embeddings_dim)
 

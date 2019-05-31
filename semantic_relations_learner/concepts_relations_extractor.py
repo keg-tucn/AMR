@@ -74,8 +74,6 @@ def extract_concepts_relations_pairs(with_relation_frequency=False):
 
 
 if __name__ == "__main__":
-
-    # concepts_rels_dict = extract_concepts_relations_pairs(with_relation_frequency=True)
     concepts_rels_dict = get_concepts_relations_pairs()
 
     multiple_rels_pairs = 0

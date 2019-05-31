@@ -6,6 +6,7 @@ from preprocessing import ActionSequenceGenerator
 from preprocessing import TokensReplacer
 from postprocessing.action_concept_transfer import ActionConceptTransfer
 from amr_util import frameset_util, tokenizer_util, node_box_util, pos_convert_util
+from semantic_relations_learner import concepts_relations_extractor
 
 VOCAB_ACTS = ["SH", "RL", "RR", "DN", "SW"]
 SH = 0
@@ -14,6 +15,8 @@ RR = 2
 DN = 3
 SW = 4
 NUM_ACTIONS = len(VOCAB_ACTS)
+
+CONCEPTS_RELATIONS_DICT = concepts_relations_extractor.get_concepts_relations_pairs()
 
 
 def action_name(index):
@@ -29,6 +32,9 @@ def reconstruct_all_ne(tokens, action_sequence, named_entities_metadata, date_en
 
     if not parser_parameters.with_gold_concept_labels:
         annotate_node_concepts(top)
+
+    if not parser_parameters.with_gold_relation_labels:
+        annotate_node_relations(top)
 
     return top
 
@@ -105,14 +111,20 @@ class MetadataReconstructionState:
         right = self.stack.pop()
         left = self.stack.pop()
         head, modifier = right, left
-        head.add_child(modifier, action.label)
+        if parser_parameters.with_gold_relation_labels:
+            head.add_child(modifier, action.label)
+        else:
+            head.add_child(modifier, "unk")
         self.stack.append(head)
 
     def _process_reduce_right(self, action):
         right = self.stack.pop()
         left = self.stack.pop()
         head, modifier = left, right
-        head.add_child(modifier, action.label)
+        if parser_parameters.with_gold_relation_labels:
+            head.add_child(modifier, action.label)
+        else:
+            head.add_child(modifier, "unk")
         self.stack.append(head)
 
     def _process_delete(self, action):
@@ -234,6 +246,20 @@ def annotate_node_concepts(node):
 
     for child in node.children:
         annotate_node_concepts(child[0])
+
+
+def annotate_node_relations(node):
+    node_label = node.label
+
+    if node.children is not None and len(node.children) > 0:
+        node.children = [(node_child[0],
+                          max(CONCEPTS_RELATIONS_DICT.get((node_label, node_child[0].label), [("unk", 1)]),
+                              key=(lambda rel: rel[1]))[
+                              0])
+                         for node_child in node.children]
+
+    for child in node.children:
+        annotate_node_relations(child[0])
 
 
 if __name__ == "__main__":
