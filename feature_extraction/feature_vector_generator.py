@@ -41,11 +41,9 @@ def extract_data_components(data):
 
     named_entities = [d.named_entities for d in data]
     named_entities = [[(n[3], n[2]) for n in named_entities_list] for named_entities_list in named_entities]
-    named_entities = np.asarray(named_entities)
 
     date_entities = [d.date_entities for d in data]
     date_entities = [[(d[3], d[2], d[1]) for d in date_entities_list] for date_entities_list in date_entities]
-    date_entities = np.asarray(date_entities)
 
     amr_str = np.asarray([d.original_amr for d in data])
 

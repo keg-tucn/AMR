@@ -10,7 +10,7 @@ from constants import __AMR_RELATIONS
 from definitions import PROJECT_ROOT_DIR, TRAINED_MODELS_DIR, RESULT_METRICS_DIR
 from Baseline import reentrancy_restoring
 from amr_util import tokenizer_util, word_embeddings_util, keras_plotter
-from postprocessing import action_sequence_reconstruction as asr
+from postprocessing import action_concept_transfer, action_sequence_reconstruction
 from smatch import smatch_amr, smatch_util
 import models.actions as act
 from models.model_parameters import ModelParameters
@@ -323,7 +323,7 @@ def train(model_name, train_case_name, train_data, test_data, parser_parameters,
         prediction = make_prediction(model, x_test[i], dependencies_test[i], parser_parameters)
 
         if len(prediction) > 0:
-            act = asr.ActionConceptTransfer()
+            act = action_concept_transfer.ActionConceptTransfer()
             act.load_from_action_objects(y_test[i])
             pred_label = act.populate_new_actions(prediction)
             print "Predictions with old labels: "
@@ -334,8 +334,9 @@ def train(model_name, train_case_name, train_data, test_data, parser_parameters,
             # Step2"": predict relations
             # Step3: replace named entities & date date_entities
 
-            predicted_amr = asr.reconstruct_all_ne(x_test[i], pred_label, test_named_entities[i],
-                                                   test_date_entities[i], parser_parameters)
+            predicted_amr = action_sequence_reconstruction.reconstruct_all_ne(x_test[i], pred_label,
+                                                                              test_named_entities[i],
+                                                                              test_date_entities[i], parser_parameters)
             predicted_amr_str = predicted_amr.amr_print()
 
             # handling coreference(postprocessing)
@@ -415,7 +416,7 @@ def test(model_name, test_case_name, data, parser_parameters, model_parameters):
         pretty_print_actions([action.index for action in y_test[i]])
 
         if len(prediction) > 0:
-            act = asr.ActionConceptTransfer()
+            act = action_concept_transfer.ActionConceptTransfer()
             act.load_from_action_objects(y_test[i])
             pred_label = act.populate_new_actions(prediction)
             print "Predictions with old labels: "
@@ -460,13 +461,14 @@ def test_one_sentence(i, amr_str, x, y, named_entities, date_entities, model, de
     prediction = make_prediction(model, x, dependencies, parser_parameters)
 
     if len(prediction) > 0:
-        act = asr.ActionConceptTransfer()
+        act = action_concept_transfer.ActionConceptTransfer()
         act.load_from_action_objects(y)
         pred_label = act.populate_new_actions(prediction)
         print "Predictions with old labels: "
         print pred_label
 
-        predicted_amr = asr.reconstruct_all_ne(x, pred_label, named_entities, date_entities, parser_parameters)
+        predicted_amr = action_sequence_reconstruction.reconstruct_all_ne(x, pred_label, named_entities, date_entities,
+                                                                          parser_parameters)
         predicted_amr_str = predicted_amr.amr_print()
 
         if coref_handling:
@@ -589,18 +591,21 @@ def test_without_amr(model_name, data, parser_parameters, model_parameters):
         pretty_print_actions(prediction)
 
         if len(prediction) > 0:
-            act = asr.ActionConceptTransfer()
+            act = action_concept_transfer.ActionConceptTransfer()
             pred_label = act.populate_new_actions(prediction)
             print "AMR skeleton without labels: "
             print pred_label
 
             if parser_parameters.with_reattach is True:
-                predicted_amr_str = asr.reconstruct_all_ne(x_test[i], pred_label, named_entities, [], parser_parameters)
+                predicted_amr_str = action_sequence_reconstruction.reconstruct_all_ne(x_test[i], pred_label,
+                                                                                      named_entities, [],
+                                                                                      parser_parameters)
                 # handling coreference(postprocessing)
                 if coref_handling:
                     predicted_amr_str = reentrancy_restoring(predicted_amr_str)
             else:
-                predicted_amr_str = asr.reconstruct_all_ne(x_test[i], pred_label, [], [], parser_parameters)
+                predicted_amr_str = action_sequence_reconstruction.reconstruct_all_ne(x_test[i], pred_label, [], [],
+                                                                                      parser_parameters)
                 # handling coreference(postprocessing)
                 if coref_handling:
                     predicted_amr_str = reentrancy_restoring(predicted_amr_str)
@@ -629,7 +634,8 @@ if __name__ == "__main__":
 
     # generate_parsed_files()
 
-    train_data_path = test_data_path = "proxy"
+    train_data_path = "proxy"
+    test_data_path = "proxy"
     trial_name = "full_deoverlapped"
 
     max_len = 30

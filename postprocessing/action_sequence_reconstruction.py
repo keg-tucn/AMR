@@ -28,13 +28,8 @@ def reconstruct_all_ne(tokens, action_sequence, named_entities_metadata, date_en
 
     for action in action_sequence:
         rec_obj.process_action(action)
+
     top = rec_obj.finalize()
-
-    if not parser_parameters.with_gold_concept_labels:
-        annotate_node_concepts(top)
-
-    if not parser_parameters.with_gold_relation_labels:
-        annotate_node_relations(top)
 
     return top
 
@@ -81,6 +76,9 @@ class MetadataReconstructionState:
         if not self.parser_parameters.with_gold_concept_labels:
             annotate_node_concepts(top)
 
+        if not self.parser_parameters.with_gold_relation_labels:
+            annotate_node_relations(top)
+
         return top
 
     def _process_shift(self, action):
@@ -111,7 +109,7 @@ class MetadataReconstructionState:
         right = self.stack.pop()
         left = self.stack.pop()
         head, modifier = right, left
-        if parser_parameters.with_gold_relation_labels:
+        if self.parser_parameters.with_gold_relation_labels:
             head.add_child(modifier, action.label)
         else:
             head.add_child(modifier, "unk")
@@ -121,7 +119,7 @@ class MetadataReconstructionState:
         right = self.stack.pop()
         left = self.stack.pop()
         head, modifier = left, right
-        if parser_parameters.with_gold_relation_labels:
+        if self.parser_parameters.with_gold_relation_labels:
             head.add_child(modifier, action.label)
         else:
             head.add_child(modifier, "unk")
