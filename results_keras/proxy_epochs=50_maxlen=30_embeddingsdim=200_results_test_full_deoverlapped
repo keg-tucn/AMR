@@ -1,0 +1,19 @@
+------------------------------------------------------------------------------------------------
+Test data shape: 
+(4,)
+Final test data shape:
+(4, 30, 15)
+Filtered test: 
+0
+Mean test length: 17.5 
+Max test length: 24 
+Scores for model /home/iv/Documents/AMR/trained_models/proxy_epochs=50_maxlen=30_embeddingsdim=200
+Min: 0.363636
+Max: 0.692308
+Arithm. mean 0.513548951049
+Harm. mean 0.491632352154
+Global smatch f-score 0.506944444444
+Model test accuracy
+0.8083333373069763
+Errors
+0
