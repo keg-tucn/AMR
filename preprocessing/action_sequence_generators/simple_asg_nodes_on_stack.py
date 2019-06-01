@@ -2,7 +2,8 @@ import logging
 
 from asg_nodes_on_stack import NodesOnStackASG
 
-""" This is the deterministic version of the algorithm for action sequence generation
+""" 
+    This is the deterministic version of the algorithm for action sequence generation
     as described in Silviana Campean's thesis
     But on the stack I keep (node_variable,token) pairs instead of tokens
     (in Silviana's implementation on stack the tokens were kept, that is, the indices of the words in the buffer,
@@ -17,7 +18,7 @@ from preprocessing.ActionSequenceGenerator import RotateException
 class SimpleNodesOnStackASG(NodesOnStackASG):
 
     def __init__(self, no_of_swaps, should_rotate):
-        NodesOnStackASG.__init__(self,no_of_swaps)
+        NodesOnStackASG.__init__(self, no_of_swaps)
         self.should_rotate = should_rotate
 
     def generate_action_sequence(self, amr_graph, sentence):

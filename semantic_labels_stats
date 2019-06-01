@@ -40,6 +40,7 @@ Model test accuracy
 Errors
 0
 
+With inferred concept labels and gold relation labels
 ------------------------------------------------------------------------------------------------
 Test data shape: 
 (349,)
@@ -52,11 +53,11 @@ Max test length: 63
 Scores for model /home/iv/Documents/AMR/trained_models/proxy_epochs=50_maxlen=30_embeddingsdim=200
 Min: 0.000000
 Max: 1.000000
-Arithm. mean 0.583068967067
-Harm. mean 0.00492730745527
-Global smatch f-score 0.490142882981
+Arithm. mean 0.594466646006
+Harm. mean 0.00687333200944
+Global smatch f-score 0.497897844172
 Model test accuracy
-0.9005128202071556
+0.8972307603175823
 Errors
 0
 

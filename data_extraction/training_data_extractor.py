@@ -7,17 +7,18 @@ from definitions import PROJECT_ROOT_DIR
 from models import amr_data
 from models.amr_graph import AMR, ParserError
 from models.train_data import TrainData
+from models.parser_parameters import ParserParameters
 from amr_util import TrainingDataStats
 from data_extraction import input_file_parser
 from preprocessing import TokensReplacer
 from data_extraction.dependency_extractor import DependencyExtractor
-from preprocessing.action_sequence_generators.simple_asg__informed_swap import SimpleInformedSwapASG
+from preprocessing.action_sequence_generators import asg_factory
 from Baseline import baseline
 
 TrainingDataExtraction = namedtuple("TrainingDataExtraction", "data stats")
 
 
-def generate_training_data(file_path, compute_dependencies=True):
+def generate_training_data(file_path, parser_parameters, compute_dependencies=True):
     """
         Return an array of TrainData instances given a file with sentences and aligned AMRs
     """
@@ -122,7 +123,10 @@ def generate_training_data(file_path, compute_dependencies=True):
 
             coreference_count += TrainingDataStats.get_coreference_count(custom_amr)
 
-            asg_implementation = SimpleInformedSwapASG(1, False)
+            #
+            # generate action sequence
+            #
+            asg_implementation = asg_factory.get_asg_implementation(parser_parameters.asg_parameters)
             action_sequence = asg_implementation.generate_action_sequence(custom_amr, new_sentence)
 
             #
@@ -170,7 +174,7 @@ def extract_amr_ids_from_corpus_as_audit_trail():
             path_f = path + "/" + f
             original_path_f = original_path + "/" + f.replace("alignments", "amrs")
             print(path_f)
-            new_data = generate_training_data(path_f).data
+            new_data = generate_training_data(path_f, parser_parameters=ParserParameters()).data
             data += new_data
             with open(original_path_f) as input_file:
                 lines = input_file.readlines()
@@ -203,7 +207,8 @@ if __name__ == "__main__":
     # extract_amr_ids_from_corpus_as_audit_trail()
     logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.WARNING)
     generated_data = generate_training_data(
-        PROJECT_ROOT_DIR + "/resources/alignments/split/dev/deft-p2-amr-r1-alignments-dev-bolt.txt")
+        PROJECT_ROOT_DIR + "/resources/alignments/split/dev/deft-p2-amr-r1-alignments-dev-bolt.txt",
+        parser_parameters=ParserParameters())
     assert isinstance(generated_data, TrainingDataExtraction)
     assert isinstance(generated_data.data, list)
     assert isinstance(generated_data.stats, TrainingDataStats.TrainingDataStatistics)

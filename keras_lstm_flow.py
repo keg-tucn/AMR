@@ -17,13 +17,12 @@ from models.model_parameters import ModelParameters
 from models.parser_parameters import ParserParameters
 from feature_extraction import feature_vector_generator
 from data_extraction import dataset_loader
+from models.actions import *
 
-SH = 0
-RL = 1
-RR = 2
-DN = 3
-SW = 4
-NONE = 5
+ACTION_SET_SIZE = len(acts)
+NO_STACK_TOKENS = 5
+NO_BUFFER_TOKENS = 1
+NO_DEP_FEATURES = 6
 
 coref_handling = False
 
@@ -60,10 +59,10 @@ def tokens_to_sentence(tokens, index_to_word_map):
     return str
 
 
-def generate_parsed_files():
+def generate_parsed_files(parser_parameters):
     dataset_loader.generate_parsed_graphs_files()
     tokenizer_util.generate_tokenizer()
-    dataset_loader.generate_parsed_data_files()
+    dataset_loader.generate_parsed_data_files(parser_parameters)
 
 
 def make_prediction(model, x_test, dependencies, parser_parameters):
@@ -210,12 +209,14 @@ def get_model(embedding_matrix, parser_parameters, model_parameters):
     stack_input_0 = Input(shape=(max_len,), dtype="int32")
     stack_input_1 = Input(shape=(max_len,), dtype="int32")
     stack_input_2 = Input(shape=(max_len,), dtype="int32")
-    prev_action_input = Input(shape=(max_len, 5), dtype="float32")
+    stack_input_3 = Input(shape=(max_len,), dtype="int32")
+    stack_input_4 = Input(shape=(max_len,), dtype="int32")
+    prev_action_input = Input(shape=(max_len, ACTION_SET_SIZE), dtype="float32")
 
     if parser_parameters.with_enhanced_dep_info:
-        dep_info_input = Input(shape=(max_len, 6 * len(__AMR_RELATIONS)), dtype="float32")
+        dep_info_input = Input(shape=(max_len, NO_DEP_FEATURES * len(__AMR_RELATIONS)), dtype="float32")
     else:
-        dep_info_input = Input(shape=(max_len, 6), dtype="float32")
+        dep_info_input = Input(shape=(max_len, NO_DEP_FEATURES), dtype="float32")
 
     embedding = Embedding(len(embedding_matrix), model_parameters.embeddings_dim, weights=[embedding_matrix],
                           input_length=max_len, trainable=False)
@@ -224,18 +225,23 @@ def get_model(embedding_matrix, parser_parameters, model_parameters):
     stack_emb_0 = embedding(stack_input_0)
     stack_emb_1 = embedding(stack_input_1)
     stack_emb_2 = embedding(stack_input_2)
+    stack_emb_3 = embedding(stack_input_3)
+    stack_emb_4 = embedding(stack_input_4)
 
-    x = concatenate([buffer_emb, stack_emb_0, stack_emb_1, stack_emb_2, prev_action_input, dep_info_input])
+    x = concatenate([buffer_emb, stack_emb_0, stack_emb_1, stack_emb_2, stack_emb_3, stack_emb_4, prev_action_input,
+                     dep_info_input])
 
     lstm_output = LSTM(model_parameters.hidden_layer_size, return_sequences=True, dropout=model_parameters.dropout,
                        recurrent_dropout=model_parameters.recurrent_dropout)(x)
 
     if parser_parameters.with_target_semantic_labels:
-        dense = TimeDistributed(Dense(5 + 2 * len(__AMR_RELATIONS), activation="softmax"))(lstm_output)
+        dense = TimeDistributed(Dense(ACTION_SET_SIZE + 2 * len(__AMR_RELATIONS), activation="softmax"))(lstm_output)
     else:
-        dense = TimeDistributed(Dense(5, activation="softmax"))(lstm_output)
+        dense = TimeDistributed(Dense(ACTION_SET_SIZE, activation="softmax"))(lstm_output)
 
-    model = Model([buffer_input, stack_input_0, stack_input_1, stack_input_2, prev_action_input, dep_info_input], dense)
+    model = Model(
+        [buffer_input, stack_input_0, stack_input_1, stack_input_2, stack_input_3, stack_input_4, prev_action_input,
+         dep_info_input], dense)
 
     optimizer = get_optimizer(model_parameters)
     model.compile(optimizer=optimizer,
@@ -301,7 +307,8 @@ def train(model_name, train_case_name, train_data, test_data, parser_parameters,
     plot_model(model, to_file=PROJECT_ROOT_DIR + "/model.png")
 
     history = model.fit([x_train_full[:, :, 0], x_train_full[:, :, 1], x_train_full[:, :, 2], x_train_full[:, :, 3],
-                         x_train_full[:, :, 4:9], x_train_full[:, :, 9:]], y_train_full,
+                         x_train_full[:, :, 4], x_train_full[:, :, 5], x_train_full[:, :, 6:16],
+                         x_train_full[:, :, 16:]], y_train_full,
                         epochs=model_parameters.train_epochs, batch_size=16, validation_split=0.1,
                         callbacks=[
                             ModelCheckpoint(model_path, monitor="val_acc", verbose=0, save_best_only=True,
@@ -641,22 +648,20 @@ def test_without_amr(model_name, data, parser_parameters, model_parameters):
 
 
 def train_file(model_name, train_case_name, train_data_path, test_data_path, parser_parameters, model_parameters):
-    train_data = dataset_loader.read_data("training", train_data_path, cache=True)
-    test_data = dataset_loader.read_data("dev", test_data_path, cache=True)
+    train_data = dataset_loader.read_data("training", train_data_path, parser_parameters=parser_parameters, cache=True)
+    test_data = dataset_loader.read_data("dev", test_data_path, parser_parameters=parser_parameters, cache=True)
 
     train(model_name, train_case_name, train_data, test_data, parser_parameters, model_parameters)
 
 
 def test_file(model_name, test_case_name, test_data_path, parser_parameters, model_parameters):
-    test_data = dataset_loader.read_data("test", test_data_path, cache=True)
+    test_data = dataset_loader.read_data("test", test_data_path, parser_parameters=parser_parameters, cache=True)
 
     return test(model_name, test_case_name, test_data, parser_parameters, model_parameters)
 
 
 if __name__ == "__main__":
     data_sets = ["bolt", "consensus", "dfa", "proxy", "xinhua", "all"]
-
-    # generate_parsed_files()
 
     train_data_path = "proxy"
     test_data_path = "proxy"
@@ -675,6 +680,8 @@ if __name__ == "__main__":
     parser_parameters = ParserParameters(max_len=max_len, with_enhanced_dep_info=False,
                                          with_target_semantic_labels=False, with_reattach=True,
                                          with_gold_concept_labels=False, with_gold_relation_labels=False)
+
+    # generate_parsed_files(parser_parameters)
 
     word_embeddings_util.init_embeddings_matrix(model_parameters.embeddings_dim)
 

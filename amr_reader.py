@@ -3,6 +3,7 @@ import pickle as js
 
 from definitions import PROJECT_ROOT_DIR
 from data_extraction import training_data_extractor as tde
+from models.parser_parameters import ParserParameters
 
 
 def generate_parsed_data(parsed_path, cache, dump_path):
@@ -18,7 +19,7 @@ def generate_parsed_data(parsed_path, cache, dump_path):
             with open(dump_path, "rb") as f:
                 return js.load(f)
     else:
-        data = tde.generate_training_data(parsed_path).data
+        data = tde.generate_training_data(parsed_path, parser_parameters=ParserParameters()).data
         if not path.exists(path.dirname(dump_path)):
             makedirs(path.dirname(dump_path))
         with open(dump_path, "wb") as f:

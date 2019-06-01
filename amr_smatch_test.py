@@ -8,6 +8,7 @@ from data_extraction import training_data_extractor as tde
 from postprocessing import action_sequence_reconstruction as asr
 from smatch import smatch_amr
 from smatch import smatch_util
+from models.parser_parameters import ParserParameters
 
 
 def check_smatch_identical(print_info, amrstr1, amrstr2):
@@ -43,7 +44,7 @@ original_corpus = filter(lambda x: "dump" not in x and "audit" not in x, directo
 for f in original_corpus:
     mypath_f = mypath + "/" + f
     print(mypath_f)
-    data += tde.generate_training_data(mypath_f).data
+    data += tde.generate_training_data(mypath_f, parser_parameters=ParserParameters()).data
 
 fail_count = 0
 for elem in data:

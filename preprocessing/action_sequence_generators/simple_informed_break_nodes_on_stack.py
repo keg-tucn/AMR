@@ -3,7 +3,8 @@ import logging
 from asg_nodes_on_stack import NodesOnStackASG
 import models.actions as act
 
-""" Added break action to simple informed alg
+""" 
+    Added break action to simple informed alg
 """
 from preprocessing.ActionSequenceGenerator import TokenOnStackException
 
@@ -43,8 +44,8 @@ class SimpleInformedWithBreakNodesOnStackASG(NodesOnStackASG):
                     if self.can_swap_n(i):
                         self.swap_n(i)
                         swapped = True
-                        break
                         last_action_swap = i
+                        break
                         # I can still shift or delete
                 if self.should_rotate and self.can_rotate():
                     self.rotate()
@@ -53,7 +54,7 @@ class SimpleInformedWithBreakNodesOnStackASG(NodesOnStackASG):
                     if not self.is_buffer_empty():
                         # try to "break" the token
                         if self.can_break(2):
-                            self.brk()
+                            self.brk(2)
                         # try to shift the current token
                         elif self.can_shift():
                             self.shift()
@@ -67,18 +68,6 @@ class SimpleInformedWithBreakNodesOnStackASG(NodesOnStackASG):
                             "Could not generate action sequence. Tokens left on stack")
 
         return self.actions
-
-    def can_swap_n(self, n):
-        if len(self.actions) > 0:
-            last_added_action = self.actions[-1]
-            action_name = "SW"
-            if n > 1:
-                suffix = "_" + str(n)
-                action_name += suffix
-            # if I'm trying to perform the same swap
-            if last_added_action.action == action_name:
-                return False
-        return len(self.stack) >= n + 2 and self.no_of_swaps != 0
 
     def can_swap_n(self, n):
 
@@ -114,7 +103,7 @@ class SimpleInformedWithBreakNodesOnStackASG(NodesOnStackASG):
         if len(self.buffer_indices) != 0:
             self.current_token = self.buffer_indices[0]
 
-    def brk(self):
+    def brk(self, no_nodes):
         tokens_to_concept_list = self.amr_graph.tokens_to_concept_list_dict[self.current_token]
         node1 = tokens_to_concept_list[0][0]
         concept1 = tokens_to_concept_list[0][1]

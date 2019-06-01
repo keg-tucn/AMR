@@ -1,8 +1,8 @@
 from data_filtering import DataFiltering
-
 from data_extraction import input_file_parser
 from models.amr_graph import AMR
-from filters import NoMissingAllignmentInfoFilter, TreeFilter, TokenToNodeAlignmentFilter, ProjectiveTreeFilter
+from filters import NoMissingAllignmentInfoFilter, TreeFilter, TokenToNodeAlignmentFilter, ProjectiveTreeFilter, \
+    PerfectAlignmentFilter
 from preprocessing import TokensReplacer
 from models import amr_data
 
@@ -109,7 +109,7 @@ def generate_statistics(file_path):
                                                                                                               filtered_instances))
 
     # perfectly aligned trees
-    perfect_align_filters = [PerfectALignmentFilter()]
+    perfect_align_filters = [PerfectAlignmentFilter()]
     instances, filtered_instances = generate_dataset_statistics(file_path, perfect_align_filters)
     print("Filter: PerfectlyAlignedAMRTree, Total number of instances: {0}, Number of filtered instances: {1}".format(
         instances, filtered_instances))

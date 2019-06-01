@@ -6,15 +6,17 @@ import numpy as np
 from definitions import AMR_ALIGNMENTS_SPLIT
 from models.amr_graph import AMR
 from models.amr_data import CustomizedAMR
+from models.parser_parameters import ParserParameters
 from data_extraction import input_file_parser, training_data_extractor
 
 
-def read_data(file_type, filter_path="deft", cache=True):
+def read_data(file_type, filter_path="deft", parser_parameters=ParserParameters(), cache=True):
     """
         Returns a list of TrainData instances
         Loads the list from a dump file if present, else generates it and saves it to a dump file
         :param file_type - dataset partition (training, dev or test)
         :param filter_path - filtering criteria for data files
+        :param parser_parameters - set of parser parameters and flags
         :param cache - allow to load from dump file if true, else calculate from original file and save new dump
     """
     if filter_path is None:
@@ -37,7 +39,8 @@ def read_data(file_type, filter_path="deft", cache=True):
                 parsed_data += js.load(dump_file)
         else:
             print "generate"
-            file_data = training_data_extractor.generate_training_data(original_file_path).data
+            file_data = training_data_extractor.generate_training_data(original_file_path,
+                                                                       parser_parameters=parser_parameters).data
             if not path.exists(path.dirname(dump_file_path)):
                 makedirs(path.dirname(dump_file_path))
             with open(dump_file_path, "wb") as dump_file:
@@ -51,7 +54,7 @@ def read_original_graphs(file_type, filter_path="deft", cache=True):
     """
         Returns a list of (amr_id, sentence, AMR, CustomizedAMR) quadruples
         Loads the list from a dump file if present, else generates it and saves it to a dump file
-        :param file_type - dataset partition (training, dev or test)
+        :param file_type - data set partition (training, dev or test)
         :param filter_path - filtering criteria for data files
         :param cache - allow to load from dump file if true, else calculate from original file and save new dump
     """
@@ -88,8 +91,9 @@ def read_original_graphs(file_type, filter_path="deft", cache=True):
                     custom_amr_graph.create_custom_AMR(camr_graph)
 
                     parsed_file_data.append((amr_triple[2], amr_triple[0], camr_graph, custom_amr_graph))
-                except Exception as e:
-                    # print "Exception when parsing AMR with ID: %s in file %s with error: %s\n" % (amr_triple[2], file_name, e)
+                except Exception as _:
+                    # print "Exception when parsing AMR with ID: %s in file %s with error: %s\n" % (
+                    #    amr_triple[2], file_name, e)
                     failed_amrs_in_file += 1
 
             if not path.exists(path.dirname(dump_file_path)):
@@ -140,27 +144,27 @@ def generate_parsed_graphs_files():
     read_original_graphs("test", cache=False)
 
 
-def generate_parsed_data_files():
+def generate_parsed_data_files(parser_parameters):
     """
         Initialize all the parsed data files (dumps) with the TrainData structures
     """
-    read_data("training", cache=False)
-    read_data("dev", cache=False)
-    read_data("test", cache=False)
+    read_data("training", parser_parameters=parser_parameters, cache=False)
+    read_data("dev", parser_parameters=parser_parameters, cache=False)
+    read_data("test", parser_parameters=parser_parameters, cache=False)
 
 
 def remove_overlapping_instances(partition_1, partition_2, remove_from=1):
     if remove_from == 1:
         partition_2_ids = [d.amr_id for d in partition_2]
 
-        partition_1 = filter(lambda d: d.amr_id not in partition_2_ids, partition_1)
+        partition_1 = filter(lambda inst: inst.amr_id not in partition_2_ids, partition_1)
 
         return partition_1, partition_2
 
     elif remove_from == 2:
         partition_1_ids = [d.amr_id for d in partition_1]
 
-        partition_2 = filter(lambda d: d.amr_id not in partition_1_ids, partition_2)
+        partition_2 = filter(lambda inst: inst.amr_id not in partition_1_ids, partition_2)
 
         return partition_1, partition_2
 

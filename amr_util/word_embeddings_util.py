@@ -179,3 +179,5 @@ if __name__ == "__main__":
 
     print "cosine similarity (ball, mother): %f" % compute_cosine_similarity("ball", "mother")
     print "cosine similarity (woman, mother): %f" % compute_cosine_similarity("woman", "mother")
+    print "cosine similarity (make, made): %f" % compute_cosine_similarity("make", "made")
+    print "cosine similarity (do, did): %f" % compute_cosine_similarity("do", "did")
