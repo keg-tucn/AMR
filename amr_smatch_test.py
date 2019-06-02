@@ -8,7 +8,7 @@ from data_extraction import training_data_extractor as tde
 from postprocessing import action_sequence_reconstruction as asr
 from smatch import smatch_amr
 from smatch import smatch_util
-from models.parser_parameters import ParserParameters
+from models.parameters import ParserParameters
 
 
 def check_smatch_identical(print_info, amrstr1, amrstr2):

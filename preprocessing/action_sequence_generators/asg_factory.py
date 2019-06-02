@@ -5,7 +5,7 @@ from preprocessing.action_sequence_generators.simple_informed_break_nodes_on_sta
     SimpleInformedWithBreakNodesOnStackASG
 from preprocessing.action_sequence_generators.backtracking_asg import BacktrackingASGFixedReduce, \
     BacktrackingASGInformedSwap
-from models.asg_parameters import ASGParameters
+from models.parameters import ASGParameters
 
 SIMPLE = "simple"
 SIMPLE_INFORMED_SWAP = "simple_informed_swap"

@@ -3,7 +3,7 @@ import pickle as js
 
 from definitions import PROJECT_ROOT_DIR
 from data_extraction import training_data_extractor as tde
-from models.parser_parameters import ParserParameters
+from models.parameters import ParserParameters
 
 
 def generate_parsed_data(parsed_path, cache, dump_path):

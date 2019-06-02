@@ -6,7 +6,7 @@ import numpy as np
 from definitions import AMR_ALIGNMENTS_SPLIT
 from models.amr_graph import AMR
 from models.amr_data import CustomizedAMR
-from models.parser_parameters import ParserParameters
+from models.parameters import ParserParameters
 from data_extraction import input_file_parser, training_data_extractor
 
 

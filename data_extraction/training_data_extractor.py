@@ -7,7 +7,7 @@ from definitions import PROJECT_ROOT_DIR
 from models import amr_data
 from models.amr_graph import AMR, ParserError
 from models.train_data import TrainData
-from models.parser_parameters import ParserParameters
+from models.parameters import ParserParameters
 from amr_util import TrainingDataStats
 from data_extraction import input_file_parser
 from preprocessing import TokensReplacer

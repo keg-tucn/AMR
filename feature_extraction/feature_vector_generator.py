@@ -7,11 +7,6 @@ from amr_util import tokenizer_util
 import models.actions as act
 from models.actions import *
 
-ACTION_SET_SIZE = len(acts)
-NO_STACK_TOKENS = 5
-NO_BUFFER_TOKENS = 1
-NO_DEP_FEATURES = 6
-
 simple_target_label_binarizer = LabelBinarizer()
 simple_target_label_binarizer.fit(range(ACTION_SET_SIZE))
 
@@ -75,11 +70,16 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
             filtered_count += 1
             continue
 
-    input_size = NO_STACK_TOKENS + NO_BUFFER_TOKENS + ACTION_SET_SIZE
+    model_parameters = parser_parameters.model_parameters
+    no_buffer_tokens = model_parameters.no_buffer_tokens
+    no_stack_tokens = model_parameters.no_stack_tokens
+    no_dep_features = model_parameters.no_dep_features
+
+    input_size = no_buffer_tokens + no_stack_tokens + ACTION_SET_SIZE
     if parser_parameters.with_enhanced_dep_info:
-        input_size += NO_DEP_FEATURES * len(__AMR_RELATIONS)
+        input_size += no_dep_features * len(__AMR_RELATIONS)
     else:
-        input_size += NO_DEP_FEATURES * 1
+        input_size += no_dep_features * 1
 
     x_full = np.zeros((len(x) - filtered_count, max_len, input_size), dtype=np.int32)
 
@@ -94,7 +94,7 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
 
     for action_sequence, tokens_sequence, dependencies, amr_id in zip(y, x, dependencies, amr_ids):
         next_action_token = tokens_sequence[0]
-        next_action_stack = list(np.repeat(no_word_index, NO_STACK_TOKENS))
+        next_action_stack = list(np.repeat(no_word_index, no_stack_tokens))
         next_action_prev_action = NONE
         tokens_sequence_index = 0
         features_matrix = []
@@ -108,10 +108,11 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
             else:
                 next_action_prev_action_ohe = np.zeros(ACTION_SET_SIZE)
 
-            features = np.concatenate(
-                ([next_action_token], next_action_stack[0:NO_STACK_TOKENS], next_action_prev_action_ohe,
-                 get_dependency_features(next_action_stack[0], next_action_stack[1], next_action_stack[2],
-                                         next_action_token, dependencies, parser_parameters)))
+            features = np.concatenate((
+                [next_action_token], next_action_stack[0:no_stack_tokens], next_action_prev_action_ohe,
+                get_dependency_features(next_action_stack[0], next_action_stack[1], next_action_stack[2],
+                                        next_action_token, dependencies, parser_parameters)
+            ))
 
             if action.index == SH:
                 tokens_sequence_index += 1

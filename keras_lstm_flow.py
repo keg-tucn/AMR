@@ -6,28 +6,21 @@ from keras.optimizers import SGD
 from keras.utils import plot_model
 from sklearn.preprocessing import LabelBinarizer
 
+from amr_util import tokenizer_util, word_embeddings_util, keras_plotter
 from constants import __AMR_RELATIONS
 from definitions import PROJECT_ROOT_DIR, TRAINED_MODELS_DIR, RESULT_METRICS_DIR
+from data_extraction import dataset_loader
+from feature_extraction import feature_vector_generator
 from Baseline import reentrancy_restoring
-from amr_util import tokenizer_util, word_embeddings_util, keras_plotter
 from postprocessing import action_concept_transfer, action_sequence_reconstruction
 from smatch import smatch_amr, smatch_util
-import models.actions as act
-from models.model_parameters import ModelParameters
-from models.parser_parameters import ParserParameters
-from feature_extraction import feature_vector_generator
-from data_extraction import dataset_loader
 from models.actions import *
-
-ACTION_SET_SIZE = len(acts)
-NO_STACK_TOKENS = 5
-NO_BUFFER_TOKENS = 1
-NO_DEP_FEATURES = 6
+from models.parameters import *
 
 coref_handling = False
 
 label_binarizer = LabelBinarizer()
-label_binarizer.fit(range(5))
+label_binarizer.fit(range(ACTION_SET_SIZE))
 
 
 def get_predictions_from_distr(predictions_distr):
@@ -42,7 +35,7 @@ def pretty_print_actions(acts_i):
 def actions_to_string(acts_i):
     str = ""
     for a in acts_i:
-        str += act.acts[a] + " "
+        str += acts[a] + " "
     str += "\n"
     return str
 
@@ -61,118 +54,134 @@ def tokens_to_sentence(tokens, index_to_word_map):
 
 def generate_parsed_files(parser_parameters):
     dataset_loader.generate_parsed_graphs_files()
+    dataset_loader.generate_parsed_data_files(parser_parameters)
     tokenizer_util.generate_tokenizer()
     dataset_loader.generate_parsed_data_files(parser_parameters)
 
 
 def make_prediction(model, x_test, dependencies, parser_parameters):
-    tokens_buffer = x_test
-    tokens_stack = []
+    buffer = x_test
+    stack = []
 
     current_step = 0
     max_len = parser_parameters.max_len
 
     no_word_index = tokenizer_util.get_no_word_index()
 
-    buffer_token = np.zeros((1, max_len))
-    stack_token0 = np.zeros((1, max_len))
-    stack_token1 = np.zeros((1, max_len))
-    stack_token2 = np.zeros((1, max_len))
-    prev_action = np.zeros((1, max_len, 5))
+    model_parameters = parser_parameters.model_parameters
+    no_buffer_tokens = model_parameters.no_buffer_tokens
+    no_stack_tokens = model_parameters.no_stack_tokens
+    no_dep_features = model_parameters.no_dep_features
+
+    buffer_features = np.zeros((no_buffer_tokens, max_len))
+    stack_features = np.zeros((no_stack_tokens, max_len))
+
+    buffer_features[:, current_step] = buffer[0:no_buffer_tokens]
+    stack_features[:, current_step] = no_word_index
+
+    prev_action = np.zeros((1, max_len, ACTION_SET_SIZE))
 
     if parser_parameters.with_enhanced_dep_info:
-        dep_info = np.zeros((1, max_len, 6 * len(__AMR_RELATIONS)))
+        dep_features_size = no_dep_features * len(__AMR_RELATIONS)
     else:
-        dep_info = np.zeros((1, max_len, 6 * 1))
+        dep_features_size = no_dep_features * 1
+    dep_info = np.zeros((1, max_len, dep_features_size))
 
-    buffer_token[0][current_step] = tokens_buffer[0]
-    stack_token0[0][current_step] = no_word_index
-    stack_token1[0][current_step] = no_word_index
-    stack_token2[0][current_step] = no_word_index
-    prev_action[0][current_step] = [0, 0, 0, 0, 0]
+    prev_action[0][current_step] = np.zeros(ACTION_SET_SIZE)
 
     if parser_parameters.with_enhanced_dep_info:
-        dep_info[0][current_step] = np.repeat(feature_vector_generator.oh_encode_amr_rel(None), 6)
+        dep_info[0][current_step] = np.repeat(feature_vector_generator.oh_encode_amr_rel(None), no_dep_features)
     else:
-        dep_info[0][current_step] = np.repeat(0, 6)
+        dep_info[0][current_step] = np.repeat(0, no_dep_features)
 
     final_prediction = []
 
-    while (len(tokens_buffer) != 0 or len(tokens_stack) != 1) and current_step < max_len - 1:
-        prediction = model.predict([buffer_token, stack_token0, stack_token1, stack_token2, prev_action, dep_info])
+    while (len(buffer) != 0 or len(stack) != 1) and current_step < max_len - 1:
+        step_input = [buffer_features[i:i + 1, ] for i in range(no_buffer_tokens)] + \
+                     [stack_features[i:i + 1, ] for i in range(no_stack_tokens)] + \
+                     [prev_action, dep_info]
+
+        prediction = model.predict(step_input)
+
         current_actions_distr_ordered = np.argsort(prediction[0][current_step])[::-1]
         current_inspected_action_index = 0
         current_action = current_actions_distr_ordered[current_inspected_action_index]
         invalid = True
         while invalid:
-            if current_inspected_action_index == 5:
+            if current_inspected_action_index == NONE:
                 return []
             invalid = False
             current_action = current_actions_distr_ordered[current_inspected_action_index]
             current_inspected_action_index += 1
             if current_action == SH:
-                if len(tokens_buffer) == 0:
+                if len(buffer) == 0:
                     invalid = True
                     continue
-                tokens_stack = [tokens_buffer[0]] + tokens_stack
-                tokens_buffer = tokens_buffer[1:]
+                stack = [buffer[0]] + stack
+                buffer = buffer[1:]
             if current_action == RL:
-                if len(tokens_stack) < 2:
+                if len(stack) < 2:
                     invalid = True
                     continue
-                tokens_stack = [tokens_stack[0]] + tokens_stack[2:]
+                stack = [stack[0]] + stack[2:]
             if current_action == RR:
-                if len(tokens_stack) < 2:
+                if len(stack) < 2:
                     invalid = True
                     continue
-                tokens_stack = [tokens_stack[1]] + tokens_stack[2:]
+                stack = [stack[1]] + stack[2:]
             if current_action == DN:
-                if len(tokens_buffer) == 0:
+                if len(buffer) == 0:
                     invalid = True
                     continue
-                tokens_buffer = tokens_buffer[1:]
+                buffer = buffer[1:]
             if current_action == SW:
-                if len(tokens_stack) < 3:
+                if len(stack) < 3:
                     invalid = True
                     continue
-                tokens_stack = [tokens_stack[0], tokens_stack[2], tokens_stack[1]] + tokens_stack[3:]
+                stack = [stack[0], stack[2], stack[1]] + stack[3:]
+            '''
+            if current_action == SW_2:
+                if len(stack) < 4:
+                    invalid = True
+                    continue
+                stack = [stack[0], stack[3], stack[2], stack[1]] + stack[4:]
+            if current_action == SW_3:
+                if len(stack) < 5:
+                    invalid = True
+                    continue
+                stack = [stack[0], stack[4], stack[2], stack[3], stack[1]] + stack[5:]
+            if current_action == BRK:
+                if len(buffer) == 0:
+                    invalid = True
+                    continue
+                stack = [buffer[0], buffer[0]] + stack
+                buffer = buffer[1:]
+            '''
+
         final_prediction.append(current_action)
         current_step += 1
-        if len(tokens_buffer) > 0:
-            buffer_token[0][current_step] = tokens_buffer[0]
-        else:
-            buffer_token[0][current_step] = no_word_index
 
-        if len(tokens_stack) > 3:
-            stack_token0[0][current_step] = tokens_stack[0]
-            stack_token1[0][current_step] = tokens_stack[1]
-            stack_token2[0][current_step] = tokens_stack[2]
-        else:
-            if len(tokens_stack) > 2:
-                stack_token0[0][current_step] = tokens_stack[0]
-                stack_token1[0][current_step] = tokens_stack[1]
-                stack_token2[0][current_step] = no_word_index
-            else:
-                if len(tokens_stack) > 1:
-                    stack_token0[0][current_step] = tokens_stack[0]
-                    stack_token1[0][current_step] = no_word_index
-                    stack_token2[0][current_step] = no_word_index
-                else:
-                    stack_token0[0][current_step] = no_word_index
-                    stack_token1[0][current_step] = no_word_index
-                    stack_token2[0][current_step] = no_word_index
+        buffer_features[0:no_buffer_tokens, current_step] = \
+            np.pad(buffer[0:no_buffer_tokens], (0, no_buffer_tokens - len(buffer)), "constant",
+                   constant_values=no_word_index) \
+                if no_buffer_tokens > len(buffer) else buffer[0:no_buffer_tokens]
+
+        stack_features[0:no_stack_tokens, current_step] = \
+            np.pad(stack[0:no_stack_tokens], (0, no_stack_tokens - len(stack)), "constant",
+                   constant_values=no_word_index) \
+                if no_stack_tokens > len(stack) else stack[0:no_stack_tokens]
 
         prev_action[0][current_step] = label_binarizer.transform([current_action])[0, :]
 
-        dep_info[0][current_step] = feature_vector_generator.get_dependency_features(stack_token0[0][current_step],
-                                                                                     stack_token1[0][current_step],
-                                                                                     stack_token2[0][current_step],
-                                                                                     buffer_token[0][current_step],
+        dep_info[0][current_step] = feature_vector_generator.get_dependency_features(stack_features[0][current_step],
+                                                                                     stack_features[1][current_step],
+                                                                                     stack_features[2][current_step],
+                                                                                     buffer_features[0][current_step],
                                                                                      dependencies, parser_parameters)
 
     print "Buffer and stack at end of prediction"
-    print tokens_buffer
-    print tokens_stack
+    print buffer
+    print stack
     return final_prediction
 
 
@@ -202,46 +211,46 @@ def get_optimizer(model_parameters):
     return SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)
 
 
-def get_model(embedding_matrix, parser_parameters, model_parameters):
+def get_model(embedding_matrix, parser_parameters):
     max_len = parser_parameters.max_len
 
-    buffer_input = Input(shape=(max_len,), dtype="int32")
-    stack_input_0 = Input(shape=(max_len,), dtype="int32")
-    stack_input_1 = Input(shape=(max_len,), dtype="int32")
-    stack_input_2 = Input(shape=(max_len,), dtype="int32")
-    stack_input_3 = Input(shape=(max_len,), dtype="int32")
-    stack_input_4 = Input(shape=(max_len,), dtype="int32")
+    model_parameters = parser_parameters.model_parameters
+
+    buffer_inputs = []
+    for _ in range(model_parameters.no_buffer_tokens):
+        buffer_inputs.append(Input(shape=(max_len,), dtype="int32"))
+
+    stack_inputs = []
+    for _ in range(model_parameters.no_stack_tokens):
+        stack_inputs.append(Input(shape=(max_len,), dtype="int32"))
+
     prev_action_input = Input(shape=(max_len, ACTION_SET_SIZE), dtype="float32")
 
     if parser_parameters.with_enhanced_dep_info:
-        dep_info_input = Input(shape=(max_len, NO_DEP_FEATURES * len(__AMR_RELATIONS)), dtype="float32")
+        dep_features_size = model_parameters.no_dep_features * len(__AMR_RELATIONS)
     else:
-        dep_info_input = Input(shape=(max_len, NO_DEP_FEATURES), dtype="float32")
+        dep_features_size = model_parameters.no_dep_features * 1
+    dep_info_input = Input(shape=(max_len, dep_features_size), dtype="float32")
 
     embedding = Embedding(len(embedding_matrix), model_parameters.embeddings_dim, weights=[embedding_matrix],
                           input_length=max_len, trainable=False)
 
-    buffer_emb = embedding(buffer_input)
-    stack_emb_0 = embedding(stack_input_0)
-    stack_emb_1 = embedding(stack_input_1)
-    stack_emb_2 = embedding(stack_input_2)
-    stack_emb_3 = embedding(stack_input_3)
-    stack_emb_4 = embedding(stack_input_4)
+    buffer_embeddings = [embedding(buffer_input) for buffer_input in buffer_inputs]
+    stack_embeddings = [embedding(stack_input) for stack_input in stack_inputs]
 
-    x = concatenate([buffer_emb, stack_emb_0, stack_emb_1, stack_emb_2, stack_emb_3, stack_emb_4, prev_action_input,
-                     dep_info_input])
+    x = concatenate(buffer_embeddings + stack_embeddings + [prev_action_input, dep_info_input])
 
     lstm_output = LSTM(model_parameters.hidden_layer_size, return_sequences=True, dropout=model_parameters.dropout,
                        recurrent_dropout=model_parameters.recurrent_dropout)(x)
 
     if parser_parameters.with_target_semantic_labels:
-        dense = TimeDistributed(Dense(ACTION_SET_SIZE + 2 * len(__AMR_RELATIONS), activation="softmax"))(lstm_output)
+        output_size = ACTION_SET_SIZE + 2 * len(__AMR_RELATIONS)
     else:
-        dense = TimeDistributed(Dense(ACTION_SET_SIZE, activation="softmax"))(lstm_output)
+        output_size = ACTION_SET_SIZE
 
-    model = Model(
-        [buffer_input, stack_input_0, stack_input_1, stack_input_2, stack_input_3, stack_input_4, prev_action_input,
-         dep_info_input], dense)
+    dense = TimeDistributed(Dense(output_size, activation="softmax"))(lstm_output)
+
+    model = Model(buffer_inputs + stack_inputs + [prev_action_input] + [dep_info_input], dense)
 
     optimizer = get_optimizer(model_parameters)
     model.compile(optimizer=optimizer,
@@ -254,7 +263,7 @@ def get_model(embedding_matrix, parser_parameters, model_parameters):
     return model
 
 
-def train(model_name, train_case_name, train_data, test_data, parser_parameters, model_parameters):
+def train(model_name, train_case_name, train_data, test_data, parser_parameters):
     model_path = TRAINED_MODELS_DIR + "/{}_{}".format(model_name, train_case_name)
     print "Model path is: %s" % model_path
 
@@ -301,9 +310,11 @@ def train(model_name, train_case_name, train_data, test_data, parser_parameters,
     print "Final test data shape"
     print (x_test_full.shape)
 
+    model_parameters = parser_parameters.model_parameters
+
     embedding_matrix = word_embeddings_util.get_embeddings_matrix(model_parameters.embeddings_dim)
 
-    model = get_model(embedding_matrix, parser_parameters, model_parameters)
+    model = get_model(embedding_matrix, parser_parameters)
     plot_model(model, to_file=PROJECT_ROOT_DIR + "/model.png")
 
     history = model.fit([x_train_full[:, :, 0], x_train_full[:, :, 1], x_train_full[:, :, 2], x_train_full[:, :, 3],
@@ -365,8 +376,10 @@ def train(model_name, train_case_name, train_data, test_data, parser_parameters,
         else:
             errors += 1
 
-    model_accuracy = model.evaluate([x_test_full[:, :, 0], x_test_full[:, :, 1], x_test_full[:, :, 2],
-                                     x_test_full[:, :, 3], x_test_full[:, :, 4:9], x_test_full[:, :, 9:]], y_test_full)
+    model_accuracy = model.evaluate(
+        [x_train_full[:, :, 0], x_train_full[:, :, 1], x_train_full[:, :, 2], x_train_full[:, :, 3],
+         x_train_full[:, :, 4], x_train_full[:, :, 5], x_train_full[:, :, 6:16],
+         x_train_full[:, :, 16:]], y_train_full)
 
     save_trial_results(train_data_shape=x_train.shape, filtered_train_data_shape=x_train_full.shape,
                        train_lengths=lengths_train, test_data_shape=x_test.shape,
@@ -375,7 +388,7 @@ def train(model_name, train_case_name, train_data, test_data, parser_parameters,
                        model_name=model_name, trial_name=train_case_name)
 
 
-def test(model_name, test_case_name, data, parser_parameters, model_parameters):
+def test(model_name, test_case_name, data, parser_parameters):
     model_path = TRAINED_MODELS_DIR + "/{}_{}".format(model_name, test_case_name)
     print "Model path is: %s" % model_path
 
@@ -391,13 +404,15 @@ def test(model_name, test_case_name, data, parser_parameters, model_parameters):
     print "Test data shape: "
     print x_test.shape
 
+    model_parameters = parser_parameters.model_parameters
+
     embedding_matrix = word_embeddings_util.get_embeddings_matrix(model_parameters.embeddings_dim)
 
     x_test_full, y_test_full, lengths_test, filtered_count_test = \
         feature_vector_generator.generate_feature_vectors(x_test, y_test, dependencies_test, test_amr_ids,
                                                           parser_parameters)
 
-    model = get_model(embedding_matrix, parser_parameters, model_parameters)
+    model = get_model(embedding_matrix, parser_parameters)
 
     print model.summary()
     print "Word embeddings matrix len: "
@@ -475,8 +490,21 @@ def test(model_name, test_case_name, data, parser_parameters, model_parameters):
         else:
             errors += 1
 
-    model_accuracy = model.evaluate([x_test_full[:, :, 0], x_test_full[:, :, 1], x_test_full[:, :, 2],
-                                     x_test_full[:, :, 3], x_test_full[:, :, 4:9], x_test_full[:, :, 9:]], y_test_full)
+    model_accuracy = model.evaluate(
+        [x_test_full[:, :, 0], x_test_full[:, :, 1], x_test_full[:, :, 2], x_test_full[:, :, 3],
+         x_test_full[:, :, 4], x_test_full[:, :, 5], x_test_full[:, :, 6:16],
+         x_test_full[:, :, 16:]], y_test_full)
+
+    no_buffer_tokens = model_parameters.no_buffer_tokens
+    no_stack_tokens = model_parameters.no_stack_tokens
+
+    model_accuracy = model.evaluate(
+        [x_test_full[:, :, i] for i in range(no_buffer_tokens)] +
+        [x_test_full[:, :, i] for i in range(no_buffer_tokens, no_buffer_tokens + no_stack_tokens)] +
+        [x_test_full[:, :, no_buffer_tokens + no_stack_tokens: no_buffer_tokens + no_stack_tokens + ACTION_SET_SIZE],
+         x_test_full[:, :, no_buffer_tokens + no_stack_tokens + ACTION_SET_SIZE:]],
+        y_test_full
+    )
 
     save_trial_results(train_data_shape=None, filtered_train_data_shape=None, train_lengths=None,
                        test_data_shape=x_test.shape, filtered_test_data_shape=x_test_full.shape,
@@ -608,7 +636,7 @@ def test_without_amr(model_name, data, parser_parameters, model_parameters):
 
     embedding_matrix = word_embeddings_util.get_embeddings_matrix(model_parameters.embeddings_dim)
 
-    model = get_model(embedding_matrix, parser_parameters, model_parameters)
+    model = get_model(embedding_matrix, parser_parameters)
 
     print model.summary()
 
@@ -647,51 +675,14 @@ def test_without_amr(model_name, data, parser_parameters, model_parameters):
     return prediction
 
 
-def train_file(model_name, train_case_name, train_data_path, test_data_path, parser_parameters, model_parameters):
+def train_file(model_name, train_case_name, train_data_path, test_data_path, parser_parameters):
     train_data = dataset_loader.read_data("training", train_data_path, parser_parameters=parser_parameters, cache=True)
     test_data = dataset_loader.read_data("dev", test_data_path, parser_parameters=parser_parameters, cache=True)
 
-    train(model_name, train_case_name, train_data, test_data, parser_parameters, model_parameters)
+    train(model_name, train_case_name, train_data, test_data, parser_parameters)
 
 
-def test_file(model_name, test_case_name, test_data_path, parser_parameters, model_parameters):
+def test_file(model_name, test_case_name, test_data_path, parser_parameters):
     test_data = dataset_loader.read_data("test", test_data_path, parser_parameters=parser_parameters, cache=True)
 
-    return test(model_name, test_case_name, test_data, parser_parameters, model_parameters)
-
-
-if __name__ == "__main__":
-    data_sets = ["bolt", "consensus", "dfa", "proxy", "xinhua", "all"]
-
-    train_data_path = "proxy"
-    test_data_path = "proxy"
-    trial_name = "full_deoverlapped"
-
-    max_len = 30
-    embeddings_dim = 200
-    train_epochs = 50
-    hidden_layer_size = 1024
-
-    model_name = "{}_epochs={}_maxlen={}_embeddingsdim={}" \
-        .format(train_data_path, train_epochs, max_len, embeddings_dim)
-
-    model_parameters = ModelParameters(embeddings_dim=embeddings_dim, train_epochs=train_epochs)
-
-    parser_parameters = ParserParameters(max_len=max_len, with_enhanced_dep_info=False,
-                                         with_target_semantic_labels=False, with_reattach=True,
-                                         with_gold_concept_labels=False, with_gold_relation_labels=False)
-
-    # generate_parsed_files(parser_parameters)
-
-    word_embeddings_util.init_embeddings_matrix(model_parameters.embeddings_dim)
-
-    if train_data_path == "all":
-        train_data_path = None
-    if test_data_path == "all":
-        test_data_path = None
-
-    train_file(model_name=model_name, train_case_name=trial_name, train_data_path=train_data_path,
-               test_data_path=test_data_path, parser_parameters=parser_parameters, model_parameters=model_parameters)
-
-    test_file(model_name=model_name, test_case_name=trial_name, test_data_path=test_data_path,
-              parser_parameters=parser_parameters, model_parameters=model_parameters)
+    return test(model_name, test_case_name, test_data, parser_parameters)

@@ -12,6 +12,8 @@ BRK = 8
 SW_BK = 9
 NONE = -1
 
+ACTION_SET_SIZE = len(acts)
+
 
 class AMRAction:
     def __init__(self, action, label, key, label2=None, key2=None):

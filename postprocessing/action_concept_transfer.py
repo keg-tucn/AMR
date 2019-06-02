@@ -1,18 +1,6 @@
 from collections import deque
 
-from models.actions import AMRAction
-
-VOCAB_ACTS = ["SH", "RL", "RR", "DN", "SW"]
-SH = 0
-RL = 1
-RR = 2
-DN = 3
-SW = 4
-NUM_ACTIONS = len(VOCAB_ACTS)
-
-
-def action_name(index):
-    return VOCAB_ACTS[index]
+from models.actions import *
 
 
 class ActionConceptTransfer:
@@ -59,16 +47,16 @@ class ActionConceptTransfer:
                     concept = self.node_concepts.popleft()
                 else:
                     concept = "unk"
-                predicted_act = AMRAction.build_labeled(action_name(action), concept)
+                predicted_act = AMRAction.build_labeled(acts[action], concept)
                 result.append(predicted_act)
             elif action == RR or action == RL:
                 if len(self.relation_concepts) > 0:
                     concept = self.relation_concepts.popleft()
                 else:
                     concept = "unk"
-                predicted_act = AMRAction.build_labeled(action_name(action), concept)
+                predicted_act = AMRAction.build_labeled(acts[action], concept)
                 result.append(predicted_act)
             else:
-                predicted_act = AMRAction.build(action_name(action))
+                predicted_act = AMRAction.build(acts[action])
                 result.append(predicted_act)
         return result
