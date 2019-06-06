@@ -121,26 +121,33 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
                     next_action_token = tokens_sequence[tokens_sequence_index]
                 else:
                     next_action_token = no_word_index
+
             if action.index == RL:
                 next_action_stack = [next_action_stack[0]] + next_action_stack[2:]
+
             if action.index == RR:
                 next_action_stack = [next_action_stack[1]] + next_action_stack[2:]
+
             if action.index == DN:
                 tokens_sequence_index += 1
                 if tokens_sequence_index < len(tokens_sequence):
                     next_action_token = tokens_sequence[tokens_sequence_index]
                 else:
                     next_action_token = no_word_index
+
             if action.index == SW:
                 next_action_stack = [next_action_stack[0], next_action_stack[2],
                                      next_action_stack[1]] + next_action_stack[3:]
+
             if action.index == SW_2:
                 next_action_stack = [next_action_stack[0], next_action_stack[3],
                                      next_action_stack[2], next_action_stack[1]] + next_action_stack[4:]
+
             if action.index == SW_3 or action == RO:
                 next_action_stack = [next_action_stack[0], next_action_stack[4],
                                      next_action_stack[2], next_action_stack[3],
                                      next_action_stack[1]] + next_action_stack[5:]
+
             if action.index == BRK:
                 tokens_sequence_index += 1
                 next_action_stack = [word_index_map.get(action.label.split("-")[0], no_word_index)] + \
@@ -149,8 +156,10 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
                     next_action_token = tokens_sequence[tokens_sequence_index]
                 else:
                     next_action_token = no_word_index
+
             if action.index == SW_BK:
-                pass
+                tokens_sequence.insert(tokens_sequence_index, next_action_stack[1])
+                next_action_stack = [next_action_stack[0]] + next_action_stack[2:]
 
             next_action_prev_action = action.index
             features_matrix.append(features)

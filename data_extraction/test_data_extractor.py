@@ -2,6 +2,7 @@ import logging
 from tqdm import tqdm
 
 from models.amr_graph import AMR
+from definitions import AMR_ALIGNMENTS_SPLIT
 from preprocessing import NamedEntitiesReplacer
 from data_extraction import input_file_parser
 
@@ -18,10 +19,10 @@ def generate_test_data(file_path, verbose=True):
     named_entity_exceptions = 0
 
     for i in tqdm(range(0, len(sentence_amr_triples))):
+        (sentence, amr_str, amr_id) = sentence_amr_triples[i]
         try:
             logging.warn("Started processing example %d", i)
             concepts_metadata = {}
-            (sentence, amr_str, amr_id) = sentence_amr_triples[i]
             amr = AMR.parse_string(amr_str)
 
             try:
@@ -42,5 +43,4 @@ def generate_test_data(file_path, verbose=True):
     return test_data
 
 
-print generate_test_data(
-    "/home/iv/Documents/AMR/resources/alignments/split/test/deft-p2-amr-r1-alignments-test-bolt.txt", False)
+print generate_test_data(AMR_ALIGNMENTS_SPLIT + "/test/deft-p2-amr-r1-alignments-test-bolt.txt", False)

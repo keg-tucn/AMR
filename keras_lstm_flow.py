@@ -54,7 +54,6 @@ def tokens_to_sentence(tokens, index_to_word_map):
 
 def generate_parsed_files(parser_parameters):
     dataset_loader.generate_parsed_graphs_files()
-    dataset_loader.generate_parsed_data_files(parser_parameters)
     tokenizer_util.generate_tokenizer()
     dataset_loader.generate_parsed_data_files(parser_parameters)
 
@@ -113,50 +112,63 @@ def make_prediction(model, x_test, dependencies, parser_parameters):
             invalid = False
             current_action = current_actions_distr_ordered[current_inspected_action_index]
             current_inspected_action_index += 1
+
             if current_action == SH:
                 if len(buffer) == 0:
                     invalid = True
                     continue
                 stack = [buffer[0]] + stack
                 buffer = buffer[1:]
+
             if current_action == RL:
                 if len(stack) < 2:
                     invalid = True
                     continue
                 stack = [stack[0]] + stack[2:]
+
             if current_action == RR:
                 if len(stack) < 2:
                     invalid = True
                     continue
                 stack = [stack[1]] + stack[2:]
+
             if current_action == DN:
                 if len(buffer) == 0:
                     invalid = True
                     continue
                 buffer = buffer[1:]
+
             if current_action == SW:
                 if len(stack) < 3:
                     invalid = True
                     continue
                 stack = [stack[0], stack[2], stack[1]] + stack[3:]
-            '''
+
             if current_action == SW_2:
                 if len(stack) < 4:
                     invalid = True
                     continue
                 stack = [stack[0], stack[3], stack[2], stack[1]] + stack[4:]
-            if current_action == SW_3:
+
+            if current_action == SW_3 or current_action == RO:
                 if len(stack) < 5:
                     invalid = True
                     continue
                 stack = [stack[0], stack[4], stack[2], stack[3], stack[1]] + stack[5:]
+
             if current_action == BRK:
                 if len(buffer) == 0:
                     invalid = True
                     continue
                 stack = [buffer[0], buffer[0]] + stack
                 buffer = buffer[1:]
-            '''
+
+            if current_action == SW_BK:
+                if len(stack) < 2:
+                    invalid = True
+                    continue
+                buffer = [stack[1]] + buffer
+                stack = [stack[0]] + stack[2:]
 
         final_prediction.append(current_action)
         current_step += 1
@@ -311,15 +323,22 @@ def train(model_name, train_case_name, train_data, test_data, parser_parameters)
     print (x_test_full.shape)
 
     model_parameters = parser_parameters.model_parameters
+    no_buffer_tokens = model_parameters.no_buffer_tokens
+    no_stack_tokens = model_parameters.no_stack_tokens
+    no_dep_features = model_parameters.no_dep_features
 
     embedding_matrix = word_embeddings_util.get_embeddings_matrix(model_parameters.embeddings_dim)
 
     model = get_model(embedding_matrix, parser_parameters)
     plot_model(model, to_file=PROJECT_ROOT_DIR + "/model.png")
 
-    history = model.fit([x_train_full[:, :, 0], x_train_full[:, :, 1], x_train_full[:, :, 2], x_train_full[:, :, 3],
-                         x_train_full[:, :, 4], x_train_full[:, :, 5], x_train_full[:, :, 6:16],
-                         x_train_full[:, :, 16:]], y_train_full,
+    x_train_full_part = [x_train_full[:, :, i] for i in range(no_buffer_tokens)] + \
+                        [x_train_full[:, :, no_buffer_tokens + i] for i in range(no_stack_tokens)] + \
+                        [x_train_full[:, :,
+                         no_buffer_tokens + no_stack_tokens: no_buffer_tokens + no_stack_tokens + ACTION_SET_SIZE]] + \
+                        [x_train_full[:, :, no_buffer_tokens + no_stack_tokens + ACTION_SET_SIZE:]]
+
+    history = model.fit(x_train_full_part, y_train_full,
                         epochs=model_parameters.train_epochs, batch_size=16, validation_split=0.1,
                         callbacks=[
                             ModelCheckpoint(model_path, monitor="val_acc", verbose=0, save_best_only=True,
@@ -376,10 +395,7 @@ def train(model_name, train_case_name, train_data, test_data, parser_parameters)
         else:
             errors += 1
 
-    model_accuracy = model.evaluate(
-        [x_train_full[:, :, 0], x_train_full[:, :, 1], x_train_full[:, :, 2], x_train_full[:, :, 3],
-         x_train_full[:, :, 4], x_train_full[:, :, 5], x_train_full[:, :, 6:16],
-         x_train_full[:, :, 16:]], y_train_full)
+    model_accuracy = model.evaluate(x_train_full_part, y_train_full)
 
     save_trial_results(train_data_shape=x_train.shape, filtered_train_data_shape=x_train_full.shape,
                        train_lengths=lengths_train, test_data_shape=x_test.shape,
@@ -490,21 +506,16 @@ def test(model_name, test_case_name, data, parser_parameters):
         else:
             errors += 1
 
-    model_accuracy = model.evaluate(
-        [x_test_full[:, :, 0], x_test_full[:, :, 1], x_test_full[:, :, 2], x_test_full[:, :, 3],
-         x_test_full[:, :, 4], x_test_full[:, :, 5], x_test_full[:, :, 6:16],
-         x_test_full[:, :, 16:]], y_test_full)
-
     no_buffer_tokens = model_parameters.no_buffer_tokens
     no_stack_tokens = model_parameters.no_stack_tokens
 
-    model_accuracy = model.evaluate(
-        [x_test_full[:, :, i] for i in range(no_buffer_tokens)] +
-        [x_test_full[:, :, i] for i in range(no_buffer_tokens, no_buffer_tokens + no_stack_tokens)] +
-        [x_test_full[:, :, no_buffer_tokens + no_stack_tokens: no_buffer_tokens + no_stack_tokens + ACTION_SET_SIZE],
-         x_test_full[:, :, no_buffer_tokens + no_stack_tokens + ACTION_SET_SIZE:]],
-        y_test_full
-    )
+    x_test_full_part = [x_test_full[:, :, i] for i in range(no_buffer_tokens)] + \
+                       [x_test_full[:, :, no_buffer_tokens + i] for i in range(no_stack_tokens)] + \
+                       [x_test_full[:, :,
+                        no_buffer_tokens + no_stack_tokens: no_buffer_tokens + no_stack_tokens + ACTION_SET_SIZE]] + \
+                       [x_test_full[:, :, no_buffer_tokens + no_stack_tokens + ACTION_SET_SIZE:]]
+
+    model_accuracy = model.evaluate(x_test_full_part, y_test_full)
 
     save_trial_results(train_data_shape=None, filtered_train_data_shape=None, train_lengths=None,
                        test_data_shape=x_test.shape, filtered_test_data_shape=x_test_full.shape,

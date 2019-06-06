@@ -1,6 +1,6 @@
 class ASGParameters:
     def __init__(self,
-                 asg_alg="nodes_on_stack_break_informed_swap",
+                 asg_alg="simple_informed_swap",
                  no_swaps=1,
                  swap_distance=1,
                  rotate=False
@@ -13,7 +13,7 @@ class ASGParameters:
 
 class ModelParameters:
     def __init__(self,
-                 no_stack_tokens=5,
+                 no_stack_tokens=3,
                  no_buffer_tokens=1,
                  no_dep_features=6,
                  embeddings_dim=200,

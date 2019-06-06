@@ -68,7 +68,7 @@ class MetadataReconstructionState:
         elif action.action == "RO":
             self._process_rotate(action)
         elif action.action == "SW_BK":
-            self._process_swap_break(action)
+            self._process_swap_back(action)
 
     def finalize(self):
         top = self.stack.pop()
@@ -178,7 +178,7 @@ class MetadataReconstructionState:
         self.stack.append(bottom)
         self.stack.append(top)
 
-    def _process_swap_break(self, action):
+    def _process_swap_back(self, action):
         top = len(self.stack) - 1
         j = self.stack.pop(top - 1)
         self.buffer_indices.insert(0, j)

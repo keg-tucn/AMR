@@ -1,38 +1,16 @@
 import pickle
+from os import path
+
 from keras.preprocessing.text import Tokenizer
 
-from definitions import TOKENIZER_PATH
 from data_extraction import dataset_loader
-
-
-def get_tokenizer():
-    return pickle.load(open(TOKENIZER_PATH, "rb"))
-
-
-tokenizer = get_tokenizer()
+from definitions import TOKENIZER_PATH
 
 
 def generate_tokenizer():
     train_data_sentences = [d.sentence for d in dataset_loader.read_data("training", cache=True)]
-    '''
-    train_data_sentences = \
-        [d[1] for d in dataset_loader.read_original_graphs("training", cache=True)] + \
-        [d.sentence for d in dataset_loader.read_data("training", cache=True)]
-    '''
-
     dev_data_sentences = [d.sentence for d in dataset_loader.read_data("dev", cache=True)]
-    '''
-    dev_data_sentences = \
-        [d[1] for d in dataset_loader.read_original_graphs("dev", cache=True)] + \
-        [d.sentence for d in dataset_loader.read_data("dev", cache=True)]
-    '''
-
     test_data_sentences = [d.sentence for d in dataset_loader.read_data("test", cache=True)]
-    '''
-    test_data_sentences = \
-        [d[1] for d in dataset_loader.read_original_graphs("test", cache=True)] + \
-        [d.sentence for d in dataset_loader.read_data("test", cache=True)]
-    '''
 
     sentences = train_data_sentences + dev_data_sentences + test_data_sentences
 
@@ -40,6 +18,16 @@ def generate_tokenizer():
     tokenizer.fit_on_texts(sentences)
 
     pickle.dump(tokenizer, open(TOKENIZER_PATH, "wb"))
+
+
+def get_tokenizer():
+    if not path.isfile(TOKENIZER_PATH):
+        generate_tokenizer()
+
+    return pickle.load(open(TOKENIZER_PATH, "rb"))
+
+
+tokenizer = get_tokenizer()
 
 
 def get_word_index_map():
@@ -74,7 +62,7 @@ if __name__ == "__main__":
     index_word_map_copy = {v: k for k, v in word_index_map.items()}
     print cmp(index_word_map, index_word_map_copy)
 
-    sentence = "\nHe went to the store to buy wood for a new fence ."
+    sentence = "He went to the store to buy wood for a new fence ."
     tokens_sequence = text_to_sequence(sentence)
 
     print "Original sentence:", sentence

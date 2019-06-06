@@ -146,6 +146,7 @@ def generate_training_data(file_path, parser_parameters, compute_dependencies=Tr
             # For the keras flow, also attach named_entities, date_entities, to instances
             training_data_instance = TrainData(new_sentence, action_sequence, amr_str, dependencies, named_entities,
                                                date_entities, concepts_metadata, amr_id)
+
             training_data.append(training_data_instance)
             processed_sentence_ids.append(amr_id)
 
