@@ -11,6 +11,34 @@ class ASGParameters:
         self.rotate = rotate
 
 
+SIMPLE_ACTION_SET = ["SH", "RL", "RR", "DN", "SW"]
+SIMPLE_WITH_SWAPS_ACTION_SET = ["SH", "RL", "RR", "DN", "SW", "SW_2", "SW_3"]
+SIMPLE_WITH_BREAK_ACTION_SET = ["SH", "RL", "RR", "DN", "SW", "BRK"]
+FULL_ACTION_SET = ["SH", "RL", "RR", "DN", "SW", "SW_2", "SW_3", "RO", "BRK", "SW_BK"]
+
+
+class ActionSet:
+    actions = SIMPLE_ACTION_SET
+
+    @classmethod
+    def action_set_size(cls):
+        return len(cls.actions)
+
+    @classmethod
+    def action_index(cls, action):
+        if action == "NONE":
+            return len(cls.actions)
+        else:
+            return cls.actions.index(action)
+
+    @classmethod
+    def index_action(cls, index):
+        if -1 < index < cls.action_set_size():
+            return cls.actions[index]
+        else:
+            return "NONE"
+
+
 class ModelParameters:
     def __init__(self,
                  no_stack_tokens=3,

@@ -14,12 +14,11 @@ class ActionConceptTransfer:
         :param original_actions: list of AMRAction instances
         :return: none
         """
-        for action_concept in original_actions:
-            action = action_concept.action
-            if action == "SH":
-                self.node_concepts.append(action_concept.label)
-            elif action == "RR" or action == "RL":
-                self.relation_concepts.append(action_concept.label)
+        for action in original_actions:
+            if action.action == "SH":
+                self.node_concepts.append(action.label)
+            elif action.action == "RR" or action.action == "RL":
+                self.relation_concepts.append(action.label)
 
     def load_from_action_indices_and_labels(self, action_i, label):
         """
@@ -29,9 +28,9 @@ class ActionConceptTransfer:
         :return: none
         """
         for i in range(len(action_i)):
-            if action_i[i] == SH:
+            if action_i[i] == ActionSet.action_index("SH"):
                 self.node_concepts.append(label[i])
-            elif action_i[i] == RR or action_i[i] == RL:
+            elif action_i[i] == ActionSet.action_index("RR") or action_i[i] == ActionSet.action_index("RR"):
                 self.relation_concepts.append(label[i])
 
     def populate_new_actions(self, new_actions):
@@ -41,22 +40,23 @@ class ActionConceptTransfer:
         :return: list of AMRAction instances
         """
         result = []
-        for action in new_actions:
-            if action == SH:
+        for action_index in new_actions:
+            action = ActionSet.index_action(action_index)
+            if action == "SH":
                 if len(self.node_concepts) > 0:
                     concept = self.node_concepts.popleft()
                 else:
                     concept = "unk"
-                predicted_act = AMRAction.build_labeled(acts[action], concept)
+                predicted_act = AMRAction.build_labeled(action, concept)
                 result.append(predicted_act)
-            elif action == RR or action == RL:
+            elif action == "RR" or action == "RL":
                 if len(self.relation_concepts) > 0:
                     concept = self.relation_concepts.popleft()
                 else:
                     concept = "unk"
-                predicted_act = AMRAction.build_labeled(acts[action], concept)
+                predicted_act = AMRAction.build_labeled(action, concept)
                 result.append(predicted_act)
             else:
-                predicted_act = AMRAction.build(acts[action])
+                predicted_act = AMRAction.build(action)
                 result.append(predicted_act)
         return result

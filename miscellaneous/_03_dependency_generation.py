@@ -13,6 +13,6 @@ test_data_orig = dataset_loader.read_original_graphs("test")
 
 data_orig = training_data_orig + dev_data_orig + test_data_orig
 
-for id, sentence, amr_graph, amr_data in data_orig:
+for amr_id, sentence, amr_graph, amr_data in data_orig:
     stanford_deps = DependencyExtractor.extract_dependencies(sentence)
     spaCy_deps = DependencyExtractor.extract_dependencies_spacy(sentence)

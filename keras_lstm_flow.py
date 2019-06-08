@@ -14,13 +14,12 @@ from feature_extraction import feature_vector_generator
 from Baseline import reentrancy_restoring
 from postprocessing import action_concept_transfer, action_sequence_reconstruction
 from smatch import smatch_amr, smatch_util
-from models.actions import *
 from models.parameters import *
 
 coref_handling = False
 
 label_binarizer = LabelBinarizer()
-label_binarizer.fit(range(ACTION_SET_SIZE))
+label_binarizer.fit(range(ActionSet.action_set_size()))
 
 
 def get_predictions_from_distr(predictions_distr):
@@ -35,7 +34,7 @@ def pretty_print_actions(acts_i):
 def actions_to_string(acts_i):
     str = ""
     for a in acts_i:
-        str += acts[a] + " "
+        str += ActionSet.index_action(a) + " "
     str += "\n"
     return str
 
@@ -71,6 +70,7 @@ def make_prediction(model, x_test, dependencies, parser_parameters):
     no_buffer_tokens = model_parameters.no_buffer_tokens
     no_stack_tokens = model_parameters.no_stack_tokens
     no_dep_features = model_parameters.no_dep_features
+    action_set_size = ActionSet.action_set_size()
 
     buffer_features = np.zeros((no_buffer_tokens, max_len))
     stack_features = np.zeros((no_stack_tokens, max_len))
@@ -78,7 +78,7 @@ def make_prediction(model, x_test, dependencies, parser_parameters):
     buffer_features[:, current_step] = buffer[0:no_buffer_tokens]
     stack_features[:, current_step] = no_word_index
 
-    prev_action = np.zeros((1, max_len, ACTION_SET_SIZE))
+    prev_action = np.zeros((1, max_len, action_set_size))
 
     if parser_parameters.with_enhanced_dep_info:
         dep_features_size = no_dep_features * len(__AMR_RELATIONS)
@@ -86,7 +86,7 @@ def make_prediction(model, x_test, dependencies, parser_parameters):
         dep_features_size = no_dep_features * 1
     dep_info = np.zeros((1, max_len, dep_features_size))
 
-    prev_action[0][current_step] = np.zeros(ACTION_SET_SIZE)
+    prev_action[0][current_step] = np.zeros(action_set_size)
 
     if parser_parameters.with_enhanced_dep_info:
         dep_info[0][current_step] = np.repeat(feature_vector_generator.oh_encode_amr_rel(None), no_dep_features)
@@ -104,73 +104,75 @@ def make_prediction(model, x_test, dependencies, parser_parameters):
 
         current_actions_distr_ordered = np.argsort(prediction[0][current_step])[::-1]
         current_inspected_action_index = 0
-        current_action = current_actions_distr_ordered[current_inspected_action_index]
+        current_action = ActionSet.index_action(current_actions_distr_ordered[current_inspected_action_index])
+
         invalid = True
+
         while invalid:
-            if current_inspected_action_index == NONE:
+            if current_inspected_action_index == action_set_size:
                 return []
             invalid = False
-            current_action = current_actions_distr_ordered[current_inspected_action_index]
+            current_action = ActionSet.index_action(current_actions_distr_ordered[current_inspected_action_index])
             current_inspected_action_index += 1
 
-            if current_action == SH:
+            if current_action == "SH":
                 if len(buffer) == 0:
                     invalid = True
                     continue
                 stack = [buffer[0]] + stack
                 buffer = buffer[1:]
 
-            if current_action == RL:
+            if current_action == "RL":
                 if len(stack) < 2:
                     invalid = True
                     continue
                 stack = [stack[0]] + stack[2:]
 
-            if current_action == RR:
+            if current_action == "RR":
                 if len(stack) < 2:
                     invalid = True
                     continue
                 stack = [stack[1]] + stack[2:]
 
-            if current_action == DN:
+            if current_action == "DN":
                 if len(buffer) == 0:
                     invalid = True
                     continue
                 buffer = buffer[1:]
 
-            if current_action == SW:
+            if current_action == "SW":
                 if len(stack) < 3:
                     invalid = True
                     continue
                 stack = [stack[0], stack[2], stack[1]] + stack[3:]
 
-            if current_action == SW_2:
+            if current_action == "SW_2":
                 if len(stack) < 4:
                     invalid = True
                     continue
                 stack = [stack[0], stack[3], stack[2], stack[1]] + stack[4:]
 
-            if current_action == SW_3 or current_action == RO:
+            if current_action == "SW_3" or current_action == "RO":
                 if len(stack) < 5:
                     invalid = True
                     continue
                 stack = [stack[0], stack[4], stack[2], stack[3], stack[1]] + stack[5:]
 
-            if current_action == BRK:
+            if current_action == "BRK":
                 if len(buffer) == 0:
                     invalid = True
                     continue
                 stack = [buffer[0], buffer[0]] + stack
                 buffer = buffer[1:]
 
-            if current_action == SW_BK:
+            if current_action == "SW_BK":
                 if len(stack) < 2:
                     invalid = True
                     continue
                 buffer = [stack[1]] + buffer
                 stack = [stack[0]] + stack[2:]
 
-        final_prediction.append(current_action)
+        final_prediction.append(ActionSet.action_index(current_action))
         current_step += 1
 
         buffer_features[0:no_buffer_tokens, current_step] = \
@@ -236,7 +238,7 @@ def get_model(embedding_matrix, parser_parameters):
     for _ in range(model_parameters.no_stack_tokens):
         stack_inputs.append(Input(shape=(max_len,), dtype="int32"))
 
-    prev_action_input = Input(shape=(max_len, ACTION_SET_SIZE), dtype="float32")
+    prev_action_input = Input(shape=(max_len, ActionSet.action_set_size()), dtype="float32")
 
     if parser_parameters.with_enhanced_dep_info:
         dep_features_size = model_parameters.no_dep_features * len(__AMR_RELATIONS)
@@ -256,9 +258,9 @@ def get_model(embedding_matrix, parser_parameters):
                        recurrent_dropout=model_parameters.recurrent_dropout)(x)
 
     if parser_parameters.with_target_semantic_labels:
-        output_size = ACTION_SET_SIZE + 2 * len(__AMR_RELATIONS)
+        output_size = ActionSet.action_set_size() + 2 * len(__AMR_RELATIONS)
     else:
-        output_size = ACTION_SET_SIZE
+        output_size = ActionSet.action_set_size()
 
     dense = TimeDistributed(Dense(output_size, activation="softmax"))(lstm_output)
 
@@ -326,6 +328,7 @@ def train(model_name, train_case_name, train_data, test_data, parser_parameters)
     no_buffer_tokens = model_parameters.no_buffer_tokens
     no_stack_tokens = model_parameters.no_stack_tokens
     no_dep_features = model_parameters.no_dep_features
+    action_set_size = ActionSet.action_set_size()
 
     embedding_matrix = word_embeddings_util.get_embeddings_matrix(model_parameters.embeddings_dim)
 
@@ -334,9 +337,10 @@ def train(model_name, train_case_name, train_data, test_data, parser_parameters)
 
     x_train_full_part = [x_train_full[:, :, i] for i in range(no_buffer_tokens)] + \
                         [x_train_full[:, :, no_buffer_tokens + i] for i in range(no_stack_tokens)] + \
-                        [x_train_full[:, :,
-                         no_buffer_tokens + no_stack_tokens: no_buffer_tokens + no_stack_tokens + ACTION_SET_SIZE]] + \
-                        [x_train_full[:, :, no_buffer_tokens + no_stack_tokens + ACTION_SET_SIZE:]]
+                        [x_train_full[:, :, no_buffer_tokens + no_stack_tokens:
+                                            no_buffer_tokens + no_stack_tokens + action_set_size]] + \
+                        [x_train_full[:, :, no_buffer_tokens + no_stack_tokens + action_set_size:
+                                            no_buffer_tokens + no_stack_tokens + action_set_size + no_dep_features]]
 
     history = model.fit(x_train_full_part, y_train_full,
                         epochs=model_parameters.train_epochs, batch_size=16, validation_split=0.1,
@@ -508,12 +512,15 @@ def test(model_name, test_case_name, data, parser_parameters):
 
     no_buffer_tokens = model_parameters.no_buffer_tokens
     no_stack_tokens = model_parameters.no_stack_tokens
+    no_dep_features = model_parameters.no_dep_features
+    action_set_size = ActionSet.action_set_size()
 
     x_test_full_part = [x_test_full[:, :, i] for i in range(no_buffer_tokens)] + \
                        [x_test_full[:, :, no_buffer_tokens + i] for i in range(no_stack_tokens)] + \
-                       [x_test_full[:, :,
-                        no_buffer_tokens + no_stack_tokens: no_buffer_tokens + no_stack_tokens + ACTION_SET_SIZE]] + \
-                       [x_test_full[:, :, no_buffer_tokens + no_stack_tokens + ACTION_SET_SIZE:]]
+                       [x_test_full[:, :, no_buffer_tokens + no_stack_tokens:
+                                          no_buffer_tokens + no_stack_tokens + action_set_size]] + \
+                       [x_test_full[:, :, no_buffer_tokens + no_stack_tokens + action_set_size:
+                                          no_buffer_tokens + no_stack_tokens + action_set_size + no_dep_features]]
 
     model_accuracy = model.evaluate(x_test_full_part, y_test_full)
 

@@ -1,3 +1,4 @@
+from amr_util import frameset_util, tokenizer_util, node_box_util, pos_convert_util
 from models.amr_graph import AMR
 from models.amr_data import CustomizedAMR
 from models.node import Node
@@ -5,22 +6,9 @@ from models.parameters import ParserParameters
 from preprocessing import ActionSequenceGenerator
 from preprocessing import TokensReplacer
 from postprocessing.action_concept_transfer import ActionConceptTransfer
-from amr_util import frameset_util, tokenizer_util, node_box_util, pos_convert_util
 from semantic_relations_learner import concepts_relations_extractor
 
-VOCAB_ACTS = ["SH", "RL", "RR", "DN", "SW"]
-SH = 0
-RL = 1
-RR = 2
-DN = 3
-SW = 4
-NUM_ACTIONS = len(VOCAB_ACTS)
-
 CONCEPTS_RELATIONS_DICT = concepts_relations_extractor.get_concepts_relations_pairs()
-
-
-def action_name(index):
-    return VOCAB_ACTS[index]
 
 
 def reconstruct_all_ne(tokens, action_sequence, named_entities_metadata, date_entities_metadata, parser_parameters):
@@ -252,8 +240,7 @@ def annotate_node_relations(node):
     if node.children is not None and len(node.children) > 0:
         node.children = [(node_child[0],
                           max(CONCEPTS_RELATIONS_DICT.get((node_label, node_child[0].label), [("unk", 1)]),
-                              key=(lambda rel: rel[1]))[
-                              0])
+                              key=(lambda rel: rel[1]))[0])
                          for node_child in node.children]
 
     for child in node.children:

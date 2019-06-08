@@ -1,18 +1,4 @@
-acts = ["SH", "RL", "RR", "DN", "SW", "SW_2", "SW_3", "RO", "BRK", "SW_BK"]
-
-SH = 0
-RL = 1
-RR = 2
-DN = 3
-SW = 4
-SW_2 = 5
-SW_3 = 6
-RO = 7
-BRK = 8
-SW_BK = 9
-NONE = -1
-
-ACTION_SET_SIZE = len(acts)
+from parameters import ActionSet
 
 
 class AMRAction:
@@ -22,7 +8,7 @@ class AMRAction:
         self.label2 = label2
         self.key = key
         self.key2 = key2
-        self.index = acts.index(action)
+        self.index = ActionSet.action_index(self.action)
 
     def __repr__(self):
         return "action: %s label: %s label2: %s index: %s key: %s key2: %s" % (
@@ -42,12 +28,3 @@ class AMRAction:
     @classmethod
     def build_labeled(cls, action, label):
         return AMRAction(action, label, None)
-
-
-if __name__ == "__main__":
-
-    index = 0
-    for act in acts:
-        amr_action = AMRAction(act, "label", "key")
-        assert amr_action.index == index
-        index += 1

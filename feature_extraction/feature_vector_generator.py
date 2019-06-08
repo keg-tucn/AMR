@@ -4,14 +4,14 @@ from sklearn.preprocessing import LabelBinarizer
 
 from constants import __AMR_RELATIONS, __DEP_AMR_REL_TABLE
 from amr_util import tokenizer_util
-import models.actions as act
 from models.actions import *
+from models.parameters import *
 
 simple_target_label_binarizer = LabelBinarizer()
-simple_target_label_binarizer.fit(range(ACTION_SET_SIZE))
+simple_target_label_binarizer.fit(range(ActionSet.action_set_size()))
 
 composed_target_label_binarizer = LabelBinarizer()
-composed_target_label_binarizer.fit(range(ACTION_SET_SIZE + 2 * len(__AMR_RELATIONS)))
+composed_target_label_binarizer.fit(range(ActionSet.action_set_size() + 2 * len(__AMR_RELATIONS)))
 
 amr_rel_binarizer = LabelBinarizer()
 amr_rel_binarizer.fit(range(len(__AMR_RELATIONS)))
@@ -74,8 +74,9 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
     no_buffer_tokens = model_parameters.no_buffer_tokens
     no_stack_tokens = model_parameters.no_stack_tokens
     no_dep_features = model_parameters.no_dep_features
+    action_set_size = ActionSet.action_set_size()
 
-    input_size = no_buffer_tokens + no_stack_tokens + ACTION_SET_SIZE
+    input_size = no_buffer_tokens + no_stack_tokens + action_set_size
     if parser_parameters.with_enhanced_dep_info:
         input_size += no_dep_features * len(__AMR_RELATIONS)
     else:
@@ -83,7 +84,7 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
 
     x_full = np.zeros((len(x) - filtered_count, max_len, input_size), dtype=np.int32)
 
-    output_size = ACTION_SET_SIZE
+    output_size = action_set_size
     if parser_parameters.with_target_semantic_labels:
         output_size += 2 * len(__AMR_RELATIONS)
 
@@ -95,7 +96,7 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
     for action_sequence, tokens_sequence, dependencies, amr_id in zip(y, x, dependencies, amr_ids):
         next_action_token = tokens_sequence[0]
         next_action_stack = list(np.repeat(no_word_index, no_stack_tokens))
-        next_action_prev_action = NONE
+        next_action_prev_action = AMRAction.build("NONE")
         tokens_sequence_index = 0
         features_matrix = []
 
@@ -103,10 +104,7 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
             continue
 
         for action, j in zip(action_sequence, range(len(action_sequence))):
-            if next_action_prev_action != NONE:
-                next_action_prev_action_ohe = simple_target_label_binarizer.transform([next_action_prev_action])[0, :]
-            else:
-                next_action_prev_action_ohe = np.zeros(ACTION_SET_SIZE)
+            next_action_prev_action_ohe = simple_target_label_binarizer.transform([next_action_prev_action.index])[0, :]
 
             features = np.concatenate((
                 [next_action_token], next_action_stack[0:no_stack_tokens], next_action_prev_action_ohe,
@@ -114,7 +112,7 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
                                         next_action_token, dependencies, parser_parameters)
             ))
 
-            if action.index == SH:
+            if action.action == "SH":
                 tokens_sequence_index += 1
                 next_action_stack = [next_action_token] + next_action_stack
                 if tokens_sequence_index < len(tokens_sequence):
@@ -122,33 +120,33 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
                 else:
                     next_action_token = no_word_index
 
-            if action.index == RL:
+            if action.action == "RL":
                 next_action_stack = [next_action_stack[0]] + next_action_stack[2:]
 
-            if action.index == RR:
+            if action.action == "RR":
                 next_action_stack = [next_action_stack[1]] + next_action_stack[2:]
 
-            if action.index == DN:
+            if action.action == "DN":
                 tokens_sequence_index += 1
                 if tokens_sequence_index < len(tokens_sequence):
                     next_action_token = tokens_sequence[tokens_sequence_index]
                 else:
                     next_action_token = no_word_index
 
-            if action.index == SW:
+            if action.action == "SW":
                 next_action_stack = [next_action_stack[0], next_action_stack[2],
                                      next_action_stack[1]] + next_action_stack[3:]
 
-            if action.index == SW_2:
+            if action.action == "SW_2":
                 next_action_stack = [next_action_stack[0], next_action_stack[3],
                                      next_action_stack[2], next_action_stack[1]] + next_action_stack[4:]
 
-            if action.index == SW_3 or action == RO:
+            if action.action == "SW_3" or action.action == "RO":
                 next_action_stack = [next_action_stack[0], next_action_stack[4],
                                      next_action_stack[2], next_action_stack[3],
                                      next_action_stack[1]] + next_action_stack[5:]
 
-            if action.index == BRK:
+            if action.action == "BRK":
                 tokens_sequence_index += 1
                 next_action_stack = [word_index_map.get(action.label.split("-")[0], no_word_index)] + \
                                     [word_index_map.get(action.label2.split("-")[0], no_word_index)] + next_action_stack
@@ -157,11 +155,11 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
                 else:
                     next_action_token = no_word_index
 
-            if action.index == SW_BK:
+            if action.action == "SW_BK":
                 tokens_sequence.insert(tokens_sequence_index, next_action_stack[1])
                 next_action_stack = [next_action_stack[0]] + next_action_stack[2:]
 
-            next_action_prev_action = action.index
+            next_action_prev_action = action
             features_matrix.append(features)
 
         if tokens_sequence_index != len(tokens_sequence):
@@ -197,7 +195,7 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
 def actions_to_string(acts_i):
     acts_str = ""
     for a in acts_i:
-        acts_str += act.acts[a] + " "
+        acts_str += ActionSet.action_index(a) + " "
     acts_str += "\n"
     return str
 
@@ -268,9 +266,9 @@ def get_amr_rel_for_dep_rel(dep_rel):
 def oh_encode_parser_action(action, with_target_semantic_labels):
     if with_target_semantic_labels:
         if action is not None:
-            if action.action == 1:
+            if action.action == "RL":
                 return composed_target_label_binarizer.transform([5 + __AMR_RELATIONS.index(action.label)])[0, :]
-            elif action.action == 2:
+            elif action.action == "RL":
                 return composed_target_label_binarizer.transform([5 + len(__AMR_RELATIONS) +
                                                                   __AMR_RELATIONS.index(action.label)])[0, :]
         else:
@@ -279,11 +277,11 @@ def oh_encode_parser_action(action, with_target_semantic_labels):
         if action is not None:
             return simple_target_label_binarizer.transform([action.index])[0, :]
         else:
-            return simple_target_label_binarizer.transform([NONE])[0, :]
+            return simple_target_label_binarizer.transform([-1])[0, :]
 
 
 def oh_encode_amr_rel(amr_rel):
-    if amr_rel is not None and amr_rel != 'NONE':
+    if amr_rel is not None and amr_rel != "NONE":
         amr_rel_idx = __AMR_RELATIONS.index(amr_rel)
         return amr_rel_binarizer.transform([amr_rel_idx])[0, :]
     else:
