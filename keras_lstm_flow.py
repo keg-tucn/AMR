@@ -71,6 +71,7 @@ def make_prediction(model, x_test, dependencies, parser_parameters):
     no_stack_tokens = model_parameters.no_stack_tokens
     no_dep_features = model_parameters.no_dep_features
     action_set_size = ActionSet.action_set_size()
+    with_target_semantic_labels = parser_parameters.with_target_semantic_labels
 
     buffer_features = np.zeros((no_buffer_tokens, max_len))
     stack_features = np.zeros((no_stack_tokens, max_len))
@@ -104,7 +105,8 @@ def make_prediction(model, x_test, dependencies, parser_parameters):
 
         current_actions_distr_ordered = np.argsort(prediction[0][current_step])[::-1]
         current_inspected_action_index = 0
-        current_action = ActionSet.index_action(current_actions_distr_ordered[current_inspected_action_index])
+        current_action, _ = feature_vector_generator.decode_parser_action(
+            current_actions_distr_ordered[current_inspected_action_index], with_target_semantic_labels)
 
         invalid = True
 
@@ -112,7 +114,8 @@ def make_prediction(model, x_test, dependencies, parser_parameters):
             if current_inspected_action_index == action_set_size:
                 return []
             invalid = False
-            current_action = ActionSet.index_action(current_actions_distr_ordered[current_inspected_action_index])
+            current_action, _ = feature_vector_generator.decode_parser_action(
+                current_actions_distr_ordered[current_inspected_action_index], with_target_semantic_labels)
             current_inspected_action_index += 1
 
             if current_action == "SH":

@@ -268,9 +268,11 @@ def oh_encode_parser_action(action, with_target_semantic_labels):
         if action is not None:
             if action.action == "RL":
                 return composed_target_label_binarizer.transform([5 + __AMR_RELATIONS.index(action.label)])[0, :]
-            elif action.action == "RL":
+            elif action.action == "RR":
                 return composed_target_label_binarizer.transform([5 + len(__AMR_RELATIONS) +
                                                                   __AMR_RELATIONS.index(action.label)])[0, :]
+            else:
+                return composed_target_label_binarizer.transform([action.index])[0, :]
         else:
             return composed_target_label_binarizer.transform([-1])[0, :]
     else:
@@ -278,6 +280,30 @@ def oh_encode_parser_action(action, with_target_semantic_labels):
             return simple_target_label_binarizer.transform([action.index])[0, :]
         else:
             return simple_target_label_binarizer.transform([-1])[0, :]
+
+
+def decode_parser_action(action_index, with_target_semantic_labels):
+    if with_target_semantic_labels:
+        if action_index > ActionSet.action_set_size():
+            return ActionSet.index_action(action_index // len(__AMR_RELATIONS)), \
+                   (action_index - ActionSet.action_set_size()) % len(__AMR_RELATIONS)
+        else:
+            return ActionSet.index_action(action_index), -1
+    else:
+        return ActionSet.index_action(action_index), -1
+
+
+def oh_decode_parser_action(action_ohe, with_target_semantic_labels):
+    if with_target_semantic_labels:
+        action_index = composed_target_label_binarizer.inverse_transform(np.array([action_ohe]))[0]
+        if action_index > ActionSet.action_set_size():
+            return ActionSet.index_action(action_index // len(__AMR_RELATIONS)), \
+                   (action_index - ActionSet.action_set_size()) % len(__AMR_RELATIONS)
+        else:
+            return ActionSet.index_action(action_index), -1
+    else:
+        action_index = simple_target_label_binarizer.inverse_transform(np.array([action_ohe]))[0]
+        return ActionSet.index_action(action_index)
 
 
 def oh_encode_amr_rel(amr_rel):

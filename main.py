@@ -30,8 +30,8 @@ if __name__ == "__main__":
     if test_data_path == "all":
         test_data_path = None
 
-    # train_file(model_name=model_name, train_case_name=trial_name, train_data_path=train_data_path,
-    #           test_data_path=test_data_path, parser_parameters=parser_parameters)
+    train_file(model_name=model_name, train_case_name=trial_name, train_data_path=train_data_path,
+               test_data_path=test_data_path, parser_parameters=parser_parameters)
 
     test_file(model_name=model_name, test_case_name=trial_name, test_data_path=test_data_path,
               parser_parameters=parser_parameters)
