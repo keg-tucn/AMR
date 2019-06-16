@@ -6,7 +6,7 @@ from keras.optimizers import SGD
 from keras.utils import plot_model
 from sklearn.preprocessing import LabelBinarizer
 
-from amr_util import tokenizer_util, word_embeddings_util, keras_plotter
+from amr_util import frameset_util, tokenizer_util, word_embeddings_util, keras_plotter
 from constants import __AMR_RELATIONS
 from definitions import PROJECT_ROOT_DIR, TRAINED_MODELS_DIR, RESULT_METRICS_DIR
 from data_extraction import dataset_loader
@@ -49,6 +49,11 @@ def tokens_to_sentence(tokens, index_to_word_map):
         str += index_to_word_map[t] + " "
     str += "\n"
     return str
+
+
+def init_util_services(embeddings_dim):
+    frameset_util.init_propbank_frames()
+    word_embeddings_util.init_embeddings_matrix(embeddings_dim)
 
 
 def generate_parsed_files(parser_parameters):

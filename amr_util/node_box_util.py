@@ -30,6 +30,10 @@ def is_verb(word):
     return en.is_verb(word)
 
 
+def is_adjective(word):
+    return en.is_adjective(word)
+
+
 if __name__ == "__main__":
     print simplify_word("particles")
     print simplify_word("negotiated")

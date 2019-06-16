@@ -1,5 +1,6 @@
 from os import path
 import pickle as js
+import numpy as np
 
 from definitions import CONCEPTS_RELATIONS_DICT
 from data_extraction import dataset_loader
@@ -74,14 +75,19 @@ def extract_concepts_relations_pairs(with_relation_frequency=False):
 
 
 if __name__ == "__main__":
+    # extract_concepts_relations_pairs(with_relation_frequency=True)
     concepts_rels_dict = get_concepts_relations_pairs()
 
     multiple_rels_pairs = 0
+    rels_per_pairs = []
 
     for item, i in zip(concepts_rels_dict.items(), range(len(concepts_rels_dict.items()))):
+        rels_per_pairs.append(len(item[1]))
         if len(item[1]) > 1:
             print str(item[0]) + " | " + str(item[1])
             multiple_rels_pairs += 1
 
     print "%d / %d" % (multiple_rels_pairs, len(concepts_rels_dict.items()))
     print "%f" % (float(multiple_rels_pairs) / len(concepts_rels_dict.items()))
+    print "%f" % (np.mean(rels_per_pairs))
+    print "%f" % (np.mean(filter(lambda n: n != 1, rels_per_pairs)))
