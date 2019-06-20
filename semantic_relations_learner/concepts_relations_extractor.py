@@ -28,7 +28,6 @@ def extract_concepts_relations_pairs(with_relation_frequency=False):
     # iterate over data set splits
     for data_split in dataset_splits:
         graphs_data = dataset_loader.read_original_graphs(file_type=data_split, filter_path=dataset_identifier)
-
         # iterate over C-AMR graph structures
         for graph_data in graphs_data:
             amr_graph = graph_data[2]
@@ -76,6 +75,7 @@ def extract_concepts_relations_pairs(with_relation_frequency=False):
 
 if __name__ == "__main__":
     # extract_concepts_relations_pairs(with_relation_frequency=True)
+
     concepts_rels_dict = get_concepts_relations_pairs()
 
     multiple_rels_pairs = 0

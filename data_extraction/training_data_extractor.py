@@ -138,7 +138,7 @@ def generate_training_data(file_path, parser_parameters, compute_dependencies=Tr
                 dependencies = {}
             else:
                 try:
-                    dependencies = DependencyExtractor.extract_dependencies(new_sentence)
+                    dependencies = DependencyExtractor.extract_dependencies_spacy(new_sentence)
                 except Exception as e:
                     logging.warn("Dependency parsing failed at sentence %s with exception %s.", new_sentence, str(e))
                     dependencies = {}

@@ -24,14 +24,14 @@ def extract_data_components(data):
     :return: numpy arrays for sequences of indices (corresponding to sentence words), actions, dependencies, AMRs as
             strings, AMR IDs, named entities pairs and date entities pairs
     """
-    sentences = np.asanyarray([d.sentence for d in data])
+    sentences = [d.sentence for d in data]
 
     tokenizer = tokenizer_util.get_tokenizer()
-    sequences = np.asarray(tokenizer.texts_to_sequences(sentences))
+    sequences = tokenizer.texts_to_sequences(sentences)
 
     actions = np.asanyarray([d.action_sequence for d in data])
 
-    dependencies = np.asarray([d.dependencies for d in data])
+    dependencies = [d.dependencies for d in data]
 
     named_entities = [d.named_entities for d in data]
     named_entities = [[(n[3], n[2]) for n in named_entities_list] for named_entities_list in named_entities]
@@ -39,9 +39,9 @@ def extract_data_components(data):
     date_entities = [d.date_entities for d in data]
     date_entities = [[(d[3], d[2], d[1]) for d in date_entities_list] for date_entities_list in date_entities]
 
-    amr_str = np.asarray([d.original_amr for d in data])
+    amr_str = [d.original_amr for d in data]
 
-    amr_ids = np.asarray([d.amr_id for d in data])
+    amr_ids = [d.amr_id for d in data]
 
     return sequences, actions, dependencies, amr_str, amr_ids, named_entities, date_entities
 

@@ -56,8 +56,12 @@ def init_util_services(embeddings_dim):
     word_embeddings_util.init_embeddings_matrix(embeddings_dim)
 
 
-def generate_parsed_files(parser_parameters):
+def generate_amr_dicts_files():
     dataset_loader.generate_parsed_graphs_files()
+
+
+def generate_parsed_files(parser_parameters):
+    dataset_loader.generate_parsed_data_files(parser_parameters)
     tokenizer_util.generate_tokenizer()
     dataset_loader.generate_parsed_data_files(parser_parameters)
 
