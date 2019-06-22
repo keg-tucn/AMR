@@ -205,10 +205,16 @@ def annotate_node_concepts(node):
 
     if node_box_util.is_verb(node_label):
         node_label_verb = node_label
-        node_label_noun = pos_convert_util.convert(node_label, "v", "n")
-    else:
+        node_label_noun = None
+    elif node_box_util.is_noun(node_label):
         node_label_noun = node_label
         node_label_verb = pos_convert_util.convert(node_label, "n", "v")
+    elif node_box_util.is_adjective(node_label):
+        node_label_noun = node_label
+        node_label_verb = pos_convert_util.convert(node_label, "a", "v")
+    else:
+        node_label_noun = node_label
+        node_label_verb = None
 
     roleset_v, sim_v = frameset_util.compute_best_roleset(node_label_verb, children_tokens, "propbank")
     roleset_n, sim_n = frameset_util.compute_best_roleset(node_label_noun, children_tokens, "nombank")
