@@ -1,10 +1,10 @@
 import logging
 from tqdm import tqdm
 
-from models.amr_graph import AMR
-from definitions import AMR_ALIGNMENTS_SPLIT
-from preprocessing import NamedEntitiesReplacer
 from data_extraction import input_file_parser
+from definitions import AMR_ALIGNMENTS_SPLIT
+from models.amr_graph import AMR
+from preprocessing import NamedEntitiesReplacer
 
 
 # Given a file with sentences and aligned amrs,

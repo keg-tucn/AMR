@@ -1,13 +1,16 @@
 from itertools import groupby
-from definitions import STANFORD_PARSER_JAR, STANFORD_PARSER_MODEL, STANFORD_POSTAGGER_JAR
-
 from stanford_parser.parser import Parser
 from nltk.parse.stanford import StanfordDependencyParser
 from nltk.tokenize.stanford import StanfordTokenizer
 import spacy
 
+from definitions import *
+
 
 class DependencyExtractor:
+    def __init__(self):
+        pass
+
     stanford_parser = Parser()
     stanford_parser_2 = StanfordDependencyParser(path_to_jar=STANFORD_PARSER_JAR,
                                                  path_to_models_jar=STANFORD_PARSER_MODEL)

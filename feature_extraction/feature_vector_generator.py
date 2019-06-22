@@ -4,6 +4,7 @@ from sklearn.preprocessing import LabelBinarizer
 
 from constants import __AMR_RELATIONS, __DEP_AMR_REL_TABLE
 from amr_util import tokenizer_util
+from feature_extraction_exceptions import InvalidParseException
 from models.actions import *
 from models.parameters import *
 
@@ -21,17 +22,17 @@ def extract_data_components(data):
     """
     Return the components of a list of TrainData instances as separate arrays
     :param data: array of TrainData instances
-    :return: numpy arrays for sequences of indices (corresponding to sentence words), actions, dependencies, AMRs as
+    :return: arrays for sequences of indices (corresponding to sentence words), actions, dependencies, AMRs as
             strings, AMR IDs, named entities pairs and date entities pairs
     """
-    sentences = [d.sentence for d in data]
+    sentences = np.asarray([d.sentence for d in data])
 
     tokenizer = tokenizer_util.get_tokenizer()
-    sequences = tokenizer.texts_to_sequences(sentences)
+    sequences = np.asarray(tokenizer.texts_to_sequences(sentences))
 
-    actions = np.asanyarray([d.action_sequence for d in data])
+    actions = np.asarray([d.action_sequence for d in data])
 
-    dependencies = [d.dependencies for d in data]
+    dependencies = np.asarray([d.dependencies for d in data])
 
     named_entities = [d.named_entities for d in data]
     named_entities = [[(n[3], n[2]) for n in named_entities_list] for named_entities_list in named_entities]
@@ -39,9 +40,9 @@ def extract_data_components(data):
     date_entities = [d.date_entities for d in data]
     date_entities = [[(d[3], d[2], d[1]) for d in date_entities_list] for date_entities_list in date_entities]
 
-    amr_str = [d.original_amr for d in data]
+    amr_str = np.asarray([d.original_amr for d in data])
 
-    amr_ids = [d.amr_id for d in data]
+    amr_ids = np.asarray([d.amr_id for d in data])
 
     return sequences, actions, dependencies, amr_str, amr_ids, named_entities, date_entities
 
@@ -94,81 +95,87 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
     i = 0
 
     for action_sequence, tokens_sequence, dependencies, amr_id in zip(y, x, dependencies, amr_ids):
-        next_action_token = tokens_sequence[0]
+        next_action_buffer = tokens_sequence
         next_action_stack = list(np.repeat(no_word_index, no_stack_tokens))
         next_action_prev_action = AMRAction.build("NONE")
-        tokens_sequence_index = 0
+
         features_matrix = []
 
         if len(action_sequence) > max_len:
             continue
 
-        for action, j in zip(action_sequence, range(len(action_sequence))):
-            next_action_prev_action_ohe = simple_target_label_binarizer.transform([next_action_prev_action.index])[0, :]
+        try:
+            for action, j in zip(action_sequence, range(len(action_sequence))):
+                next_action_prev_action_ohe = simple_target_label_binarizer.transform([next_action_prev_action.index])[
+                                              0, :]
 
-            features = np.concatenate((
-                [next_action_token], next_action_stack[0:no_stack_tokens], next_action_prev_action_ohe,
-                get_dependency_features(next_action_stack[0], next_action_stack[1], next_action_stack[2],
-                                        next_action_token, dependencies, parser_parameters)
-            ))
-
-            if action.action == "SH":
-                tokens_sequence_index += 1
-                next_action_stack = [next_action_token] + next_action_stack
-                if tokens_sequence_index < len(tokens_sequence):
-                    next_action_token = tokens_sequence[tokens_sequence_index]
+                if len(next_action_buffer) < no_buffer_tokens:
+                    buffer_features = next_action_buffer + [no_word_index] * (
+                            no_buffer_tokens - len(next_action_buffer))
                 else:
-                    next_action_token = no_word_index
+                    buffer_features = next_action_buffer[0:no_buffer_tokens]
 
-            if action.action == "RL":
-                next_action_stack = [next_action_stack[0]] + next_action_stack[2:]
+                features = np.concatenate((
+                    buffer_features,
+                    next_action_stack[0:no_stack_tokens],
+                    next_action_prev_action_ohe,
+                    get_dependency_features(next_action_stack[0], next_action_stack[1], next_action_stack[2],
+                                            next_action_buffer[0] if len(next_action_buffer) else no_word_index,
+                                            dependencies, parser_parameters)
+                ))
 
-            if action.action == "RR":
-                next_action_stack = [next_action_stack[1]] + next_action_stack[2:]
+                if action.action == "SH":
+                    if not next_action_buffer:
+                        raise InvalidParseException("Error parsing sentence for AMR with ID: %s" % amr_id)
+                    next_action_stack = [next_action_buffer[0]] + next_action_stack
+                    next_action_buffer = next_action_buffer[1:]
 
-            if action.action == "DN":
-                tokens_sequence_index += 1
-                if tokens_sequence_index < len(tokens_sequence):
-                    next_action_token = tokens_sequence[tokens_sequence_index]
-                else:
-                    next_action_token = no_word_index
+                if action.action == "RL":
+                    next_action_stack = [next_action_stack[0]] + next_action_stack[2:]
 
-            if action.action == "SW":
-                next_action_stack = [next_action_stack[0], next_action_stack[2],
-                                     next_action_stack[1]] + next_action_stack[3:]
+                if action.action == "RR":
+                    next_action_stack = [next_action_stack[1]] + next_action_stack[2:]
 
-            if action.action == "SW_2":
-                next_action_stack = [next_action_stack[0], next_action_stack[3],
-                                     next_action_stack[2], next_action_stack[1]] + next_action_stack[4:]
+                if action.action == "DN":
+                    if not next_action_buffer:
+                        raise InvalidParseException("Error parsing sentence for AMR with ID: %s" % amr_id)
+                    next_action_buffer = next_action_buffer[1:]
 
-            if action.action == "SW_3" or action.action == "RO":
-                next_action_stack = [next_action_stack[0], next_action_stack[4],
-                                     next_action_stack[2], next_action_stack[3],
-                                     next_action_stack[1]] + next_action_stack[5:]
+                if action.action == "SW":
+                    next_action_stack = [next_action_stack[0], next_action_stack[2],
+                                         next_action_stack[1]] + next_action_stack[3:]
 
-            if action.action == "BRK":
-                tokens_sequence_index += 1
-                next_action_stack = [word_index_map.get(action.label.split("-")[0], no_word_index)] + \
-                                    [word_index_map.get(action.label2.split("-")[0], no_word_index)] + next_action_stack
-                if tokens_sequence_index < len(tokens_sequence):
-                    next_action_token = tokens_sequence[tokens_sequence_index]
-                else:
-                    next_action_token = no_word_index
+                if action.action == "SW_2":
+                    next_action_stack = [next_action_stack[0], next_action_stack[3],
+                                         next_action_stack[2], next_action_stack[1]] + next_action_stack[4:]
 
-            if action.action == "SW_BK":
-                tokens_sequence.insert(tokens_sequence_index, next_action_stack[1])
-                next_action_stack = [next_action_stack[0]] + next_action_stack[2:]
+                if action.action == "SW_3" or action.action == "RO":
+                    next_action_stack = [next_action_stack[0], next_action_stack[4],
+                                         next_action_stack[2], next_action_stack[3],
+                                         next_action_stack[1]] + next_action_stack[5:]
 
-            next_action_prev_action = action
-            features_matrix.append(features)
+                if action.action == "BRK":
+                    if not next_action_buffer:
+                        raise InvalidParseException("Error parsing sentence for AMR with ID: %s" % amr_id)
+                    next_action_stack = [word_index_map.get(action.label.split("-")[0], no_word_index)] + \
+                                        [word_index_map.get(action.label2.split("-")[0],
+                                                            no_word_index)] + next_action_stack
+                    next_action_buffer = next_action_buffer[1:]
+                    if not next_action_buffer:
+                        raise InvalidParseException("Error parsing sentence for AMR with ID: %s" % amr_id)
 
-        if tokens_sequence_index != len(tokens_sequence):
-            logging.warn("There was a problem at training instance %d at %s. Actions %s. Tokens %s", i, amr_id,
-                         actions_to_string([action.index for action in action_sequence]),
-                         tokenizer_util.sequence_to_text(tokens_sequence))
+                if action.action == "SW_BK":
+                    tokens_sequence.insert(1, next_action_stack[1])
+                    next_action_stack = [next_action_stack[0]] + next_action_stack[2:]
+
+                next_action_prev_action = action
+                features_matrix.append(features)
+
+        except InvalidParseException as e:
+            exception_count += 1
+            logging.warn(e.message)
             exception_count += 1
             continue
-            # raise Exception("There was a problem at training instance " + str(i) + " at " + amr_id + "\n")
 
         features_matrix = np.concatenate((np.asarray(features_matrix),
                                           np.zeros((max_len - len(features_matrix), input_size), dtype=np.int32)))
@@ -176,6 +183,7 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
         action_sequences.append(action_sequence)
         x_full[i, :, :] = features_matrix
         i += 1
+
     logging.warning("Exception count " + str(exception_count))
 
     for action_sequence, i in zip(action_sequences, range(len(action_sequences))):
@@ -192,12 +200,36 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
     return x_full, y_full, lengths, filtered_count
 
 
-def actions_to_string(acts_i):
-    acts_str = ""
-    for a in acts_i:
-        acts_str += ActionSet.action_index(a) + " "
-    acts_str += "\n"
-    return str
+def decode_parser_action(action_index, with_target_semantic_labels):
+    if with_target_semantic_labels:
+        if action_index > ActionSet.action_set_size():
+            return ActionSet.index_action(action_index // len(__AMR_RELATIONS)), \
+                   (action_index - ActionSet.action_set_size()) % len(__AMR_RELATIONS)
+        else:
+            return ActionSet.index_action(action_index), -1
+    else:
+        return ActionSet.index_action(action_index), -1
+
+
+def oh_decode_parser_action(action_ohe, with_target_semantic_labels):
+    if with_target_semantic_labels:
+        action_index = composed_target_label_binarizer.inverse_transform(np.array([action_ohe]))[0]
+        if action_index > ActionSet.action_set_size():
+            return ActionSet.index_action(action_index // len(__AMR_RELATIONS)), \
+                   (action_index - ActionSet.action_set_size()) % len(__AMR_RELATIONS)
+        else:
+            return ActionSet.index_action(action_index), -1
+    else:
+        action_index = simple_target_label_binarizer.inverse_transform(np.array([action_ohe]))[0]
+        return ActionSet.index_action(action_index)
+
+
+def oh_encode_amr_rel(amr_rel):
+    if amr_rel is not None and amr_rel != "NONE":
+        amr_rel_idx = __AMR_RELATIONS.index(amr_rel)
+        return amr_rel_binarizer.transform([amr_rel_idx])[0, :]
+    else:
+        return amr_rel_binarizer.transform([-1])[0, :]
 
 
 def get_dependency_features(stack_0_idx, stack_1_idx, stack_2_idx, buffer_0_idx, dependencies, parser_parameters):
@@ -280,35 +312,3 @@ def oh_encode_parser_action(action, with_target_semantic_labels):
             return simple_target_label_binarizer.transform([action.index])[0, :]
         else:
             return simple_target_label_binarizer.transform([-1])[0, :]
-
-
-def decode_parser_action(action_index, with_target_semantic_labels):
-    if with_target_semantic_labels:
-        if action_index > ActionSet.action_set_size():
-            return ActionSet.index_action(action_index // len(__AMR_RELATIONS)), \
-                   (action_index - ActionSet.action_set_size()) % len(__AMR_RELATIONS)
-        else:
-            return ActionSet.index_action(action_index), -1
-    else:
-        return ActionSet.index_action(action_index), -1
-
-
-def oh_decode_parser_action(action_ohe, with_target_semantic_labels):
-    if with_target_semantic_labels:
-        action_index = composed_target_label_binarizer.inverse_transform(np.array([action_ohe]))[0]
-        if action_index > ActionSet.action_set_size():
-            return ActionSet.index_action(action_index // len(__AMR_RELATIONS)), \
-                   (action_index - ActionSet.action_set_size()) % len(__AMR_RELATIONS)
-        else:
-            return ActionSet.index_action(action_index), -1
-    else:
-        action_index = simple_target_label_binarizer.inverse_transform(np.array([action_ohe]))[0]
-        return ActionSet.index_action(action_index)
-
-
-def oh_encode_amr_rel(amr_rel):
-    if amr_rel is not None and amr_rel != "NONE":
-        amr_rel_idx = __AMR_RELATIONS.index(amr_rel)
-        return amr_rel_binarizer.transform([amr_rel_idx])[0, :]
-    else:
-        return amr_rel_binarizer.transform([-1])[0, :]

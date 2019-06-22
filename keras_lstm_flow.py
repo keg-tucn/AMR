@@ -349,10 +349,11 @@ def train(model_name, train_case_name, train_data, test_data, parser_parameters)
 
     x_train_full_part = [x_train_full[:, :, i] for i in range(no_buffer_tokens)] + \
                         [x_train_full[:, :, no_buffer_tokens + i] for i in range(no_stack_tokens)] + \
-                        [x_train_full[:, :, no_buffer_tokens + no_stack_tokens:
-                                            no_buffer_tokens + no_stack_tokens + action_set_size]] + \
-                        [x_train_full[:, :, no_buffer_tokens + no_stack_tokens + action_set_size:
-                                            no_buffer_tokens + no_stack_tokens + action_set_size + no_dep_features]]
+                        [x_train_full[:, :,
+                         no_buffer_tokens + no_stack_tokens:no_buffer_tokens + no_stack_tokens + action_set_size]] + \
+                        [x_train_full[:, :,
+                         no_buffer_tokens + no_stack_tokens + action_set_size:
+                         no_buffer_tokens + no_stack_tokens + action_set_size + no_dep_features]]
 
     history = model.fit(x_train_full_part, y_train_full,
                         epochs=model_parameters.train_epochs, batch_size=16, validation_split=0.1,
@@ -457,12 +458,6 @@ def test(model_name, test_case_name, data, parser_parameters):
     predictions = []
     errors = 0
 
-    parser_parameters_gold_actions = ParserParameters(max_len=30,
-                                                      with_enhanced_dep_info=False,
-                                                      with_target_semantic_labels=False,
-                                                      with_reattach=True,
-                                                      with_gold_concept_labels=True,
-                                                      with_gold_relation_labels=True)
     for i in range(len(x_test)):
         print "%d/%d" % (i, len(x_test))
         prediction = make_prediction(model, x_test[i], dependencies_test[i], parser_parameters)
@@ -482,13 +477,6 @@ def test(model_name, test_case_name, data, parser_parameters):
             print "Predictions with old labels: "
             print pred_label
 
-            '''
-            predicted_amr_gold = action_sequence_reconstruction.reconstruct_all_ne(list(x_test[i]), list(pred_label),
-                                                                                   list(test_named_entities[i]),
-                                                                                   list(test_date_entities[i]),
-                                                                                   parser_parameters_gold_actions)
-            predicted_amr_gold_str = predicted_amr_gold.amr_print()
-            '''
             predicted_amr = action_sequence_reconstruction.reconstruct_all_ne(x_test[i], pred_label,
                                                                               test_named_entities[i],
                                                                               test_date_entities[i],
@@ -496,25 +484,16 @@ def test(model_name, test_case_name, data, parser_parameters):
             predicted_amr_str = predicted_amr.amr_print()
 
             if coref_handling:
-                # predicted_amr_gold_str = reentrancy_restoring(predicted_amr_gold_str)
                 predicted_amr_str = reentrancy_restoring(predicted_amr_str)
 
             original_amr = smatch_amr.AMR.parse_AMR_line(test_amr_str[i])
-            # predicted_amr_gold = smatch_amr.AMR.parse_AMR_line(predicted_amr_gold_str)
             predicted_amr = smatch_amr.AMR.parse_AMR_line(predicted_amr_str)
 
             print "Original Amr"
             print test_amr_str[i]
-            # print "Prodicted gold AMR"
-            # print predicted_amr_gold_str
             print "Predicted AMR"
             print predicted_amr_str
 
-            '''
-            if original_amr is not None and predicted_amr_gold is not None:
-                smatch_f_score = smatch_results.compute_and_add(predicted_amr_gold, original_amr)
-                print "Smatch f-score %f" % smatch_f_score
-            '''
             if original_amr is not None and predicted_amr is not None:
                 smatch_f_score = smatch_results.compute_and_add(predicted_amr, original_amr)
                 print "Smatch f-score %f" % smatch_f_score
@@ -529,10 +508,11 @@ def test(model_name, test_case_name, data, parser_parameters):
 
     x_test_full_part = [x_test_full[:, :, i] for i in range(no_buffer_tokens)] + \
                        [x_test_full[:, :, no_buffer_tokens + i] for i in range(no_stack_tokens)] + \
-                       [x_test_full[:, :, no_buffer_tokens + no_stack_tokens:
-                                          no_buffer_tokens + no_stack_tokens + action_set_size]] + \
-                       [x_test_full[:, :, no_buffer_tokens + no_stack_tokens + action_set_size:
-                                          no_buffer_tokens + no_stack_tokens + action_set_size + no_dep_features]]
+                       [x_test_full[:, :,
+                        no_buffer_tokens + no_stack_tokens: no_buffer_tokens + no_stack_tokens + action_set_size]] + \
+                       [x_test_full[:, :,
+                        no_buffer_tokens + no_stack_tokens + action_set_size:
+                        no_buffer_tokens + no_stack_tokens + action_set_size + no_dep_features]]
 
     model_accuracy = model.evaluate(x_test_full_part, y_test_full)
 

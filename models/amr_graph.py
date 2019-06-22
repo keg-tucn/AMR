@@ -7,9 +7,9 @@
 # author: Chuan Wang
 # since: 2013-11-20
 
-from collections import defaultdict
 from util import *
-import re, sys
+import sys
+import re
 from optparse import OptionParser
 from dependency_graph import *
 

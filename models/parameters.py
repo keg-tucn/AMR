@@ -14,11 +14,15 @@ class ASGParameters:
 SIMPLE_ACTION_SET = ["SH", "RL", "RR", "DN", "SW"]
 SIMPLE_WITH_SWAPS_ACTION_SET = ["SH", "RL", "RR", "DN", "SW", "SW_2", "SW_3"]
 SIMPLE_WITH_BREAK_ACTION_SET = ["SH", "RL", "RR", "DN", "SW", "BRK"]
+SIMPLE_WITH_SWAP_BACK_BREAK_SET = ["SH", "RL", "RR", "DN", "BRK", "SB_BK"]
 FULL_ACTION_SET = ["SH", "RL", "RR", "DN", "SW", "SW_2", "SW_3", "RO", "BRK", "SW_BK"]
 
 
 class ActionSet:
     actions = SIMPLE_ACTION_SET
+
+    def __init__(self):
+        pass
 
     @classmethod
     def action_set_size(cls):

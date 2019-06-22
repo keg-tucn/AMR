@@ -3,7 +3,7 @@ from tqdm import tqdm
 import pickle as js
 from xml.etree import ElementTree
 
-from definitions import PROPBANK_FRAMES, PROPBANK_DUMP, NOMBANK_FRAMES, NOMBANK_DUMP
+from definitions import *
 from models.frameset import Frameset
 
 

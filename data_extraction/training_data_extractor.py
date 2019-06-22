@@ -1,19 +1,19 @@
 import logging
 from os import listdir, makedirs
-from tqdm import tqdm
 from collections import namedtuple
+from tqdm import tqdm
 
+from amr_util import TrainingDataStats
+from Baseline import baseline
+from data_extraction import input_file_parser
+from data_extraction.dependency_extractor import DependencyExtractor
 from definitions import PROJECT_ROOT_DIR
 from models import amr_data
 from models.amr_graph import AMR, ParserError
-from models.train_data import TrainData
 from models.parameters import ParserParameters
-from amr_util import TrainingDataStats
-from data_extraction import input_file_parser
+from models.train_data import TrainData
 from preprocessing import TokensReplacer
-from data_extraction.dependency_extractor import DependencyExtractor
 from preprocessing.action_sequence_generators import asg_factory
-from Baseline import baseline
 
 TrainingDataExtraction = namedtuple("TrainingDataExtraction", "data stats")
 

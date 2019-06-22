@@ -28,7 +28,6 @@ def read_data(file_type, filter_path="deft", parser_parameters=ParserParameters(
     directory_content = listdir(dir_path)
     original_corpus = sorted(filter(lambda x: "dump" not in x and filter_path in x, directory_content))
 
-
     for file_name in original_corpus:
         original_file_path = dir_path + "/" + file_name
         dump_file_path = dir_path + "/dumps/" + file_name + ".dump"
