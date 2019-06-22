@@ -22,11 +22,6 @@ label_binarizer = LabelBinarizer()
 label_binarizer.fit(range(ActionSet.action_set_size()))
 
 
-def get_predictions_from_distr(predictions_distr):
-    predictions = [np.argmax(p) for p in predictions_distr]
-    return predictions
-
-
 def pretty_print_actions(acts_i):
     print actions_to_string(acts_i)
 
@@ -235,6 +230,16 @@ def extract_amr_relations_from_dataset(file_path):
 def get_optimizer(model_parameters):
     lr = model_parameters.learning_rate
     return SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)
+
+
+def get_model_name(parser_parameters, data_path, trial_name):
+    model_parameters = parser_parameters.model_parameters
+    asg_parameters = parser_parameters.asg_paramaters
+    model_name = "{}_epochs={}_maxlen={}_embeddingsdim={}_asg={}_{}" \
+        .format(data_path, model_parameters.train_epochs, parser_parameters.max_len, model_parameters.embeddings_dim,
+                asg_parameters.asg_alg, trial_name)
+
+    return model_name
 
 
 def get_model(embedding_matrix, parser_parameters):

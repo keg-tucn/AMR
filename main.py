@@ -3,17 +3,13 @@ from keras_lstm_flow import *
 if __name__ == "__main__":
     data_sets = ["bolt", "consensus", "dfa", "proxy", "xinhua", "all"]
 
-    train_data_path = "proxy"
-    test_data_path = "proxy"
+    train_data_path = test_data_path = "proxy"
     trial_name = "full_deoverlapped"
 
     max_len = 30
     embeddings_dim = 200
     train_epochs = 50
     hidden_layer_size = 1024
-
-    model_name = "{}_epochs={}_maxlen={}_embeddingsdim={}" \
-        .format(train_data_path, train_epochs, max_len, embeddings_dim)
 
     model_parameters = ModelParameters(embeddings_dim=embeddings_dim, train_epochs=train_epochs)
 
@@ -22,6 +18,8 @@ if __name__ == "__main__":
                                          with_gold_concept_labels=False, with_gold_relation_labels=True)
 
     init_util_services(model_parameters.embeddings_dim)
+
+    model_name = get_model_name(parser_parameters, train_data_path, trial_name)
 
     if train_data_path == "all":
         train_data_path = None
