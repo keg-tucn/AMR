@@ -8,14 +8,22 @@ from feature_extraction_exceptions import InvalidParseException
 from models.actions import *
 from models.parameters import *
 
-simple_target_label_binarizer = LabelBinarizer()
-simple_target_label_binarizer.fit(range(ActionSet.action_set_size()))
+simple_target_label_binarizer = None
+composed_target_label_binarizer = None
+amr_rel_binarizer = None
 
-composed_target_label_binarizer = LabelBinarizer()
-composed_target_label_binarizer.fit(range(ActionSet.action_set_size() + 2 * len(__AMR_RELATIONS)))
 
-amr_rel_binarizer = LabelBinarizer()
-amr_rel_binarizer.fit(range(len(__AMR_RELATIONS)))
+def init_label_binarizers():
+    global simple_target_label_binarizer, composed_target_label_binarizer, amr_rel_binarizer
+
+    simple_target_label_binarizer = LabelBinarizer()
+    simple_target_label_binarizer.fit(range(ActionSet.action_set_size()))
+
+    composed_target_label_binarizer = LabelBinarizer()
+    composed_target_label_binarizer.fit(range(ActionSet.action_set_size() + 2 * len(__AMR_RELATIONS)))
+
+    amr_rel_binarizer = LabelBinarizer()
+    amr_rel_binarizer.fit(range(len(__AMR_RELATIONS)))
 
 
 def extract_data_components(data):

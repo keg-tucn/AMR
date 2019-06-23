@@ -47,6 +47,7 @@ def tokens_to_sentence(tokens, index_to_word_map):
 
 
 def init_util_services(embeddings_dim):
+    feature_vector_generator.init_label_binarizers()
     frameset_util.init_propbank_frames()
     word_embeddings_util.init_embeddings_matrix(embeddings_dim)
 
@@ -295,7 +296,7 @@ def get_model(embedding_matrix, parser_parameters):
 
 
 def train(model_name, train_case_name, train_data, test_data, parser_parameters):
-    model_path = TRAINED_MODELS_DIR + "/{}".format(model_name)
+    model_path = TRAINED_MODELS_DIR + "/{}_{}".format(model_name, train_case_name)
     print "Model path is: %s" % model_path
 
     [train_data, test_data] = dataset_loader.partition_dataset((train_data, test_data), partition_sizes=[0.9, 0.1],
