@@ -1,36 +1,33 @@
 from keras_lstm_flow import *
 
 if __name__ == "__main__":
-    data_sets = ["bolt", "consensus", "dfa", "proxy", "xinhua", "all"]
 
-    train_data_path = test_data_path = "proxy"
-    trial_name = "full_deoverlapped"
+    model_parameters = ModelParameters(no_stack_tokens=3, no_buffer_tokens=1, no_dep_features=6,
+                                       embeddings_dim=200, train_epochs=50)
 
-    max_len = 30
-    embeddings_dim = 200
-    train_epochs = 50
-    hidden_layer_size = 1024
+    asg_parameters = ASGParameters(asg_alg="simple")
 
-    model_parameters = ModelParameters(embeddings_dim=embeddings_dim, train_epochs=train_epochs)
-
-    parser_parameters = ParserParameters(max_len=max_len, with_enhanced_dep_info=False,
+    parser_parameters = ParserParameters(asg_parameters=asg_parameters, model_parameters=model_parameters,
+                                         max_len=50, shuffle_data=False, with_enhanced_dep_info=False,
                                          with_target_semantic_labels=False, with_reattach=True,
-                                         with_gold_concept_labels=False, with_gold_relation_labels=True)
+                                         with_gold_concept_labels=True, with_gold_relation_labels=True)
+
+    ActionSet.actions = SIMPLE_ACTION_SET
 
     init_util_services(model_parameters.embeddings_dim)
 
-    model_name = get_model_name(parser_parameters, train_data_path, trial_name)
+    # generate_parsed_files(parser_parameters)
 
-    if train_data_path == "all":
-        train_data_path = None
-    if test_data_path == "all":
-        test_data_path = None
+    data_sets = ["dfa", "proxy", None]
 
-    train_file(model_name=model_name, train_case_name=trial_name, train_data_path=train_data_path,
-               test_data_path=test_data_path, parser_parameters=parser_parameters)
+    trial_name = "all"
 
-    test_file(model_name=model_name, test_case_name=trial_name, test_data_path=test_data_path,
-              parser_parameters=parser_parameters)
+    for data_set in data_sets:
+        train_data_path = test_data_path = data_set
+        model_name = get_model_name(parser_parameters, data_set)
 
-    generate_amr_dicts_files()
-    generate_parsed_files(ParserParameters())
+        train_file(model_name=model_name, train_case_name=trial_name, train_data_path=train_data_path,
+                   test_data_path=test_data_path, parser_parameters=parser_parameters)
+
+        test_file(model_name=model_name, test_case_name=trial_name, test_data_path=test_data_path,
+                  parser_parameters=parser_parameters)

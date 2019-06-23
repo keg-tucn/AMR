@@ -232,12 +232,12 @@ def get_optimizer(model_parameters):
     return SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)
 
 
-def get_model_name(parser_parameters, data_path, trial_name):
+def get_model_name(parser_parameters, data_path):
     model_parameters = parser_parameters.model_parameters
-    asg_parameters = parser_parameters.asg_paramaters
-    model_name = "{}_epochs={}_maxlen={}_embeddingsdim={}_asg={}_{}" \
+    asg_parameters = parser_parameters.asg_parameters
+    model_name = "{}_epochs={}_maxlen={}_embeddingsdim={}_asg={}" \
         .format(data_path, model_parameters.train_epochs, parser_parameters.max_len, model_parameters.embeddings_dim,
-                asg_parameters.asg_alg, trial_name)
+                asg_parameters.asg_alg)
 
     return model_name
 
@@ -295,7 +295,7 @@ def get_model(embedding_matrix, parser_parameters):
 
 
 def train(model_name, train_case_name, train_data, test_data, parser_parameters):
-    model_path = TRAINED_MODELS_DIR + "/{}_{}".format(model_name, train_case_name)
+    model_path = TRAINED_MODELS_DIR + "/{}".format(model_name)
     print "Model path is: %s" % model_path
 
     [train_data, test_data] = dataset_loader.partition_dataset((train_data, test_data), partition_sizes=[0.9, 0.1],
