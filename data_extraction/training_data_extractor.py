@@ -1,10 +1,11 @@
 import logging
-from os import listdir, makedirs
 from collections import namedtuple
+from os import listdir, makedirs
+
 from tqdm import tqdm
 
-from amr_util import TrainingDataStats
 from Baseline import baseline
+from amr_util import TrainingDataStats
 from data_extraction import input_file_parser
 from data_extraction.dependency_extractor import DependencyExtractor
 from definitions import PROJECT_ROOT_DIR

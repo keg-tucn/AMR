@@ -1,7 +1,8 @@
-from os import path, listdir
-from tqdm import tqdm
 import pickle as js
+from os import path, listdir
 from xml.etree import ElementTree
+
+from tqdm import tqdm
 
 from definitions import *
 from models.frameset import Frameset

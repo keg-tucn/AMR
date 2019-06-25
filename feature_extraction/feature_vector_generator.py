@@ -1,9 +1,10 @@
 import logging
+
 import numpy as np
 from sklearn.preprocessing import LabelBinarizer
 
-from constants import __AMR_RELATIONS, __DEP_AMR_REL_TABLE
 from amr_util import tokenizer_util
+from constants import __AMR_RELATIONS, __DEP_AMR_REL_TABLE
 from feature_extraction_exceptions import InvalidParseException
 from models.actions import *
 from models.parameters import *
@@ -11,19 +12,6 @@ from models.parameters import *
 simple_target_label_binarizer = None
 composed_target_label_binarizer = None
 amr_rel_binarizer = None
-
-
-def init_label_binarizers():
-    global simple_target_label_binarizer, composed_target_label_binarizer, amr_rel_binarizer
-
-    simple_target_label_binarizer = LabelBinarizer()
-    simple_target_label_binarizer.fit(range(ActionSet.action_set_size()))
-
-    composed_target_label_binarizer = LabelBinarizer()
-    composed_target_label_binarizer.fit(range(ActionSet.action_set_size() + 2 * len(__AMR_RELATIONS)))
-
-    amr_rel_binarizer = LabelBinarizer()
-    amr_rel_binarizer.fit(range(len(__AMR_RELATIONS)))
 
 
 def extract_data_components(data):
@@ -169,8 +157,6 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
                                         [word_index_map.get(action.label2.split("-")[0],
                                                             no_word_index)] + next_action_stack
                     next_action_buffer = next_action_buffer[1:]
-                    if not next_action_buffer:
-                        raise InvalidParseException("Error parsing sentence for AMR with ID: %s" % amr_id)
 
                 if action.action == "SW_BK":
                     tokens_sequence.insert(1, next_action_stack[1])
@@ -208,6 +194,19 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
     return x_full, y_full, lengths, filtered_count
 
 
+def init_label_binarizers():
+    global simple_target_label_binarizer, composed_target_label_binarizer, amr_rel_binarizer
+
+    simple_target_label_binarizer = LabelBinarizer()
+    simple_target_label_binarizer.fit(range(ActionSet.action_set_size()))
+
+    composed_target_label_binarizer = LabelBinarizer()
+    composed_target_label_binarizer.fit(range(ActionSet.action_set_size() + 2 * len(__AMR_RELATIONS)))
+
+    amr_rel_binarizer = LabelBinarizer()
+    amr_rel_binarizer.fit(range(len(__AMR_RELATIONS)))
+
+
 def decode_parser_action(action_index, with_target_semantic_labels):
     if with_target_semantic_labels:
         if action_index > ActionSet.action_set_size():
@@ -230,6 +229,25 @@ def oh_decode_parser_action(action_ohe, with_target_semantic_labels):
     else:
         action_index = simple_target_label_binarizer.inverse_transform(np.array([action_ohe]))[0]
         return ActionSet.index_action(action_index)
+
+
+def oh_encode_parser_action(action, with_target_semantic_labels):
+    if with_target_semantic_labels:
+        if action is not None:
+            if action.action == "RL":
+                return composed_target_label_binarizer.transform([5 + __AMR_RELATIONS.index(action.label)])[0, :]
+            elif action.action == "RR":
+                return composed_target_label_binarizer.transform([5 + len(__AMR_RELATIONS) +
+                                                                  __AMR_RELATIONS.index(action.label)])[0, :]
+            else:
+                return composed_target_label_binarizer.transform([action.index])[0, :]
+        else:
+            return composed_target_label_binarizer.transform([-1])[0, :]
+    else:
+        if action is not None:
+            return simple_target_label_binarizer.transform([action.index])[0, :]
+        else:
+            return simple_target_label_binarizer.transform([-1])[0, :]
 
 
 def oh_encode_amr_rel(amr_rel):
@@ -301,22 +319,3 @@ def get_amr_rel_for_dep_rel(dep_rel):
         return __DEP_AMR_REL_TABLE[dep_rel]
     else:
         return None
-
-
-def oh_encode_parser_action(action, with_target_semantic_labels):
-    if with_target_semantic_labels:
-        if action is not None:
-            if action.action == "RL":
-                return composed_target_label_binarizer.transform([5 + __AMR_RELATIONS.index(action.label)])[0, :]
-            elif action.action == "RR":
-                return composed_target_label_binarizer.transform([5 + len(__AMR_RELATIONS) +
-                                                                  __AMR_RELATIONS.index(action.label)])[0, :]
-            else:
-                return composed_target_label_binarizer.transform([action.index])[0, :]
-        else:
-            return composed_target_label_binarizer.transform([-1])[0, :]
-    else:
-        if action is not None:
-            return simple_target_label_binarizer.transform([action.index])[0, :]
-        else:
-            return simple_target_label_binarizer.transform([-1])[0, :]

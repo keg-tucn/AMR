@@ -4,22 +4,18 @@ from keras.layers import Input, Embedding, LSTM, Dense, concatenate, TimeDistrib
 from keras.models import Model
 from keras.optimizers import SGD
 from keras.utils import plot_model
-from sklearn.preprocessing import LabelBinarizer
 
+from Baseline import reentrancy_restoring
 from amr_util import frameset_util, tokenizer_util, word_embeddings_util, keras_plotter
 from constants import __AMR_RELATIONS
-from definitions import PROJECT_ROOT_DIR, TRAINED_MODELS_DIR, RESULT_METRICS_DIR
 from data_extraction import dataset_loader
+from definitions import PROJECT_ROOT_DIR, TRAINED_MODELS_DIR, RESULT_METRICS_DIR
 from feature_extraction import feature_vector_generator
-from Baseline import reentrancy_restoring
+from models.parameters import *
 from postprocessing import action_concept_transfer, action_sequence_reconstruction
 from smatch import smatch_amr, smatch_util
-from models.parameters import *
 
 coref_handling = False
-
-label_binarizer = LabelBinarizer()
-label_binarizer.fit(range(ActionSet.action_set_size()))
 
 
 def pretty_print_actions(acts_i):
@@ -193,7 +189,12 @@ def make_prediction(model, x_test, dependencies, parser_parameters):
                    constant_values=no_word_index) \
                 if no_stack_tokens > len(stack) else stack[0:no_stack_tokens]
 
-        prev_action[0][current_step] = label_binarizer.transform([current_action])[0, :]
+        if parser_parameters.with_target_semantic_labels:
+            prev_action[0][current_step] = feature_vector_generator.composed_target_label_binarizer.transform(
+                [current_action])[0, :]
+        else:
+            prev_action[0][current_step] = feature_vector_generator.simple_target_label_binarizer.transform(
+                [current_action])[0, :]
 
         dep_info[0][current_step] = feature_vector_generator.get_dependency_features(stack_features[0][current_step],
                                                                                      stack_features[1][current_step],

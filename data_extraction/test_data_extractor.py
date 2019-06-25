@@ -1,4 +1,5 @@
 import logging
+
 from tqdm import tqdm
 
 from data_extraction import input_file_parser
