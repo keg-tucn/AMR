@@ -1,14 +1,12 @@
-from amr_util import frameset_util, tokenizer_util, node_box_util, pos_convert_util
-from models.amr_graph import AMR
+from amr_util import tokenizer_util
 from models.amr_data import CustomizedAMR
+from models.amr_graph import AMR
 from models.node import Node
 from models.parameters import ParserParameters
+from postprocessing import concept_identification, relation_identification
+from postprocessing.action_concept_transfer import ActionConceptTransfer
 from preprocessing import ActionSequenceGenerator
 from preprocessing import TokensReplacer
-from postprocessing.action_concept_transfer import ActionConceptTransfer
-from semantic_relations_learner import concepts_relations_extractor
-
-CONCEPTS_RELATIONS_DICT = concepts_relations_extractor.get_concepts_relations_pairs()
 
 
 def reconstruct_all_ne(tokens, action_sequence, named_entities_metadata, date_entities_metadata, parser_parameters):
@@ -18,6 +16,12 @@ def reconstruct_all_ne(tokens, action_sequence, named_entities_metadata, date_en
         rec_obj.process_action(action)
 
     top = rec_obj.finalize()
+
+    if not parser_parameters.with_gold_concept_labels:
+        concept_identification.annotate_node_concepts(top)
+
+    if not parser_parameters.with_gold_relation_labels:
+        relation_identification.annotate_node_relations(top)
 
     return top
 
@@ -60,12 +64,6 @@ class MetadataReconstructionState:
 
     def finalize(self):
         top = self.stack.pop()
-
-        if not self.parser_parameters.with_gold_concept_labels:
-            annotate_node_concepts(top)
-
-        if not self.parser_parameters.with_gold_relation_labels:
-            annotate_node_relations(top)
 
         return top
 
@@ -194,63 +192,6 @@ class MetadataReconstructionState:
         for date_relation, quantity in zip(date_relations, quantities):
             date_entity_node.add_child(Node(quantity, quantity), date_relation)
         return date_entity_node
-
-
-def annotate_node_concepts(node):
-    node_label = node.label
-
-    node_label = node_box_util.simplify_word(node_label)
-
-    children_tokens = [node_box_util.simplify_word(n[0].label) for n in node.children]
-
-    if node_box_util.is_verb(node_label):
-        node_label_verb = node_label
-        node_label_noun = None
-    elif node_box_util.is_noun(node_label):
-        node_label_noun = node_label
-        node_label_verb = pos_convert_util.convert(node_label, "n", "v")
-    elif node_box_util.is_adjective(node_label):
-        node_label_noun = node_label
-        node_label_verb = pos_convert_util.convert(node_label, "a", "v")
-    else:
-        node_label_noun = node_label
-        node_label_verb = None
-
-    roleset_v, sim_v = frameset_util.compute_best_roleset(node_label_verb, children_tokens, "propbank")
-    roleset_n, sim_n = frameset_util.compute_best_roleset(node_label_noun, children_tokens, "nombank")
-
-    if roleset_v is not None and roleset_n is not None:
-        if sim_v >= sim_n:
-            roleset = roleset_v
-        else:
-            roleset = roleset_n
-    else:
-        if roleset_v is not None:
-            roleset = roleset_v
-        else:
-            roleset = roleset_n
-
-    if roleset is not None:
-        if roleset == roleset_v:
-            node.label = roleset.id.replace(".", "-")
-        else:
-            node.label = roleset.id.split(".")[0]
-
-    for child in node.children:
-        annotate_node_concepts(child[0])
-
-
-def annotate_node_relations(node):
-    node_label = node.label
-
-    if node.children is not None and len(node.children) > 0:
-        node.children = [(node_child[0],
-                          max(CONCEPTS_RELATIONS_DICT.get((node_label, node_child[0].label), [("unk", 1)]),
-                              key=(lambda rel: rel[1]))[0])
-                         for node_child in node.children]
-
-    for child in node.children:
-        annotate_node_relations(child[0])
 
 
 if __name__ == "__main__":

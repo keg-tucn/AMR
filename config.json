@@ -1,0 +1,27 @@
+{
+  "asg_parameters": {
+    "asg_alg": "simple_informed_swap",
+    "no_swaps": 1,
+    "swap_distance": 1,
+    "rotate": "false"
+  },
+  "model_parameters": {
+    "no_stack_tokens": 3,
+    "no_buffer_tokens": 1,
+    "no_dep_features": 6,
+    "embeddings_dim": 200,
+    "train_epochs": 50,
+    "hidden_layer_size": 1024,
+    "learning_rate": 0.01,
+    "dropout": 0.0,
+    "recurrent_dropout": 0.0
+  },
+  "max_len": 50,
+  "shuffle_data": "true",
+  "deps_source": "stanford",
+  "with_enhanced_dep_info": "false",
+  "with_target_semantic_labels": "false",
+  "with_reattach": "false",
+  "with_gold_concept_labels": "true",
+  "with_gold_relation_labels": "true"
+}

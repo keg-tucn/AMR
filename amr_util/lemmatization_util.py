@@ -31,3 +31,6 @@ if __name__ == "__main__":
     print lemmatize("played")
     print lemmatize("plays")
     print lemmatize("-)")
+    print lemmatize("bats")
+    print lemmatize("are")
+    print lemmatize("feet")
