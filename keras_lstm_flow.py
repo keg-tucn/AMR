@@ -23,6 +23,10 @@ from smatch import smatch_util
 import amr_util.Actions as act
 from amr_reader import read_data as ra
 
+from coreference_detection.coreference_detection import restore_coreferenced_nodes_in_amr
+import spacy
+import neuralcoref
+
 sys.path.append(path.abspath('./stanford_parser'))
 
 SH = 0
@@ -31,25 +35,34 @@ RR = 2
 DN = 3
 SW = 4
 NONE = 5
-coref_handling = False
+coref_handling = True
 label_binarizer = sklearn.preprocessing.LabelBinarizer()
 label_binarizer.fit(range(5))
 
 
-def read_sentence(type):
-    return [d[0] for d in read_data(type)]
+def read_sentence(type, data = None):
+    if data is not None:
+        return [d[0] for d in data]
+    else:
+        return [d[0] for d in read_data(type)]
 
-def read_sentence_test(type):
-    return [d[0] for d in read_test_data(type)]
+
+def read_sentence_test(type, test_data = None):
+    if test_data is not None:
+        return [d[0] for d in test_data]
+    else:
+        return [d[0] for d in read_test_data(type)]
 
 
-def read_test_data(type, dataset=None):
+def read_test_data(type, dataset=None, nlp=None):
     # make sure testing done on same data subset
-    return ra(type, True, dataset)
+    # TODO make cache (2nd param) False again
+    return ra(type, False, dataset, nlp)
+
 
 # Load data
-def read_data(type, dataset=None,cache=False):
-    return ra(type,cache, dataset)
+def read_data(type, dataset=None,cache=False, nlp=None):
+    return ra(type,cache, dataset, nlp)
 
 
 def get_predictions_from_distr(predictions_distr):
@@ -199,6 +212,7 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids, index_
     lengths = []
     filtered_count = 0
     exception_count = 0
+    #cate o sa filtram (daca au nr > 30 ==> filtram)
     for action_sequence in y:
         lengths.append(len(action_sequence))
         if len(action_sequence) > max_len:
@@ -210,17 +224,20 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids, index_
     i = 0
 
     for action_sequence, tokens_sequence, deps, amr_id in zip(y, x, dependencies, amr_ids):
+        if len(action_sequence) > max_len:
+            continue
+
         next_action_token = tokens_sequence[0]
         next_action_stack = [no_word_index, no_word_index, no_word_index, no_word_index]
         next_action_prev_action = NONE
         tokens_sequence_index = 0
         features_matrix = []
 
-        if len(action_sequence) > max_len:
-            continue
+
 
         for action, j in zip(action_sequence, range(len(action_sequence))):
             if next_action_prev_action != NONE:
+                #one hot encoding
                 next_action_prev_action_ohe = label_binarizer.transform([next_action_prev_action])[0, :]
             else:
                 next_action_prev_action_ohe = [0, 0, 0, 0, 0]
@@ -285,13 +302,21 @@ def generate_dataset(x, y, dependencies, no_word_index, max_len, amr_ids, index_
         y_full[i, :] = actions
         i += 1
     logging.warning("Exception count " + str(exception_count))
+    #y - actiuni
+    #x - input (stack[0], stack[1], stack[2], si buffer[0])
+
+    #x_full
     return x_full, y_full, lengths, filtered_count
 
 
-def generate_tokenizer(tokenizer_path):
-    test_data = read_sentence_test('test')
-    train_data = read_sentence('training')
-    dev_data = read_sentence_test('dev')
+def generate_tokenizer(tokenizer_path, trainData, testData, devData):
+    # test_data = read_sentence_test('test')
+    # train_data = read_sentence('training')
+    # dev_data = read_sentence_test('dev')
+    test_data = read_sentence_test('test', testData)
+    train_data = read_sentence('training', trainData)
+    dev_data = read_sentence_test('dev', devData)
+
     sentences = test_data + train_data + dev_data
     tokenizer = Tokenizer(filters="", lower=True, split=" ")
     tokenizer.fit_on_texts(sentences)
@@ -511,23 +536,24 @@ def train(model_name, tokenizer_path, train_data, test_data, max_len=30, train_e
 
             #handling coreference(postprocessing)
             if coref_handling:
-                predicted_amr_str = reentrancy_restoring(predicted_amr_str)
+                predicted_amr_str = restore_coreferenced_nodes_in_amr(predicted_amr_str)
 
             #Step4: compute smatch
             original_amr = smatch_amr.AMR.parse_AMR_line(amrs_test[i])
             predicted_amr = smatch_amr.AMR.parse_AMR_line(predicted_amr_str)
             smatch_f_score = smatch_results.compute_and_add(predicted_amr, original_amr)
 
-            print 'Original Amr'
-            print amrs_test[i]
-            print 'Predicted Amr'
-            print predicted_amr_str
-            print 'Smatch f-score %f' % smatch_f_score
+            # print 'Original Amr'
+            # print amrs_test[i]
+            # print 'Predicted Amr'
+            # print predicted_amr_str
+            # print 'Smatch f-score %f' % smatch_f_score
         else:
             errors += 1
 
     #modified to results_train_new
-    file = open('./results_keras/{}_results_train_new'.format(model_name), 'w')
+    file = open('./results_keras/coref/with_more_coref_{}_results_train_new'.format(model_name), 'w')
+    #file = open('./results_keras/with_coref_{}_results_train_new'.format(model_name), 'w')
 
     file.write('------------------------------------------------------------------------------------------------\n')
     file.write('Train data shape: \n')
@@ -653,26 +679,27 @@ def test(model_name, tokenizer_path, test_case_name, data, max_len=30, embedding
                 predicted_amr_str = asr.reconstruct_all_ne(pred_label, named_entities[i], date_entities[i])
                 # handling coreference(postprocessing)
                 if coref_handling:
-                    predicted_amr_str = reentrancy_restoring(predicted_amr_str)
+                    predicted_amr_str = restore_coreferenced_nodes_in_amr(predicted_amr_str)
             else:
                 predicted_amr_str = asr.reconstruct_all(pred_label)
                 # handling coreference(postprocessing)
                 if coref_handling:
-                    predicted_amr_str = reentrancy_restoring(predicted_amr_str)
+                    predicted_amr_str = restore_coreferenced_nodes_in_amr(predicted_amr_str)
 
             original_amr = smatch_amr.AMR.parse_AMR_line(amrs_test[i])
             predicted_amr = smatch_amr.AMR.parse_AMR_line(predicted_amr_str)
             smatch_f_score = smatch_results.compute_and_add(predicted_amr, original_amr)
 
-            print 'Original Amr'
-            print amrs_test[i]
-            print 'Predicted Amr'
-            print predicted_amr_str
-            print 'Smatch f-score %f' % smatch_f_score
+            # print 'Original Amr'
+            # print amrs_test[i]
+            # print 'Predicted Amr'
+            # print predicted_amr_str
+            # print 'Smatch f-score %f' % smatch_f_score
         else:
             errors += 1
 
-    file = open('./results_keras/{}_results_test_{}'.format(model_name, test_case_name), 'w')
+    #file = open('./results_keras/with_coref_{}_results_test_{}'.format(model_name, test_case_name), 'w')
+    file = open('./results_keras/coref/with_more_{}_results_test_new'.format(model_name), 'w')
 
     file.write('------------------------------------------------------------------------------------------------\n')
     file.write('Test data shape: ' + '\n')
@@ -771,17 +798,25 @@ def test_without_amr(model_name, tokenizer_path, data, max_len=30, embedding_dim
     return prediction
 
 
-def train_file(model_name, tokenizer_path, train_data_path=None, test_data_path=None, max_len=30, train_epochs=35,
+def train_file(model_name, tokenizer_path, trainData, testData, train_data_path=None, test_data_path=None, max_len=30, train_epochs=35,
                embedding_dim=100):
-    test_data = read_test_data('test', test_data_path)
-    train_data = read_data('training', train_data_path,cache=False)
+
+    # test_data = read_test_data('test', test_data_path)
+    # train_data = read_data('training', train_data_path,cache=False)
+    test_data = testData
+    train_data = trainData
 
     train(model_name, tokenizer_path, train_data, test_data, max_len, train_epochs, embedding_dim)
 
 
-def test_file(model_name, tokenizer_path, test_case_name, test_data_path, max_len=30, embedding_dim=100, test_source="test",
+def test_file(model_name, tokenizer_path, test_case_name, test_data_path, test_data = None, max_len=30, embedding_dim=100, test_source="test",
               with_reattach=False):
-    data = read_test_data(test_source, test_data_path)
+
+    if test_data is not None:
+        data = test_data
+    else:
+        data = read_test_data(test_source, test_data_path)
+
     return test(model_name, tokenizer_path, test_case_name, data, max_len, embedding_dim, with_reattach=with_reattach)
 
 
@@ -792,12 +827,13 @@ if __name__ == "__main__":
     epochs = [50, 50, 50, 50, 20]
     test_source = 'dev'
 
+
     # for data_set in data_sets:
     #     for embeddings_dim in embeddings_dims:
     #         for max_len in max_lens:
     for data_set, max_len, embeddings_dim, epoch in zip(data_sets, max_lens, embeddings_dims, epochs):
-        # epochs = 20
-        model_name = '{}_epochs={}_maxlen={}_embeddingsdim={}'.format(data_set, epoch, max_len, embeddings_dim)
+        epochs = 10
+        model_name = '{}_epochs={}_maxlen={}_embeddingsdim={}'.format(data_set, epochs, max_len, embeddings_dim)
         # if data_set == "all":
         test_set_name = None
     # else:
@@ -812,14 +848,33 @@ if __name__ == "__main__":
         else:
             train_data_path = data_set
             test_data_path = data_set
-    tokenizer_path = "./tokenizers/full_tokenizer_extended.dump"
-    generate_tokenizer(tokenizer_path)
-    train_file(model_name=model_name,
-               tokenizer_path=tokenizer_path,
-               train_data_path=train_data_path,
-               test_data_path=test_data_path, max_len=30,
-               train_epochs=1, embedding_dim=100)
-    #     test_file(model_name, tokenizer_path="./tokenizers/full_tokenizer.dump",
-    #               test_case_name= test_source,
-    #               test_data_path=test_set_name, max_len=max_len,
-    #               embedding_dim=embeddings_dim, test_source="dev", with_reattach=True)
+
+    nlp = None
+    if coref_handling:
+        # Load the largest English SpaCy model
+        nlp = spacy.load('en_core_web_lg')
+
+        # Add neural coref to SpaCy's pipe
+        neuralcoref.add_to_pipe(nlp, blacklist=False)
+
+
+    # train_data = read_data('training', nlp=nlp)
+    # test_data = read_test_data('test', nlp=nlp)
+    # dev_data = read_test_data('dev', nlp=nlp)
+    #
+    # tokenizer_path = "./tokenizers/full_tokenizer_extended.dump"
+    # generate_tokenizer(tokenizer_path, train_data, test_data, dev_data)
+
+    # train_file(model_name=model_name,
+    #            tokenizer_path=tokenizer_path,
+    #            trainData=train_data,
+    #            testData=test_data,
+    #            train_data_path=train_data_path,
+    #            test_data_path=test_data_path, max_len=30,
+    #            train_epochs=10, embedding_dim=200)
+    #
+    # test_file(model_name, tokenizer_path=tokenizer_path,#"./tokenizers/full_tokenizer.dump",
+    #           test_case_name=test_source,
+    #           test_data_path=test_set_name, max_len=max_len,
+    #           test_data=dev_data,
+    #           embedding_dim=embeddings_dim, test_source="dev", with_reattach=True)
