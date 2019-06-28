@@ -38,8 +38,8 @@ def process_language(content_array):
 def process_sentence(sentence):
     try:
         st = StanfordNERTagger(
-            '/home/andreea/stanford-ner-2017-06-09/classifiers/english.all.3class.distsim.crf.ser.gz',
-            '/home/andreea/stanford-ner-2017-06-09/stanford-ner.jar')
+            '/home/asabau/licenta/stanford-ner-2018-10-16/classifiers/english.all.3class.distsim.crf.ser.gz',
+            '/home/asabau/licenta/stanford-ner-2018-10-16/stanford-ner.jar')
         tagged_list= st.tag(sentence.split())
         new_sentence = ""
         new_sentence_list = []
