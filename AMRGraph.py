@@ -382,6 +382,12 @@ class AMR(defaultdict):
         node = stack[-1]
         return node
 
+    def get_all_variables(self):
+        seq = self.dfs()[0]
+
+        return [v.node_label for v in seq]
+
+
     def get_variable(self, posID):
         """return variable given postition ID"""
         reent_var = None
