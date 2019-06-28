@@ -3,9 +3,9 @@ import pickle as js
 import TrainingDataExtractor as tde
 
 
-def generate_parsed_data(parsed_path, cache, dump_path):
+def generate_parsed_data(parsed_path, cache, dump_path, nlp=None):
     dump_path = dump_path + ".dump"
-    # print(dump_path)
+    #print(dump_path)
     #don't cache it
     #if path.exists(dump_path):
     #    with open(dump_path, "rb") as f:
@@ -16,7 +16,7 @@ def generate_parsed_data(parsed_path, cache, dump_path):
             with open(dump_path, "rb") as f:
                 return js.load(f)
     else:
-        data = tde.generate_training_data(parsed_path).data
+        data = tde.generate_training_data(parsed_path, nlp=nlp).data
         if not path.exists(path.dirname(dump_path)):
             makedirs(path.dirname(dump_path))
         with open(dump_path, "wb") as f:
@@ -24,18 +24,34 @@ def generate_parsed_data(parsed_path, cache, dump_path):
         return data
 
 
-def read_data(type,cache, filter_path="deft"):
+def read_data(type,cache, filter_path="deft", nlp=None):
     if filter_path is None:
         filter_path = "deft"
+
+    # coref_handling = False
+    # if coref_handling:
+    #     mypath = '/home/asabau/licenta/AMR/coreference_detection/sentences_with_coreferences/datasets_with_AMRs'
+    #
+    # else:
+    #     mypath = 'resources/alignments/split/' + type
+
     mypath = 'resources/alignments/split/' + type
+
     print(mypath + " with filter " + filter_path)
     data = []
     directory_content = listdir(mypath)
     original_corpus = filter(lambda x: "dump" not in x, directory_content)
     original_corpus = filter(lambda x: filter_path in x, original_corpus)
+
+
+
     for f in original_corpus:
         mypath_f = mypath + "/" + f
         dumppath_f = mypath + "/dumps/" + f
         print(mypath_f)
-        data += generate_parsed_data(mypath_f,cache, dumppath_f)
+        #data_temp = generate_parsed_data(mypath_f,cache, dumppath_f)
+        #print('mypath_f = ', mypath_f, 'cache = ', cache, 'data_temp = ', data_temp)
+
+        data += generate_parsed_data(mypath_f, cache, dumppath_f, nlp=nlp)  # data_temp
+
     return data
