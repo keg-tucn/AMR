@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
     ActionSet.actions = SIMPLE_ACTION_SET
 
-    init_util_services(model_parameters.embeddings_dim)
+    init_util_services()
 
     # generate_parsed_files(parser_parameters)
 

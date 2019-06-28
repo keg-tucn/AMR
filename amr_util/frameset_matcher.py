@@ -1,7 +1,7 @@
 import numpy as np
 
-from amr_util import word_embeddings_util
-from data_extraction import frameset_parser
+from amr_util import word_embeddings_processor
+from data_extraction import frameset_parser, word_embeddings_reader
 
 propbank_frames = None
 nombank_frames = None
@@ -68,7 +68,7 @@ def compute_best_role(token, roles):
     :param roles: list of roles from a role set
     :return: best matching role and the similarity degree
     """
-    similarities = [(r, word_embeddings_util.compute_similarity_to_sentence(token, r.description)) for r in roles]
+    similarities = [(r, word_embeddings_processor.compute_similarity_to_sentence(token, r.description)) for r in roles]
     if len(similarities):
         return max(similarities, key=(lambda role_sim_pair: role_sim_pair[1]))
     else:
@@ -77,7 +77,7 @@ def compute_best_role(token, roles):
 
 if __name__ == "__main__":
     emb_dim = 200
-    word_embeddings_util.init_embeddings_matrix(emb_dim)
+    word_embeddings_reader.init_embeddings_matrix(emb_dim)
 
     init_propbank_frames()
     init_nombank_frames()

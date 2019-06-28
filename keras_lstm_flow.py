@@ -6,9 +6,9 @@ from keras.optimizers import SGD
 from keras.utils import plot_model
 
 from Baseline import reentrancy_restoring
-from amr_util import frameset_matcher, tokenizer_util, word_embeddings_util, keras_plotter
+from amr_util import frameset_matcher, tokenizer_util, keras_plotter
 from constants import __AMR_RELATIONS
-from data_extraction import dataset_loader
+from data_extraction import dataset_loader, word_embeddings_reader
 from definitions import PROJECT_ROOT_DIR, TRAINED_MODELS_DIR, RESULT_METRICS_DIR
 from feature_extraction import feature_vector_generator
 from models.parameters import *
@@ -42,10 +42,9 @@ def tokens_to_sentence(tokens, index_to_word_map):
     return str
 
 
-def init_util_services(embeddings_dim):
+def init_util_services():
     feature_vector_generator.init_label_binarizers()
     frameset_matcher.init_propbank_frames()
-    word_embeddings_util.init_embeddings_matrix(embeddings_dim)
 
 
 def generate_amr_dicts_files():
@@ -56,6 +55,9 @@ def generate_parsed_files(parser_parameters):
     dataset_loader.generate_parsed_data_files(parser_parameters)
     tokenizer_util.generate_tokenizer()
     dataset_loader.generate_parsed_data_files(parser_parameters)
+
+    embeddings_dim = parser_parameters.model_parameters.embeddings_dim
+    word_embeddings_reader.init_embeddings_matrix(embeddings_dim)
 
 
 def make_prediction(model, x_test, dependencies, parser_parameters):
@@ -349,7 +351,7 @@ def train(model_name, train_case_name, train_data, test_data, parser_parameters)
     no_dep_features = model_parameters.no_dep_features
     action_set_size = ActionSet.action_set_size()
 
-    embedding_matrix = word_embeddings_util.get_embeddings_matrix(model_parameters.embeddings_dim)
+    embedding_matrix = word_embeddings_reader.get_embeddings_matrix(model_parameters.embeddings_dim)
 
     model = get_model(embedding_matrix, parser_parameters)
     plot_model(model, to_file=PROJECT_ROOT_DIR + "/model.png")
@@ -446,7 +448,7 @@ def test(model_name, test_case_name, data, parser_parameters):
 
     model_parameters = parser_parameters.model_parameters
 
-    embedding_matrix = word_embeddings_util.get_embeddings_matrix(model_parameters.embeddings_dim)
+    embedding_matrix = word_embeddings_reader.get_embeddings_matrix(model_parameters.embeddings_dim)
 
     x_test_full, y_test_full, lengths_test, filtered_count_test = \
         feature_vector_generator.generate_feature_vectors(x_test, y_test, dependencies_test, test_amr_ids,
@@ -651,7 +653,7 @@ def test_without_amr(model_name, data, parser_parameters, model_parameters):
     print x_test.shape
     print len(dependencies_test)
 
-    embedding_matrix = word_embeddings_util.get_embeddings_matrix(model_parameters.embeddings_dim)
+    embedding_matrix = word_embeddings_reader.get_embeddings_matrix(model_parameters.embeddings_dim)
 
     model = get_model(embedding_matrix, parser_parameters)
 
