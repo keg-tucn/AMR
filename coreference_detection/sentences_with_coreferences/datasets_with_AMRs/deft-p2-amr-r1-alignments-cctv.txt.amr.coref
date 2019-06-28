@@ -1,0 +1,1589 @@
+# sentence: With their unique charm , these well - known cartoon images once again caused Hong Kong to be a focus of worldwide attention .
+# co-referenced nodes: i c
+(c3 / cause-01~e.13 
+      :ARG0 (i / image~e.10 
+            :mod (t / this~e.5) 
+            :ARG1-of (k / know-02~e.8 
+                  :degree (w / well~e.6)) 
+            :mod (c4 / cartoon~e.9)) 
+      :ARG1 (f / focus-01~e.19 
+            :ARG0 (a2 / attend-02 
+                  :ARG1 c 
+                  :mod (w2 / worldwide~e.21)) 
+            :ARG1 (c / city :wiki "Hong_Kong" 
+                  :name (n / name :op1 "Hong"~e.14 :op2 "Kong"~e.15))) 
+      :prep-with~e.0 (c6 / charm-01~e.3 
+            :ARG0~e.1 i~e.1 
+            :mod (u / unique~e.2)) 
+      :mod (a / again~e.12 
+            :mod (o / once~e.11)))
+
+
+# sentence: Well , for several years , although it was still under construction and , er , not yet open , it can be said that many people have viewed Hong Kong with new respect .
+# co-referenced nodes: i p2 c
+(h / have-concession-91~e.6 
+      :ARG1 (p / possible-01~e.21 
+            :ARG1 (s / say-01~e.23 
+                  :ARG1~e.24 (v / view-02~e.28 
+                        :ARG0 (p2 / person~e.26 
+                              :quant (m / many~e.25)) 
+                        :ARG1 (c / city :wiki "Hong_Kong" 
+                              :name (n / name :op1 "Hong"~e.29 :op2 "Kong"~e.30)) 
+                        :ARG2~e.31 (r / respect-01~e.33 
+                              :ARG0 p2 
+                              :ARG1 c 
+                              :mod (n2 / new~e.32)))) 
+            :duration (s3 / several~e.3 
+                  :op1 (t / temporal-quantity :quant 1 
+                        :unit (y / year~e.4)))) 
+      :ARG2 (a / and~e.12 
+            :op1 (c4 / construct-01~e.11 
+                  :ARG1 (i / it~e.7) 
+                  :mod (s2 / still~e.9)) 
+            :op2 (o / open-09~e.18 :polarity~e.16 -~e.16 
+                  :ARG1 i~e.20 
+                  :time (y2 / yet~e.17) 
+                  :mod (e / er~e.14 :mode expressive))) 
+      :mod (w / well~e.0 :mode expressive))
+
+
+# sentence: As its neighbor on Lantau Island , Hong Kong International Airport had to change its flight routes to make this area a no - fly zone .
+# co-referenced nodes: a
+(o2 / obligate-01~e.11,12 
+      :ARG1 (a / airport :wiki "Hong_Kong_International_Airport" 
+            :name (n / name :op1 "Hong"~e.7 :op2 "Kong"~e.8 :op3 "International"~e.9 :op4 "Airport"~e.10)) 
+      :ARG2 (c / change-01~e.13,18 
+            :ARG0 a 
+            :ARG1 (r / route~e.16 
+                  :path-of (f / fly-01~e.15) 
+                  :poss a) 
+            :purpose~e.18 (m / make-02~e.18 
+                  :ARG0 a 
+                  :ARG1 (z / zone~e.25 
+                        :location-of (f2 / fly-01~e.24 :polarity~e.22 -~e.22) 
+                        :domain (a2 / area~e.20 
+                              :mod (t / this~e.19))))) 
+      :ARG1-of~e.12 (c2 / cause-01~e.12 
+            :ARG0 (n2 / neighbor-01~e.2 
+                  :ARG1 a 
+                  :ARG2 (i2 / it~e.1,14) 
+                  :location~e.3 (i / island :wiki "Lantau_Island" 
+                        :name (n3 / name :op1 "Lantau"~e.4 :op2 "Island"~e.5)))))
+
+
+# sentence: Mickey Mouse 's new home , settling on Chinese land for the first time , has captured worldwide attention .
+# co-referenced nodes: h
+(c3 / capture-01~e.16 
+      :ARG0 (h / home~e.4 
+            :poss~e.2 (p / person :wiki "Mickey_Mouse" 
+                  :name (n2 / name :op1 "Mickey"~e.0 :op2 "Mouse"~e.1)) 
+            :mod (n / new~e.3) 
+            :ARG1-of (s / settle-03~e.6 
+                  :ARG4~e.7 (l / land~e.9 
+                        :mod (c4 / country :wiki "China" 
+                              :name (n3 / name :op1 "China"~e.8))) 
+                  :ord~e.10 (o / ordinal-entity~e.12 :value~e.12 1~e.12))) 
+      :ARG1 (a / attend-02 
+            :ARG1 h 
+            :mod (w / worldwide~e.17)))
+
+
+# sentence: At subway stations , passengers will frequently press the station for Disney on ticket machines , trying to purchase tickets to enjoy the park when it first opens .
+# co-referenced nodes: p2 a
+(p / press-01~e.7 
+      :ARG0 (p2 / passenger~e.4) 
+      :ARG1 (s / station~e.9 
+            :mod~e.10 (a / amusement-park :wiki "Hong_Kong_Disneyland" 
+                  :name (n / name :op1 "Disney"~e.11))) 
+      :ARG1-of (f / frequent-02~e.6) 
+      :purpose (t2 / try-01~e.16 
+            :ARG0 p2 
+            :ARG1 (p3 / purchase-01~e.18 
+                  :ARG0 p2 
+                  :ARG1 (t3 / ticket~e.19) 
+                  :purpose (e / enjoy-01~e.21 
+                        :ARG0 p2 
+                        :ARG1 a~e.23 
+                        :time~e.24 (o / open-01~e.27 
+                              :ARG1 a~e.25 
+                              :ord (o2 / ordinal-entity~e.26 :value~e.26 1~e.26))))) 
+      :location (s2 / station~e.2,9 
+            :mod (s3 / subway~e.1)) 
+      :prep-on~e.12 (m / machine~e.14 
+            :mod (t / ticket~e.13)))
+
+
+# sentence: Meanwhile , the Disney subway station is scheduled to open on the same day as the park .
+# co-referenced nodes: a
+(s / schedule-01~e.7 
+      :ARG1 (o / open-01~e.9 
+            :ARG1 (s2 / station~e.5 
+                  :mod (s3 / subway~e.4) 
+                  :mod (a / amusement-park~e.16 :wiki "Hong_Kong_Disneyland" 
+                        :name (n2 / name :op1 "Disney"~e.3)))) 
+      :ARG3 (d2 / day~e.13 
+            :time-of~e.14 (o2 / open-01~e.9 
+                  :ARG1 a)) 
+      :time~e.14 (m / meanwhile~e.0))
+
+
+# sentence: For two years , Disney has constantly maintained its mystery .
+# co-referenced nodes: c
+(m / maintain-01~e.7 
+      :ARG0 (c / company :wiki "The_Walt_Disney_Company" 
+            :name (n / name :op1 "Disney"~e.4)) 
+      :ARG1 (m2 / mystery~e.9 
+            :poss~e.8 c~e.8) 
+      :duration (t2 / temporal-quantity :quant 2~e.1 
+            :unit (y2 / year~e.2)) 
+      :manner~e.6 (c2 / constant~e.6))
+
+
+# sentence: We took a taxi along the path of the highway that heads toward Disney , trying to experience this mysterious park from close by .
+# co-referenced nodes: a w
+(t / take-01~e.1 
+      :ARG0 (w / we~e.0) 
+      :ARG1 (t2 / taxi~e.3) 
+      :purpose (t4 / try-01~e.15 
+            :ARG0 w 
+            :ARG1 (e / experience-01~e.17 
+                  :ARG0 w 
+                  :ARG1 (a / amusement-park :wiki "Hong_Kong_Disneyland" 
+                        :name (n / name :op1 "Disney") 
+                        :mod (m / mysterious) 
+                        :mod (t3 / this)) 
+                  :location (c / close~e.22 
+                        :op1 a~e.18,19,20))) 
+      :path (a2 / along~e.4 
+            :op1 (p2 / path~e.6 
+                  :mod~e.7 (h / highway~e.9 
+                        :ARG0-of (h2 / head-02~e.11 
+                              :ARG1 a~e.13)))))
+
+
+# sentence: However , before any of the Disney symbols were in sight , the car was stopped by a security guard at the intersection of the road towards Disney .
+# co-referenced nodes: a
+(h / have-concession-91~e.0 
+      :ARG2 (s / stop-01~e.15 
+            :ARG0~e.16 (g2 / guard~e.19 
+                  :mod (s5 / security~e.18)) 
+            :ARG1 (c2 / car~e.13) 
+            :time (b / before~e.2 
+                  :op1 (s3 / see-01 
+                        :ARG1 (t / thing~e.7 
+                              :ARG1-of~e.7 (s4 / symbolize-01~e.7 
+                                    :ARG2 a~e.6)))) 
+            :location~e.20 (i / intersect-01~e.22 
+                  :ARG1~e.23 (r / road~e.25 
+                        :direction~e.26 (a / amusement-park :wiki "Hong_Kong_Disneyland" 
+                              :name (n2 / name :op1 "Disney"~e.27))))))
+
+
+# sentence: On our way back , the taxi driver gave us an explanation after understanding our intentions .
+# co-referenced nodes: p2 w3
+(e2 / explain-01~e.11 
+      :ARG0 (p2 / person~e.7 
+            :ARG0-of~e.7 (d2 / drive-01~e.7 
+                  :ARG1 (t2 / taxi~e.6))) 
+      :ARG2 (w3 / we~e.9) 
+      :time (a2 / after~e.12 
+            :op1 (u2 / understand-01~e.13 
+                  :ARG0 p2 
+                  :ARG1 (t / thing~e.15 
+                        :ARG1-of~e.15 (i2 / intend-01~e.15 
+                              :ARG0~e.14 w3~e.14)))) 
+      :time (w4 / way~e.2 
+            :direction (b2 / back~e.3) 
+            :poss~e.1 w3~e.1))
+
+
+# sentence: Er , according to what the security guard said , for the time before everything is officially opened , opened , all , no cars can enter unless they have special permission .
+# co-referenced nodes: c - e2
+(s / say-01~e.2,3,8 
+      :ARG0 (p / person~e.7 
+            :ARG0-of~e.7 (g / guard-01~e.7 
+                  :ARG1 (s2 / security~e.6))) 
+      :ARG1~e.10 (p2 / possible-01~e.25 :polarity~e.23,27 -~e.23,27 
+            :ARG1 (e2 / enter-01~e.26 
+                  :ARG0 (c / car~e.24)) 
+            :time~e.12 (b / before~e.13 
+                  :op1 (o / open-01~e.17,19 
+                        :ARG1 (e / everything~e.14 
+                              :mod (a / all~e.21)) 
+                        :manner~e.16 (o2 / official~e.16))) 
+            :condition~e.27 (h / have-03~e.29 :polarity~e.27 -~e.27 
+                  :ARG0 c 
+                  :ARG1 (p3 / permit-01~e.31 
+                        :ARG1 e2 
+                        :ARG1-of (s3 / special-02~e.30)))) 
+      :mod (e3 / er~e.0 :mode expressive))
+
+
+# sentence: If pictures are taken without permission , %pw that is to say , it will at all times be pursued by legal action , a big hassle .
+# co-referenced nodes: p3
+(h2 / have-condition-91~e.0 
+      :ARG1 (p3 / pursue-01~e.19 
+            :ARG0~e.20 (a / act-02~e.22 
+                  :ARG1-of (l / legal-02~e.21)) 
+            :time~e.17 (t3 / time~e.17 
+                  :mod (a2 / all~e.16)) 
+            :ARG0-of (h / hassle-02~e.26 
+                  :mod (b / big~e.25))) 
+      :ARG2 (t / take-01~e.3 
+            :ARG1 (p / picture~e.1) 
+            :ARG1-of (p2 / permit-01~e.5 :polarity~e.4 -~e.4) 
+            :ARG1-of (m / mean-01 
+                  :ARG2 p3)))
+
+
+# sentence: Although Disney Corporation chose Hong Kong as the venue for the Chinese Disney park , what they are actually most excited about is the mainland China tourist market .
+# co-referenced nodes: c9 c7
+(h / have-concession-91~e.0 
+      :ARG1 (e / excite-01~e.20 
+            :ARG0 (m / market~e.27 
+                  :mod (p / person~e.26 
+                        :ARG0-of~e.26 (t / tour-01~e.26)) 
+                  :location (m2 / mainland~e.24 
+                        :op1 c9~e.25)) 
+            :ARG1 c7~e.16 
+            :degree (m3 / most~e.19) 
+            :mod (a2 / actual~e.18)) 
+      :ARG2 (c6 / choose-01~e.3 
+            :ARG0 (c7 / company :wiki "The_Walt_Disney_Company" 
+                  :name (n / name :op1 "Disney"~e.1 :op2 "Corporation"~e.2)) 
+            :ARG1 (c / city :wiki "Hong_Kong" 
+                  :name (n2 / name :op1 "Hong"~e.4 :op2 "Kong"~e.5)) 
+            :ARG4~e.6 (v / venue~e.8 
+                  :location-of~e.9 (a / amusement-park~e.13 :wiki "Hong_Kong_Disneyland" 
+                        :name (n3 / name :op1 "Disney"~e.12) 
+                        :mod (c9 / country :wiki "China" 
+                              :name (n4 / name :op1 "China"~e.11))))))
+
+
+# sentence: Since the implementation of the Individual Visit Scheme between Hong Kong and the mainland , more and more mainland tourists are coming to visit Hong Kong .
+# co-referenced nodes: p c m
+(c3 / come-01~e.21 
+      :ARG1 (p / person~e.19 
+            :source (m / mainland~e.13,18) 
+            :quant (m3 / more-and-more~e.15,17) 
+            :ARG0-of~e.19 (t / tour-01~e.19)) 
+      :ARG4~e.22 (v / visit-01~e.23 
+            :ARG0 p 
+            :ARG1 (c / city :wiki "Hong_Kong" 
+                  :name (n / name :op1 "Hong"~e.24 :op2 "Kong"~e.25))) 
+      :time (s / since~e.0 
+            :op1 (i2 / implement-01~e.2 
+                  :ARG1~e.3 (l / law :wiki "Individual_Visit_Scheme" 
+                        :name (n2 / name :op1 "Individual"~e.5 :op2 "Visit"~e.6 :op3 "Scheme"~e.7) 
+                        :beneficiary (b / between~e.8,11 
+                              :op1 c~e.9,10 
+                              :op2 m)))))
+
+
+# sentence: When in Hong Kong , you can wander among skyscrapers , heartily enjoy shopping sprees in well - known stores and malls for goods from various countries , and taste delicious snacks from all over the world at tea shops or at street stands in Mong Kok .
+# co-referenced nodes: y
+(p / possible-01~e.6 
+      :ARG1 (a / and~e.28 
+            :op1 (w / wander-01~e.7 
+                  :ARG0 (y / you~e.5) 
+                  :ARG1 (a2 / among~e.8 
+                        :op1 (s / skyscraper~e.9))) 
+            :op2 (e / enjoy-01~e.12 
+                  :ARG0 y 
+                  :ARG1 (s2 / spree~e.14 
+                        :mod (s3 / shop-01~e.13 
+                              :ARG0 y 
+                              :ARG1 (g / good~e.16,23 
+                                    :source~e.24 (c3 / country~e.26 
+                                          :mod (v / various~e.25))) 
+                              :ARG2 (a3 / and~e.20 
+                                    :op1 (s4 / store~e.19) 
+                                    :op2 (m2 / mall~e.21) 
+                                    :ARG1-of (k / know-02~e.18 
+                                          :degree (w2 / well~e.16))))) 
+                  :manner~e.11 (h3 / hearty~e.11)) 
+            :op3 (t / taste-01~e.29 
+                  :ARG0 y 
+                  :ARG1 (s5 / snack~e.31 
+                        :source~e.32 (a4 / all-over~e.33,34 
+                              :op1 (w4 / world~e.36)) 
+                        :location~e.44 (o / or~e.40 
+                              :op1 (s6 / shop~e.39 
+                                    :mod (t2 / tea~e.38)) 
+                              :op2 (s7 / stand~e.43 
+                                    :location (s8 / street~e.42)) 
+                              :location (c2 / city-district :wiki "Mong_Kok" 
+                                    :name (n2 / name :op1 "Mong"~e.45 :op2 "Kok"~e.46))) 
+                        :mod (d / delicious~e.30)))) 
+      :time~e.0 (b / be-located-at-91~e.37,41 
+            :ARG1 y 
+            :ARG2 (c / city :wiki "Hong_Kong" 
+                  :name (n / name :op1 "Hong"~e.2 :op2 "Kong"~e.3))))
+
+
+# sentence: You can go to burn incense and make a vow at the Repulse Bay , where all deities gather .
+# co-referenced nodes: y
+(p / possible-01~e.1 
+      :ARG1 (g / go-01~e.2 
+            :ARG1 (y / you~e.0) 
+            :purpose~e.3 (a / and~e.6 
+                  :op1 (b / burn-01~e.4 
+                        :ARG0 y 
+                        :ARG1 (i / incense~e.5)) 
+                  :op2 (v / vow-01~e.7,9 
+                        :ARG0 y 
+                        :location~e.10 (b2 / bay :wiki "Repulse_Bay" 
+                              :name (n / name :op1 "Repulse"~e.12 :op2 "Bay"~e.13) 
+                              :location-of~e.15 (g2 / gather-03~e.18 
+                                    :ARG0 (d / deity~e.17 
+                                          :quant (a2 / all~e.16))))))))
+
+
+# sentence: You can ascend Victoria Peak to get a panoramic view of Victoria Harbor 's beautiful scenery .
+# co-referenced nodes: y
+(p / possible-01~e.1 
+      :ARG1 (a / ascend-01~e.2 
+            :ARG0 (y / you~e.0) 
+            :ARG1 (m / mountain :wiki "Victoria_Peak" 
+                  :name (n / name :op1 "Victoria"~e.3 :op2 "Peak"~e.4)) 
+            :purpose (g / get-01~e.6 
+                  :ARG0 y 
+                  :ARG1 (v3 / view-01~e.9 
+                        :ARG1~e.10 (s / scenery~e.15 
+                              :ARG1-of (b / beautiful-02~e.14) 
+                              :poss (h / harbor :wiki "Victoria_Harbour" 
+                                    :name (n2 / name :op1 "Victoria"~e.11 :op2 "Harbor"~e.12))) 
+                        :mod (p2 / panoramic~e.8)))))
+
+
+# sentence: After dark , cruise Victoria Harbor at night to enjoy the enchanting evening view .
+# co-referenced nodes: y
+(c / cruise-01~e.3 :mode imperative 
+      :ARG0 (y / you) 
+      :location (h / harbor :wiki "Victoria_Harbour" 
+            :name (n / name :op1 "Victoria"~e.4 :op2 "Harbor"~e.5) 
+            :time (n2 / night~e.7)) 
+      :purpose (e / enjoy-01~e.9 
+            :ARG0 y 
+            :ARG1 (v2 / view-01~e.13 
+                  :time (e2 / evening~e.12) 
+                  :ARG0-of (e3 / enchant-01~e.11))) 
+      :time (a / after~e.0 
+            :op1 (d / darken-01)))
+
+
+# sentence: Meanwhile , as various new items are constantly being added , what other kinds of pleasant surprises will the Hong Kong tourism industry bring us ?
+# co-referenced nodes: w
+(b / bring-01~e.23 
+      :ARG0 (i / industry~e.22 
+            :mod (t3 / tourism~e.21) 
+            :mod (c / city :wiki "Hong_Kong" 
+                  :name (n / name :op1 "Hong"~e.19 :op2 "Kong"~e.20))) 
+      :ARG1 (t2 / thing~e.11 
+            :mod (k / kind~e.13 
+                  :mod (a / amr-unknown~e.11)) 
+            :ARG2-of (s / surprise-01~e.16 
+                  :ARG1 w) 
+            :ARG1-of~e.14 (p / pleasant-02~e.15) 
+            :mod (o / other~e.12)) 
+      :ARG2 (w / we~e.24) 
+      :time~e.2 (m / meanwhile~e.0 
+            :time-of~e.2 (a2 / add-02~e.9 
+                  :ARG1 (i2 / item~e.5 
+                        :mod (v / various~e.3) 
+                        :mod (n2 / new~e.4)) 
+                  :manner~e.7 (c4 / constant~e.7))))
+
+
+# sentence: Or ride the giant Ferris wheel to get a bird 's eye view from high above of the magnificent panorama of Hong Kong Island and the South China Sea .
+# co-referenced nodes: y
+(o / or~e.0 
+      :op2 (r / ride-01~e.1 :mode imperative 
+            :ARG0 (y / you) 
+            :ARG1 (w / wheel~e.5 :wiki "Ferris_wheel" 
+                  :name (n / name :op1 "Ferris"~e.4) 
+                  :mod (g / giant~e.3)) 
+            :purpose (v / view-01~e.12 
+                  :ARG0 y 
+                  :ARG1~e.16 (p / panorama~e.19 
+                        :mod (m / magnificent~e.18) 
+                        :mod~e.20 (i / island :wiki "Hong_Kong_Island" 
+                              :name (n2 / name :op1 "Hong"~e.21 :op2 "Kong"~e.22 :op3 "Island"~e.23)) 
+                        :mod (s2 / sea :wiki "South_China_Sea" 
+                              :name (n3 / name :op1 "South"~e.26 :op2 "China"~e.27 :op3 "Sea"~e.28))) 
+                  :mod (e / eye~e.11 
+                        :part-of~e.10 (b / bird~e.9)) 
+                  :prep-from~e.13 (a / above~e.15 
+                        :mod (h / high-02~e.14)))))
+
+
+# sentence: These items , which were the pride of the Ocean Park , have made this place the most popular tourist attraction in Hong Kong for some time .
+# co-referenced nodes: p2 a
+(m / make-02~e.13 
+      :ARG0 (i / item~e.1 
+            :mod (t / this~e.0,14) 
+            :ARG2-of (p / pride-01~e.6 
+                  :ARG0~e.7 (a / amusement-park :wiki "Ocean_Park_Hong_Kong" 
+                        :name (n / name :op1 "Ocean"~e.9 :op2 "Park"~e.10)))) 
+      :ARG1 (a2 / attract-01~e.20 
+            :ARG0 a 
+            :ARG1 (p2 / person~e.19 
+                  :ARG0-of~e.19 (t2 / tour-01~e.19)) 
+            :ARG1-of (p3 / popular-02~e.18 
+                  :ARG2 p2 
+                  :degree (m2 / most~e.17) 
+                  :compared-to~e.21 (c / city :wiki "Hong_Kong" 
+                        :name (n2 / name :op1 "Hong"~e.22 :op2 "Kong"~e.23)))) 
+      :duration~e.24 (t3 / time~e.26 
+            :quant (s / some~e.25)))
+
+
+# sentence: However , since Disney entered Hong Kong , the Ocean Park , sharing the same city as Disney , has felt the pressure of competition .
+# co-referenced nodes: a c5
+(h / have-concession-91~e.0 
+      :ARG1 (f / feel-01~e.19,20 
+            :ARG0 (a / amusement-park :wiki "Ocean_Park_Hong_Kong" 
+                  :name (n / name :op1 "Ocean"~e.9 :op2 "Park"~e.10)) 
+            :ARG1 (p / pressure-01~e.22 
+                  :ARG0~e.23 (c3 / compete-02~e.24 
+                        :ARG0 a) 
+                  :ARG1 a) 
+            :time~e.16 (s / since~e.2 
+                  :op1 (e / enter-01~e.4 
+                        :ARG0 (c5 / company :wiki "The_Walt_Disney_Company" 
+                              :name (n2 / name :op1 "Disney"~e.3,17)) 
+                        :ARG1 (c2 / city :wiki "Hong_Kong" 
+                              :name (n3 / name :op1 "Hong"~e.5 :op2 "Kong"~e.6)))) 
+            :ARG1-of (c / cause-01~e.2 
+                  :ARG0 (s2 / share-01~e.12 
+                        :ARG1 (c7 / city~e.15 
+                              :ARG1-of (s3 / same-01~e.14 
+                                    :ARG2 c5)) 
+                        :ARG2 c5))))
+
+
+# sentence: To improve the park 's brand , they are planning to invest 5.5 billion in a renovation project starting in 2006 .
+# co-referenced nodes: p3 t
+(p / plan-01~e.9 
+      :ARG0 (t / they~e.7) 
+      :ARG1 (i / invest-01~e.11 
+            :ARG0 t 
+            :ARG1 (m / monetary-quantity :quant 5500000000~e.12,13) 
+            :ARG2~e.14 (p2 / project~e.17 
+                  :purpose (r / renovate-01~e.16 
+                        :ARG1 p3) 
+                  :ARG1-of (s / start-01~e.18 
+                        :time~e.19 (d2 / date-entity :year 2006~e.20))) 
+            :purpose (i2 / improve-01~e.1 
+                  :ARG0 t 
+                  :ARG1 (b / brand~e.5 
+                        :poss~e.4 (p3 / park~e.3)))))
+
+
+# sentence: That is , the entire park will be divided into seven sections for renovation .
+# co-referenced nodes: p
+(m / mean-01 
+      :ARG2 (d / divide-02~e.8 
+            :ARG1 (p / park~e.5 
+                  :mod (e / entire~e.4)) 
+            :ARG2~e.9 (s / section~e.11 :quant 7~e.10) 
+            :purpose~e.12 (r / renovate-01~e.13 
+                  :ARG1 p)))
+
+
+# sentence: Ah , additional , newer , ah , attractions will be available for tourists .
+# co-referenced nodes: p
+(a2 / available-02~e.11 
+      :ARG1~e.12 (p / person~e.13 
+            :ARG0-of~e.13 (t / tour-01~e.13)) 
+      :ARG2 (t2 / thing~e.8 
+            :mod (n2 / new~e.4 
+                  :degree~e.4 (m / more~e.4)) 
+            :ARG1-of (a4 / add-02) 
+            :mod (a5 / ah~e.0,6 :mode expressive) 
+            :ARG0-of~e.8 (a / attract-01~e.8 
+                  :ARG1 p)) 
+      :mod (a3 / ah~e.0 :mode expressive))
+
+
+# sentence: Ah , there will be more animals , and more animal species , different from what there is now .
+# co-referenced nodes: a2
+(a / and~e.8 
+      :op1 (a2 / animal~e.6) 
+      :op2 (s / species~e.11 
+            :mod a2~e.10) 
+      :quant (m2 / more~e.5,9) 
+      :ARG1-of (d / differ-02~e.13 
+            :ARG2 (n2 / now~e.18)) 
+      :mod (a3 / ah~e.0 :mode expressive))
+
+
+# sentence: Er , we will implement this plan as soon as it is approved by the government .
+# co-referenced nodes: t
+(i / implement-01~e.4 
+      :ARG0 (w / we~e.2) 
+      :ARG1 (t / thing~e.6 
+            :ARG1-of~e.6 (p / plan-01~e.6) 
+            :mod (t2 / this~e.5)) 
+      :time~e.7,9 (a / as-soon-as~e.7,8,9 
+            :op1 (a2 / approve-01~e.12 
+                  :ARG0~e.13 (g / government-organization~e.15 
+                        :ARG0-of~e.15 (g2 / govern-01~e.15)) 
+                  :ARG1 t~e.10)))
+
+
+# sentence: However , the clever Hong Kong people will utilize all resources they have created for developing the Hong Kong tourism industry .
+# co-referenced nodes: p c
+(h / have-concession-91~e.0 
+      :ARG1 (u / utilize-01~e.8 
+            :ARG0 (p / person~e.6 
+                  :ARG1-of (c4 / clever-01~e.3) 
+                  :location (c / city :wiki "Hong_Kong" 
+                        :name (n / name :op1 "Hong"~e.4 :op2 "Kong"~e.5))) 
+            :ARG1 (r / resource~e.10 
+                  :quant (a / all~e.9) 
+                  :ARG1-of (c6 / create-01~e.13 
+                        :ARG0 p~e.11)) 
+            :purpose~e.14 (d / develop-02~e.15 
+                  :ARG1 (i / industry~e.20 
+                        :mod (t / tourism~e.19) 
+                        :location c~e.17,18))))
+
+
+# sentence: here , you can come up close with the stars in your mind .
+# co-referenced nodes: y
+(p / possible-01~e.3 
+      :ARG1 (c / close-06~e.6 
+            :ARG1 (y / you~e.2) 
+            :ARG2~e.7 (s / star~e.9 
+                  :location~e.10 (m / mind~e.12 
+                        :poss~e.11 y~e.11))) 
+      :location (h / here~e.0))
+
+
+# sentence: Hong Kong movies have even become a window for the world to see Hong Kong , which have made the image of metropolitan Hong Kong more prominent internationally .
+# co-referenced nodes: c2
+(b / become-01~e.5 
+      :ARG1 (m / movie~e.2 
+            :ARG0-of (m2 / make-02~e.18 
+                  :ARG1 (p / prominent~e.26 
+                        :domain (i / image~e.20 
+                              :mod~e.21 (c2 / city :wiki "Hong_Kong" 
+                                    :name (n2 / name :op1 "Hong"~e.23 :op2 "Kong"~e.24) 
+                                    :mod (m3 / metropolitan~e.22))) 
+                        :degree (m4 / more~e.25) 
+                        :location (i2 / international~e.27))) 
+            :mod c2~e.0,1) 
+      :ARG2 (w / window~e.7 
+            :path-of~e.8 (s / see-01~e.12 
+                  :ARG0 (w2 / world~e.10) 
+                  :ARG1 c2~e.13,14)) 
+      :mod (e / even~e.4))
+
+
+# sentence: Here , tourists can learn about Hong Kong 's film history , and can come up close with the stars in their mind .
+# co-referenced nodes: p2
+(p / possible-01~e.3,13 
+      :ARG1 (a / and~e.12 
+            :op1 (l / learn-01~e.4 
+                  :ARG0 (p2 / person~e.2 
+                        :ARG0-of~e.2 (t / tour-01~e.2)) 
+                  :ARG1~e.5 (h3 / history~e.10 
+                        :mod (f / film-01~e.9) 
+                        :poss~e.8 (c / city :wiki "Hong_Kong" 
+                              :name (n / name :op1 "Hong"~e.6 :op2 "Kong"~e.7)))) 
+            :op2 (c2 / close-06~e.16 
+                  :ARG1 p2 
+                  :ARG2~e.17 (s / star~e.19 
+                        :location~e.20 (m / mind~e.22 
+                              :poss~e.21 p2~e.21)))) 
+      :location (h4 / here~e.0))
+
+
+# sentence: %pw As our Victoria Harbor is %pw very famous , and , er , our nightscape is already very beautiful , by what means could we enhance the dynamic beauty of our nightscape ?
+# co-referenced nodes: w n
+(h2 / have-condition-91 
+      :ARG1 (p / possible-01~e.24 
+            :ARG1 (e / enhance-01~e.26 
+                  :ARG0 (w / we~e.25) 
+                  :ARG1 (b / beauty~e.29 
+                        :mod (d / dynamic~e.28) 
+                        :poss (n / nightscape~e.15,32 
+                              :poss w~e.14,31)) 
+                  :ARG2 (a / amr-unknown~e.22))) 
+      :ARG2 (a2 / and~e.10 
+            :op1 (f / fame-01~e.8 
+                  :ARG1 (h / harbor :wiki "Victoria_Harbour" 
+                        :name (n2 / name :op1 "Victoria"~e.3 :op2 "Harbor"~e.4) 
+                        :poss~e.2 w~e.2) 
+                  :degree (v2 / very~e.7)) 
+            :op2 (b2 / beautiful-02~e.19 
+                  :ARG1 n 
+                  :time~e.1 (a3 / already~e.17) 
+                  :degree (v / very~e.18))))
+
+
+# sentence: It is based on this that music and lights are arranged to reflect each other and perform a unique , er , and fascinating multi @-@ media world - class light show .
+# co-referenced nodes: a2
+(a / arrange-01~e.10 
+      :ARG1 (a2 / and~e.7 
+            :op1 (m / music~e.6) 
+            :op2 (l / light~e.8)) 
+      :ARG4~e.11 (a3 / and~e.15 
+            :op1 (r / reflect-01~e.12 
+                  :ARG1 a2 
+                  :ARG2 a2) 
+            :op2 (p / perform-01~e.16 
+                  :ARG0 a2 
+                  :ARG1 (s / show-04~e.31 
+                        :ARG1 (l2 / light~e.30) 
+                        :ARG3 (m2 / media~e.26 
+                              :mod (m3 / multi~e.24)) 
+                        :mod (u / unique~e.18) 
+                        :ARG0-of (f / fascinate-01~e.23 
+                              :mod (e / er~e.20 :mode expressive)) 
+                        :mod (c / class~e.29 
+                              :mod (w / world~e.27))))) 
+      :ARG1-of (b / base-02~e.2 
+            :ARG2~e.3 (t / this~e.4)))
+
+
+# sentence: Let me now introduce to you all the well - known skyscrapers participating in this large - scale light and music show .
+# co-referenced nodes: y
+(l3 / let-01~e.0 
+      :ARG0~e.4 (y / you~e.5) 
+      :ARG1 (i / introduce-01~e.3 
+            :ARG0 (i2 / i~e.1) 
+            :ARG1 y 
+            :ARG2 (s / skyscraper~e.11 
+                  :ARG1-of (k / know-02~e.10 
+                        :degree (w / well~e.8)) 
+                  :mod (a2 / all~e.6) 
+                  :ARG0-of (p / participate-01~e.12 
+                        :ARG1~e.13 (s2 / show-04~e.21 
+                              :ARG1 (a / and~e.19 
+                                    :op1 (l / light~e.18) 
+                                    :op2 (m / music~e.20)) 
+                              :mod (s3 / scale~e.17 
+                                    :mod (l2 / large~e.15)) 
+                              :mod (t / this~e.14)))) 
+            :time (n / now~e.2)))
+
+
+# sentence: Ten landmark buildings located on Hong Kong Island reveal themselves one by one , participating in the show in full splendor , presenting a world - class light extravaganza to a musical rhythm .
+# co-referenced nodes: b
+(a / and 
+      :op1 (r / reveal-01~e.8 
+            :ARG0 (b / building~e.2 :quant 10~e.0 
+                  :mod (l2 / landmark~e.1) 
+                  :location~e.3 (i / island :wiki "Hong_Kong_Island" 
+                        :name (n / name :op1 "Hong"~e.5 :op2 "Kong"~e.6 :op3 "Island"~e.7))) 
+            :ARG1 b 
+            :manner (o / one-by-one~e.10,11,12)) 
+      :op2 (p / participate-01~e.14 
+            :ARG0 b 
+            :ARG1~e.15 (s / show-04~e.17) 
+            :manner~e.18 (s2 / splendor~e.20 
+                  :degree (f / full~e.19))) 
+      :op3 (p2 / present-01~e.22 
+            :ARG0 b 
+            :ARG1 (e / extravaganza~e.28 
+                  :mod (l / light~e.27) 
+                  :mod (c / class~e.26 
+                        :mod (w / world~e.24))) 
+            :manner~e.29 (r2 / rhythm~e.32 
+                  :mod (m / music~e.31))))
+
+
+# sentence: Their area of surprise was that those private , er , buildings , that is , the business community , ah , is willing to invest in our overall project .
+# co-referenced nodes: b
+(s / surprise-01~e.3 
+      :ARG0 (w4 / will-02~e.23 
+            :ARG0 (b / building~e.11 
+                  :ARG1-of (p / private-03~e.7) 
+                  :ARG1-of (m / mean-01 
+                        :ARG2 (c / community~e.18 
+                              :mod (b2 / business~e.17)) 
+                        :mod (e / er~e.9 :mode expressive))) 
+            :ARG1 (i / invest-01~e.25 
+                  :ARG0 b 
+                  :ARG2~e.26 (p2 / project~e.29 
+                        :poss~e.27 (w2 / we~e.27) 
+                        :mod (o / overall~e.28))) 
+            :mod (a2 / ah~e.20 :mode expressive)) 
+      :mod (a / area~e.1 
+            :poss~e.0 (t / they~e.0)))
+
+
+# sentence: The answer is that this is a reward to the entire society , not an individual building 's reward .
+# co-referenced nodes: t
+(a / answer-01~e.1 
+      :ARG2 (c / contrast-01 
+            :ARG1 (r / reward-01~e.7 
+                  :ARG1~e.8 (s / society~e.11 
+                        :mod (e / entire~e.10)) 
+                  :domain~e.2,5 (t / this~e.4)) 
+            :ARG2 (r2 / reward-01~e.18 :polarity~e.13 -~e.13 
+                  :ARG1~e.17 (b / building~e.16 
+                        :mod (i / individual~e.15)) 
+                  :domain~e.17 t)))
+
+
+# sentence: Er , of course , after SARS , we felt that all of Hong Kong hopes to be involved , so that the Hong Kong tourism industry will recover , rebound together with other sectors .
+# co-referenced nodes: c
+(f / feel-01~e.9 
+      :ARG0 (w / we~e.8) 
+      :ARG1~e.10 (h3 / hope-01~e.15 
+            :ARG0 (c / city :wiki "Hong_Kong" 
+                  :name (n2 / name :op1 "Hong"~e.13 :op2 "Kong"~e.14) 
+                  :quant~e.12 (a2 / all~e.11)) 
+            :ARG1 (i / involve-01~e.18 
+                  :ARG1 c 
+                  :purpose~e.20,21 (r / recover-01~e.28 
+                        :ARG1 (i2 / industry~e.26 
+                              :mod (t / tourism~e.25) 
+                              :mod c~e.23,24 
+                              :ARG1-of (r2 / rebound-01~e.30 
+                                    :accompanier~e.32 (s / sector~e.34 
+                                          :mod (o / other~e.33)) 
+                                    :manner (t2 / together~e.31)))))) 
+      :time (a / after~e.5 
+            :op1 (e / event :wiki - 
+                  :name (n / name :op1 "SARS"~e.6))) 
+      :mod (o2 / of-course~e.2,3) 
+      :mod (e2 / er~e.0 :mode expressive))
+
+
+# sentence: Hong Kong Wetland Park , which is currently under construction , is also one of the designated new projects of the Hong Kong SAR government for advancing the Hong Kong tourism industry .
+# co-referenced nodes: c
+(i / include-91 
+      :ARG1 (p / park~e.9 :wiki "Hong_Kong_Wetland_Park" 
+            :name (n / name :op1 "Hong"~e.0 :op2 "Kong"~e.1 :op3 "Wetland"~e.2 :op4 "Park"~e.3) 
+            :ARG1-of~e.9 (c3 / construct-01~e.9 
+                  :time (c4 / current~e.7))) 
+      :ARG2 (p2 / project~e.18 
+            :ARG1-of (d / designate-01~e.16) 
+            :poss~e.19 (g2 / government-organization~e.24 
+                  :ARG0-of~e.24 (g3 / govern-01~e.24 
+                        :ARG1 (c / city :wiki "Special_administrative_region" 
+                              :name (n2 / name :op1 "Hong"~e.21 :op2 "Kong"~e.22 :op3 "SAR"~e.23)))) 
+            :purpose~e.25 (a / advance-01~e.26 
+                  :ARG1 (i2 / industry~e.31 
+                        :mod (t / tourism~e.30) 
+                        :mod c~e.28,29)) 
+            :mod (n3 / new~e.17)) 
+      :mod (a2 / also~e.12))
+
+
+# sentence: This is a park intimately connected with nature , being built by the Hong Kong government for its people who live in a city of reinforced concrete .
+# co-referenced nodes: c
+(c3 / connect-01~e.5 
+      :ARG1 (p / park~e.3 
+            :mod (t / this~e.0) 
+            :ARG1-of (b / build-01~e.10 
+                  :ARG0~e.11 (g / government-organization~e.15 
+                        :ARG0-of~e.15 (g2 / govern-01~e.15 
+                              :ARG1 (c / city :wiki "Hong_Kong" 
+                                    :name (n2 / name :op1 "Hong"~e.13 :op2 "Kong"~e.14)))) 
+                  :beneficiary~e.16 (p2 / person~e.18 
+                        :poss~e.17 c~e.17 
+                        :ARG0-of (l / live-01~e.20 
+                              :location~e.21 (c5 / city~e.23 
+                                    :consist-of~e.24 (c6 / concrete~e.26 
+                                          :ARG1-of (r / reinforce-01~e.25))))))) 
+      :ARG2~e.6 (n / nature~e.7) 
+      :manner~e.4 (i / intimate~e.4))
+
+
+# sentence: In the indoor exhibition hall , tourists can learn about types of wetlands in various parts of the world , and to gain knowledge about wetlands .
+# co-referenced nodes: p2 w
+(p / possible-01~e.7 
+      :ARG1 (a / and~e.20 
+            :op1 (l / learn-01~e.8 
+                  :ARG0 (p2 / person~e.6 
+                        :ARG0-of~e.6 (t / tour-01~e.6)) 
+                  :ARG1~e.9 (w / wetland~e.12 
+                        :mod~e.11 (t2 / type~e.10) 
+                        :location~e.13 (p3 / part~e.15 
+                              :part-of~e.16 (w2 / world~e.18) 
+                              :mod (v / various~e.14)))) 
+            :op2 (g / gain-02~e.22 
+                  :ARG0 p2 
+                  :ARG1 (k / know-01~e.23 
+                        :ARG1~e.24 w~e.25))) 
+      :location (h / hall~e.4 
+            :location (i / indoor~e.2) 
+            :location-of (e / exhibit-01~e.3)))
+
+
+# sentence: Then , the bridge is , on the bridge is Hong Kong and outside is Shenzhen .
+# co-referenced nodes: b
+(a / and~e.12 
+      :op1 (b / bridge~e.3,8) 
+      :op2 (b2 / be-located-at-91~e.9 
+            :ARG1 (c / city :wiki "Hong_Kong" 
+                  :name (n / name :op1 "Hong"~e.10 :op2 "Kong"~e.11)) 
+            :ARG2 b) 
+      :op3 (b3 / be-located-at-91~e.14 
+            :ARG1 (c4 / city :wiki "Shenzhen" 
+                  :name (n2 / name :op1 "Shenzhen"~e.15)) 
+            :ARG2 (o / outside~e.13)) 
+      :time (t / then~e.0))
+
+
+# sentence: Children can get to know different animals and plants , and even some crops that are rarely seen in our daily life .
+# co-referenced nodes: c
+(p / possible-01~e.1 
+      :ARG1 (g / get-22~e.2 
+            :ARG0 (c / child~e.0) 
+            :ARG1 (k / know-01~e.4 
+                  :ARG0 c 
+                  :ARG1 (a / and~e.10 
+                        :op1~e.10 (a3 / and~e.7,10 
+                              :op1 (a2 / animal~e.6) 
+                              :op2 (p2 / plant~e.8) 
+                              :ARG1-of (d2 / differ-02~e.5)) 
+                        :op2 (c2 / crop~e.13 
+                              :quant (s / some~e.12) 
+                              :mod (e / even~e.11) 
+                              :ARG1-of (s2 / see-01~e.17 
+                                    :ARG1-of (r2 / rare-02~e.16 
+                                          :time~e.18 (l / life~e.21 
+                                                :poss~e.19 (w / we~e.19) 
+                                                :frequency (r / rate-entity-91~e.20 
+                                                      :ARG3~e.20 (t / temporal-quantity~e.20 :quant~e.20 1~e.20 
+                                                            :unit~e.20 (d3 / day~e.20)))))))))))
+
+
+# sentence: Ah , the most special is rice , because %pw many Hong Kong children nowadays have never seen what rice looks like .
+# co-referenced nodes: r
+(c3 / cause-01~e.8 
+      :ARG0 (s2 / see-01~e.17 
+            :ARG0 (c4 / child~e.13 
+                  :quant (m2 / many~e.10) 
+                  :location (c / city :wiki "Hong_Kong" 
+                        :name (n / name :op1 "Hong"~e.11 :op2 "Kong"~e.12)) 
+                  :time (n2 / nowadays~e.14)) 
+            :ARG1 (t / thing~e.18 
+                  :ARG1-of (l / look-02~e.20 
+                        :ARG0 r~e.19)) 
+            :time (e / ever~e.16 :polarity~e.16 -~e.16)) 
+      :ARG1 (s / special-02~e.4 
+            :ARG1 (r / rice~e.6) 
+            :degree (m / most~e.3)) 
+      :mod (a / ah~e.0 :mode expressive))
+
+
+# sentence: Perhaps there will be an introduction so that children will know the names of the crops when they see them .
+# co-referenced nodes: c2 c
+(p2 / possible-01~e.0 
+      :ARG1 (i2 / introduce-01~e.5 
+            :purpose~e.6,7 (k / know-04~e.10 
+                  :ARG0 (c / child~e.8) 
+                  :ARG1 (t / thing~e.12 
+                        :ARG2-of~e.12 (n / name-01~e.12 
+                              :ARG1~e.13 (c2 / crop~e.15))) 
+                  :time~e.16 (s / see-01~e.18 
+                        :ARG0 c 
+                        :ARG1 c2))))
+
+
+# sentence: Each year , over 50,000 migratory birds fly over Hong Kong 's skyscrapers and choose to roost for winter here .
+# co-referenced nodes: b
+(a / and~e.13 
+      :op1 (f / fly-01~e.7 
+            :ARG1 (b / bird~e.6 
+                  :ARG0-of (m / migrate-01~e.5) 
+                  :quant (o2 / over~e.3 :op1 50000~e.4)) 
+            :path (o / over~e.8 
+                  :op1 (s / skyscraper~e.12 
+                        :poss~e.11 (c / city :wiki "Hong_Kong" 
+                              :name (n / name :op1 "Hong"~e.9 :op2 "Kong"~e.10))))) 
+      :op2 (c4 / choose-01~e.14 
+            :ARG0 b 
+            :ARG1 (r / roost-01~e.16 
+                  :ARG0 b 
+                  :location (h3 / here~e.19) 
+                  :time~e.17 (d / date-entity 
+                        :season (w2 / winter~e.18)))) 
+      :frequency (r2 / rate-entity-91 
+            :ARG3 (t / temporal-quantity :quant 1 
+                  :unit (y2 / year~e.1))))
+
+
+# sentence: Um , however , each year , about two to three hundred of them come to Hong Kong to spend the winter .
+# co-referenced nodes: t
+(h / have-concession-91~e.2 
+      :ARG1 (c4 / come-01~e.14 
+            :ARG1 (t / they~e.13 
+                  :quant~e.12 (a / about~e.7 
+                        :op1 (b / between :op1 200 :op2 300~e.10,11))) 
+            :ARG4~e.15 (c / city :wiki "Hong_Kong" 
+                  :name (n / name :op1 "Hong"~e.16 :op2 "Kong"~e.17)) 
+            :frequency (r / rate-entity-91 
+                  :ARG3 (t2 / temporal-quantity :quant 1 
+                        :unit (y / year~e.5))) 
+            :purpose (s / spend-02~e.19 
+                  :ARG0 t 
+                  :ARG1 (w / winter~e.21))) 
+      :mod (u / um~e.0 :mode expressive))
+
+
+# sentence: They will complete the park 's entire construction by the beginning of 2006 , to be able to participate in the 2006 Discover Hong Kong Year campaign .
+# co-referenced nodes: p d3
+(c / complete-01~e.2 
+      :ARG0 (t / they~e.0) 
+      :ARG1 (c2 / construct-01~e.7 
+            :ARG1~e.5 (p / park~e.4) 
+            :extent (e2 / entire~e.6)) 
+      :time (b / by~e.8 
+            :op1 (b3 / begin-01~e.10 
+                  :ARG1~e.11 (d3 / date-entity :year 2006~e.12))) 
+      :purpose (p2 / possible-01~e.16 
+            :ARG1 (p3 / participate-01~e.18 
+                  :ARG0 p 
+                  :ARG1~e.19 (c4 / campaign~e.26 :wiki - 
+                        :name (n2 / name :op1 "Discover"~e.22 :op2 "Hong"~e.23 :op3 "Kong"~e.24 :op4 "Year"~e.25) 
+                        :time d3~e.21))))
+
+
+# sentence: Moreover , er , we are including our software .
+# co-referenced nodes: w
+(a / and 
+      :op2 (i / include-01~e.6 
+            :ARG0 (w / we~e.4) 
+            :ARG1 (s / software~e.8 
+                  :poss~e.7 w~e.7)) 
+      :mod (e / er~e.2 :mode expressive))
+
+
+# sentence: We hope to use , er , a variety of hardware and software to package this entire 2006 Discover Hong Kong Year .
+# co-referenced nodes: w
+(h / hope-01~e.1 
+      :ARG0 (w / we~e.0) 
+      :ARG1 (u / use-01~e.3 
+            :ARG0 w 
+            :ARG1 (v / variety~e.8 
+                  :domain~e.9 (a / and~e.11 
+                        :op1 (h2 / hardware~e.10) 
+                        :op2 (s / software~e.12))) 
+            :ARG2 (p / package-01~e.14 
+                  :ARG0 w 
+                  :ARG1 (e2 / event :wiki - 
+                        :name (n / name :op1 "Discover"~e.18 :op2 "Hong"~e.19 :op3 "Kong"~e.20 :op4 "Year"~e.21) 
+                        :mod (e3 / entire~e.16) 
+                        :time (d3 / date-entity :year 2006~e.17) 
+                        :mod (t / this~e.15))) 
+            :mod (e / er~e.5 :mode expressive)))
+
+
+# sentence: Without planning it in advance , they chose to settle here .
+# co-referenced nodes: s t
+(c / choose-01~e.7 
+      :ARG0 (t / they~e.6) 
+      :ARG1 (s / settle-03~e.9 
+            :ARG1 t 
+            :ARG4 (h / here~e.10)) 
+      :manner (p / plan-01~e.1 :polarity~e.0 -~e.0 
+            :ARG0 t 
+            :ARG1 s 
+            :time~e.3 (a / advance~e.4)))
+
+
+# sentence: In Chinese Buddhism , there are five directions - east , west , south , north , and center - and five Buddhas .
+# co-referenced nodes: 5
+(h / have-03 
+      :ARG0 (r / religious-group :wiki "Buddhism" 
+            :name (n4 / name :op1 "Buddhism"~e.2) 
+            :mod (c4 / country :wiki "China" 
+                  :name (n5 / name :op1 "China"~e.1))) 
+      :ARG1 (a / and 
+            :op1 (d / direction~e.7 :quant 5~e.6,21 
+                  :domain~e.5 (a2 / and~e.17,20 
+                        :op1 (e / east~e.9) 
+                        :op2 (w / west~e.11) 
+                        :op3 (s / south~e.13) 
+                        :op4 (n2 / north~e.15) 
+                        :op5 (c3 / center~e.18))) 
+            :op2 (p / person :quant 5~e.21 :wiki "Gautama_Buddha" 
+                  :name (n3 / name :op1 "Buddha"~e.22))))
+
+
+# sentence: Therefore , Hong Kong 's Tian Tan Giant Buddha at the most southern tip of China , together with Lingshan Giant Buddha in the east , Leshan Giant Buddha in the west , Yungang Giant Buddha in the north , and Longmen Giant Buddha in the Central Plains , exist as the representative Buddhas for each of the five directions of China .
+# co-referenced nodes: a2 c7
+(i / infer-01~e.0 
+      :ARG1 (e / exist-01~e.49 
+            :ARG1 (a2 / and~e.40 
+                  :op1 (w / work-of-art :wiki "Tian_Tan_Buddha" 
+                        :name (n / name :op1 "Tian"~e.5 :op2 "Tan"~e.6 :op3 "Giant"~e.7 :op4 "Buddha"~e.8) 
+                        :poss~e.4 (c / city :wiki "Hong_Kong" 
+                              :name (n2 / name :op1 "Hong"~e.2 :op2 "Kong"~e.3)) 
+                        :location (t / tip~e.13 
+                              :part-of~e.14 (c7 / country :wiki "China" 
+                                    :name (n3 / name :op1 "China"~e.15)) 
+                              :mod (s / south~e.12 
+                                    :degree (m / most~e.11)))) 
+                  :op2 (w2 / work-of-art :wiki "Grand_Buddha_at_Ling_Shan" 
+                        :name (n4 / name :op1 "Lingshan"~e.19 :op2 "Giant"~e.20 :op3 "Buddha"~e.21) 
+                        :location (e2 / east~e.24)) 
+                  :op3 (w3 / work-of-art :wiki "Leshan_Giant_Buddha" 
+                        :name (n5 / name :op1 "Leshan"~e.26 :op2 "Buddha"~e.28) 
+                        :location (w4 / west~e.31)) 
+                  :op4 (w5 / work-of-art :wiki "Yungang_Grottoes" 
+                        :name (n6 / name :op1 "Yungang"~e.33 :op2 "Giant"~e.34 :op3 "Buddha"~e.35) 
+                        :location (n7 / north~e.38)) 
+                  :op5 (w6 / work-of-art :wiki "Longmen_Grottoes" 
+                        :name (n8 / name :op1 "Longmen"~e.41 :op2 "Buddha"~e.28,43) 
+                        :location (c8 / country-region :wiki "Central_Plain_(China)" 
+                              :name (n9 / name :op1 "Central"~e.46 :op2 "Plains"~e.47)))) 
+            :ARG2~e.50 (r / represent-01~e.52 
+                  :ARG0 a2~e.53,60 
+                  :ARG1~e.54 (d / direction~e.59 :quant 5~e.58 
+                        :mod (e3 / each~e.55) 
+                        :part-of~e.60 c7~e.61))))
+
+
+# sentence: As a result , this place has become holy land in the hearts of male and female devotees .
+# co-referenced nodes: d
+(c / cause-01 
+      :ARG1 (b / become-01~e.7 
+            :ARG1 (p / place~e.5 
+                  :mod (t / this~e.4)) 
+            :ARG2 (l / land~e.9 
+                  :mod (h / holy~e.8)) 
+            :location~e.10 (h2 / heart~e.12 
+                  :part-of~e.13 (a2 / and~e.15 
+                        :op1 (p2 / person~e.17 
+                              :op1 (m / male~e.14) 
+                              :ARG1-of~e.17 (d / devote-01~e.17)) 
+                        :op2 (p3 / person 
+                              :op2 (f / female~e.16) 
+                              :ARG1-of d)))))
+
+
+# sentence: However , to common tourists , more of what this place brings them is wonder and awe .
+# co-referenced nodes: p2
+(h / have-concession-91~e.0 
+      :ARG2 (b / bring-01~e.11 
+            :ARG0 (p / place~e.10 
+                  :mod (t / this~e.9)) 
+            :ARG1 (a / and~e.15 
+                  :op1 (w / wonder-02~e.14 
+                        :ARG0 p2~e.12) 
+                  :op2 (a2 / awe-01~e.16 
+                        :ARG1 p2) 
+                  :quant~e.7 (m / more~e.6)) 
+            :ARG2 (p2 / person~e.4 
+                  :ARG0-of~e.4 (t2 / tour-01~e.4) 
+                  :mod (c2 / common~e.3))))
+
+
+# sentence: Since this giant bronze Buddha settled on Lantau Island , the world renowned Hong Kong International Airport at Chek Lap Kok and Disneyland have also been constructed here in succession .
+# co-referenced nodes: a3 a2
+(c2 / construct-01~e.26 
+      :ARG1 (a / and~e.21 
+            :op1 (a2 / airport :wiki "Hong_Kong_International_Airport" 
+                  :name (n / name :op1 "Hong"~e.13 :op2 "Kong"~e.14 :op3 "International"~e.15 :op4 "Airport"~e.16) 
+                  :mod (r / renown 
+                        :location (w / world~e.11)) 
+                  :location (i / island :wiki "Chek_Lap_Kok" 
+                        :name (n2 / name :op1 "Chek"~e.18 :op2 "Lap"~e.19 :op3 "Kok"~e.20))) 
+            :op2 (a3 / amusement-park :wiki "Hong_Kong_Disneyland" 
+                  :name (n3 / name :op1 "Disneyland"~e.22))) 
+      :mod (a4 / also~e.24) 
+      :location (h2 / here~e.27) 
+      :manner (s / succeed-03 
+            :ARG1 a2 
+            :ARG2 a3) 
+      :time (s2 / since~e.0 
+            :op1 (s3 / settle-03~e.5 
+                  :ARG1 (w2 / work-of-art :wiki "Tian_Tan_Buddha" 
+                        :name (n4 / name :op1 "Buddha"~e.4) 
+                        :mod (g2 / giant~e.2) 
+                        :consist-of (b / bronze~e.3) 
+                        :mod (t / this~e.1)) 
+                  :ARG4~e.6 (i2 / island :wiki "Lantau_Island" 
+                        :name (n5 / name :op1 "Lantau"~e.7 :op2 "Island"~e.8)))))
+
+
+# sentence: So , after their return , Macao , and Hong Kong , the two special administrative regions , are basically still using ships and helicopters to stay connected .
+# co-referenced nodes: a2
+(i / infer-01 
+      :ARG1 (u / use-01~e.21 
+            :ARG0 (a2 / and~e.8 
+                  :op1 (c / city :wiki "Macau" 
+                        :name (n / name :op1 "Macao"~e.6)) 
+                  :op2 (c2 / city :wiki "Hong_Kong" 
+                        :name (n2 / name :op1 "Hong"~e.9 :op2 "Kong"~e.10)) 
+                  :domain~e.18 (r2 / region~e.16 :quant 2~e.13 
+                        :ARG1-of (s / special-02~e.14) 
+                        :ARG1-of (a3 / administrate-01~e.15))) 
+            :ARG1 (a4 / and~e.23 
+                  :op1 (s3 / ship~e.22) 
+                  :op2 (h3 / helicopter~e.24)) 
+            :ARG2 (s4 / stay-01~e.26 
+                  :ARG1 a2 
+                  :ARG3 (c6 / connect-01~e.27 
+                        :ARG1 a2)) 
+            :time (a / after~e.2 
+                  :op1 (r / return-01~e.4 
+                        :ARG1~e.3 a2~e.3)) 
+            :mod (b / basic~e.19) 
+            :mod (s2 / still~e.20)))
+
+
+# sentence: One has to go up to Shenzhen , Dongguan , then go through Panyu , keep going up , to Zhongshan , and certainly go to Zhuhai , then pass through Zhuhai to get to Macao .
+# co-referenced nodes: o2 c6
+(o / obligate-01~e.1,2 
+      :ARG1 (o2 / one~e.0) 
+      :ARG2 (a2 / and~e.22 
+            :op1 (g2 / go-02~e.24 
+                  :ARG0 o2 
+                  :ARG4 (c3 / city :wiki "Shenzhen" 
+                        :name (n2 / name :op1 "Shenzhen"~e.6))) 
+            :op2 (g3 / go-02~e.24 
+                  :ARG0 o2 
+                  :ARG4 (c4 / city :wiki "Dongguan" 
+                        :name (n3 / name :op1 "Dongguan"~e.8))) 
+            :op3 (g / go-02~e.11 
+                  :ARG0 o2 
+                  :ARG1 (t3 / through~e.12 
+                        :op1 (l / local-region :wiki "Panyu_District" 
+                              :name (n4 / name :op1 "Panyu"~e.13) 
+                              :time (t2 / then~e.28))) 
+                  :time (t4 / then~e.10)) 
+            :op4 (k / keep-02~e.15 
+                  :ARG0 o2 
+                  :ARG1 (g4 / go-02~e.3,16 
+                        :ARG0 o2 
+                        :ARG4~e.19 (c5 / city :wiki "Zhongshan" 
+                              :name (n5 / name :op1 "Zhongshan"~e.20)) 
+                        :direction (u2 / up~e.4,17))) 
+            :op5 (g5 / go-02~e.24 
+                  :ARG0 o2 
+                  :ARG4~e.25 (c6 / city :wiki "Zhuhai" 
+                        :name (n6 / name :op1 "Zhuhai"~e.26)) 
+                  :mod (c7 / certain~e.23)) 
+            :op6 (p / pass-03~e.29 
+                  :ARG1 o2 
+                  :path~e.30 c6~e.31 
+                  :time (t5 / then~e.28) 
+                  :purpose (g8 / get-05~e.33 
+                        :ARG0 o2 
+                        :ARG2~e.34 (c / city :wiki "Macau" 
+                              :name (n / name :op1 "Macao"~e.35))))))
+
+
+# sentence: For a Hong Kong person choosing to go there via land , it 's extremely inconvenient .
+# co-referenced nodes: p
+(c2 / convenience~e.15 :polarity~e.15 -~e.15 
+      :domain~e.13 (c3 / choose-01~e.5 
+            :ARG0 (p / person~e.4 
+                  :source (c / city :wiki "Hong_Kong" 
+                        :name (n / name :op1 "Hong"~e.2 :op2 "Kong"~e.3))) 
+            :ARG1 (g / go-02~e.7 
+                  :ARG0 p~e.12 
+                  :ARG4 (t / there~e.8) 
+                  :path~e.9 (l / land~e.10))) 
+      :degree (e / extreme~e.14))
+
+
+# sentence: A full twenty years ago , Hopewell Holdings Group Chairman Wu Ying - sheung , a well - known construction tycoon , boldly made a cross @-@ sea bridge proposal .
+# co-referenced nodes: p4
+(p / propose-01~e.23,29 
+      :ARG0 (p4 / person :wiki - 
+            :name (n4 / name :op1 "Wu"~e.10 :op2 "Ying-sheung"~e.11,13) 
+            :ARG0-of (h / have-org-role-91 
+                  :ARG1 (c / company :wiki "Hopewell_Holdings" 
+                        :name (n2 / name :op1 "Hopewell"~e.6 :op2 "Holdings"~e.7 :op3 "Group"~e.8)) 
+                  :ARG2 (c4 / chairman~e.9)) 
+            :mod (t / tycoon~e.20 
+                  :ARG1-of (k / know-02~e.18 
+                        :degree (w2 / well~e.16)) 
+                  :mod (c3 / construct-01~e.19))) 
+      :ARG1 (b2 / bridge~e.28 
+            :ARG0-of (c2 / cross-02~e.25 
+                  :ARG1 (s / sea~e.27))) 
+      :ARG1-of (b / bold-02~e.22 
+            :ARG0 p4) 
+      :time (b3 / before~e.4 
+            :op1~e.4 (n / now~e.4) 
+            :quant (t2 / temporal-quantity :quant 20~e.2 
+                  :unit (y / year~e.3) 
+                  :mod (f / full~e.1))))
+
+
+# sentence: With this new Hong Kong - Zhuhai - Macao bridge that basically leads to all three places , Hong Kong , Macao , and Zhuhai , basically , at the start of the bridge , you can get on the separate road to the place you want to go .
+# co-referenced nodes: y b a2
+(c / cause-01 
+      :ARG0 (b / bridge~e.9 
+            :ARG0-of (l / lead-01~e.12 
+                  :ARG4~e.13 (a2 / and~e.23 
+                        :op1 (c3 / city :wiki "Hong_Kong" 
+                              :name (n / name :op1 "Hong"~e.18 :op2 "Kong"~e.19)) 
+                        :op2 (c5 / city :wiki "Zhuhai" 
+                              :name (n2 / name :op1 "Zhuhai"~e.24)) 
+                        :op3 (c2 / city :wiki "Macau" 
+                              :name (n3 / name :op1 "Macao"~e.21)) 
+                        :mod (a / all~e.14)) 
+                  :mod (b3 / basic~e.11)) 
+            :destination a2~e.3,4,5,6,7,8 
+            :mod (n4 / new~e.2) 
+            :mod (t / this~e.1)) 
+      :ARG1 (p / possible-01~e.36 
+            :ARG1 (g / get-05~e.37 
+                  :ARG1 (y / you~e.35) 
+                  :ARG2 (r / road~e.41 
+                        :destination~e.42 (p2 / place~e.16,44 
+                              :ARG4-of (g4 / go-02~e.48 
+                                    :ARG0 y 
+                                    :ARG1-of (w / want-01~e.46 
+                                          :ARG0 y~e.45))) 
+                        :ARG1-of (s2 / separate-02~e.40)) 
+                  :location (s / start-01~e.30 
+                        :ARG1~e.31 b~e.33) 
+                  :mod (b2 / basic~e.26))))
+
+
+# sentence: Each place has different attractions of its own .
+# co-referenced nodes: p
+(h / have-03~e.2 
+      :ARG0 (p / place~e.1 
+            :mod (e / each~e.0)) 
+      :ARG1 (t / thing~e.4 
+            :poss~e.5 p~e.6 
+            :ARG0-of~e.4 (a / attract-01~e.4) 
+            :ARG1-of (d / differ-02~e.3)))
+
+
+# sentence: So , with this bridge , when some old friends , friends from mainland China or from foreign countries come to our place , it seems they can basically enjoy a complete tour with great convenience in several days , before , ha , going home .
+# co-referenced nodes: p3
+(i / infer-01 
+      :ARG1 (c6 / cause-01~e.0 
+            :ARG0~e.2 (b3 / bridge~e.4 
+                  :mod (t3 / this~e.3)) 
+            :ARG1 (s / seem-01~e.25 
+                  :ARG1 (p2 / possible-01~e.27 
+                        :ARG1 (e / enjoy-01~e.29 
+                              :ARG0 (p3 / person 
+                                    :quant (s2 / some~e.7) 
+                                    :source~e.12,16 (o / or~e.15 
+                                          :op1 (m / mainland~e.13 
+                                                :part-of (c / country :wiki "China" 
+                                                      :name (n / name :op1 "China"~e.14))) 
+                                          :op2 (c2 / country~e.18 
+                                                :mod (f2 / foreign~e.17))) 
+                                    :ARG0-of (h3 / have-rel-role-91 
+                                          :ARG2 (f / friend~e.9,11) 
+                                          :mod (o2 / old~e.8))) 
+                              :ARG1 (t / tour-01~e.32 
+                                    :ARG0 p3 
+                                    :ARG1-of (c4 / complete-02~e.31) 
+                                    :mod~e.33 (c5 / convenience~e.35 
+                                          :degree (g / great~e.34)) 
+                                    :time (b2 / before~e.40 
+                                          :op1 (g2 / go-02~e.44 
+                                                :ARG0 p3 
+                                                :ARG4 (h / home~e.45)) 
+                                          :mod (h2 / ha~e.42 :mode expressive)) 
+                                    :duration~e.36 (s5 / several~e.37 
+                                          :op1 (t2 / temporal-quantity :quant 1 
+                                                :unit (d / day~e.38)))) 
+                              :manner (b / basic~e.28) 
+                              :time~e.6 (c3 / come-01~e.19 
+                                    :ARG1 p3~e.24 
+                                    :ARG4~e.20 (p / place~e.22 
+                                          :poss~e.21 (w / we~e.21))))))))
+
+
+# sentence: However , even though it has entered the last countdown period before its final opening , this wonderland is still unwilling to take off its mysterious veil .
+# co-referenced nodes: w
+(h / have-concession-91~e.0,2,3,5 
+      :ARG1 (w2 / will-02~e.20 :polarity~e.20 -~e.20 
+            :ARG0 (w / wonderland~e.17 
+                  :mod (t2 / this~e.16)) 
+            :ARG1~e.21 (t / take-off-07~e.22,23 
+                  :ARG0 w 
+                  :ARG1 (v / veil~e.26 
+                        :mod (m / mystery~e.25) 
+                        :poss~e.24 w~e.24)) 
+            :mod (s / still~e.19)) 
+      :ARG2 (e2 / enter-01~e.6 
+            :ARG0 w~e.4 
+            :ARG1 (p / period~e.10 
+                  :mod (c / countdown~e.9) 
+                  :time (b / before~e.11 
+                        :op1 (o / open-01~e.14 
+                              :ARG1~e.12 w~e.12 
+                              :mod (f / final~e.13))) 
+                  :mod (l / last~e.8))))
+
+
+# sentence: Ah , different , ah , some groups , they are rehearsing their service , well , hoping that they will become used to the service , be familiar with it , when our tourists come in September .
+# co-referenced nodes: s2 g
+(m / multi-sentence 
+      :snt1 (d / differ-02~e.2 
+            :mod (a3 / ah~e.0,4 :mode expressive)) 
+      :snt2 (r / rehearse-01~e.11 
+            :ARG0 (g / group~e.7 
+                  :quant (s / some~e.6)) 
+            :ARG1 (s2 / service~e.13,25 
+                  :poss~e.12 g~e.12) 
+            :ARG1-of (c2 / cause-01~e.23 
+                  :ARG0 (h / hope-01~e.17 
+                        :ARG0 g 
+                        :ARG1 (a2 / and 
+                              :op1 (b / become-01~e.21 
+                                    :ARG1 g 
+                                    :ARG2 (u / use-02~e.22,23 
+                                          :ARG0 g 
+                                          :ARG1 s2)) 
+                              :op2 (f / familiarize-01~e.28 
+                                    :ARG1 g 
+                                    :ARG2 s2) 
+                              :time~e.32 (d3 / date-entity :month~e.37 9~e.37 
+                                    :time-of~e.32 (c / come-01~e.35 
+                                          :ARG1 (p / person~e.34 
+                                                :ARG0-of~e.34 (t / tour-01~e.34) 
+                                                :poss~e.33 (w / we~e.33))))) 
+                        :mod (w2 / well~e.15)))))
+
+
+# sentence: Well , I am very confident , that when our tourists come to Disneyland , they will certainly return home very satisfied .
+# co-referenced nodes: p
+(c / confident-01~e.5 
+      :ARG1 (i / i~e.2) 
+      :ARG2 (r / return-01~e.18 
+            :ARG1 (p / person~e.10 
+                  :ARG0-of~e.10 (t / tour-01~e.10) 
+                  :poss~e.9 (w / we~e.9)) 
+            :ARG4 (h / home~e.19) 
+            :manner (s / satisfy-01~e.21 
+                  :ARG1 p 
+                  :degree (v2 / very~e.20)) 
+            :time~e.8 (c2 / come-01~e.11 
+                  :ARG1 p~e.15 
+                  :ARG4~e.12 (a / amusement-park :wiki "Hong_Kong_Disneyland" 
+                        :name (n / name :op1 "Disneyland"~e.13))) 
+            :mod (c3 / certain~e.17)) 
+      :degree (v / very~e.4) 
+      :mod (w2 / well~e.0))
+
+
+# sentence: This dynamic metropolis never ceases its movement .
+# co-referenced nodes: m
+(c / cease-01~e.4 
+      :ARG0 (m / metropolis~e.2 
+            :mod (t / this~e.0) 
+            :mod (d / dynamic~e.1)) 
+      :ARG1 (m2 / move-01~e.6 
+            :ARG1~e.5 m~e.5) 
+      :time (e / ever~e.3 :polarity~e.3 -~e.3))
+
+
+# sentence: It continues to explore ; it continues to open new worlds .
+# co-referenced nodes: i i2
+(m / multi-sentence 
+      :snt1 (c / continue-01~e.1 
+            :ARG0 (i / it~e.0) 
+            :ARG1 (e / explore-01~e.3 
+                  :ARG0 i)) 
+      :snt2 (c2 / continue-01~e.6 
+            :ARG0 (i2 / it~e.5) 
+            :ARG1 (o / open-01~e.8 
+                  :ARG0 i2 
+                  :ARG1 (w / world~e.10 
+                        :mod (n / new~e.9)))))
+
+
+# sentence: Each day , there is always something new for people to experience and to love about this city .
+# co-referenced nodes: p
+(s2 / something~e.6 
+      :mod (n2 / new~e.7) 
+      :ARG1-of~e.8 (e / experience-01~e.11 
+            :ARG0 (p / person~e.9)) 
+      :topic~e.15 (c / city~e.17 
+            :mod (t / this~e.16)) 
+      :time (a2 / always~e.5) 
+      :ARG1-of (l / love-01~e.14 
+            :ARG0 p) 
+      :frequency (r / rate-entity-91 
+            :ARG3 (t2 / temporal-quantity :quant 1 
+                  :unit (d / day~e.1))))
+
+
+# sentence: We respectfully invite you to watch Hong Kong : a Shopping Paradise in this edition of Across China .
+# co-referenced nodes: y
+(i / invite-01~e.2 
+      :ARG0 (w / we~e.0) 
+      :ARG1 (y / you~e.3) 
+      :ARG2 (w2 / watch-01~e.5 
+            :ARG0 y 
+            :ARG1 (b / broadcast-program :wiki - 
+                  :name (n / name :op1 "Hong"~e.6 :op2 "Kong:"~e.7 :op3 "A"~e.9 :op4 "Shopping"~e.10 :op5 "Paradise"~e.11)) 
+            :part-of~e.12 (e / edition~e.14 
+                  :mod (t / this~e.13) 
+                  :domain~e.15 (b2 / broadcast-program :wiki "AcrossChina" 
+                        :name (n2 / name :op1 "Across"~e.16 :op2 "China"~e.17)))) 
+      :manner (r / respect-01~e.1))
+
+
+# sentence: Wang Jin - pyng says that he has decided not to continue serving as KMT vice chairman .
+# co-referenced nodes: p2
+(s / say-01~e.4 
+      :ARG0 (p2 / person :wiki "Wang_Jin-pyng" 
+            :name (n / name :op1 "Wang"~e.0 :op2 "Jin-pyng"~e.1,3)) 
+      :ARG1~e.5 (d / decide-01~e.8 
+            :ARG0 p2~e.6 
+            :ARG1 (c / continue-01~e.11 :polarity~e.9 -~e.9 
+                  :ARG0 p2 
+                  :ARG1 (s2 / serve-01~e.12 
+                        :ARG0 p2 
+                        :ARG1 (c2 / chairman~e.16 
+                              :mod (v / vice~e.15)) 
+                        :ARG2~e.13 (p / political-party :wiki "Kuomintang" 
+                              :name (n2 / name :op1 "KMT"~e.14))))))
+
+
+# sentence: Candidates for the giant pandas to be presented to Taiwan as gifts from the mainland may increase .
+# co-referenced nodes: p2
+(p / possible-01~e.15 
+      :ARG1 (i / increase-01~e.16 
+            :ARG1 (c2 / candidate~e.0 
+                  :prep-for~e.1 (p2 / panda~e.4 
+                        :mod (g / giant~e.3) 
+                        :ARG1-of (p3 / present-01~e.7 
+                              :ARG2~e.8 (c3 / country :wiki "Taiwan" 
+                                    :name (n / name :op1 "Taiwan"~e.9)) 
+                              :ARG3~e.10 (g2 / gift-01~e.11 
+                                    :ARG0~e.12 (m / mainland~e.14) 
+                                    :ARG1 p2))))))
+
+
+# sentence: Recently , the 2005 Ningxia Investment and Trade Fair and Ningxia - Taiwan Economic and Trade Cooperation Seminar were held in the city of Yinchuan .
+# co-referenced nodes: and -
+(h / hold-04~e.19 
+      :ARG1 (a / and~e.9 
+            :op1 (e3 / event :wiki - 
+                  :name (n3 / name :op1 "Ningxia"~e.4 :op2 "Investment"~e.5 :op3 "and"~e.6 :op4 "Trade"~e.7 :op5 "Fair"~e.8)) 
+            :op2 (e4 / event :wiki - 
+                  :name (n4 / name :op1 "Ningxia-Taiwan"~e.10,12 :op2 "Economic"~e.13 :op3 "and"~e.9,14 :op4 "Trade"~e.15 :op5 "Cooperation"~e.16 :op6 "Seminar"~e.17)) 
+            :time (d2 / date-entity :year 2005~e.3)) 
+      :time (r / recent~e.0) 
+      :location~e.20 (c / city~e.22 :wiki "Yinchuan" 
+            :name (n5 / name :op1 "Yinchuan"~e.24)))
+
+
+# sentence: More than three hundred Taiwanese businesspeople gathered in this land known as " lush southern - type fields north of the Great Wall , " beginning their tour and inspection journey .
+# co-referenced nodes: p
+(a / and 
+      :op1 (g / gather-03~e.6 
+            :ARG0 (p / person 
+                  :source (c2 / country :wiki "Taiwan" 
+                        :name (n / name :op1 "Taiwan"~e.4)) 
+                  :quant (m / more-than~e.0,1 :op1 300~e.2,3) 
+                  :mod (b / business)) 
+            :location~e.7 (l / land~e.9 
+                  :ARG1-of (k / know-02~e.10 
+                        :ARG2 (f / field~e.17 
+                              :mod (l2 / lush~e.13) 
+                              :mod (t / type~e.16 
+                                    :mod (s / south~e.14)) 
+                              :location (r / relative-position 
+                                    :op1 (f2 / facility :wiki "Great_Wall_of_China" 
+                                          :name (n3 / name :op1 "Great"~e.21 :op2 "Wall"~e.22)) 
+                                    :direction (n2 / north~e.18)))) 
+                  :mod (t3 / this~e.8))) 
+      :op2 (b2 / begin-01~e.25 
+            :ARG0 p 
+            :ARG1 (a2 / and~e.28 
+                  :op1 (t2 / tour-01~e.27 
+                        :ARG0 p) 
+                  :op2 (j / journey-01~e.30 
+                        :ARG0 p 
+                        :purpose (i / inspect-01~e.29 
+                              :ARG0 p)))))
+
+
+# sentence: Well , what is the unique charm in Ningxia of the western region that has attracted the attention of so many Taiwanese businesspeople ?
+# co-referenced nodes: c3
+(c2 / charm-01~e.6 
+      :ARG0~e.9 (r / region~e.12 
+            :mod (w / west~e.11) 
+            :ARG0-of (a / attract-01~e.15 
+                  :ARG1 (a2 / attend-02 
+                        :ARG0 (p / person 
+                              :source (c4 / country :wiki "Taiwan" 
+                                    :name (n3 / name :op1 "Taiwan"~e.21)) 
+                              :quant (m / many~e.20 
+                                    :degree (s / so~e.19)) 
+                              :mod (b / business)) 
+                        :ARG1 c3))) 
+      :mod (u / unique~e.5) 
+      :location~e.7 (c3 / city :wiki "Ningxia" 
+            :name (n2 / name :op1 "Ningxia"~e.8)) 
+      :manner (a3 / amr-unknown~e.2) 
+      :mod (w2 / well~e.0))
+
+
+# sentence: The KMT vice chairman arrived at party headquarters to meet with KMT Chairman Lien Chan on the afternoon of %pw .
+# co-referenced nodes: p2 p
+(a / arrive-01~e.4 
+      :ARG1 (p2 / person 
+            :ARG0-of (h2 / have-org-role-91 
+                  :ARG1 (p / political-party :wiki "Kuomintang" 
+                        :name (n / name :op1 "KMT"~e.1)) 
+                  :ARG2 (c / chairman~e.3 
+                        :mod (v / vice~e.2)))) 
+      :ARG4~e.5 (t / thing 
+            :location-of (h / headquarter-01~e.7 
+                  :ARG1 p~e.6)) 
+      :purpose (m / meet-03~e.9 
+            :ARG0 p2 
+            :ARG1~e.10 (p4 / person :wiki "Lien_Chan" 
+                  :name (n2 / name :op1 "Lien"~e.13 :op2 "Chan"~e.14) 
+                  :ARG0-of (h3 / have-org-role-91 
+                        :ARG1 p~e.11 
+                        :ARG2 (c2 / chairman~e.12))) 
+            :time~e.15 (d / date-entity 
+                  :dayperiod (a2 / afternoon~e.17))))
+
+
+# sentence: After a long talk of over an hour , Wang Jin - pyng expressed his wish not to renew his term as KMT vice chairman .
+# co-referenced nodes: p2
+(e / express-01~e.13 
+      :ARG0 (p2 / person :wiki "Wang_Jin-pyng" 
+            :name (n / name :op1 "Wang"~e.9 :op2 "Jin-pyng"~e.10,12)) 
+      :ARG1 (w2 / wish-01~e.15 
+            :ARG0~e.14 p2~e.14 
+            :ARG1 (r / renew-01~e.18 :polarity~e.16 -~e.16 
+                  :ARG0 p2 
+                  :ARG1 (t2 / term~e.20 
+                        :poss~e.19 p2~e.19 
+                        :prep-as~e.21 (c / chairman~e.24 
+                              :mod (v / vice~e.23) 
+                              :ARG2-of (h / have-org-role-91 
+                                    :ARG1 (o3 / organization :wiki "Kuomintang" 
+                                          :name (n2 / name :op1 "KMT"~e.22))))))) 
+      :time (a / after~e.0 
+            :op1 (t3 / talk-01~e.3 
+                  :ARG1-of (l / long-03~e.2 
+                        :ARG2~e.4 (o4 / over~e.5 
+                              :op1 (t4 / temporal-quantity :quant 1~e.6 
+                                    :unit (h2 / hour~e.7)))))))
+
+
+# sentence: He said that he will follow Lien Chan as a lifelong volunteer .
+# co-referenced nodes: h
+(s / say-01~e.1 
+      :ARG0 (h / he~e.0) 
+      :ARG1~e.2 (f / follow-01~e.5 
+            :ARG1 h~e.3 
+            :ARG2 (p2 / person :wiki "Lien_Chan" 
+                  :name (n / name :op1 "Lien"~e.6 :op2 "Chan"~e.7)) 
+            :manner (v / volunteer-01~e.11 
+                  :ARG0 h 
+                  :duration (l / live-01 
+                        :ARG0 h))))
+
+

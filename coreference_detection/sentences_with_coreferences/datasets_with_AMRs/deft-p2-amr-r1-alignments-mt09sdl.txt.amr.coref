@@ -1,0 +1,3315 @@
+# sentence: This will ultimately accelerate the speed of desertification in sub - Saharan African countries and other areas of the world .
+# co-referenced nodes: t
+(a / accelerate-01~e.3 
+      :ARG0 (t / this~e.0) 
+      :ARG1 (s / speed-01~e.5 
+            :ARG0 t 
+            :ARG1~e.6 (d / desertification~e.7 
+                  :location~e.8 (a2 / and~e.14 
+                        :op1 (c / country~e.13 
+                              :location (w2 / world-region :wiki "Sub-Saharan_Africa" 
+                                    :name (n / name :op1 "sub-Saharan"~e.9,11 :op2 "Africa"~e.12))) 
+                        :op2 (a3 / area~e.16 
+                              :part-of~e.17 (w / world~e.19) 
+                              :mod (o / other~e.15))))) 
+      :time (u / ultimate~e.2))
+
+
+# sentence: Consequently , experts have predicted that the world has at least ten years within which to lower the volume of greenhouse gas emissions before it is too late to redeem the situation .
+# co-referenced nodes: w
+(c / cause-01~e.0 
+      :ARG1 (p / predict-01~e.4 
+            :ARG0 (p2 / person~e.2 
+                  :ARG1-of~e.2 (e / expert-01~e.2)) 
+            :ARG1 (h / have-03~e.3,8 
+                  :ARG0 (w / world~e.7) 
+                  :ARG1 (y / year~e.12 
+                        :quant (a / at-least~e.9,10 :op1 10~e.11) 
+                        :purpose (l / lower-05~e.16 
+                              :ARG0 w 
+                              :ARG1 (v / volume~e.18 
+                                    :mod~e.19 (e2 / emit-01~e.22 
+                                          :ARG0 w 
+                                          :ARG1 (g / gas~e.21 
+                                                :mod (g2 / greenhouse~e.20)))) 
+                              :time (b / before~e.23 
+                                    :op1 (i / it~e.24 
+                                          :mod (l2 / late~e.27 
+                                                :degree (t / too~e.26) 
+                                                :purpose (r / redeem-01~e.29 
+                                                      :ARG1 (s / situation~e.31))))))))))
+
+
+# sentence: A jeweler 's shop in Tokyo displayed a swimsuit , dress and shawl to go with it made of pure gold thread today . These were made by a workshop in the ancient capital , Kyoto .
+# co-referenced nodes: j d2
+(m / multi-sentence 
+      :snt1 (d / display-01~e.6 
+            :ARG0~e.2 (j / jeweler~e.1) 
+            :ARG1 (a / and~e.11 
+                  :op1 (s2 / swimsuit~e.8) 
+                  :op2 (d2 / dress~e.10) 
+                  :op3 (s3 / shawl~e.12 
+                        :ARG1-of (g2 / go-22~e.14 
+                              :ARG2~e.15 d2~e.16)) 
+                  :ARG1-of (m2 / make-01~e.17 
+                        :ARG2~e.18 (t / thread~e.21 
+                              :mod (g / gold~e.20 
+                                    :ARG1-of (p / pure-02~e.19))))) 
+            :ARG2 (s / shop~e.3 
+                  :poss j 
+                  :location~e.4 (c / city :wiki "Tokyo" 
+                        :name (n / name :op1 "Tokyo"~e.5))) 
+            :time (t2 / today~e.22)) 
+      :snt2 (m3 / make-01~e.26 
+            :ARG0~e.27 (p2 / person 
+                  :location (w / workshop~e.29 
+                        :location~e.30 (c2 / city :wiki "Kyoto" 
+                              :name (n2 / name :op1 "Kyoto"~e.35) 
+                              :ARG0-of (h / have-org-role-91 
+                                    :ARG2 (c3 / capital~e.33)) 
+                              :mod (a2 / ancient~e.32)))) 
+            :ARG1 (t3 / this~e.24)))
+
+
+# sentence: A spokesperson for the company said , " The dress and swimsuit can be worn just like ordinary clothing , but must be treated the same as jewelry , and cannot be washed in a washing machine . "
+# co-referenced nodes: a
+(s / say-01~e.5 
+      :ARG0 (p3 / person 
+            :ARG0-of (h / have-org-role-91~e.2 
+                  :ARG1 (c / company~e.4) 
+                  :ARG2 (s2 / spokesperson~e.1))) 
+      :ARG1 (c2 / contrast-01~e.20 
+            :ARG1 (p / possible-01~e.12 
+                  :ARG1 (w / wear-01~e.14 
+                        :ARG1 (a / and~e.10 
+                              :op1 (d / dress~e.9) 
+                              :op2 (s3 / swimsuit~e.11) 
+                              :ARG1-of (r / resemble-01~e.16 
+                                    :ARG2 (c3 / clothing~e.18 
+                                          :mod (o2 / ordinary~e.17)))) 
+                        :mod (j / just~e.15))) 
+            :ARG2 (a3 / and~e.29 
+                  :op1 (o / obligate-01~e.21 
+                        :ARG2 (t / treat-01~e.23 
+                              :ARG2 (s4 / same-01~e.25 
+                                    :ARG1 a 
+                                    :ARG2~e.26 (j2 / jewelry~e.27)))) 
+                  :op2 (p2 / possible-01~e.30 :polarity~e.30 -~e.30 
+                        :ARG1 (w2 / wash-01~e.32,35 
+                              :ARG1 a 
+                              :instrument (m / machine~e.36 
+                                    :ARG0-of (w3 / wash-01~e.35)))))))
+
+
+# sentence: The company is also displaying a relatively inconspicuous gold wall tapestry , which can be used to decorate the living room , at a price of 50 million Japanese yen ( about 13.42 million NT dollars ) .
+# co-referenced nodes: t
+(d / display-01~e.4 
+      :ARG0 (c / company~e.1) 
+      :ARG1 (t / tapestry~e.10 
+            :purpose (w / wall~e.9) 
+            :consist-of (g / gold~e.8) 
+            :mod (c2 / conspicuous~e.7 :polarity~e.7 -~e.7 
+                  :mod (r2 / relative~e.6)) 
+            :ARG1-of~e.22 (p2 / price-01~e.24 
+                  :ARG2~e.25 (m / monetary-quantity :quant 50000000~e.26,27 
+                        :unit (y / yen~e.29 
+                              :mod (c3 / country :wiki "Japan" 
+                                    :name (n / name :op1 "Japan"~e.28))))) 
+            :ARG1-of (u2 / use-01~e.15 
+                  :ARG2 (d2 / decorate-01~e.17 
+                        :ARG1 (r / room~e.20 
+                              :mod (l / living~e.19)) 
+                        :ARG2 t) 
+                  :ARG1-of (p / possible-01~e.13))) 
+      :mod (a / also~e.3))
+
+
+# sentence: The London emergency services said that altogether 11 people had been sent to hospital for treatment due to minor wounds .
+# co-referenced nodes: p
+(s / say-01~e.4 
+      :ARG0 (s2 / service~e.3 
+            :mod (e / emergency~e.2) 
+            :location (c / city :wiki "London" 
+                  :name (n / name :op1 "London"~e.1))) 
+      :ARG1~e.5 (s3 / send-01~e.11 
+            :ARG1 (p / person~e.8 :quant 11~e.7) 
+            :ARG2~e.12 (h / hospital~e.13) 
+            :mod (a / altogether~e.6) 
+            :purpose~e.14 (t / treat-03~e.15 
+                  :ARG1 p 
+                  :ARG2~e.17 (w / wound-01~e.19 
+                        :ARG1 p 
+                        :mod (m / minor~e.18)))))
+
+
+# sentence: After the seven hundred passengers on the train were stranded for two hours , they were guided through the tunnels to a safe place .
+# co-referenced nodes: p
+(g / guide-01~e.16 
+      :ARG1 (p / passenger~e.4 :quant 700~e.2,3) 
+      :ARG2~e.20 (p2 / place~e.23 
+            :mod (s / safe~e.22)) 
+      :path~e.17 (t2 / tunnel~e.19) 
+      :time (a / after~e.0 
+            :op1~e.5 (s2 / strand-01~e.9 
+                  :ARG1 p~e.14 
+                  :duration~e.10 (t3 / temporal-quantity :quant 2~e.11 
+                        :unit (h / hour~e.12)) 
+                  :location (t / train~e.7))))
+
+
+# sentence: Last week there were three failed car bomb attacks in London and Glasgow , and Britain only yesterday lowered its terrorist alert level from " critical " to " serious . "
+# co-referenced nodes: c4
+(a / and~e.14 
+      :op1 (f / fail-01~e.5 
+            :ARG1 (a2 / attack-01~e.8 :quant 3~e.4 
+                  :ARG1 (c / car~e.6) 
+                  :instrument (b / bomb~e.7)) 
+            :time (w / week~e.1 
+                  :mod (l2 / last~e.0)) 
+            :location~e.9 (a3 / and~e.11 
+                  :op1 (c2 / city :wiki "London" 
+                        :name (n / name :op1 "London"~e.10)) 
+                  :op2 (c3 / city :wiki "Glasgow" 
+                        :name (n2 / name :op1 "Glasgow"~e.12)))) 
+      :op2 (l / lower-05~e.18 
+            :ARG0 (c4 / country :wiki "United_Kingdom" 
+                  :name (n3 / name :op1 "Britain"~e.15)) 
+            :ARG1 (l3 / level~e.22 
+                  :poss~e.19 c4~e.19 
+                  :mod (a4 / alert-01~e.21 
+                        :ARG2 (t / terrorist~e.20))) 
+            :ARG3 (c5 / critical~e.25) 
+            :ARG4 (s / serious~e.29) 
+            :mod (o / only~e.16) 
+            :time (y / yesterday~e.17)))
+
+
+# sentence: However , some environmental protection groups have criticized the European Food Safety Authority 's finding , warning that these potatoes contain a gene that is resistant to certain antibiotics .
+# co-referenced nodes: g
+(c2 / contrast-01~e.0 
+      :ARG2 (a / and 
+            :op1 (c / criticize-01~e.7 
+                  :ARG0 (g / group~e.5 
+                        :ARG0-of (p / protect-01~e.4 
+                              :ARG1 (e / environment~e.3)) 
+                        :mod (s / some~e.2)) 
+                  :ARG1 (t / thing 
+                        :ARG1-of (f / find-01~e.14 
+                              :ARG0~e.13 (o / organization :wiki "European_Food_Safety_Authority" 
+                                    :name (n / name :op1 "European"~e.9 :op2 "Food"~e.10 :op3 "Safety"~e.11 :op4 "Authority"~e.12))))) 
+            :op2 (w / warn-01~e.16 
+                  :ARG0 g 
+                  :ARG1~e.17 (c3 / contain-01~e.20 
+                        :ARG0 (p2 / potatoe 
+                              :mod (t2 / this~e.18)) 
+                        :ARG1 (g2 / gene~e.22 
+                              :ARG0-of (r / resist-01~e.25 
+                                    :ARG1~e.26 (a2 / antibiotic~e.28 
+                                          :mod (c4 / certain~e.27))))))))
+
+
+# sentence: Armed police , public security police , medical personnel , among others , are making their best rescue efforts .
+# co-referenced nodes: a
+(t / try-01~e.14,18 
+      :ARG0 (a / and 
+            :op1 (p / person 
+                  :ARG1-of (a2 / arm-01~e.0) 
+                  :ARG0-of (h / have-org-role-91 
+                        :ARG1 (p5 / police~e.1,5))) 
+            :op2 (p2 / person 
+                  :ARG0-of (h2 / have-org-role-91 
+                        :ARG1 (p6 / police~e.1,5 
+                              :mod (s / security~e.4 
+                                    :mod (p4 / public~e.3))))) 
+            :op3 (p3 / person 
+                  :ARG0-of (h3 / have-org-role-91 
+                        :ARG2 (p7 / personnel~e.8 
+                              :mod (m2 / medicine~e.7)))) 
+            :ARG1-of (i / include-91~e.10 
+                  :ARG2 (o / other~e.11))) 
+      :ARG1 (r / rescue-01~e.17 
+            :ARG0 a) 
+      :mod (g / good~e.16 
+            :degree~e.16 (m3 / most~e.16)))
+
+
+# sentence: According to a report on Taiwan 's ETTV News website , the old man , who is 85 years old this year , was originally called Fu Hei - han , but as an officer thought this name to be uncultured when he enlisted in the army as a young man , he changed the name for him to Fu Hsing - han with the intended meaning of " making the Chinese world prosperous . " Although the name 's homophone always got him laughed at , he did n't mind at all .
+# co-referenced nodes: Fu p4 h - l n m3
+(m / multi-sentence 
+      :snt1 (s / say-01~e.0,1 
+            :ARG0 (r / report~e.3 
+                  :medium~e.4 (w / website~e.9 :wiki "ETTV_News" 
+                        :name (n3 / name :op1 "ETTV"~e.7 :op2 "News"~e.8) 
+                        :source~e.6 (c6 / country :wiki "Taiwan" 
+                              :name (n4 / name :op1 "Taiwan"~e.5)))) 
+            :ARG1 (c / contrast-01~e.31 
+                  :ARG1 (c2 / call-01~e.25 
+                        :ARG1 (m3 / man~e.13 
+                              :mod (o / old~e.12,19) 
+                              :age~e.12 (t / temporal-quantity :quant 85~e.17 
+                                    :unit (y / year~e.18,21) 
+                                    :time~e.32 (y2 / year~e.18,21 
+                                          :mod (t2 / this~e.20,36)))) 
+                        :ARG2 (p2 / person :wiki - 
+                              :name~e.25 (n6 / name :op1 "Fu"~e.26 :op2 "Hei-han"~e.27,29,62)) 
+                        :mod (o2 / original~e.24)) 
+                  :ARG2~e.32 (c3 / change-01~e.53 
+                        :ARG0 (p4 / person 
+                              :ARG0-of (h4 / have-org-role-91 
+                                    :ARG2 (o3 / officer~e.34))) 
+                        :ARG1 (n / name~e.37,55 
+                              :poss (h3 / he~e.42,52,57)) 
+                        :ARG2~e.58 (p / person :wiki - 
+                              :name (n5 / name :op1 "Fu"~e.59 :op2 "Hsing-han"~e.60)) 
+                        :purpose~e.63 (m4 / mean-01~e.66 
+                              :ARG1 n 
+                              :ARG2 (m5 / make-02~e.69 
+                                    :ARG1 (p3 / prosper-01~e.73 
+                                          :ARG0 (w2 / world~e.72 
+                                                :mod (c7 / country :wiki "China" 
+                                                      :name (n7 / name :op1 "China"~e.71))))) 
+                              :mod (i / intend-01~e.65)) 
+                        :ARG1-of (c8 / cause-01~e.38,58 
+                              :ARG0 (t3 / think-01~e.35 
+                                    :ARG0 p4 
+                                    :ARG1 (c9 / cultured :polarity -~e.89 
+                                          :domain~e.39 n) 
+                                    :time~e.41 (e / enlist-01~e.43 
+                                          :ARG1 m3 
+                                          :ARG2~e.44 (a3 / army~e.46) 
+                                          :time~e.47 (y3 / young~e.49 
+                                                :domain m3~e.50))))))) 
+      :snt2 (h5 / have-concession-91~e.76,79 
+            :ARG1 (m2 / mind-01~e.90 :polarity~e.89 -~e.89 
+                  :ARG0 (h / he~e.87) 
+                  :ARG1 l~e.80,81 
+                  :mod (a / at-all~e.85,91,92)) 
+            :ARG2 (l / laugh-01~e.84 
+                  :ARG2 h~e.83 
+                  :ARG1-of (c5 / cause-01 
+                        :ARG0 (h2 / homophone 
+                              :poss-of (n2 / name~e.78))) 
+                  :time (a2 / always))))
+
+
+# sentence: Li Jinhua hopes to see " the audit body audited " before he leaves office .
+# co-referenced nodes: p
+(h / hope-01~e.2 
+      :ARG0 (p / person :wiki "Li_Jinhua" 
+            :name (n / name :op1 "Li"~e.0 :op2 "Jinhua"~e.1)) 
+      :ARG1 (s / see-01~e.4 
+            :ARG0 p 
+            :ARG1 (a / audit-01~e.7,9 
+                  :ARG1 (b / body~e.8)) 
+            :time (b2 / before~e.11 
+                  :op1 (l / leave-15~e.13 
+                        :ARG0 p~e.12 
+                        :ARG1 (o / office~e.14)))))
+
+
+# sentence: The audit body needs to further strengthen its internal management , keep the audit team under strict control , take the initiative in accepting outside supervision , and voluntarily publicize details of its internal financial audit .
+# co-referenced nodes: i b t
+(n / need-01~e.3 
+      :ARG0 (b / body~e.2 
+            :ARG0-of (a / audit-01~e.1)) 
+      :ARG1~e.4 (a2 / and~e.27 
+            :op1 (s / strengthen-01~e.6 
+                  :ARG0 b 
+                  :ARG1 (m / manage-01~e.9 
+                        :ARG1 b 
+                        :mod (i / internal-02~e.8)) 
+                  :degree (f2 / further~e.5)) 
+            :op2 (k / keep-04~e.11 
+                  :ARG0 b 
+                  :ARG1 (t / team~e.14 
+                        :ARG0-of (a5 / audit-01~e.13)) 
+                  :ARG2 (c / control-01~e.17 
+                        :ARG0 b 
+                        :ARG1 t 
+                        :manner (s2 / strict~e.16))) 
+            :op3 (i2 / initiate-01 
+                  :ARG0 b 
+                  :ARG1 (a3 / accept-01~e.23 
+                        :ARG0 b 
+                        :ARG1 (s3 / supervise-01~e.25 
+                              :ARG0 (o / outside~e.24) 
+                              :ARG1 b))) 
+            :op4 (p / publicize-01~e.29 
+                  :ARG0 b 
+                  :ARG1 (d / detail~e.30 
+                        :topic (a4 / audit-01~e.35 
+                              :mod (f / finance~e.34) 
+                              :mod i~e.33)) 
+                  :ARG1-of (v / volunteer-01~e.28 
+                        :ARG0 b))))
+
+
+# sentence: Audit cadres must require themselves to adhere to the standards they apply when auditing others .
+# co-referenced nodes: c
+(o2 / obligate-01~e.2 
+      :ARG2 (r / require-01~e.3 
+            :ARG0 (c / cadre~e.1 
+                  :ARG0-of (a / audit-01~e.0)) 
+            :ARG1 (a2 / adhere-02~e.6 
+                  :ARG0 c 
+                  :ARG1~e.7 (s / standard~e.9 
+                        :ARG1-of (a3 / apply-02~e.11 
+                              :ARG0 c~e.10 
+                              :ARG2 (a4 / audit-01~e.13 
+                                    :ARG0 c 
+                                    :ARG1 (o / other~e.14))))) 
+            :ARG2 c))
+
+
+# sentence: To forge iron , you must first temper yourself . " If you are dishonest yourself , how can you make others honest ? "
+# co-referenced nodes: y2
+(m / multi-sentence 
+      :snt1 (h / have-condition-91~e.11 
+            :ARG1 (f / forge-02~e.1 
+                  :ARG1 (i / iron~e.2)) 
+            :ARG2 (o / obligate-01~e.0,5 
+                  :ARG2 (t / temper-01~e.7 
+                        :ARG0 (y / you~e.4,8,12) 
+                        :ARG1 y 
+                        :ord (o3 / ordinal-entity~e.6 :value~e.6 1~e.6)))) 
+      :snt2 (h2 / have-condition-91~e.11 
+            :ARG1 (p / possible-01~e.18 
+                  :ARG1 (m2 / make-02~e.20 
+                        :ARG0 y2~e.13,14,15,19 
+                        :ARG1 (h3 / honest~e.22 
+                              :domain (o2 / other~e.21)) 
+                        :manner~e.17 (a / amr-unknown~e.17))) 
+            :ARG2 (h4 / honest~e.22 :polarity - 
+                  :domain (y2 / you))))
+
+
+# sentence: Do prosecuting authorities dare to be " prosecuted ? "
+# co-referenced nodes: a
+(d / dare-01~e.3 :mode~e.8 interrogative~e.8 
+      :ARG0 (a / authority~e.2 
+            :ARG0-of (p2 / prosecute-01~e.1)) 
+      :ARG1 (p / prosecute-01~e.1,7 
+            :ARG1 a))
+
+
+# sentence: Do industrial and commercial departments dare to be " supervised ? "
+# co-referenced nodes: a
+(d / dare-01~e.5 :mode~e.10 interrogative~e.10 
+      :ARG0 (a / and~e.2 
+            :op1 (d2 / department~e.4 
+                  :mod (i / industry~e.1)) 
+            :op2 (d3 / department~e.4 
+                  :mod (c / commerce~e.3))) 
+      :ARG1 (s / supervise-01~e.9 
+            :ARG1 a))
+
+
+# sentence: It seems that some people are getting more and more narrow - minded : they only know how to make demands ; they do n't know how to repay people for their kindness .
+# co-referenced nodes: p2 p
+(s / seem-01~e.1 
+      :ARG1~e.2 (g / get-03~e.6 
+            :ARG1 (p / person~e.4 
+                  :mod (s2 / some~e.3)) 
+            :ARG2 (m2 / mind~e.12 
+                  :degree (m / more-and-more~e.7,9) 
+                  :example (a / and 
+                        :op1 (k / know-01~e.16 
+                              :ARG0 p~e.14 
+                              :ARG1~e.18 (d / demand-01~e.19,20) 
+                              :mod (o / only~e.15)) 
+                        :op2 (k2 / know-01~e.25 :polarity~e.24 -~e.24 
+                              :ARG0 p~e.22 
+                              :ARG1 (r / repay-01~e.28 
+                                    :ARG0 p 
+                                    :ARG1~e.30 (k3 / kindness~e.32 
+                                          :poss~e.31 p2~e.31) 
+                                    :ARG2 (p2 / person~e.29)))) 
+                  :ARG1-of (n / narrow-02~e.10))))
+
+
+# sentence: After the old couple 's invitation to him to spend the Spring Festival with them was rejected , they actually took the initiative to lend their own vehicle to the young person .
+# co-referenced nodes: p c
+(i / initiate-01 
+      :ARG0 c 
+      :ARG1 (l / lend-01~e.24 
+            :ARG0 c 
+            :ARG1 (v / vehicle~e.27 
+                  :poss~e.25 c~e.25) 
+            :ARG2~e.28 (p / person~e.31 
+                  :mod (y / young~e.30))) 
+      :time (a / after~e.0 
+            :op1 (r / reject-01~e.16 
+                  :ARG0 p 
+                  :ARG1 (i2 / invite-01~e.5 
+                        :ARG0~e.4 (c / couple~e.3 
+                              :mod (o / old~e.2)) 
+                        :ARG1 p 
+                        :ARG2 (s / spend-02~e.9 
+                              :ARG0 (a3 / and 
+                                    :op1 c 
+                                    :op2 p) 
+                              :ARG1 (f / festival :wiki "Chinese_New_Year" 
+                                    :name (n / name :op1 "Spring"~e.11 :op2 "Festival"~e.12)) 
+                              :prep-with~e.13 c)))) 
+      :mod (a2 / actual~e.19))
+
+
+# sentence: At times like this , we need refined manners , that is , let your heart always knows gratitude !
+# co-referenced nodes: y h
+(n / need-01~e.6 
+      :ARG0 (w / we~e.5) 
+      :ARG1 (m / manner~e.8 
+            :ARG1-of (r / refine-01~e.7) 
+            :consist-of (l / let-01~e.13 
+                  :ARG0~e.14 (y / you~e.14) 
+                  :ARG1 (k / know-01~e.17 
+                        :ARG0 h 
+                        :ARG1 (g / gratitude~e.18) 
+                        :time (a / always~e.16)) 
+                  :beneficiary (h / heart~e.15 
+                        :part-of y))) 
+      :time~e.1 (t / time~e.1 
+            :ARG1-of (r2 / resemble-01~e.2 
+                  :ARG2 (t2 / this~e.3))))
+
+
+# sentence: An old man who was close to death called his sons and daughters before him , and told them a story of how he was helped by someone , instructing his descendants to repay that person .
+# co-referenced nodes: s3 a2 m d3
+(a / and~e.16 
+      :op1 (c / call-02~e.8 
+            :ARG0 (m / man~e.2 
+                  :mod (o / old~e.1) 
+                  :ARG1-of (c2 / close-06~e.5 
+                        :ARG2~e.6 (d / die-01~e.7 
+                              :ARG1 m))) 
+            :ARG1 (a2 / and~e.11 
+                  :op1 (p2 / person~e.35 
+                        :ARG0-of (h2 / have-rel-role-91 
+                              :ARG1~e.9 m~e.9 
+                              :ARG2 (s / son~e.10))) 
+                  :op2 (p3 / person~e.35 
+                        :ARG0-of (h3 / have-rel-role-91 
+                              :ARG1 m 
+                              :ARG2 (d2 / daughter~e.12)))) 
+            :location (b / before~e.13 
+                  :op1 m)) 
+      :op2 (t / tell-01~e.17 
+            :ARG0 m 
+            :ARG1 (s2 / story~e.20 
+                  :topic (h / help-01~e.25 
+                        :ARG0~e.26 (s3 / someone~e.27) 
+                        :ARG2 m~e.23)) 
+            :ARG2 a2) 
+      :op3 (i / instruct-01~e.29 
+            :ARG0 m 
+            :ARG1 (p / person~e.35 
+                  :ARG0-of (d3 / descend-01 
+                        :source m)) 
+            :ARG2 (r / repay-01~e.33 
+                  :ARG0 d3 
+                  :ARG2 s3)))
+
+
+# sentence: He made people realize the strength of gratitude and touching nature of reciprocation .
+# co-referenced nodes: p
+(m / make-02~e.1 
+      :ARG0 (h / he~e.0) 
+      :ARG1 (r / realize-01~e.3 
+            :ARG0 p 
+            :ARG1 (a / and~e.8 
+                  :op1 (s / strength~e.5 
+                        :mod~e.6 (g / gratitude~e.7)) 
+                  :op2 (n / nature~e.10 
+                        :mod (t / touch-01~e.9) 
+                        :mod~e.11 (r2 / reciprocate-00~e.12)))) 
+      :beneficiary (p / person~e.2))
+
+
+# sentence: Two years ago , a friend whom I had n't seen for many years found me , and said he wanted to do some business .
+# co-referenced nodes: i p
+(a / and~e.17 
+      :op1 (f / find-01~e.14 
+            :ARG0 (p / person 
+                  :ARG0-of (h / have-rel-role-91~e.8 
+                        :ARG1 i 
+                        :ARG2 (f2 / friend~e.5))) 
+            :ARG1 (i / i~e.7,15) 
+            :ARG1-of (s2 / see-01~e.10 :polarity~e.9 -~e.9 
+                  :duration~e.11 (m / many~e.12 
+                        :op1 (t2 / temporal-quantity :quant 1~e.7 
+                              :unit (y3 / year~e.13)))) 
+            :time (b2 / before~e.2 
+                  :op1~e.2 (n / now~e.2) 
+                  :quant (t / temporal-quantity :quant 2~e.0 
+                        :unit (y2 / year~e.1)))) 
+      :op2 (s / say-01~e.18 
+            :ARG0 p 
+            :ARG1 (w / want-01~e.20 
+                  :ARG0 p 
+                  :ARG1 (d / do-02~e.22 
+                        :ARG0 p 
+                        :ARG1 (b / business~e.24 
+                              :quant (s3 / some~e.23))))))
+
+
+# sentence: I asked him how much capital he had .
+# co-referenced nodes: h2
+(a / ask-01~e.1 
+      :ARG0 (i / i~e.0) 
+      :ARG1 (t / thing 
+            :quant-of~e.3,4 (c / capital~e.5 
+                  :ARG1-of (h / have-03~e.7 
+                        :ARG0 h2~e.2,6))) 
+      :ARG2 (h2 / he))
+
+
+# sentence: When I heard that , I immediately burst out laughing . What can you do with 10,000 yuan ?
+# co-referenced nodes: i
+(m / multi-sentence 
+      :snt1 (b / burst-01~e.7 
+            :ARG1 (i / i) 
+            :ARG2 (l / laugh-01~e.9 
+                  :ARG0 i) 
+            :time~e.0 (i2 / immediate~e.6) 
+            :time~e.0 (h / hear-01~e.2 
+                  :ARG0 i~e.1,5 
+                  :ARG1 (t / that~e.3))) 
+      :snt2 (a / amr-unknown~e.11 
+            :ARG1-of (d / do-02~e.14 
+                  :ARG0 (y2 / you~e.13) 
+                  :ARG3~e.15 (m2 / monetary-quantity :quant 10000~e.16 
+                        :unit (y / yuan~e.17)) 
+                  :ARG1-of (p / possible-01~e.12))))
+
+
+# sentence: Otherwise , even given more opportunities , you can still lose them .
+# co-referenced nodes: y o
+(c / contrast-01 
+      :ARG1 (h / have-concession-91 
+            :ARG1 (p / possible-01~e.8 
+                  :ARG1 (l / lose-02~e.10 
+                        :ARG0 y 
+                        :ARG1 o 
+                        :mod (s / still~e.9))) 
+            :ARG2 (g / give-01~e.3 
+                  :ARG1 (o / opportunity~e.5 
+                        :quant (m / more~e.4)) 
+                  :ARG2 (y / you~e.7))))
+
+
+# sentence: Huang Huahua said that the past five years had been five years when Guangdong saw a rapid development in its reform and opening up and the modernization construction , and made brilliant achievements .
+# co-referenced nodes: p2
+(s / say-01~e.2 
+      :ARG0 (p / person :wiki "Huang_Huahua" 
+            :name (n / name :op1 "Huang"~e.0 :op2 "Huahua"~e.1)) 
+      :ARG1 (a2 / and~e.29 
+            :op1 (s2 / see-01~e.14 
+                  :ARG0 (p2 / province :wiki "Guangdong" 
+                        :name (n2 / name :op1 "Guangdong"~e.13)) 
+                  :ARG1 (a / and~e.21,24 
+                        :op1 (d / develop-02~e.17 
+                              :ARG1~e.18 (r / reform-01~e.20 
+                                    :ARG1~e.19 p2~e.19) 
+                              :manner (r2 / rapid~e.16)) 
+                        :op2 (o / open-up-03~e.22,23 
+                              :ARG1 p2) 
+                        :op3 (c / construct-01~e.27 
+                              :purpose (m / modernize-01~e.26))) 
+                  :time~e.12 (b2 / before 
+                        :op1 (n3 / now) 
+                        :duration (t / temporal-quantity :quant 5~e.6,10 
+                              :unit (y / year~e.7,11)))) 
+            :op2 (a3 / achieve-01~e.30,32 
+                  :ARG0 p2 
+                  :ARG1 (t2 / thing~e.31 
+                        :ARG1-of~e.31 (b / brilliant-01~e.31)))))
+
+
+# sentence: ( Correspondent Zeng Weikang and Press Correspondent for Guangdong Science and Technology Assocation )
+# co-referenced nodes: -
+(a / and~e.4 
+      :op1 (p / person :wiki - 
+            :name (n / name :op1 "Zeng"~e.2 :op2 "Weikang"~e.3) 
+            :ARG0-of (h2 / have-org-role-91 
+                  :ARG2 (c / correspondent~e.1))) 
+      :op2 (p2 / person 
+            :ARG0-of (h / have-org-role-91~e.7 
+                  :ARG1 (o / organization :wiki - 
+                        :name (n2 / name :op1 "Guangdong"~e.8 :op2 "Science"~e.9 :op3 "and"~e.10 :op4 "Technology"~e.11 :op5 "Assocation"~e.12)) 
+                  :ARG2 (c2 / correspondent~e.1,6 
+                        :mod (p4 / press~e.5)))))
+
+
+# sentence: On the 17 th , two of Russia 's strategic bombers flew for a short time close to British airspace , and two fighter planes from the British Royal Air Force urgently took off to intercept them .
+# co-referenced nodes: a p c3 2
+(c4 / cause-01 
+      :ARG0 (f / fly-01~e.11 
+            :ARG1 (a / aircraft~e.10 :quant 2~e.5 
+                  :ARG0-of~e.10 (b / bomb-01~e.10) 
+                  :poss~e.8 (c / country :wiki "Russia" 
+                        :name (n / name :op1 "Russia"~e.7)) 
+                  :ARG1-of (i / include-91 
+                        :ARG2 (a2 / aircraft~e.10 
+                              :ARG0-of~e.10 (b2 / bomb-01~e.10))) 
+                  :mod (s / strategy)) 
+            :duration~e.12 (s2 / short~e.14) 
+            :ARG1-of (c2 / close-10~e.16 
+                  :ARG2~e.17 (a3 / airspace~e.19 
+                        :mod (c3 / country :wiki "United_Kingdom" 
+                              :name (n2 / name :op1 "Great" :op2 "Britain"~e.18)))) 
+            :time~e.15 (d / date-entity :day 17~e.2)) 
+      :ARG1 (t / take-off-19~e.32,33 
+            :ARG1 (p / plane~e.24 :quant 2~e.22 
+                  :ARG0-of (f2 / fight-01~e.23) 
+                  :poss~e.25 (m / military :wiki "Royal_Air_Force" 
+                        :name (n3 / name :op1 "British"~e.27 :op2 "Royal"~e.28 :op3 "Air"~e.29 :op4 "Force"~e.30) 
+                        :mod c3)) 
+            :manner~e.31 (u / urgent~e.31) 
+            :purpose (i2 / intercept-01~e.35 
+                  :ARG0 p 
+                  :ARG1 a)))
+
+
+# sentence: Russian Deputy Minister of Foreign Affairs Alexander Grushko said that this move by Britain has caused relations between the two countries to become directly confrontational .
+# co-referenced nodes: c3 c2
+(s / say-01~e.8 
+      :ARG0 (p / person :wiki - 
+            :name (n / name :op1 "Alexander"~e.6 :op2 "Grushko"~e.7) 
+            :ARG0-of (h / have-org-role-91 
+                  :ARG1 (c3 / country~e.20 :wiki "Russia" 
+                        :name (n3 / name :op1 "Russia"~e.0)) 
+                  :ARG2 (m / minister~e.2 
+                        :mod (d / deputy~e.1) 
+                        :mod~e.3 (a / affair~e.5 
+                              :mod (f / foreign~e.4))))) 
+      :ARG1~e.9 (c / cause-01~e.15,21 
+            :ARG0 (m2 / move-03~e.11 
+                  :ARG0 (c2 / country~e.20 :wiki "United_Kingdom" 
+                        :name (n2 / name :op1 "Britain"~e.13)) 
+                  :mod (t / this~e.10)) 
+            :ARG1 (b / become-01~e.22 
+                  :ARG1 (r / relation-03~e.16 
+                        :ARG0 c3 
+                        :ARG2 c2) 
+                  :ARG2 (c4 / confront-01 
+                        :ARG1-of (d2 / direct-02~e.23)))))
+
+
+# sentence: The meeting commended 131 of Shanghai 's brandname products and service enterprises in 2006 , and made arrangements for further steps in the brandname strategic promotion work .
+# co-referenced nodes: m
+(a3 / and~e.15 
+      :op1 (c / commend-01~e.2 
+            :ARG0 (m / meet-03~e.1) 
+            :ARG1~e.4 (a / and~e.9 :quant 131~e.3 
+                  :op1 (p / product~e.8 
+                        :mod (b / brandname~e.7)) 
+                  :op2 (e / enterprise~e.11 
+                        :mod (s / service~e.10)) 
+                  :mod (c2 / city :wiki "Shanghai" 
+                        :name (n / name :op1 "Shanghai"~e.5)) 
+                  :ARG1-of (i / include-91 
+                        :ARG2 (a2 / and~e.9 
+                              :op1 (p2 / product~e.8 
+                                    :mod (b2 / brandname~e.7)) 
+                              :op2 (e2 / enterprise~e.11 
+                                    :mod (s2 / service~e.10))))) 
+            :time~e.12 (d / date-entity :year 2006~e.13)) 
+      :op2 (a4 / arrange-01~e.16,17 
+            :ARG0 m 
+            :ARG1~e.18 (p3 / promote-02~e.25 
+                  :ARG1 (b3 / brandname~e.23) 
+                  :mod (s3 / strategic~e.24) 
+                  :mod (f / further~e.19))))
+
+
+# sentence: Xinhua News Agency , Xining , July 9 , Special Sport Wire ( Correspondent Lu Xueli ) The sixth Tour of Qinghai Lake International Road Cycling Race , which will start soon , has attracted a lot of attention .
+# co-referenced nodes: t
+(w / wire-01~e.11 
+      :ARG0 (p2 / person :wiki - 
+            :name (n / name :op1 "Lu"~e.14 :op2 "Xueli"~e.15) 
+            :ARG0-of (h / have-org-role-91 
+                  :ARG2 (c / correspondent~e.13))) 
+      :ARG1 (a / attract-01~e.34 
+            :ARG0 (t / tour~e.19 
+                  :ord (o / ordinal-entity~e.18 :value~e.18 6~e.18) 
+                  :subevent-of~e.20 (g / game :wiki "Tour_of_Qinghai_Lake" 
+                        :name (n4 / name :op1 "Qinghai"~e.21 :op2 "Lake"~e.22 :op3 "International"~e.23 :op4 "Road"~e.24 :op5 "Cycling"~e.25 :op6 "Race"~e.26)) 
+                  :ARG1-of (s5 / start-01~e.30 
+                        :time (s6 / soon~e.31))) 
+            :ARG1 (a2 / attend-02 
+                  :ARG1 t 
+                  :quant (l / lot~e.36))) 
+      :mod (s2 / sport~e.10) 
+      :ARG1-of (s / special-02~e.9) 
+      :time (d / date-entity :month~e.6 7~e.6 :day 9~e.7) 
+      :medium (p / publication :wiki "Xinhua_News_Agency" 
+            :name (n2 / name :op1 "Xinhua"~e.0 :op2 "News"~e.1 :op3 "Agency"~e.2)) 
+      :mod (c2 / city :wiki "Xining" 
+            :name (n3 / name :op1 "Xining"~e.4)))
+
+
+# sentence: Staff with the Tour organizing committee revealed that the level of support given by CITIC Group this time will be the highest in the history of the Tour .
+# co-referenced nodes: t
+(r / reveal-01~e.6 
+      :ARG0 (p / person 
+            :ARG0-of (h3 / have-org-role-91 
+                  :ARG1 (c / committee~e.5 
+                        :ARG0-of (o / organize-01~e.4 
+                              :ARG1 (t / tour~e.3))) 
+                  :ARG2 (s / staff~e.0))) 
+      :ARG1~e.7 (h / high-02~e.21 
+            :ARG1 (l / level~e.9 
+                  :mod~e.10 (s2 / support-01~e.11,12 
+                        :ARG0 (g / group :wiki "CITIC_Group" 
+                              :name (n / name :op1 "CITIC"~e.14 :op2 "Group"~e.15)) 
+                        :ARG1 t 
+                        :time~e.17 (t2 / this~e.16))) 
+            :degree~e.21 (m / most~e.21) 
+            :prep-in~e.22 (h2 / history~e.24 
+                  :mod~e.25 t~e.27)))
+
+
+# sentence: During the performance of more than one hour , 19 Chinese Shaolin athletes took turns in taking the stage and demonstrating their skills .
+# co-referenced nodes: a2
+(a / and~e.19 
+      :op1 (t3 / take-01~e.13,16 
+            :ARG0 (a2 / athletes~e.12 :quant 19~e.9 
+                  :mod (c / country :wiki "China" 
+                        :name (n / name :op1 "China"~e.10)) 
+                  :mod (s2 / Shaolin~e.11)) 
+            :ARG1 (s / stage~e.18)) 
+      :op2 (d / demonstrate-01~e.20 
+            :ARG0 a2 
+            :ARG1 (s3 / skill~e.22 
+                  :poss~e.21 a2~e.21)) 
+      :manner (t / take-01~e.13 
+            :ARG0 a2 
+            :ARG1 (t2 / turn~e.14)) 
+      :time~e.0 (p / performance~e.2 
+            :duration~e.3 (m / more-than~e.4,5 
+                  :op1 (t4 / temporal-quantity :quant 1~e.6 
+                        :unit (h / hour~e.7)))))
+
+
+# sentence: And performances such as " hundred animals compete for the throne , " and " 18 styles of martial arts " dazzled people ; while " three heroes battle Lu Bu " and
+# co-referenced nodes: -
+(c / contrast-01~e.24 
+      :ARG1 (d / dazzle-01~e.21 
+            :ARG0 (t / thing~e.1 
+                  :ARG1-of~e.1 (p2 / perform-01~e.1 
+                        :example~e.2,3 (a2 / and~e.0,13 
+                              :op1 (s / show :wiki - 
+                                    :name (n / name :op1 "Hundred"~e.5 :op2 "Animals"~e.6 :op3 "Compete"~e.7 :op4 "for"~e.8 :op5 "the"~e.9 :op6 "Throne"~e.10)) 
+                              :op2 (s2 / show :wiki - 
+                                    :name (n2 / name :op1 18~e.15 :op2 "Styles"~e.16 :op3 "of"~e.17 :op4 "Martial"~e.18 :op5 "Arts"~e.19))))) 
+            :ARG1 (p / person~e.22)) 
+      :ARG2 (p3 / perform-01~e.1 
+            :ARG1 (s3 / show :wiki - 
+                  :name (n3 / name :op1 "Three"~e.26 :op2 "Heroes"~e.27 :op3 "Battle"~e.28 :op4 "Lu"~e.29 :op5 "Bu"~e.30))))
+
+
+# sentence: The Ensemble is due to leave Yemen on the 26 th of this month to go to Jordan to continue their performance tour .
+# co-referenced nodes: t
+(s / suppose-02 
+      :ARG1 (t / team :wiki - 
+            :name (n / name :op1 "The" :op2 "Ensemble")) 
+      :ARG2 (l / leave-11~e.5 
+            :ARG0 t~e.0,1,8 
+            :ARG1 (c / country :wiki "Yemen" 
+                  :name (n2 / name :op1 "Yemen"~e.6)) 
+            :ARG2~e.16 (c2 / country :wiki "Jordan" 
+                  :name (n3 / name :op1 "Jordan"~e.17)) 
+            :time~e.7 (d / date-entity :day 26~e.9 
+                  :mod (m / month~e.13 
+                        :mod (t3 / this~e.12))) 
+            :purpose (c3 / continue-01~e.19 
+                  :ARG0 t 
+                  :ARG1 (t2 / tour~e.22 
+                        :mod (p / perform-01~e.21) 
+                        :poss~e.20 t~e.20))))
+
+
+# sentence: He pointed out that the British central bank and the Canadian central bank have both recently raised their interest rates , so as to curb inflation expectations .
+# co-referenced nodes: a
+(p / point-out-02~e.1,2 
+      :ARG0 (h / he~e.0) 
+      :ARG1~e.3 (r / raise-01~e.16 
+            :ARG0 (a / and~e.8 
+                  :op1 (b / bank~e.7,12 
+                        :mod (c / central~e.6,11) 
+                        :mod (c3 / country :wiki "United_Kingdom" 
+                              :name (n / name :op1 "Great" :op2 "Britain"~e.5))) 
+                  :op2 (b2 / bank~e.7 
+                        :mod (c2 / central~e.6) 
+                        :mod (c4 / country :wiki "Canada" 
+                              :name (n2 / name :op1 "Canada"~e.10)))) 
+            :ARG1 (r3 / rate~e.19 
+                  :mod (i / interest~e.18) 
+                  :poss~e.17 a~e.17) 
+            :time (r2 / recent~e.15) 
+            :purpose~e.21,22,23 (c5 / curb-01~e.24 
+                  :ARG0 a 
+                  :ARG1 (t / thing~e.26 
+                        :ARG1-of~e.26 (e / expect-01~e.26) 
+                        :topic (i2 / inflation~e.25)))))
+
+
+# sentence: I 'll be returning to my country in September . Now there are two places I can go to . Can everyone help me see which is more suitable for me ?
+# co-referenced nodes: i i3
+(m / multi-sentence 
+      :snt1 (r / return-01~e.3 
+            :ARG1 (i / i~e.0) 
+            :ARG4~e.4 (c / country~e.6 
+                  :poss~e.5 i~e.5) 
+            :time~e.7 (d / date-entity :month~e.8 9~e.8)) 
+      :snt2 (p2 / place~e.14 :quant 2~e.13 
+            :ARG4-of (g / go-02~e.17 
+                  :ARG0 (i2 / i~e.15) 
+                  :time (n / now~e.10) 
+                  :ARG1-of (p / possible-01~e.16))) 
+      :snt3 (p3 / possible-01~e.20 
+            :ARG1 (h / help-01~e.22 
+                  :ARG0 (e / everyone~e.21) 
+                  :ARG1 (s / see-01~e.24 
+                        :ARG0 i3~e.23 
+                        :ARG1 (t / thing~e.28 
+                              :ARG1-of~e.28 (s2 / suitable-04~e.28 
+                                    :ARG2 i3) 
+                              :degree (m2 / more~e.27))) 
+                  :ARG2~e.29 (i3 / i~e.30))))
+
+
+# sentence: 1 . Chinese Academy of Sciences . To be trained according to the Hundred Talents Program and paid according to the Hundred Talents Program benefits , but there is no guarantee I will definitely get it .
+# co-referenced nodes: i s2 -
+(m2 / multi-sentence 
+      :snt1 (o / organization :wiki "Chinese_Academy_of_Sciences" 
+            :name (n / name :op1 "Chinese"~e.2 :op2 "Academy"~e.3 :op3 "of"~e.4 :op4 "Sciences"~e.5) 
+            :li (x / 1~e.0)) 
+      :snt2 (c / contrast-01~e.26 
+            :ARG1 (s / suppose-02 
+                  :ARG1 (a / and~e.16 
+                        :op1 (t / train-01~e.9 
+                              :ARG1-of (c2 / conform-01 
+                                    :ARG2 (s2 / show :wiki - 
+                                          :name (n2 / name :op1 "Hundred"~e.13 :op2 "Talents"~e.14 :op3 "Program"~e.15)))) 
+                        :op2 (p / pay-01~e.17 
+                              :ARG1-of (c3 / conform-01 
+                                    :ARG2 (b / benefit~e.24 
+                                          :mod s2~e.21,22,23))))) 
+            :ARG2 (g / guarantee-01~e.30 :polarity~e.29 -~e.29 
+                  :ARG1 (g2 / get-01~e.34 
+                        :ARG0 (i / i~e.31) 
+                        :ARG1 (i2 / it~e.35) 
+                        :mod (d / definite~e.33)) 
+                  :ARG2 i)))
+
+
+# sentence: Although there are still papers to be published after I return to my country , they 're quite useless for the application to the Hundred Talents Program .
+# co-referenced nodes: i p
+(h / have-concession-91~e.0 
+      :ARG1 (u / useless~e.18 
+            :mod (q / quite~e.17) 
+            :domain~e.2,16 p 
+            :purpose~e.19 (a3 / apply-01~e.21 
+                  :ARG2~e.22 (s2 / show :wiki - 
+                        :name (n / name :op1 "Hundred"~e.24 :op2 "Talents"~e.25 :op3 "Program"~e.26)))) 
+      :ARG2 (s / suppose-02 
+            :ARG1 (p / paper~e.4) 
+            :ARG2 (p2 / publish-01~e.7 
+                  :ARG1 p 
+                  :time (a / after~e.8 
+                        :op1 (r / return-01~e.10 
+                              :ARG1 (i / i~e.9) 
+                              :ARG4~e.11 (c / country~e.13 
+                                    :poss~e.12 i~e.12)))) 
+            :mod (s3 / still~e.3)))
+
+
+# sentence: I can work on my current research topic .
+# co-referenced nodes: i
+(p / possible-01~e.1 
+      :ARG1 (w / work-01~e.2 
+            :ARG0 (i / i~e.0,4) 
+            :ARG1~e.3 (t / topic~e.7 
+                  :mod (r / research-01~e.6 
+                        :ARG0 i) 
+                  :time (c / current~e.5))))
+
+
+# sentence: My husband suggested that I go to 1 because the starting point is higher , the current pay is alright , and if I can n't make it there in future I can still go to 2 .
+# co-referenced nodes: i t
+(s / suggest-01~e.2 
+      :ARG0 (p4 / person 
+            :ARG0-of (h / have-rel-role-91 
+                  :ARG1~e.0 (i / i~e.0) 
+                  :ARG2 (h4 / husband~e.1))) 
+      :ARG1~e.3 (g / go-02~e.5,34 
+            :ARG0 i 
+            :ARG4 (t / thing :mod 1~e.4,7,23,31) 
+            :ARG1-of (c / cause-01~e.6,8,35 
+                  :ARG0 (a / and~e.21 
+                        :op1 (h2 / high-02~e.13 
+                              :ARG1 (p / point~e.11 
+                                    :mod (s2 / start-01~e.10)) 
+                              :degree~e.13 (m / more~e.13)) 
+                        :op2 (a2 / alright~e.19 
+                              :domain~e.18 (p2 / pay-01~e.17 
+                                    :time (c2 / current~e.16))) 
+                        :op3 (h3 / have-condition-91~e.22 
+                              :ARG1 (p3 / possible-01~e.24,32 
+                                    :ARG1 (g2 / go-02~e.5 
+                                          :ARG0 i 
+                                          :ARG4~e.35 (t2 / thing :mod 2~e.36) 
+                                          :time~e.29 (f / future~e.30))) 
+                              :ARG2 (p5 / possible-01~e.24 :polarity~e.25 -~e.25 
+                                    :ARG1 (m2 / make-it-14~e.26,27 
+                                          :ARG0 i 
+                                          :ARG1 t)))))) 
+      :ARG2 i)
+
+
+# sentence: Later on , my teacher took me in his arms and I felt it very soft and very warm . After that , I got up and gave my teacher a kiss on the forehead .
+# co-referenced nodes: i p2 i3
+(m / multi-sentence 
+      :snt1 (a / and 
+            :op1 (t / take-01~e.5 
+                  :ARG0 (p2 / person~e.4 
+                        :ARG0-of~e.4 (t2 / teach-01~e.4 
+                              :ARG2 i)) 
+                  :ARG1 (i / i~e.6,11) 
+                  :ARG3~e.7 (a3 / arm~e.9 
+                        :part-of~e.8 p2~e.8) 
+                  :time (l / late~e.0 
+                        :degree~e.0 (m2 / more~e.0))) 
+            :op2 (f / feel-01~e.12 
+                  :ARG0 i 
+                  :ARG1 (i2 / it~e.13 
+                        :ARG1-of (s / soft-02~e.15) 
+                        :ARG1-of (w / warm-07~e.18 
+                              :degree (v / very~e.14,17))))) 
+      :snt2 (a2 / and 
+            :op1 (g / get-05~e.24 
+                  :ARG1 (i3 / i~e.3,23,28) 
+                  :ARG2 (u / up~e.25)) 
+            :op2 (k2 / kiss-01~e.31 
+                  :ARG0 i3 
+                  :ARG1 (p / person~e.29 
+                        :poss i3 
+                        :ARG0-of~e.29 (t3 / teach-01~e.29 
+                              :ARG2 i3)) 
+                  :location~e.32 (f2 / forehead~e.34)) 
+            :time (a4 / after~e.20 
+                  :op1 (t4 / that~e.21))))
+
+
+# sentence: It was not only that . He also said the old bicycle was bought at a roadside yard sale by his retired friend , and not free of charge .
+# co-referenced nodes: h -
+(m / multi-sentence 
+      :snt1 (t / that~e.4 
+            :mod (o / only~e.3 :polarity~e.2 -~e.2)) 
+      :snt2 (s / say-01~e.8 
+            :ARG0 (h / he~e.6,20) 
+            :ARG1 (b / buy-01~e.13 
+                  :ARG0 (p / person 
+                        :ARG0-of (r2 / retire-01~e.21) 
+                        :ARG0-of (h2 / have-rel-role-91 
+                              :ARG1 h 
+                              :ARG2 (f / friend~e.22))) 
+                  :ARG1 (b2 / bicycle~e.11 
+                        :mod (o2 / old~e.10)) 
+                  :ARG3 (f2 / free-03~e.26 :polarity~e.25 -~e.25 
+                        :ARG2~e.27 (c / charge-01~e.28)) 
+                  :subevent-of~e.14 (s2 / sell-01~e.18 
+                        :mod (y / yard~e.17) 
+                        :location (r / roadside~e.16))) 
+            :mod (a / also~e.7)))
+
+
+# sentence: He just emailed that friend to ask him how much it cost .
+# co-referenced nodes: h p
+(e / email-01~e.2 
+      :ARG0 (h / he~e.0) 
+      :ARG1 (a / ask-01~e.6 
+            :ARG0 h~e.7 
+            :ARG1 (c / cost-01~e.11 
+                  :ARG1 (i / it~e.10) 
+                  :ARG2 (a2 / amr-unknown~e.8,9)) 
+            :ARG2 p) 
+      :ARG2 (p / person 
+            :mod (t / that~e.3) 
+            :ARG0-of (h2 / have-rel-role-91 
+                  :ARG1 h 
+                  :ARG2 (f / friend~e.4))) 
+      :time (j / just~e.1))
+
+
+# sentence: However , my friend has to work and very probably cannot come back immediately . I 'm afraid I can n't drag for these few days .
+# co-referenced nodes: p3 i3 -
+(m / multi-sentence 
+      :snt1 (a / and~e.7 
+            :op1 (o / obligate-01~e.5 
+                  :ARG1 (p3 / person 
+                        :ARG0-of (h / have-rel-role-91~e.4 
+                              :ARG1~e.2 (i / i~e.2) 
+                              :ARG2 (f / friend~e.3))) 
+                  :ARG2 (w / work-01~e.6 
+                        :ARG0 p3)) 
+            :op2 (c / come-01~e.11 
+                  :ARG1 p3 
+                  :direction (b / back~e.12) 
+                  :time (i2 / immediate~e.13) 
+                  :mod (p2 / probable~e.9 :polarity~e.10 -~e.10 
+                        :degree (v / very~e.8)))) 
+      :snt2 (f2 / fear-01~e.17 
+            :ARG0 (i3 / i~e.15,18) 
+            :ARG1 (p / possible-01~e.19 :polarity~e.20 -~e.20 
+                  :ARG1 (d / drag-01~e.21 
+                        :ARG0 i3 
+                        :ARG1~e.22 (f4 / few~e.24 
+                              :op1 (t2 / temporal-quantity :quant 1~e.18 
+                                    :unit (d2 / day~e.25)) 
+                              :mod (t / this~e.23))))))
+
+
+# sentence: Yi Jianlian was selected by Milwaukee Bucks as sixth pick but he was n't willing to play there , leading to much heated discussion recently .
+# co-referenced nodes: p
+(c / contrast-01~e.10 
+      :ARG1 (s / select-01~e.3 
+            :ARG0~e.4 (t / team :wiki "Milwaukee_Bucks" 
+                  :name (n / name :op1 "Milwaukee"~e.5 :op2 "Bucks"~e.6)) 
+            :ARG1 (p / person :wiki "Yi_Jianlian" 
+                  :name (n2 / name :op1 "Yi"~e.0 :op2 "Jianlian"~e.1)) 
+            :ARG3~e.7 (p2 / pick~e.9 
+                  :ord (o / ordinal-entity~e.8 :value~e.8 6~e.8))) 
+      :ARG2 (w / will-02~e.14 :polarity~e.13 -~e.13 
+            :ARG0 p~e.11 
+            :ARG1 (p3 / play-01~e.16 
+                  :ARG0 p 
+                  :location (t2 / there~e.17))) 
+      :ARG0-of (l / lead-03~e.19 
+            :ARG2 (d / discuss-01~e.23 
+                  :ARG1-of (h / heat-01~e.22) 
+                  :quant (m / much~e.21) 
+                  :time~e.7 (r / recent~e.24))))
+
+
+# sentence: Why must he go to a city with many Chinese people ?
+# co-referenced nodes: h
+(o / obligate-01~e.1 
+      :ARG0 (a / amr-unknown~e.0) 
+      :ARG1 (h / he~e.2) 
+      :ARG2 (g / go-02~e.3 
+            :ARG0 h 
+            :ARG4~e.4 (c / city~e.6 
+                  :prep-with~e.7 (p / people~e.10 
+                        :mod (c2 / country :wiki "China" 
+                              :name (n / name :op1 "China"~e.9)) 
+                        :quant (m / many~e.8)))))
+
+
+# sentence: Moreover , he is not qualified to bargain with his owner when he has yet to prove his power on the NBA court .
+# co-referenced nodes: h
+(q / qualify-02~e.5 :polarity~e.4 -~e.4 
+      :ARG1 (h / he~e.2,12) 
+      :ARG2 (b / bargain-01~e.7 
+            :ARG0 h 
+            :ARG2~e.8 (p / person~e.10 
+                  :ARG0-of~e.10 (o / own-01~e.10 
+                        :ARG1~e.9 h~e.9))) 
+      :ARG1-of (c / cause-01~e.6 
+            :ARG0 (h2 / have-11~e.13 
+                  :ARG0 h 
+                  :ARG1 (y / yet~e.14) 
+                  :ARG2 (p2 / prove-01~e.16 
+                        :ARG0~e.17 h~e.17 
+                        :ARG1 (p3 / power~e.18) 
+                        :location~e.19 (c2 / court~e.22 
+                              :mod (l / league :wiki "National_Basketball_Association" 
+                                    :name (n / name :op1 "NBA"~e.21)))))))
+
+
+# sentence: On second thought , he can absolutely play in another city when his rookie player contract ends after three to four years .
+# co-referenced nodes: p2
+(t / think-01~e.2 
+      :ARG1 (p / possible-01~e.5 
+            :ARG1 (p2 / play-01~e.7,14 
+                  :ARG0 (h / he~e.4,12) 
+                  :location (c / city~e.10 
+                        :mod (a / another~e.9)) 
+                  :time~e.11 (e / end-01~e.16 
+                        :ARG1 (c2 / contract~e.15 
+                              :mod (p3 / person 
+                                    :mod (r / rookie~e.13) 
+                                    :ARG0-of p2)) 
+                        :time~e.11 (a2 / after~e.17 
+                              :op1 (b / between 
+                                    :op1 (t3 / temporal-quantity :quant 3~e.18 
+                                          :unit (y / year~e.21)) 
+                                    :op2 (t4 / temporal-quantity :quant 4~e.20 
+                                          :unit (y2 / year~e.21)))))) 
+            :mod (a3 / absolute~e.6)) 
+      :ord (o / ordinal-entity~e.1 :value~e.1 2~e.1))
+
+
+# sentence: Yao 's team is obviously a notch better in terms of attitude and way of dealing with things . I really do not wish for Yi 's team to become the second Wang Zhizhi .
+# co-referenced nodes: t
+(m / multi-sentence 
+      :snt1 (g / good~e.7 
+            :degree~e.7 (m2 / more~e.7) 
+            :domain~e.3 (a3 / and~e.12 
+                  :op1 (a4 / attitude~e.11 
+                        :poss (t / team~e.2 
+                              :poss~e.1 (p / person :wiki "Yao_Ming" 
+                                    :name (n6 / name :op1 "Yao"~e.0)))) 
+                  :op2 (w / way~e.13 
+                        :mod~e.14 (d2 / deal-01~e.15,21 
+                              :ARG0 t 
+                              :ARG2 (t2 / thing~e.17)))) 
+            :mod (o / obvious~e.4) 
+            :mod (n / notch~e.6)) 
+      :snt2 (w2 / wish-01~e.23 :polarity~e.22 -~e.22 
+            :ARG0 (i / i~e.19) 
+            :ARG1~e.24 (b / become-01~e.29 
+                  :ARG1 (t3 / team~e.27 
+                        :poss~e.26 (p2 / person :wiki "Yi_Jianlian" 
+                              :name (n3 / name :op1 "Yi"~e.25))) 
+                  :ARG2 (p3 / person :wiki "Wang_Zhizhi" 
+                        :name (n4 / name :op1 "Wang"~e.32 :op2 "Zhizhi"~e.33) 
+                        :ord (o2 / ordinal-entity~e.31 :value~e.31 2~e.31))) 
+            :mod (r / real~e.20)))
+
+
+# sentence: In early 1919 , Gu Weijun , the Chinese envoy to the United States , went to France to participate in the Paris Peace Conference as the plenipotentiary of his own country 's government .
+# co-referenced nodes: p3
+(g / go-02~e.15 
+      :ARG0 (p3 / person :wiki "V._K._Wellington_Koo" 
+            :name (n / name :op1 "Gu"~e.4 :op2 "Weijun"~e.5) 
+            :ARG0-of (h / have-org-role-91 
+                  :ARG1 (c / country :wiki "China" 
+                        :name (n2 / name :op1 "China"~e.8)) 
+                  :ARG2 (e / envoy~e.9 
+                        :destination~e.10 (c2 / country :wiki "United_States" 
+                              :name (n3 / name :op1 "United"~e.12 :op2 "States"~e.13))))) 
+      :ARG4~e.16,18 (c3 / country :wiki "France" 
+            :name (n4 / name :op1 "France"~e.17)) 
+      :time~e.25 (e2 / early~e.1 
+            :op1 (d / date-entity :year 1919~e.2)) 
+      :purpose (p / participate-01~e.19 
+            :ARG0 p3 
+            :ARG1~e.20 (c4 / conference :wiki "Paris_Peace_Conference,_1919" 
+                  :name (n5 / name :op1 "Paris"~e.22 :op2 "Peace"~e.23 :op3 "Conference"~e.24)) 
+            :mod~e.25 (p2 / plenipotentiary~e.27 
+                  :ARG2-of (h2 / have-org-role-91~e.32 
+                        :ARG1 (g2 / government-organization~e.33 
+                              :ARG0-of~e.33 (g3 / govern-01~e.33 
+                                    :ARG1~e.32 (c5 / country~e.31 
+                                          :source-of p3)))))))
+
+
+# sentence: Xiao Kejian , Gu Weijun 's good friend , was arrested by French police for organizing a strike in Paris to fight for equal pay for equal work for Chinese workers in France .
+# co-referenced nodes: p c e2
+(a / arrest-01~e.10 
+      :ARG0~e.11 (p3 / police~e.13 
+            :mod (c / country :wiki "France" 
+                  :name (n3 / name :op1 "France"~e.12))) 
+      :ARG1 (p / person :wiki - 
+            :name (n / name :op1 "Xiao"~e.0 :op2 "Kejian"~e.1) 
+            :ARG0-of (h / have-rel-role-91~e.5 
+                  :ARG1 (p2 / person :wiki "V._K._Wellington_Koo" 
+                        :name (n2 / name :op1 "Gu"~e.3 :op2 "Weijun"~e.4)) 
+                  :ARG2 (f3 / friend~e.7 
+                        :mod (g / good~e.6)))) 
+      :ARG2~e.14 (o / organize-01~e.15 
+            :ARG0 p 
+            :ARG1 (s / strike-02~e.17 
+                  :purpose (f2 / fight-01~e.21 
+                        :ARG0 p 
+                        :ARG2~e.22 (p4 / pay-01~e.24 
+                              :ARG2~e.28 (p5 / person~e.30 
+                                    :ARG0-of~e.30 (w / work-01~e.30) 
+                                    :location~e.31 c~e.32 
+                                    :mod (c3 / country :wiki "China" 
+                                          :name (n5 / name :op1 "China"~e.29))) 
+                              :ARG3~e.25 (w2 / work-01~e.27 
+                                    :ARG1-of (e2 / equal-01~e.26)) 
+                              :ARG1-of e2~e.23))) 
+            :location~e.18 (c2 / city :wiki "Paris" 
+                  :name (n4 / name :op1 "Paris"~e.19))))
+
+
+# sentence: However , his extreme action of joining Korean revolutionists in bombing the hotel the Japanese delegation lived in made Korea and China the center of public opinion .
+# co-referenced nodes: c
+(h3 / have-concession-91~e.0 
+      :ARG1 (m / make-02~e.18 
+            :ARG0 (j2 / join-01~e.6 
+                  :ARG0~e.2 (h4 / he~e.2) 
+                  :ARG1 (b2 / bomb-01~e.10 
+                        :ARG0 (r2 / revolutionist~e.8 
+                              :mod (c / country :wiki "Korea" 
+                                    :name (n / name :op1 "Korea"~e.7))) 
+                        :ARG1 (h2 / hotel~e.12 
+                              :location-of (l / live-01~e.16 
+                                    :ARG0 (d / delegation~e.15 
+                                          :source (c2 / country :wiki "Japan" 
+                                                :name (n2 / name :op1 "Japan"~e.14)))))) 
+                  :mod (a / action~e.4 
+                        :mod (e / extreme~e.3))) 
+            :ARG1 (c3 / center~e.23 
+                  :mod~e.24 (o / opine-01~e.26 
+                        :ARG0 (p2 / public~e.25)) 
+                  :domain (a2 / and~e.20 
+                        :op1 c~e.19 
+                        :op2 (c4 / country :wiki "China" 
+                              :name (n3 / name :op1 "China"~e.21))))))
+
+
+# sentence: The Paris Peace Conference rejected China 's just request in the end and decided to let Japan take over Germany 's special rights over Jiaodong Peninsula .
+# co-referenced nodes: c c4
+(a / and~e.12 
+      :op1 (r / reject-01~e.4 
+            :ARG0 (c / conference :wiki "Paris_Peace_Conference,_1919" 
+                  :name (n / name :op1 "Paris"~e.1 :op2 "Peace"~e.2 :op3 "Conference"~e.3)) 
+            :ARG1 (r2 / request-01~e.8 
+                  :ARG0~e.6 (c2 / country :wiki "China" 
+                        :name (n2 / name :op1 "China"~e.5)) 
+                  :ARG1-of (j / just-02~e.7)) 
+            :time~e.9 (e / end-01~e.11)) 
+      :op2 (d / decide-01~e.13,17 
+            :ARG0 c 
+            :ARG1 (l / let-01~e.15 
+                  :ARG0 c 
+                  :ARG1 (t / take-over-12~e.18,23 
+                        :ARG0 (c3 / country :wiki "Japan" 
+                              :name (n3 / name :op1 "Japan"~e.16)) 
+                        :ARG1 (r3 / right~e.22 
+                              :ARG1-of (s / special-02~e.21) 
+                              :poss~e.20 (c4 / country :wiki "Germany" 
+                                    :name (n4 / name :op1 "Germany"~e.19)) 
+                              :topic (p / peninsula~e.25 :wiki "Shandong_Peninsula" 
+                                    :name (n5 / name :op1 "Jiaodong"~e.24))) 
+                        :ARG2 c4))))
+
+
+# sentence: This caused the momentous " May 4 th " Movement to break out in the country , and Xiao Kejian and others also protested in Paris .
+# co-referenced nodes: t
+(a / and 
+      :op1 (c / cause-01~e.1 
+            :ARG0 (t / this~e.0) 
+            :ARG1 (b / break-out-06~e.11,12 
+                  :ARG0 t 
+                  :ARG1 (m / movement~e.9 :wiki "May_Fourth_Movement" 
+                        :name (n / name :op1 "May"~e.5 :op2 4~e.6 :op3 "th"~e.7) 
+                        :mod (m2 / momentous~e.3)) 
+                  :location~e.13 (c2 / country~e.15))) 
+      :op2 (p / protest-01~e.23 
+            :ARG0 (a2 / and~e.17,20 
+                  :op1 (p2 / person :wiki - 
+                        :name (n2 / name :op1 "Xiao"~e.18 :op2 "Kejian"~e.19)) 
+                  :op2 (o / other~e.21)) 
+            :location~e.24 (c3 / city :wiki "Paris" 
+                  :name (n3 / name :op1 "Paris"~e.25)) 
+            :mod (a3 / also~e.22)))
+
+
+# sentence: 1 . Best seasoning - edible vinegar : Helps you relieve tiredness and is very good in inhibiting bacteria .
+# co-referenced nodes: y
+(m / multi-sentence 
+      :snt1 (v / vinegar~e.6 
+            :ARG1-of (e / eat-01 
+                  :ARG1-of (p / possible-01)) 
+            :domain (s / season-01~e.3 
+                  :mod (g / good~e.2 
+                        :degree~e.2 (m2 / most~e.2))) 
+            :li (x / 1~e.0)) 
+      :snt2 (a / and~e.12 
+            :op1 (h / help-01~e.8 
+                  :ARG1 (r / relieve-01~e.10 
+                        :ARG1 (t / tire-01 
+                              :ARG1 y)) 
+                  :ARG2 (y / you~e.9)) 
+            :op2 (i / inhibit-01~e.17 
+                  :ARG1 (b2 / bacteria~e.18) 
+                  :mod (g2 / good~e.15 
+                        :degree (v2 / very~e.14)))))
+
+
+# sentence: 5 . Best beverage - hot tea : Hot tea 's cooling ability far exceeds that of cold beverages . It is superior among beverages that relieve summer heat .
+# co-referenced nodes: t2
+(m / multi-sentence 
+      :snt1 (b / beverage~e.3 
+            :mod (g / good~e.2 
+                  :degree~e.2 (m2 / most~e.2)) 
+            :domain (t / tea~e.6 
+                  :ARG1-of (h / hot-05~e.5)) 
+            :li (x / 5~e.0)) 
+      :snt2 (e / exceed-01~e.14 
+            :ARG0 (c / capable-01~e.12 
+                  :ARG1~e.10 (t2 / tea~e.9 
+                        :ARG1-of (h2 / hot-05~e.8)) 
+                  :ARG2 (c2 / cool-01~e.11 
+                        :ARG0 t2)) 
+            :ARG1 (c3 / capable-01~e.12 
+                  :ARG1~e.16 (b3 / beverage~e.18 
+                        :mod (c4 / cold~e.17))) 
+            :manner (f / far~e.13)) 
+      :snt3 (s / superior-01~e.22 
+            :ARG1 (i / it~e.20) 
+            :ARG2 (b4 / beverage~e.24 
+                  :ARG0-of (r / relieve-01~e.26 
+                        :ARG1 (h3 / heat~e.28 
+                              :mod (s2 / summer~e.27))))))
+
+
+# sentence: 6 . Best nutrition - vitamin E : Scientific studies show that vitamin E can minimize the danger indices of sunlight , ozone , and fatigue .
+# co-referenced nodes: x2
+(m / multi-sentence 
+      :snt1 (n / nutrition~e.3 
+            :mod (g / good~e.2 
+                  :degree~e.2 (m3 / most~e.2)) 
+            :domain (v / vitamin~e.5 
+                  :mod (x2 / E~e.6)) 
+            :li (x / 6~e.0)) 
+      :snt2 (s / show-01~e.10 
+            :ARG0 (s2 / study-01~e.9 
+                  :mod (s3 / science~e.8)) 
+            :ARG1~e.11 (p / possible-01~e.14 
+                  :ARG1 (m2 / minimize-01~e.15 
+                        :ARG0 (v2 / vitamin~e.12 
+                              :mod x2~e.13) 
+                        :ARG1 (i / indicate-01 
+                              :ARG0 (a / and~e.24 
+                                    :op1 (s4 / sunlight~e.20) 
+                                    :op2 (o / ozone~e.22) 
+                                    :op3 (f / fatigue~e.25)) 
+                              :ARG1 (d / danger~e.17))))))
+
+
+# sentence: 9 . Best cooling " equipment " - hand - held fan : Though the fan is already an " antique , " its fitness effect is what any other modern cooling equipment cannot compare with .
+# co-referenced nodes: f3
+(m / multi-sentence 
+      :snt1 (e / equipment~e.5 
+            :ARG0-of (c / cool-01~e.3) 
+            :mod (g / good~e.2 
+                  :degree~e.2 (m2 / most~e.2)) 
+            :domain (f / fan~e.11 
+                  :ARG1-of (h / hold-01~e.10 
+                        :ARG0 (h2 / hand~e.8))) 
+            :li (x / 9~e.0)) 
+      :snt2 (p / possible-01~e.33 :polarity~e.33 -~e.33 
+            :ARG1 (c2 / compare-01~e.34 
+                  :ARG1 (e3 / effect-03~e.25 
+                        :ARG0 (f3 / fan~e.15) 
+                        :ARG1 (f2 / fit-06~e.24)) 
+                  :ARG2 (e4 / effect-03~e.25 
+                        :ARG0 (e2 / equipment~e.32 
+                              :ARG0-of (c3 / cool-01~e.31) 
+                              :mod (o / other~e.29) 
+                              :mod (a / any~e.28) 
+                              :ARG1-of (m3 / modern-02~e.30)))) 
+            :concession~e.13 (a2 / antique~e.20 
+                  :time (a3 / already~e.17) 
+                  :domain~e.16 f3~e.23)))
+
+
+# sentence: 10 . Best health care measure - go to bed and get up at a fixed time : There are longer hours of sunlight in summer . Dawn comes early and dusk comes late .
+# co-referenced nodes: t
+(m / multi-sentence 
+      :snt1 (a / and~e.10 
+            :op1 (g / go-02~e.7 
+                  :ARG4~e.8 (b / bed~e.9) 
+                  :time~e.16 (t / time~e.16 
+                        :ARG1-of (f / fix-03~e.15))) 
+            :op2 (g2 / get-up-26~e.11,12 
+                  :time~e.16 t) 
+            :li (x / 10~e.0) 
+            :domain~e.19 (m5 / measure-02~e.5 
+                  :ARG1 (c / care-03~e.4 
+                        :ARG1 (h / health~e.3)) 
+                  :mod (g3 / good~e.2 
+                        :degree~e.2 (m3 / most~e.2)))) 
+      :snt2 (s / sunlight~e.23 
+            :time~e.24 (d3 / date-entity 
+                  :season (s2 / summer~e.25)) 
+            :ARG1-of (l2 / long-03~e.20 
+                  :ARG2 (h2 / hour~e.21) 
+                  :degree~e.20 (m2 / more~e.20))) 
+      :snt3 (a2 / and~e.30 
+            :op1 (c2 / come-01~e.28 
+                  :ARG1 (d / dawn~e.27) 
+                  :time (e2 / early~e.29)) 
+            :op2 (c3 / come-01~e.32 
+                  :ARG1 (d2 / dusk~e.31) 
+                  :time (l / late~e.33))))
+
+
+# sentence: Early to bed and early to rise can help all kinds of biological rhythms in our body to tick peacefully , and you will also wake up naturally and comfortably in the morning .
+# co-referenced nodes: e
+(a / and~e.21 
+      :op1 (b / bed-02~e.2 
+            :time (e / early~e.0,4)) 
+      :op2 (r / rise-01~e.6 
+            :time e) 
+      :ARG0-of (h / help-01~e.8 
+            :ARG1 (t / tick-01~e.18 
+                  :ARG0 (r2 / rhythm~e.13 
+                        :mod~e.11 (k / kind~e.10 
+                              :quant (a2 / all~e.9)) 
+                        :mod (b2 / biology~e.12) 
+                        :mod~e.14 (b3 / body~e.16 
+                              :poss~e.15 (w / we~e.15))) 
+                  :manner~e.19 (p2 / peaceful~e.19)) 
+            :ARG1-of (p / possible-01~e.7)) 
+      :ARG0-of (c / cause-01~e.5 
+            :ARG1 (w2 / wake-up-02~e.25,26 
+                  :ARG1 (y / you~e.22) 
+                  :manner (c2 / comfort) 
+                  :ARG1-of (n / natural-03~e.27) 
+                  :time~e.30 (d / date-entity 
+                        :dayperiod (m / morning~e.32)) 
+                  :mod (a3 / also~e.24))))
+
+
+# sentence: Do they still have time to wait for us to succeed ?
+# co-referenced nodes: t
+(h / have-03~e.3 :mode~e.11 interrogative~e.11 
+      :ARG0 (t / they~e.1) 
+      :ARG1 (t2 / time~e.4) 
+      :mod (s / still~e.2) 
+      :purpose (w / wait-01~e.6 
+            :ARG1 t 
+            :ARG2~e.7 (s2 / succeed-01~e.10 
+                  :ARG0 (w2 / we~e.8))))
+
+
+# sentence: Do they still have time to wait for us to earn money to let them have a good life and let them be proud of us ???
+# co-referenced nodes: t w2
+(h / have-03~e.3,15 :mode~e.13 interrogative 
+      :ARG0 (t / they~e.1) 
+      :ARG1 (t2 / time~e.4 
+            :duration-of (w3 / wait-01~e.6 
+                  :ARG1 t 
+                  :ARG2~e.7 (e / earn-01~e.10 
+                        :ARG0 (w2 / we~e.8) 
+                        :ARG1 (m / money~e.11 
+                              :purpose (l / let-01~e.13,20 
+                                    :ARG1 (a / and~e.19 
+                                          :op1 (l2 / live-01~e.18 
+                                                :ARG0 t~e.14 
+                                                :mod (g / good~e.17)) 
+                                          :op2 (p / pride-01~e.23 
+                                                :ARG0 t~e.21 
+                                                :ARG1~e.24 w2~e.25))))))) 
+      :mod (s / still~e.2))
+
+
+# sentence: Find a way out for your own life
+# co-referenced nodes: y
+(f / find-01~e.0 :mode imperative 
+      :ARG0~e.4 (y / you~e.5) 
+      :ARG1 (w / way~e.2 
+            :purpose (l / life~e.7 
+                  :poss y) 
+            :direction (o / out~e.3)))
+
+
+# sentence: things for now , say after you 've done them ;
+# co-referenced nodes: t
+(s / say-01~e.4 :mode imperative 
+      :ARG0 (y / you~e.6) 
+      :ARG1 (t / thing~e.0 
+            :purpose~e.1 (n / now~e.2)) 
+      :time (a / after~e.5 
+            :op1 (d / do-02~e.8 
+                  :ARG0 (y2 / you~e.6) 
+                  :ARG1 t~e.9)))
+
+
+# sentence: Stardock Aquarium Desktop is not a fish tank screen saver that is currently in fashion ; instead it turns your desktop directly into an aquarium , with beautiful fish swimming on your desktop while you work .
+# co-referenced nodes: y s d
+(t2 / turn-02~e.18 
+      :ARG0 s~e.17 
+      :ARG1 (d / desktop~e.20 
+            :poss~e.19 (y / you~e.19)) 
+      :ARG2~e.22 (a / aquarium~e.24 
+            :prep-with~e.26 (f3 / fish~e.28 
+                  :ARG1-of (b / beautiful-02~e.27) 
+                  :ARG0-of (s3 / swim-01~e.29 
+                        :ARG2~e.30 d~e.31,32 
+                        :time~e.33 (w / while~e.33 
+                              :op1 (w2 / work-01~e.35 
+                                    :ARG0 y~e.34))))) 
+      :ARG1-of (d2 / direct-02~e.21) 
+      :ARG1-of (i / instead-of-91~e.16 
+            :ARG2 (s / screen-saver~e.8,9 
+                  :domain~e.3,11 (p / product :wiki - 
+                        :name (n / name :op1 "Stardock"~e.0 :op2 "Aquarium"~e.1 :op3 "Desktop"~e.2)) 
+                  :mod (f4 / fashion~e.14 
+                        :time (c / current~e.12)) 
+                  :mod (t / tank~e.7 
+                        :mod (f / fish~e.6)))))
+
+
+# sentence: When you 're stuck in a long line of car jam and can n't move , you often earnestly wish to be teleported to where you want to go .
+# co-referenced nodes: y
+(w / wish-01~e.19 
+      :ARG0 (y / you~e.25) 
+      :ARG1 (t / teleport-00 
+            :ARG1 y 
+            :ARG4 (l3 / location 
+                  :ARG4-of (g2 / go-02~e.28 
+                        :ARG0 y 
+                        :ARG1-of (w3 / want-01~e.26)))) 
+      :time~e.0 (o / often~e.17) 
+      :ARG2-of (e / earnest-01~e.18) 
+      :time~e.0 (a / and~e.11 
+            :op1 (s / stick-01~e.3 
+                  :ARG1 y~e.1 
+                  :ARG2~e.4 (l / line~e.7 
+                        :ARG1-of (l2 / long-03~e.6) 
+                        :consist-of~e.8 (c2 / car~e.9 
+                              :ARG1-of (j2 / jam-01~e.10)))) 
+            :op2 (p / possible-01~e.12 :polarity~e.13 -~e.13 
+                  :ARG1 (m / move-01~e.14 
+                        :ARG0 y~e.16))))
+
+
+# sentence: Currently a group of Australian physicists are accelerating their work to realize everybody 's wish .
+# co-referenced nodes: p
+(a / accelerate-01~e.7 
+      :ARG0 (g / group-01~e.2 
+            :ARG1~e.3 (p / physicist~e.5 
+                  :mod (c / country :wiki "Australia" 
+                        :name (n / name :op1 "Australia"~e.4)))) 
+      :ARG1 (w / work-01~e.9 
+            :ARG0~e.8 p~e.8) 
+      :time (c2 / current~e.0) 
+      :purpose (r / realize-02~e.11 
+            :ARG0 p 
+            :ARG1 (w2 / wish-01~e.14 
+                  :ARG0~e.13 (e / everybody~e.12))))
+
+
+# sentence: I hope that in our lifetime we have a chance to report to you the news that they have started to experiment on the human body .
+# co-referenced nodes: t w
+(h / hope-01~e.1 
+      :ARG0 (i / i~e.0) 
+      :ARG1~e.3 (c / chance-02~e.9 
+            :ARG0 w 
+            :ARG1 (r / report-01~e.11 
+                  :ARG0 (w / we) 
+                  :ARG1 (n / news~e.15 
+                        :topic (s / start-01~e.19 
+                              :ARG0 (t / they~e.17) 
+                              :ARG1 (e / experiment-01~e.21 
+                                    :ARG0 t 
+                                    :ARG1~e.22 (b / body~e.25 
+                                          :mod (h3 / human~e.24))))) 
+                  :ARG2~e.12 (y / you~e.13)) 
+            :time (l / lifetime~e.5 
+                  :poss w~e.4,6)))
+
+
+# sentence: When I used the remote control to switch on the television , the screen indicator light responded but failed to light up .
+# co-referenced nodes: c2 i2 l
+(c / contrast-01~e.17 
+      :ARG1 (r / respond-01~e.16 
+            :ARG0 (l / light~e.15 
+                  :ARG0-of (i / indicate-01~e.14) 
+                  :mod (s / screen~e.13))) 
+      :ARG2 (f / fail-01~e.18 
+            :ARG1 l 
+            :ARG2~e.19 (l2 / light-up-08~e.20,21 
+                  :ARG0 c2)) 
+      :time~e.0 (u / use-01~e.2 
+            :ARG0 (i2 / i~e.1) 
+            :ARG1 (c2 / control-01~e.5 
+                  :mod (r2 / remote~e.4)) 
+            :ARG2 (s2 / switch-01~e.7 
+                  :ARG0 i2 
+                  :ARG1~e.8 (t / television~e.10) 
+                  :ARG2 (o / on~e.8))))
+
+
+# sentence: I found out online that Skyworth televisions have similar problems ( sanyo 1 , sanyo 2 ) . Could it be the result of abnormal voltage caused by the summer electricity consumption peak ?
+# co-referenced nodes: -
+(m / multi-sentence 
+      :snt1 (f / find-out-03~e.1,2 
+            :ARG0 (i / i~e.0) 
+            :ARG1~e.4 (h / have-03~e.7 
+                  :ARG0 (t / television~e.6 :wiki "Skyworth" 
+                        :name (n / name :op1 "Skyworth"~e.5)) 
+                  :ARG1 (p / problem~e.9 
+                        :ARG1-of (r / resemble-01~e.8 
+                              :ARG2 (a / and 
+                                    :op1 (t2 / television~e.6 :wiki - 
+                                          :name (n2 / name :op1 "Sanyo"~e.11 :op2 1~e.12)) 
+                                    :op2 (t3 / television~e.6 :wiki - 
+                                          :name (n3 / name :op1 "Sanyo"~e.14 :op2 2~e.15)))))) 
+            :ARG2 (o / online~e.3)) 
+      :snt2 (p2 / possible-01~e.18 :mode~e.33 interrogative~e.33 
+            :ARG1 (r2 / result-01~e.22 
+                  :ARG1~e.23 (v / voltage~e.25 
+                        :ARG1-of (n4 / normal-02~e.24 :polarity~e.24 -~e.24) 
+                        :ARG1-of (c / cause-01~e.26 
+                              :ARG0~e.27 (p3 / peak-01~e.32 
+                                    :ARG1 (c2 / consume-01~e.31 
+                                          :ARG1 (e / electricity~e.30) 
+                                          :time (d / date-entity 
+                                                :season (s / summer~e.29)))))) 
+                  :ARG2 (i2 / it~e.19))))
+
+
+# sentence: Despite all this , President Bush confirmed his confidence in the Iraqi Prime Minister , Nuri al - Maliki , and said that he is finding him excuses because " the situation is tough . "
+# co-referenced nodes: p p4
+(a / and~e.20 
+      :op1 (c / confirm-01~e.6 
+            :ARG0 (p / person :wiki "George_W._Bush" 
+                  :name (n / name :op1 "Bush"~e.5) 
+                  :ARG0-of (h / have-org-role-91 
+                        :ARG2 (p3 / president~e.4))) 
+            :ARG1 (t / trust-02 
+                  :ARG0~e.7 p~e.7 
+                  :ARG1 (p4 / person :wiki "Nouri_al-Maliki" 
+                        :name (n3 / name :op1 "Nuri"~e.15 :op2 "al-Maliki"~e.16,18) 
+                        :ARG0-of (h2 / have-org-role-91 
+                              :ARG1 (c2 / country :wiki "Iraq" 
+                                    :name (n2 / name :op1 "Iraq"~e.11)) 
+                              :ARG2 (m / minister~e.13 
+                                    :mod (p2 / prime~e.12))))) 
+            :concession~e.0 (t2 / this~e.2 
+                  :mod (a2 / all~e.1))) 
+      :op2 (s / say-01~e.21 
+            :ARG0 p 
+            :ARG1 (c3 / cause-01~e.28 
+                  :ARG0 (t3 / tough-02~e.33 
+                        :ARG1 (s2 / situation~e.31)) 
+                  :ARG1 (f / find-01~e.25 
+                        :ARG0 p 
+                        :ARG1 (e / excuse-02~e.27 
+                              :ARG1 p4) 
+                        :ARG2 p4))))
+
+
+# sentence: He called upon Congress to avoid limiting the numbers of forces in Iraq , pointing out that it is an idea that lacks wisdom , today and in the future .
+# co-referenced nodes: l g
+(a / and 
+      :op1 (c / call-upon-12~e.1,2 
+            :ARG0 (h / he~e.0) 
+            :ARG1 (g / government-organization :wiki "United_States_Congress" 
+                  :name~e.1 (n / name :op1 "Congress"~e.3)) 
+            :ARG2 (a2 / avoid-01~e.5 
+                  :ARG0 g 
+                  :ARG1 (l / limit-01~e.6 
+                        :ARG0 g 
+                        :ARG1 (n2 / number~e.8 
+                              :quant-of~e.9 (f / force~e.10 
+                                    :location~e.11 (c2 / country :wiki "Iraq" 
+                                          :name (n3 / name :op1 "Iraq"~e.12))))))) 
+      :op2 (p / point-out-02~e.14,15 
+            :ARG1~e.16 (l2 / lack-01~e.22 
+                  :ARG0 (i / idea~e.20 
+                        :topic l~e.17) 
+                  :ARG1 (w / wisdom~e.23) 
+                  :time (t / today~e.25) 
+                  :time~e.27 (f2 / future~e.29))))
+
+
+# sentence: The Commission concluded in its latest report that the person named Ahmad Abu Adas , who claimed responsibility for executing the assassination , has no relation whatsoever with the assassination of Hariri .
+# co-referenced nodes: p - c2
+(c / conclude-01~e.2 
+      :ARG0 (c2 / commission~e.1) 
+      :ARG1~e.7 (r2 / relate-01~e.25 :polarity~e.24 -~e.24 
+            :ARG1 (p / person~e.9 :wiki - 
+                  :name (n / name~e.10 :op1 "Ahmad"~e.11 :op2 "Abu"~e.12 :op3 "Adas"~e.13) 
+                  :ARG0-of (c3 / claim-01~e.16 
+                        :ARG1 (r3 / responsible-01 
+                              :ARG0 p 
+                              :ARG1 (a / assassinate-01~e.21 
+                                    :ARG0 p)))) 
+            :ARG2 (a2 / assassinate-01~e.21,29 
+                  :ARG1 (p2 / person~e.9 :wiki "Rafic_Hariri" 
+                        :name (n2 / name~e.10 :op1 "Hariri"~e.31))) 
+            :degree (w / whatsoever~e.26)) 
+      :medium~e.3 (r / report~e.6 
+            :mod (l / late~e.5 
+                  :degree~e.5 (m / most~e.5)) 
+            :poss~e.4 c2~e.4))
+
+
+# sentence: At the same time , he stressed the importance of the cooperation of the member states . The Security Council is set to discuss the Serge Brammertz report next week .
+# co-referenced nodes: o
+(m / multi-sentence 
+      :snt1 (c2 / contrast-01 
+            :ARG2 (s / stress-01~e.6 
+                  :ARG1 (i / importance~e.8 
+                        :domain~e.9 (c / cooperate-01~e.11 
+                              :ARG0~e.12 (s2 / state~e.15 
+                                    :ARG0-of (h / have-org-role-91 
+                                          :ARG2 (m2 / member~e.14))))))) 
+      :snt2 (s3 / set-08~e.21 
+            :ARG1 (o / organization :wiki "United_Nations_Security_Council" 
+                  :name (n / name :op1 "Security"~e.18 :op2 "Council"~e.19)) 
+            :ARG2 (d / discuss-01~e.23 
+                  :ARG0 o 
+                  :ARG1 (r / report-01~e.27 
+                        :ARG0 (p / person :wiki "Serge_Brammertz" 
+                              :name (n2 / name :op1 "Serge"~e.25 :op2 "Brammertz"~e.26))) 
+                  :time~e.3 (w / week~e.29 
+                        :mod (n3 / next~e.28)))))
+
+
+# sentence: The Palestinian President Mahmoud Abbas promised to release more and confirmed that this would only be the beginning .
+# co-referenced nodes: p3
+(a / and~e.9 
+      :op1 (p / promise-01~e.5 
+            :ARG1 (p3 / person :wiki "Mahmoud_Abbas" 
+                  :name (n2 / name :op1 "Mahmoud"~e.3 :op2 "Abbas"~e.4) 
+                  :ARG0-of (h / have-org-role-91 
+                        :ARG1 (c / country :wiki "State_of_Palestine" 
+                              :name (n / name :op1 "Palestine"~e.1)) 
+                        :ARG2 (p4 / president~e.2))) 
+            :ARG2 (r / release-01~e.7 
+                  :ARG0 p3 
+                  :ARG1 (p2 / person 
+                        :mod (m / more~e.8)))) 
+      :op2 (c2 / confirm-01~e.10 
+            :ARG0 p3 
+            :ARG1~e.11 (b / begin-01~e.17 
+                  :ARG2 (t / this~e.12) 
+                  :mod (o / only~e.14))))
+
+
+# sentence: - Nahr al - Bared ( Lebanon ) : Intermittent clashes continue between the Lebanese army and the Fatah al - Islam Movement in the Nahr al - Bared Palestinian Refugee Camp in northern Lebanon .
+# co-referenced nodes: c3
+(c / continue-01~e.11 
+      :ARG1 (c2 / clash-01~e.10 
+            :ARG0 (a / army~e.15 
+                  :mod (c3 / country :wiki "Lebanon" 
+                        :name (n / name :op1 "Lebanon"~e.6))) 
+            :ARG1 (m / movement~e.22 :wiki "Fatah_al-Islam" 
+                  :name (n2 / name :op1 "Fatah"~e.18 :op2 "al-Islam"~e.19,21)) 
+            :location (c4 / camp~e.31 :wiki "Nahr_al-Bared" 
+                  :name (n3 / name :op1 "Nahr"~e.1,25 :op2 "al-Bared"~e.2,4,26,28) 
+                  :mod (r / refugee~e.30 
+                        :mod (c5 / country :wiki "State_of_Palestine" 
+                              :name (n4 / name :op1 "Palestine"~e.29))) 
+                  :location~e.32 (n6 / north~e.33 
+                        :part-of c3~e.34)) 
+            :manner (i / intermittent~e.9)))
+
+
+# sentence: - Riyadh : Saudi Interior Minister Nayif Bin Abd - al Aziz discusses specifically the terrorism dossier of the " astray group " ( the Saudi branch of the al - Qaeda organization ) during an ordinary meeting of the Consultative Council .
+# co-referenced nodes: c
+(d / discuss-01~e.12 
+      :ARG0 (p / person :wiki "Nayef_bin_Abdul-Aziz_Al_Saud" 
+            :name (n / name :op1 "Nayif"~e.6 :op2 "Bin"~e.7 :op3 "Abd-al"~e.8,10 :op4 "Aziz"~e.11) 
+            :ARG0-of (h / have-org-role-91 
+                  :ARG1 (c / country :wiki "Saudi_Arabia" 
+                        :name (n2 / name :op1 "Saudi"~e.3 :op2 "Arabia")) 
+                  :ARG2 (m / minister~e.5 
+                        :mod (i / interior~e.4)))) 
+      :ARG1 (d2 / dossier~e.16 
+            :mod (t / terrorism~e.15)) 
+      :manner (s / specific-02~e.13) 
+      :topic (g / group~e.21 
+            :mod (a / astray~e.20) 
+            :mod (b / branch~e.26 
+                  :mod c~e.25 
+                  :poss (c2 / criminal-organization~e.32 :wiki "Al-Qaeda" 
+                        :name (n3 / name :op1 "al-Qaeda"~e.29,31)))) 
+      :time~e.34 (m2 / meet-03~e.37 
+            :ARG0 (g2 / government-organization~e.32 :wiki "Consultative_Assembly_of_Saudi_Arabia" 
+                  :name (n4 / name :op1 "Consultative"~e.40 :op2 "Council"~e.41)) 
+            :mod (o / ordinary~e.36)) 
+      :location (c3 / city :wiki "Riyadh" 
+            :name (n5 / name :op1 "Riyadh"~e.1)))
+
+
+# sentence: - Cairo : An Egyptian court will issue a decision regarding the possibility of releasing , for health reasons , the Egyptian opposition person , Ayman Nour , who has been imprisoned for a year and a half .
+# co-referenced nodes: c2
+(d / decide-01~e.9 
+      :ARG0 (c / court~e.5 
+            :mod (c2 / country :wiki "Egypt" 
+                  :name (n / name :op1 "Egypt"~e.4))) 
+      :ARG3 (p / possible-01~e.12 
+            :ARG1~e.13 (r / release-01~e.14 
+                  :ARG1 (p2 / person~e.23 :wiki "Ayman_Nour" 
+                        :name (n2 / name :op1 "Ayman"~e.25 :op2 "Nour"~e.26) 
+                        :mod c2~e.21 
+                        :ARG1-of (i2 / imprison-01~e.31 
+                              :ARG2~e.32 (t2 / temporal-quantity :quant 1.5 
+                                    :unit (y / year~e.34))) 
+                        :ARG0-of (o2 / oppose-01~e.22)) 
+                  :ARG1-of (c3 / cause-01 
+                        :ARG0 (r2 / reason~e.18 
+                              :mod (h / health~e.17))))) 
+      :location (c4 / city :wiki "Cairo" 
+            :name (n3 / name :op1 "Cairo"~e.1)))
+
+
+# sentence: Washington 7 - 17 - 2007 ( A. F. P ) - The US Department of State declared on Tuesday Washington 's readiness to hold new direct negotiations with Iran regarding the situation in Iraq .
+# co-referenced nodes: c2 g2 c5
+(m / multi-sentence 
+      :snt1 (p / publication :wiki "Agence_France-Presse" 
+            :name (n7 / name :op1 "A.F.P.") 
+            :time (d3 / date-entity :year 2007~e.5 :month 7~e.1 :day 17~e.3)) 
+      :snt2 (d / declare-02~e.17 
+            :ARG0 (g / government-organization :wiki "United_States_Department_of_State" 
+                  :name (n / name :op1 "Department"~e.14 :op2 "of"~e.15 :op3 "State"~e.16) 
+                  :mod (c / country :wiki "United_States" 
+                        :name (n2 / name :op1 "US"~e.13))) 
+            :ARG1 (r / ready-02~e.22 
+                  :ARG1~e.21 (g2 / government-organization 
+                        :ARG0-of (g3 / govern-01) 
+                        :location (c5 / city :wiki "Washington,_D.C." 
+                              :name (n3 / name :op1 "Washington"~e.0,20))) 
+                  :ARG2 (h / hold-04~e.24 
+                        :ARG0 g2 
+                        :ARG1 (n4 / negotiate-01~e.27 
+                              :ARG0 g2 
+                              :ARG1 c2 
+                              :ARG2 (s2 / situation~e.32 
+                                    :mod~e.33 (c3 / country :wiki "Iraq" 
+                                          :name (n6 / name :op1 "Iraq"~e.34))) 
+                              :mod (n9 / new~e.25) 
+                              :ARG1-of (d4 / direct-02~e.26)) 
+                        :ARG2~e.28 (c2 / country :wiki "Iran" 
+                              :name (n5 / name :op1 "Iran"~e.29)))) 
+            :time~e.18 (d2 / date-entity 
+                  :weekday (t / tuesday~e.19)) 
+            :location c5))
+
+
+# sentence: Iranian Foreign Minister , Manuchehr Motaki , announced Tuesday that a new meeting between Iranian and American officials on Iraq could be held in the " near future , " according to what Iranian media said .
+# co-referenced nodes: c
+(s / say-01~e.30,31,35 
+      :ARG0 (m / media~e.34 
+            :mod (c / country :wiki "Iran" 
+                  :name (n / name :op1 "Iran"~e.14,33))) 
+      :ARG1 (a / announce-01~e.7 
+            :ARG0 (p4 / person :wiki "Manouchehr_Mottaki" 
+                  :name (n2 / name :op1 "Manuchehr"~e.4 :op2 "Motaki"~e.5) 
+                  :ARG0-of (h3 / have-org-role-91 
+                        :ARG1 c~e.0 
+                        :ARG2 (m2 / minister~e.2 
+                              :mod (f / foreign~e.1)))) 
+            :ARG1~e.9 (p / possible-01~e.20 
+                  :ARG1 (m3 / meet-03~e.12 
+                        :ARG0 (p2 / person 
+                              :ARG0-of (h / have-org-role-91 
+                                    :ARG1 c 
+                                    :ARG2 (o / official~e.17))) 
+                        :ARG1 (p3 / person 
+                              :ARG0-of (h2 / have-org-role-91 
+                                    :ARG1 (c2 / country :wiki "United_States" 
+                                          :name (n3 / name :op1 "United"~e.16 :op2 "States"~e.16)) 
+                                    :ARG2 (o2 / official~e.17))) 
+                        :mod (n4 / new~e.11) 
+                        :topic~e.18 (c3 / country :wiki "Iraq" 
+                              :name (n5 / name :op1 "Iraq"~e.19)) 
+                        :time (f2 / future~e.27 
+                              :ARG1-of (n6 / near-02~e.26)))) 
+            :time (d / date-entity 
+                  :weekday (t / tuesday~e.8))))
+
+
+# sentence: The United States and Iran held on May 28 th their first high - level official talks , since breaking diplomatic relations in 1980 .
+# co-referenced nodes: a c2 c
+(h / hold-04~e.5 
+      :ARG0 (a / and~e.3 
+            :op1 (c / country :wiki "United_States" 
+                  :name (n / name :op1 "United"~e.1 :op2 "States"~e.2)) 
+            :op2 (c2 / country :wiki "Iran" 
+                  :name (n2 / name :op1 "Iran"~e.4))) 
+      :ARG1 (t / talk-01~e.16 
+            :ARG0~e.10 a~e.10 
+            :mod (o / official~e.15) 
+            :mod (l / level~e.14 
+                  :ARG1-of (h2 / high-02~e.12)) 
+            :ord (o2 / ordinal-entity~e.11 :value~e.11 1~e.11)) 
+      :time~e.6 (d / date-entity :month~e.7 5~e.7 :day 28~e.8) 
+      :time (s / since~e.18 
+            :op1 (b / break-01~e.19 
+                  :ARG0 a 
+                  :ARG1 (r / relation-03~e.21 
+                        :ARG0 c 
+                        :ARG1 (d2 / diplomacy~e.20) 
+                        :ARG2 c2) 
+                  :time~e.22 (d3 / date-entity :year 1980~e.23))))
+
+
+# sentence: But the staging method weakens the government 's role to the benefit of the party , so it loses some credibility .
+# co-referenced nodes: m
+(c / contrast-01~e.0 
+      :ARG2 (w / weaken-01~e.4 
+            :ARG0 (m / method~e.3 
+                  :manner-of (s / stage-01~e.2)) 
+            :ARG1 (r / role~e.8 
+                  :poss~e.7 (g / government-organization~e.6 
+                        :ARG0-of~e.6 (g2 / govern-01~e.6))) 
+            :ARG0-of (b / benefit-01~e.11 
+                  :ARG1~e.12 (p / party~e.14)) 
+            :ARG0-of (c2 / cause-01~e.9,16 
+                  :ARG1 (l / lose-02~e.18 
+                        :ARG0 m~e.17 
+                        :ARG1 (c3 / credibility~e.20 
+                              :quant (s2 / some~e.19))))))
+
+
+# sentence: in which the basis would be the job description , which would help in restructuring the government body , even though the project is still in its research and study phases .
+# co-referenced nodes: p2
+(l2 / law~e.12 
+      :ARG2-of (i / include-91 
+            :ARG1 (t / thing~e.8 
+                  :ARG2-of~e.8 (d / describe-01~e.8 
+                        :ARG1 (j / job~e.7)) 
+                  :ARG2-of (b / base-02~e.3))) 
+      :ARG0-of~e.12 (h / help-01~e.12 
+            :ARG1~e.13 (r / restructure-01~e.14 
+                  :ARG1 (b2 / body~e.17 
+                        :mod (g / government-organization~e.16 
+                              :ARG0-of~e.16 (g2 / govern-01~e.16)))) 
+            :ARG1-of (h2 / have-concession-91~e.19,20 
+                  :ARG2 (p / phase~e.30 
+                        :domain~e.23 (p2 / project~e.22) 
+                        :mod (r2 / research-01~e.27 
+                              :ARG1~e.26 p2~e.26) 
+                        :mod (s / study-01~e.29 
+                              :ARG1 p2) 
+                        :mod (s2 / still~e.24)))))
+
+
+# sentence: Olli Heinonen , Head of the International Atomic Energy Agency Delegation to Iran , announced yesterday that the Agency reached an agreement with Tehran on the method of managing the negotiations regarding its nuclear program .
+# co-referenced nodes: o
+(a / announce-01~e.14 
+      :ARG0 (p / person~e.3 :wiki "Olli_Heinonen" 
+            :name (n / name :op1 "Olli"~e.0 :op2 "Heinonen"~e.1) 
+            :ARG0-of~e.3 (h / head-01~e.3 
+                  :ARG1~e.4 (d / delegation~e.10 
+                        :mod (o / organization :wiki "International_Atomic_Energy_Agency" 
+                              :name (n2 / name :op1 "International"~e.6 :op2 "Atomic"~e.7 :op3 "Energy"~e.8 :op4 "Agency"~e.9)) 
+                        :location~e.11 (c / country :wiki "Iran" 
+                              :name (n3 / name :op1 "Iran"~e.12))))) 
+      :ARG1~e.16 (r / reach-01~e.19 
+            :ARG0 o~e.18 
+            :ARG1 (a2 / agree-01~e.21 
+                  :ARG0 o 
+                  :ARG1 (m / method~e.26 
+                        :instrument-of~e.22 (m2 / manage-01~e.28 
+                              :ARG1 (n5 / negotiate-01~e.30 
+                                    :topic (p2 / program~e.34 
+                                          :mod (n6 / nucleus~e.33) 
+                                          :poss~e.32 o~e.32)))) 
+                  :ARG2~e.22 (c2 / city :wiki "Islamic_Consultative_Assembly" 
+                        :name (n4 / name :op1 "Tehran"~e.23)))) 
+      :time (y / yesterday~e.15))
+
+
+# sentence: A draft resolution was prepared enabling the formation of a United Nations and African Union force of 26,000 soldiers and policemen and permitting the wide use of force to protect civilians in Darfur .
+# co-referenced nodes: a2
+(p / prepare-01~e.4 
+      :ARG1 (r / resolution~e.2 
+            :ARG1-of (d / draft-01~e.1) 
+            :ARG0-of (e / enable-01~e.5 
+                  :ARG1 (f / form-01~e.7 
+                        :ARG1~e.8 (f2 / force~e.15 
+                              :poss (a / and~e.12 
+                                    :op1 (o / organization :wiki "United_Nations" 
+                                          :name (n / name :op1 "United"~e.10 :op2 "Nations"~e.11)) 
+                                    :op2 (o2 / organization :wiki "African_Union" 
+                                          :name (n2 / name :op1 "African"~e.13 :op2 "Union"~e.14))) 
+                              :consist-of~e.16 (a2 / and~e.19,21 :quant 26000~e.17 
+                                    :op1 (s / soldier~e.18) 
+                                    :op2 (p2 / policeman~e.20))))) 
+            :ARG0-of (p3 / permit-01~e.22 
+                  :ARG1 (u / use-01~e.25 
+                        :ARG1~e.26 (f3 / force~e.27) 
+                        :ARG2 (p4 / protect-01~e.29 
+                              :ARG0 a2 
+                              :ARG1 (c / civilian~e.30 
+                                    :location~e.31 (c2 / country-region :wiki "Darfur" 
+                                          :name (n3 / name :op1 "Darfur"~e.32)))) 
+                        :ARG1-of (w / wide-02~e.24)))))
+
+
+# sentence: What if you woke up one morning and were convinced that your life had gone from the very first moment until the last in the wrong direction ?
+# co-referenced nodes: y
+(s / suppose-01 
+      :ARG1 (a2 / and~e.7 
+            :op1 (w / wake-up-02~e.3,4 
+                  :ARG1 (y / you~e.2) 
+                  :time (m / morning~e.6 
+                        :mod (o / one~e.5))) 
+            :op2 (c / convince-01~e.9 
+                  :ARG1 y 
+                  :ARG2 (g / go-01~e.14 
+                        :ARG1 (l / life~e.12 
+                              :poss~e.11 y~e.11) 
+                        :ARG3 (m2 / moment~e.19 
+                              :ord (o2 / ordinal-entity~e.18 :value~e.18 1~e.18 
+                                    :mod (v / very~e.17))) 
+                        :ARG4 (m3 / moment~e.19 
+                              :mod (l2 / last~e.22)) 
+                        :direction~e.23 (d / direction~e.26 
+                              :mod (w2 / wrong~e.25))))))
+
+
+# sentence: You did n't like the studies you chose , nor were you satisfied by the job you took , nor the wife you loved has made you happy , nor the dreams you hung on to were achieved ?
+# co-referenced nodes: y -
+(a / and :mode~e.38 interrogative~e.38 
+      :op1 (l / like-01~e.3 :polarity~e.2 -~e.2 
+            :ARG0 (y / you~e.0,22,26,32) 
+            :ARG1 (t / thing~e.1,5 
+                  :ARG1-of~e.1,5 (s / study-01~e.1,5) 
+                  :ARG1-of (c / choose-01~e.7,25 
+                        :ARG0 y~e.6))) 
+      :op2 (s2 / satisfy-01~e.12 :polarity~e.9 -~e.9 
+            :ARG0~e.13 (j / job~e.15 
+                  :ARG1-of (t2 / take-01~e.17 
+                        :ARG0 y~e.16)) 
+            :ARG1 y~e.11) 
+      :op3 (m / make-02~e.25 :polarity~e.19 -~e.29 
+            :ARG0 (p / person 
+                  :ARG1-of (l2 / love-01~e.23 
+                        :ARG0 y) 
+                  :ARG0-of (h3 / have-rel-role-91~e.24 
+                        :ARG1 y 
+                        :ARG2 (w / wife~e.21))) 
+            :ARG1 (h / happy~e.27)) 
+      :op4 (a2 / achieve-01~e.25,37 :polarity~e.29 -~e.29 
+            :ARG0 y 
+            :ARG1 (t3 / thing~e.31 
+                  :ARG1-of~e.31 (d / dream-01~e.31 
+                        :ARG0 y) 
+                  :ARG2-of (h2 / hang-on-04~e.33,34 
+                        :ARG1 y))))
+
+
+# sentence: But the difference in points of view changes nothing of the matter ... And more often than not the best direction is to change the direction !
+# co-referenced nodes: -
+(m4 / multi-sentence 
+      :snt1 (c3 / contrast-01~e.0 
+            :ARG2 (c / change-01~e.7 :polarity~e.8 -~e.8 
+                  :ARG0 (d / differ-02~e.2 
+                        :ARG1 (t / thing 
+                              :ARG1-of (o / opine-01))) 
+                  :ARG1~e.9 (m / matter~e.11))) 
+      :snt2 (a / and~e.13 
+            :op2 (d3 / direction~e.20,25 :mode~e.26 expressive~e.26 
+                  :mod (g / good~e.19 
+                        :degree~e.19 (m2 / most~e.19)) 
+                  :domain~e.21 (c2 / change-01~e.23 
+                        :ARG1 (d2 / direction~e.25)) 
+                  :time (o2 / often~e.15 
+                        :degree (m3 / more~e.14) 
+                        :compared-to~e.16 (o3 / often~e.15 :polarity~e.17 -~e.17)))))
+
+
+# sentence: And Fawzi al - Benzarti actually traveled to Tripoli along with his son , Ayman , and his brother , Sami .
+# co-referenced nodes: p -
+(a2 / and~e.0 
+      :op2 (t / travel-01~e.6 
+            :ARG0 (p / person :wiki - 
+                  :name (n / name :op1 "Fawzi"~e.1 :op2 "al-Benzarti"~e.2,4)) 
+            :ARG4~e.7 (c / city :wiki "Tripoli" 
+                  :name (n2 / name :op1 "Tripoli"~e.8)) 
+            :accompanier~e.9,10 (p2 / person :wiki "Ayman_Nour" 
+                  :name (n3 / name :op1 "Ayman"~e.14) 
+                  :ARG0-of (h / have-rel-role-91 
+                        :ARG1~e.11 p~e.11 
+                        :ARG2 (s / son~e.12))) 
+            :accompanier~e.9 (p3 / person :wiki - 
+                  :name (n4 / name :op1 "Sami"~e.20) 
+                  :ARG0-of (h2 / have-rel-role-91 
+                        :ARG1~e.17 p~e.17 
+                        :ARG2 (b / brother~e.18))) 
+            :mod (a / actual~e.5)))
+
+
+# sentence: The Israeli newspapers that were published yesterday devoted supplements to the one year anniversary of the July war , which covered the different aspects of this war and its repercussions on Israel .
+# co-referenced nodes: c w
+(d / devote-01~e.7 
+      :ARG0 (n / newspaper~e.2 
+            :mod (c / country :wiki "Israel" 
+                  :name (n2 / name :op1 "Israel"~e.1)) 
+            :ARG1-of (p / publish-01~e.5 
+                  :time (y / yesterday~e.6))) 
+      :ARG1 (t / thing~e.8 
+            :ARG2-of~e.8 (s / supplement-01~e.8) 
+            :ARG2-of (c2 / cover-01~e.20 
+                  :ARG1 (a3 / and~e.27 
+                        :op1 (a2 / aspect~e.23 
+                              :ARG1-of (d2 / differ-02~e.22) 
+                              :domain w) 
+                        :op2 (r / repercussion~e.29 
+                              :prep-on~e.30 c~e.31 
+                              :source w)))) 
+      :ARG2~e.9 (a / anniversary~e.13 
+            :topic~e.14 (w / war~e.26 :wiki "2006_Lebanon_War" 
+                  :name (n3 / name :op1 "July"~e.16 :op2 "War"~e.17)) 
+            :mod (t2 / temporal-quantity :quant 1~e.11 
+                  :unit (y2 / year~e.12))))
+
+
+# sentence: On the other hand , the war has strengthened the position of the right and its leader , Benjamin Netanyahu , and it helped to bring Ehud Barak back to the government .
+# co-referenced nodes: r w
+(c / contrast-01 
+      :ARG2 (a / and~e.21 
+            :op1 (s / strengthen-01~e.8 
+                  :ARG0 (w / war~e.6) 
+                  :ARG1 (t / thing~e.10 
+                        :ARG2-of~e.10 (p / position-01~e.10 
+                              :ARG1~e.11 (a2 / and~e.14 
+                                    :op1 (r / right~e.13) 
+                                    :op2 (p3 / person~e.16 :wiki "Benjamin_Netanyahu" 
+                                          :name (n / name :op1 "Benjamin"~e.18 :op2 "Netanyahu"~e.19) 
+                                          :ARG0-of~e.16 (l / lead-02~e.16 
+                                                :ARG1 r)))))) 
+            :op2 (h / help-01~e.23 
+                  :ARG0 w~e.22 
+                  :ARG1 (b / bring-01~e.25 
+                        :ARG0 w 
+                        :ARG1 (p2 / person :wiki "Ehud_Barak" 
+                              :name (n2 / name :op1 "Ehud"~e.26 :op2 "Barak"~e.27)) 
+                        :ARG2~e.29 (g / government-organization~e.31 
+                              :ARG0-of~e.31 (g2 / govern-01~e.31)) 
+                        :ARG3 (b2 / back~e.28)))))
+
+
+# sentence: But the most critical review is the one by Ben Kasbit in Maariv . He wrote : " Did we win the war that broke out exactly a year ago , or were we defeated ?
+# co-referenced nodes: w3
+(m2 / multi-sentence 
+      :snt1 (c2 / contrast-01~e.0 
+            :ARG2 (r2 / review-02~e.4 
+                  :ARG1~e.4 (r / review-02~e.4 
+                        :ARG1~e.8 (p / person :wiki - 
+                              :name (n / name :op1 "Ben"~e.9 :op2 "Kasbit"~e.10)) 
+                        :medium~e.11 (n2 / newspaper :wiki "Maariv_(newspaper)" 
+                              :name (n3 / name :op1 "Maariv"~e.12))) 
+                  :ARG0-of (c / criticize-01 
+                        :degree (m / most~e.2)))) 
+      :snt2 (w / write-01~e.15 
+            :ARG0 (h / he~e.14) 
+            :ARG1 (o / or~e.31 :mode~e.35 interrogative~e.35 
+                  :op1 (w2 / win-01~e.20 
+                        :ARG0 (w3 / we~e.19) 
+                        :ARG2 (w4 / war~e.22 
+                              :ARG1-of (b / break-13~e.24 
+                                    :time (b2 / before~e.29 
+                                          :op1~e.29 (n4 / now~e.29) 
+                                          :quant (t / temporal-quantity :quant 1~e.7,27 
+                                                :unit (y / year~e.28) 
+                                                :mod (e / exact~e.26)))))) 
+                  :op2 (d / defeat-01~e.34 
+                        :ARG1 w3~e.33))))
+
+
+# sentence: But since Israel must win the confrontation with its enemy , the draw equals a defeat .
+# co-referenced nodes: c2
+(h / have-concession-91~e.0 
+      :ARG2 (c / cause-01~e.1 
+            :ARG0 (o / obligate-01~e.3 
+                  :ARG1 (w / win-01~e.4 
+                        :ARG0 (c2 / country :wiki "Israel" 
+                              :name (n / name :op1 "Israel"~e.2)) 
+                        :ARG2 (c3 / confront-01~e.6 
+                              :ARG0 c2 
+                              :ARG1 (c4 / country 
+                                    :ARG0-of (h2 / have-rel-role-91 
+                                          :ARG1 c2 
+                                          :ARG2 (e / enemy~e.9)))))) 
+            :ARG1 (e2 / equal-01~e.13 
+                  :ARG1 (d / draw~e.12) 
+                  :ARG2 (d2 / defeat-01~e.15))))
+
+
+# sentence: Is our position today better than what it was a year ago on the eve of the war ?
+# co-referenced nodes: w2
+(g / good~e.4 :mode~e.18 interrogative~e.18 
+      :degree~e.4 (m / more~e.4) 
+      :domain~e.0 (t / thing~e.6 
+            :ARG2-of (p / position-01~e.2 
+                  :ARG1~e.1 (w2 / we~e.1) 
+                  :time (t2 / today~e.3))) 
+      :compared-to~e.5 (t3 / thing~e.6 
+            :ARG2-of (p2 / position-01~e.2 
+                  :ARG1 w2~e.7 
+                  :time (b / before~e.11 
+                        :op1~e.11 (n / now~e.11) 
+                        :quant (t4 / temporal-quantity :quant 1~e.9 
+                              :unit (y / year~e.10))) 
+                  :time~e.12 (e / eve~e.14 
+                        :op1~e.15 (w / war~e.17)))))
+
+
+# sentence: Is the position of Hezbollah better today than it was a year ago ?
+# co-referenced nodes: p3
+(g / good~e.5 :mode~e.13 interrogative~e.13 
+      :degree~e.5 (m / more~e.5) 
+      :domain~e.0 (t / thing~e.2 
+            :ARG2-of~e.2 (p / position-01~e.2 
+                  :ARG0~e.3 (p3 / political-party :wiki "Hezbollah" 
+                        :name (n / name :op1 "Hezbollah"~e.4)) 
+                  :time (t3 / today~e.6))) 
+      :compared-to~e.7 (t2 / thing~e.2 
+            :ARG2-of~e.2 (p2 / position-01~e.2 
+                  :ARG0 p3~e.8 
+                  :time (b / before~e.12 
+                        :op1~e.12 (n2 / now~e.12) 
+                        :quant (t4 / temporal-quantity :quant 1~e.10 
+                              :unit (y / year~e.11))))))
+
+
+# sentence: No , the party has been dealt quite a major military blow , but from another point of view , it achieved an important moral victory .
+# co-referenced nodes: p
+(c / contrast-01~e.13 
+      :ARG1 (d / deal-02~e.6 
+            :ARG1 (b / blow-14~e.11 
+                  :ARG1 p 
+                  :mod (m / military~e.10) 
+                  :ARG1-of (m2 / major-02~e.9 
+                        :degree (q / quite~e.7))) 
+            :ARG2 (p / party~e.3)) 
+      :ARG2~e.14 (a / achieve-01~e.21 
+            :ARG0 p~e.20 
+            :ARG1 (w / win-01~e.25 
+                  :ARG0 p 
+                  :ARG1-of (m3 / moral-02~e.24) 
+                  :mod (i / importance~e.23)) 
+            :ARG2-of (v2 / view-02~e.18 
+                  :mod (a2 / another~e.15))))
+
+
+# sentence: It is true that it was pushed back off the border fence , but it is entrenching and fortifying itself to the north of the Litani .
+# co-referenced nodes: i
+(h / have-concession-91~e.13 
+      :ARG1 (a / and~e.17 
+            :op1 (e / entrench-01~e.16 
+                  :ARG1 i~e.14) 
+            :op2 (f2 / fortify-02~e.18 
+                  :ARG1 i~e.19) 
+            :location (r / relative-position 
+                  :op1 (r2 / river :wiki "Litani_River" 
+                        :name (n / name :op1 "Litani"~e.25) 
+                        :direction (n2 / north~e.22)))) 
+      :ARG2 (t / true~e.2 
+            :domain~e.1,5,15 (p / push-02~e.6 
+                  :ARG1 (i / it~e.0,4) 
+                  :direction (b / back~e.7) 
+                  :destination~e.20 (o / off~e.8 
+                        :op1 (f / fence~e.11 
+                              :ARG1-of (b2 / border-01~e.10))))))
+
+
+# sentence: It withstood its confrontation with the Israeli military might , but it lost many of its troops and lost the element of surprise .
+# co-referenced nodes: i
+(h / have-concession-91~e.10 
+      :ARG1 (a / and~e.17 
+            :op1 (l / lose-02~e.12,18 
+                  :ARG0 i~e.11 
+                  :ARG1 (t / troop~e.16 
+                        :quant~e.14 (m3 / many~e.13) 
+                        :ARG1-of (i2 / include-91 
+                              :ARG2 (t2 / troop~e.16 
+                                    :poss i)))) 
+            :op2 (l2 / lose-02~e.18 
+                  :ARG0 i 
+                  :ARG1 (e / element~e.20 
+                        :ARG2-of~e.21 (s / surprise-01~e.22)))) 
+      :ARG2 (w / withstand-01~e.1 
+            :ARG0 (i / it~e.0,15) 
+            :ARG1 (c / confront-01~e.3 
+                  :ARG0~e.2 i~e.2 
+                  :ARG1~e.4 (m / might~e.8 
+                        :mod (m2 / military~e.7) 
+                        :mod (c2 / country :wiki "Israel" 
+                              :name (n / name :op1 "Israel"~e.6))))))
+
+
+# sentence: Nasrallah is in a real hole and Olmert is in a virtual one , since his approval rate is almost equal to zero and the danger of the Vinograd report is lurking on the horizon .
+# co-referenced nodes: p2
+(c / cause-01~e.14 
+      :ARG0 (a2 / and~e.23 
+            :op1 (e / equal-01~e.20 
+                  :ARG1 (t / thing~e.17 
+                        :ARG2-of~e.17 (r2 / rate-01~e.17 
+                              :ARG3 (a3 / approve-01~e.16 
+                                    :ARG1~e.15 p2~e.15))) 
+                  :ARG2~e.21 (z / zero~e.22) 
+                  :mod (a4 / almost~e.19)) 
+            :op2 (l / lurk-01~e.31 
+                  :ARG0 (d / danger~e.25 
+                        :ARG1-of (c2 / cause-01 
+                              :ARG0 (r3 / report-01~e.29 
+                                    :ARG1 (p3 / person :wiki "Winograd_Commission" 
+                                          :name (n3 / name :op1 "Winograd"))))) 
+                  :location~e.32 (h3 / horizon~e.34))) 
+      :ARG1 (a / and~e.6 
+            :op1 (b / be-located-at-91~e.1 
+                  :ARG1 (p / person :wiki "Hassan_Nasrallah" 
+                        :name (n / name :op1 "Nasrallah"~e.0)) 
+                  :ARG2 (h / hole~e.5 
+                        :mod (r / real~e.4))) 
+            :op2 (b2 / be-located-at-91~e.8 
+                  :ARG1 (p2 / person :wiki "Ehud_Olmert" 
+                        :name (n2 / name :op1 "Olmert"~e.7)) 
+                  :ARG2 (h2 / hole~e.5 
+                        :mod~e.9 (v / virtual~e.11)))))
+
+
+# sentence: This is the first time that the big powerful Arab states stood openly with Israel in its war on an Islamic - Arab enemy .
+# co-referenced nodes: c e3
+(o2 / ordinal-entity~e.3 :value~e.3 1~e.3 
+      :domain~e.1 (t / this~e.0 
+            :time-of~e.4 (s / stand-01~e.11 
+                  :ARG1 (s2 / state~e.10 
+                        :mod (e3 / ethnic-group :wiki "Arabs" 
+                              :name (n / name :op1 "Arab"~e.9)) 
+                        :mod (b / big~e.7) 
+                        :ARG1-of (p / powerful-02~e.8) 
+                        :accompanier-of~e.13 (c / country :wiki "Israel" 
+                              :name (n2 / name :op1 "Israel"~e.14))) 
+                  :ARG2~e.15 (w / war-01~e.17 
+                        :ARG0~e.16 c~e.16 
+                        :ARG1~e.18 (c2 / country 
+                              :mod (r / religious-group :wiki "Islam" 
+                                    :name (n3 / name :op1 "Islam"~e.20)) 
+                              :mod e3~e.22 
+                              :ARG0-of (h / have-rel-role-91 
+                                    :ARG1 c 
+                                    :ARG2 (e / enemy~e.23)))) 
+                  :ARG1-of (o / open-04~e.12))))
+
+
+# sentence: It was not for nothing that Europe sent the multinational force to south Lebanon , and the Americans are deploying all that they have left to support the Siniora government in Beirut .
+# co-referenced nodes: c3
+(h / have-purpose-91 
+      :ARG1 (a / and~e.15 
+            :op1 (s / send-01~e.7 
+                  :ARG0 (c / continent :wiki "Europe" 
+                        :name (n / name :op1 "Europe"~e.6)) 
+                  :ARG1 (f / force~e.10 
+                        :mod (m / multinational~e.9)) 
+                  :ARG2~e.11 (s2 / south~e.12 
+                        :part-of (c2 / country :wiki "Lebanon" 
+                              :name (n2 / name :op1 "Lebanon"~e.13)))) 
+            :op2 (d / deploy-01~e.19 
+                  :ARG0 (c3 / country :wiki "United_States" 
+                        :name (n3 / name :op1 "United"~e.17 :op2 "States"~e.17)) 
+                  :ARG1 (t / thing~e.23 
+                        :quant (a2 / all~e.20) 
+                        :ARG1-of~e.23 (h2 / have-03~e.23 
+                              :ARG0 c3) 
+                        :ARG1-of (l / leave-17~e.24)) 
+                  :purpose (s3 / support-01~e.26 
+                        :ARG0 c3 
+                        :ARG1 (g / government-organization~e.29 
+                              :ARG0-of~e.29 (g2 / govern-01~e.29) 
+                              :mod (p / person :wiki "Fouad_Siniora" 
+                                    :name (n4 / name :op1 "Siniora"~e.28)) 
+                              :location~e.30 (c4 / city :wiki "Beirut" 
+                                    :name (n5 / name :op1 "Beirut"~e.31)))))))
+
+
+# sentence: Is the army rebuilding its force ?
+# co-referenced nodes: a
+(r / rebuild-01~e.3 :mode~e.6 interrogative~e.6 
+      :ARG0 (a / army~e.2) 
+      :ARG1 (f / force~e.5 
+            :poss~e.4 a~e.4))
+
+
+# sentence: Therefore , I call upon the citizens in general , and those of al - Matn in particular , to show their support for the Lebanese Army through civilized and democratic behavior as is their habit in this area .
+# co-referenced nodes: a
+(c / cause-01~e.0 
+      :ARG1 (c2 / call-upon-12~e.3,4 
+            :ARG0 (i / i~e.2) 
+            :ARG1 (a / and~e.10 
+                  :op1 (c3 / citizen~e.6 
+                        :mod~e.7 (g / general-02~e.8)) 
+                  :op2 (c4 / citizen~e.6 
+                        :location~e.12 (c5 / city :wiki "Matn_District" 
+                              :name (n / name :op1 "al-Matn"~e.13,15)) 
+                        :mod~e.16 (p / particular~e.17))) 
+            :ARG2 (s / show-01~e.20 
+                  :ARG0 a 
+                  :ARG1 (s2 / support-01~e.22 
+                        :ARG0 a 
+                        :ARG1~e.23 (a2 / army~e.26 
+                              :mod (c6 / country :wiki "Lebanon" 
+                                    :name (n2 / name :op1 "Lebanon"~e.25)))) 
+                  :manner (b / behave-01~e.31 
+                        :ARG0 a 
+                        :ARG1 (a3 / and~e.29 
+                              :op1 (c7 / civilization~e.28) 
+                              :op2 (d / democracy~e.30)) 
+                        :mod (h / habit~e.35 
+                              :poss~e.34 a~e.34 
+                              :location~e.36 (a4 / area~e.38 
+                                    :mod (t / this~e.37)))))))
+
+
+# sentence: At the top of the list of this wave of profits came Orascom Construction , which led the stock market upward before and is now leading it downward .
+# co-referenced nodes: m
+(t / top-01~e.2 
+      :ARG1~e.3 (l / list~e.5 
+            :topic~e.6 (w / wave-04~e.8 
+                  :ARG1~e.9 (p / profit~e.10) 
+                  :mod (t2 / this~e.7))) 
+      :ARG2 (c / company :wiki "Orascom_Construction_Industries" 
+            :name (n / name :op1 "Orascom"~e.12 :op2 "Construction"~e.13) 
+            :ARG0-of (l2 / lead-01~e.16 
+                  :ARG1 (m / market~e.19 
+                        :mod (s / stock~e.18)) 
+                  :direction (u / upward~e.20) 
+                  :time (b / before~e.21)) 
+            :ARG0-of (l3 / lead-01~e.25 
+                  :ARG1 m~e.26 
+                  :direction (d / downward~e.27) 
+                  :time (n2 / now~e.24))))
+
+
+# sentence: Shares of the Suwaidi Cable Company , which is one of the best performing companies in the recent period , also fell by 3.8 % to close at a price of 77.50 pounds per share .
+# co-referenced nodes: s2 s
+(a2 / and 
+      :op1 (f / fall-01~e.21 
+            :ARG1 (s2 / share~e.0 
+                  :poss~e.10 (c / company :wiki - 
+                        :name (n / name :op1 "Suwaidi" :op2 "Cable" :op3 "Company") 
+                        :ARG1-of (i / include-91 
+                              :ARG2 (c2 / company~e.14 
+                                    :ARG0-of (p4 / perform-02~e.13 
+                                          :manner (w / well 
+                                                :degree~e.12 (m2 / most~e.12)) 
+                                          :time~e.15 (p5 / period~e.18 
+                                                :mod (r / recent~e.17))))))) 
+            :ARG2~e.22 (p / percentage-entity~e.24 :value 3.8~e.23) 
+            :mod (a / also~e.20)) 
+      :op2 (c3 / close-02~e.26 
+            :ARG1 s2~e.3,4,5,34 
+            :extent (r2 / rate-entity-91 
+                  :ARG1 (m / monetary-quantity :quant 77.50~e.31 
+                        :unit (p2 / pound~e.32) 
+                        :ARG2-of (p3 / price-01~e.29 
+                              :ARG1 s)) 
+                  :ARG2 (s / share~e.0 :quant 1~e.9))))
+
+
+# sentence: Shukri said that the share price of al - Suwaidi Cables has almost doubled over the past two months . Therefore , it is natural that we see such a readiness to sell .
+# co-referenced nodes: -
+(m2 / multi-sentence 
+      :snt1 (s / say-01~e.1 
+            :ARG0 (p / person :wiki - 
+                  :name (n / name :op1 "Shukri"~e.0)) 
+            :ARG1~e.2 (d / double-01~e.13 
+                  :ARG1 (t / thing~e.5 
+                        :ARG2-of~e.5 (p2 / price-01~e.5 
+                              :ARG1 (s2 / share~e.4 
+                                    :poss~e.6 (c / company :wiki - 
+                                          :name (n2 / name :op1 "al-Suwaidi"~e.7,9 :op2 "Cables"~e.10))))) 
+                  :mod (a / almost~e.12) 
+                  :time (b / before 
+                        :op1 (n3 / now) 
+                        :duration (t2 / temporal-quantity :quant 2~e.17 
+                              :unit (m / month~e.18))))) 
+      :snt2 (c2 / cause-01~e.20 
+            :ARG1 (n4 / natural-03~e.24 
+                  :ARG1~e.25 (s3 / see-01~e.27 
+                        :ARG0 (w / we~e.26) 
+                        :ARG1 (r / ready-02~e.30 
+                              :ARG2 (s4 / sell-01~e.32) 
+                              :mod (s5 / such~e.28))))))
+
+
+# sentence: It is obvious that it is a correction process for the market , and it is natural after the waves of high performance .
+# co-referenced nodes: i
+(a / and 
+      :op1 (o / obvious-01~e.2 
+            :ARG1 (c / correct-01~e.7 
+                  :ARG1~e.9 (m / market~e.11) 
+                  :ARG1-of (p / process-02~e.8 
+                        :domain~e.1,5 (i / it~e.0,4)))) 
+      :op2 (n / natural-03~e.16 
+            :ARG1 i~e.14,15 
+            :time (a2 / after~e.17 
+                  :op1 (w / wave-04~e.19 
+                        :ARG1~e.20 (p2 / perform-02~e.22 
+                              :ARG1-of (h / high-02~e.21))))))
+
+
+# sentence: The statement , which was published on an electronic website that is used by Islamists , said that al - Qaeda Mujahideen in the Islamic Maghreb Countries raided three apostate centers in the city of Yakouren in Tizi Ouzou .
+# co-referenced nodes: r
+(s / say-01~e.16 
+      :ARG0 (t / thing~e.1 
+            :ARG1-of~e.1 (s2 / state-01~e.1) 
+            :ARG1-of (p / publish-01~e.5 
+                  :medium~e.6 (w / website~e.9 
+                        :mod (e / electronic~e.8) 
+                        :ARG1-of (u / use-01~e.12 
+                              :ARG0~e.22 (p2 / person 
+                                    :poss (r / religious-group :wiki "Islam" 
+                                          :name (n / name :op1 "Islam"~e.24))))))) 
+      :ARG1~e.17 (r2 / raid-01~e.27 
+            :ARG0 (m / military :wiki "Mujahideen" 
+                  :name (n2 / name :op1 "Mujahideen"~e.21) 
+                  :poss (c2 / criminal-organization :wiki "Al-Qaeda" 
+                        :name (n3 / name :op1 "al-Qaeda"~e.18,20)) 
+                  :location (c3 / country~e.26 
+                        :mod r 
+                        :location (w2 / world-region :wiki "Maghreb" 
+                              :name (n4 / name :op1 "Maghreb"~e.25)))) 
+            :ARG1 (c / center~e.30 :quant 3~e.28 
+                  :beneficiary (a / apostate~e.29) 
+                  :location~e.31 (c4 / city~e.33 :wiki "Yakouren" 
+                        :name (n5 / name :op1 "Yakouren"~e.35) 
+                        :location~e.36 (p3 / province :wiki "Tizi_Ouzou" 
+                              :name (n6 / name :op1 "Tizi"~e.37 :op2 "Ouzou"~e.38))))))
+
+
+# sentence: It was not possible to confirm the credibility of this statement from an independent source .
+# co-referenced nodes: -
+(p / possible-01~e.3 :polarity~e.2 -~e.2 
+      :ARG1 (c / confirm-01~e.5 
+            :ARG0~e.11 (s2 / source~e.14 
+                  :ARG0-of (d / depend-01~e.13 :polarity~e.13 -~e.13)) 
+            :ARG1 (c2 / credibility~e.7 
+                  :domain~e.8 (t / thing~e.10 
+                        :ARG1-of~e.10 (s / state-01~e.10) 
+                        :mod (t2 / this~e.9)))))
+
+
+# sentence: The source added that the remainder of the armed Islamic group members managed to flee . Two people were wounded within the army ranks .
+# co-referenced nodes: p2
+(m / multi-sentence 
+      :snt1 (a / add-01~e.2 
+            :ARG0 (s / source~e.1) 
+            :ARG1~e.6 (m2 / manage-02~e.12 
+                  :ARG0 (p2 / person~e.17 
+                        :ARG1-of (r / remain-01) 
+                        :ARG1-of (i / include-91 
+                              :ARG2 (p3 / person~e.17 
+                                    :ARG0-of (h / have-org-role-91 
+                                          :ARG1 (g / group~e.10 
+                                                :mod (r2 / religious-group :wiki "Islam" 
+                                                      :name (n / name :op1 "Islam"~e.9))) 
+                                          :ARG2 (m3 / member~e.11)) 
+                                    :ARG1-of (a3 / arm-01~e.8)))) 
+                  :ARG1 (f / flee-05~e.14 
+                        :ARG0 p2))) 
+      :snt2 (w / wound-01~e.19 
+            :ARG1 (p / person~e.17 :quant 2~e.16 
+                  :ARG1-of (i2 / include-91 
+                        :ARG2 (r4 / rank~e.23 
+                              :mod (a2 / army~e.22))))))
+
+
+# sentence: Al - Qaeda said that the Mujahideen returned safely without any significant injuries in their ranks .
+# co-referenced nodes: m
+(s / say-01~e.3 
+      :ARG0 (c / criminal-organization :wiki "Al-Qaeda" 
+            :name (n / name :op1 "Al-Qaeda"~e.0,2)) 
+      :ARG1~e.4 (r / return-01~e.7 
+            :ARG1 (m / military :wiki "Mujahideen" 
+                  :name (n2 / name :op1 "Mujahideen"~e.6)) 
+            :manner~e.8 (s2 / safe~e.8) 
+            :manner (i / injure-01~e.12 :polarity~e.9 -~e.9 
+                  :ARG1~e.13 (p / person 
+                        :ARG1-of (i2 / include-91 
+                              :ARG2 (r3 / rank~e.15 
+                                    :mod~e.14 m~e.14))) 
+                  :mod (a / any~e.10) 
+                  :ARG1-of (s3 / significant-02~e.11))))
+
+
+# sentence: This July 6 th , the Foreign Ministry of Democratic Korea announced that Democratic Korea will move toward closing and sealing its nuclear facilities in Yongbyon after receiving the first shipment of the fuel oil assistance .
+# co-referenced nodes: c f
+(a / announce-01~e.11 
+      :ARG0 (g / government-organization :wiki - 
+            :name (n / name :op1 "Foreign"~e.6 :op2 "Ministry"~e.7) 
+            :poss (c / country :wiki "North_Korea" 
+                  :name (n2 / name :op1 "Democratic"~e.9,13 :op2 "Korea"~e.10,14))) 
+      :ARG1 (m / move-02~e.16 
+            :ARG0 c 
+            :ARG1 (a2 / and~e.19 
+                  :op1 (c2 / close-01~e.18 
+                        :ARG0 c 
+                        :ARG1 (f / facility~e.23 
+                              :mod (n3 / nucleus~e.22) 
+                              :poss~e.21 c~e.21 
+                              :location~e.24 (c3 / county :wiki "Nyongbyon_County" 
+                                    :name (n4 / name :op1 "Yongbyon"~e.25)))) 
+                  :op2 (s / seal-01~e.20 
+                        :ARG0 c 
+                        :ARG1 f)) 
+            :time (a3 / after~e.26 
+                  :op1 (r / receive-01~e.27 
+                        :ARG0 c 
+                        :ARG1 (s2 / shipment~e.30 
+                              :ord (o2 / ordinal-entity~e.2,3,29 :value~e.29 1~e.29) 
+                              :consist-of~e.31 (o / oil~e.34 
+                                    :mod (f2 / fuel~e.33) 
+                                    :instrument-of (a4 / assist-01~e.35)))))) 
+      :time (d / date-entity :month~e.1 7~e.1 :day 6~e.2 
+            :mod (t / this~e.0)))
+
+
+# sentence: According to a previous agreement between Seoul and Pyongyang , South Korea will deliver a total of 50,000 tons of heavy fuel oil within 20 days of delivering the first shipment of oil .
+# co-referenced nodes: c
+(s / say-01~e.0,1 
+      :ARG0 (t / thing~e.4 
+            :ARG1-of~e.4 (a / agree-01~e.4 
+                  :ARG0 (c2 / city :wiki "Government_of_South_Korea" 
+                        :name (n / name :op1 "Seoul"~e.6)) 
+                  :ARG2 (c3 / city :wiki "Government_of_North_Korea" 
+                        :name (n2 / name :op1 "Pyongyang"~e.8)) 
+                  :time (p / previous~e.3))) 
+      :ARG1 (d / deliver-01~e.13 
+            :ARG0 (c / country :wiki "South_Korea" 
+                  :name (n3 / name :op1 "South"~e.10 :op2 "Korea"~e.11)) 
+            :ARG1 (o / oil~e.22 
+                  :mod (f / fuel~e.21) 
+                  :mod (h / heavy~e.20) 
+                  :quant~e.19 (t4 / total~e.15 
+                        :op1~e.16 (m / mass-quantity :quant 50000~e.17 
+                              :unit (t2 / ton~e.18)))) 
+            :time (a2 / after 
+                  :op1 (d3 / deliver-01~e.27 
+                        :ARG0 c 
+                        :ARG1 (s2 / shipment~e.30 
+                              :mod~e.31 (o3 / oil~e.32) 
+                              :ord (o2 / ordinal-entity~e.29 :value~e.29 1~e.29))) 
+                  :quant (u / up-to 
+                        :op1 (t3 / temporal-quantity :quant 20~e.24 
+                              :unit (d2 / day~e.25))))))
+
+
+# sentence: Did that lead to women 's absence or exclusion from practicing these professions as a consequence of the non - existence of these specializations , which is also why they are not in the labor market ?
+# co-referenced nodes: p2 - w
+(l / lead-03~e.2 :mode~e.36 interrogative~e.36 
+      :ARG0 (t / that~e.1 
+            :ARG0-of (c2 / cause-01~e.3,28 
+                  :ARG1 (i / include-91 :polarity~e.31 -~e.31 
+                        :ARG1 w~e.29 
+                        :ARG2 (m / market~e.35 
+                              :mod (l2 / labor~e.34))) 
+                  :mod (a2 / also~e.27))) 
+      :ARG2~e.3 (o / or~e.7 
+            :op1 (a / absent-01~e.6 
+                  :ARG1~e.5 (w / woman~e.4) 
+                  :ARG2~e.9 (p / practice-01~e.10 
+                        :ARG0 w 
+                        :ARG1 (p2 / profession~e.12 
+                              :mod (t2 / this~e.11,22)))) 
+            :op2 (e / exclude-01~e.8 
+                  :ARG1 w 
+                  :ARG2 p2) 
+            :ARG1-of (c / cause-01~e.13,14,15 
+                  :ARG0~e.16 (e2 / exist-01~e.20 :polarity~e.18 -~e.18 
+                        :ARG1 (t3 / thing~e.23 
+                              :ARG1-of~e.23 (s / specialize-01~e.23))))))
+
+
+# sentence: I apologize to all my beloved friends for lack of interaction regarding responses or delay in making them due to the limitation to three responses and one subject per day . almubasher_bilkhair@hotmail.com
+# co-referenced nodes: i p 1 t
+(a / apologize-01~e.1 
+      :ARG0 (i / i~e.0 
+            :mod (e / email-address-entity :value "almubasher_bilkhair@hotmail.com"~e.31)) 
+      :ARG1 (o / or~e.13 
+            :op1 (i2 / interact-01~e.10 :polarity - 
+                  :ARG0 i 
+                  :ARG1 p~e.6 
+                  :topic (t / thing 
+                        :ARG2-of (r / respond-01~e.12,16))) 
+            :op2 (d / delay-01~e.14 
+                  :ARG1 (m / make-01~e.16 
+                        :ARG0 i 
+                        :ARG1 t)) 
+            :ARG1-of (c / cause-01~e.18,19 
+                  :ARG0 (l2 / limit-01~e.21 
+                        :ARG2~e.22 (a3 / and~e.25 
+                              :op1 (t2 / thing~e.24 :quant 3~e.23 
+                                    :ARG2-of~e.24 (r2 / respond-01~e.24)) 
+                              :op2 (s / subject~e.27 :quant 1~e.26) 
+                              :frequency (r3 / rate-entity-91 
+                                    :ARG2 (t3 / temporal-quantity :quant 1~e.26 
+                                          :unit (d2 / day~e.29))))))) 
+      :ARG2~e.2 (p / person 
+            :ARG1-of (l / love-01 
+                  :ARG0 i) 
+            :quant (a2 / all~e.3) 
+            :ARG0-of (h / have-rel-role-91 
+                  :ARG1~e.4 i~e.4 
+                  :ARG2 (f / friend))))
+
+
+# sentence: The buffets and restaurants of the neighborhood became popular with the attendees , and what a happy marriage it was .
+# co-referenced nodes: a
+(a3 / and~e.13 
+      :op1 (b / become-01~e.7 
+            :ARG1 (a / and~e.2 
+                  :op1 (r / restaurant~e.3) 
+                  :op2 (b2 / buffet~e.1) 
+                  :location (n / neighborhood~e.6)) 
+            :ARG2 (p / popular-02~e.8 
+                  :ARG1 a 
+                  :ARG2~e.9 (p2 / person~e.11 
+                        :ARG0-of~e.11 (a2 / attend-01~e.11)))) 
+      :op2 (m / marriage~e.17 
+            :mod (h / happy~e.16 
+                  :degree (s / so~e.14)) 
+            :domain~e.19 (i / it~e.18)))
+
+
+# sentence: No writer is immortal *** And eternity shall preserve what his two hands wrote *** So , with your hand , write good books *** May He ease your way to see Him on Judgment Day .
+# co-referenced nodes: y h3 y2 -
+(m / multi-sentence 
+      :snt1 (p / person~e.1 :polarity~e.0 -~e.0 
+            :ARG0-of~e.1 (w / write-01~e.1) 
+            :mod (m2 / mortal~e.3 :polarity~e.0 -~e.3)) 
+      :snt2 (a2 / and~e.5 
+            :op2 (p2 / preserve-01~e.8 
+                  :ARG0 (e / eternity~e.6) 
+                  :ARG1 (t / thing~e.9 
+                        :ARG1-of (w2 / write-01~e.13 
+                              :ARG0 (h / hand~e.12 :quant 2~e.11 
+                                    :part-of~e.10 (h4 / he~e.10)))))) 
+      :snt3 (i2 / infer-01 
+            :ARG1 (w3 / write-01~e.21 :mode imperative 
+                  :ARG0 y 
+                  :ARG1 (b / book~e.23 
+                        :mod (g / good~e.22)) 
+                  :instrument~e.17 (h2 / hand~e.19 
+                        :part-of~e.18 (y / you~e.18)))) 
+      :snt4 (w4 / wish-01~e.25 
+            :ARG1 (e2 / ease-02~e.27 
+                  :ARG0 (h3 / he~e.26) 
+                  :ARG1 (w5 / way~e.29 
+                        :destination~e.30 (s / see-01~e.31 
+                              :ARG0 y2 
+                              :ARG1 h3~e.32 
+                              :time~e.33 (e3 / event :wiki "Last_Judgment" 
+                                    :name (n / name :op1 "Judgment"~e.34 :op2 "Day"~e.35))) 
+                        :poss~e.28 (y2 / you~e.28)))))
+
+
+# sentence: The Palestinian Authority has demanded that the Egyptian government stop broadcasting the Hamas - affiliated " Al - Aqsa " satellite channel on Nilesat .
+# co-referenced nodes: g2
+(d / demand-01~e.4 
+      :ARG0 (g / government-organization :wiki "Palestinian_National_Authority" 
+            :name (n / name :op1 "Palestinian"~e.1 :op2 "Authority"~e.2)) 
+      :ARG1~e.5 (s / stop-01~e.9 
+            :ARG0 (g2 / government-organization~e.8 
+                  :ARG0-of~e.8 (g3 / govern-01~e.8 
+                        :ARG1 (c / country :wiki "Egypt" 
+                              :name (n2 / name :op1 "Egypt"~e.7)))) 
+            :ARG1 (b / broadcast-01~e.10 
+                  :ARG0 g2 
+                  :ARG1 (c2 / channel~e.21 :wiki "Al-Aqsa_TV" 
+                        :name (n3 / name :op1 "Al-Aqsa"~e.16,18) 
+                        :mod (s2 / satellite~e.20) 
+                        :ARG1-of (a / affiliate-01~e.14 
+                              :ARG2 (o / organization :wiki "Hamas" 
+                                    :name (n5 / name :op1 "Hamas"~e.12)))) 
+                  :medium~e.22 (p / product :wiki "Nilesat" 
+                        :name (n4 / name :op1 "Nilesat"~e.23)))))
+
+
+# sentence: The sources pointed out that channels carried by the satellite are dealt with on a commercial basis as long as the operating channels do not violate conventional broadcasting terms and rules .
+# co-referenced nodes: s2
+(p / point-out-02~e.2,3 
+      :ARG0 (s / source~e.1) 
+      :ARG1~e.4 (d / deal-01~e.11,23 
+            :ARG2 (c / channel~e.5 
+                  :ARG1-of (c2 / carry-01~e.6 
+                        :ARG0~e.7 (s2 / satellite~e.9))) 
+            :ARG1-of (b / base-02~e.16 
+                  :ARG2 (c3 / commerce~e.15)) 
+            :condition (a2 / as-long-as~e.17,18,19 
+                  :op1 (v / violate-01~e.25 :polarity~e.24 -~e.24 
+                        :ARG0 (c4 / channel~e.22 
+                              :ARG0-of (o / operate-01~e.21 
+                                    :ARG4 s2)) 
+                        :ARG1 (a / and~e.29 
+                              :op1 (t / term~e.28) 
+                              :op2 (r / rule~e.30) 
+                              :mod (b2 / broadcast-01~e.27 
+                                    :mod (c5 / convention~e.26)))))))
+
+
+# sentence: To subscribe to this service , please add * * the following email address to your Messenger list * * albeta ...@yahoo.com *
+# co-referenced nodes: y
+(a / add-02~e.7 :mode imperative :polite~e.6 +~e.6 
+      :ARG0 y 
+      :ARG1 (e2 / email-address-entity~e.12,13 :value "albeta...@yahoo.com" 
+            :ARG1-of (f / follow-04~e.11)) 
+      :ARG2~e.14 (l / list~e.17 
+            :mod (p / product :wiki "Yahoo!_Messenger" 
+                  :name (n / name :op1 "Messenger"~e.16)) 
+            :poss~e.15 (y / you~e.15)) 
+      :purpose (s / subscribe-01~e.1 
+            :ARG0 y 
+            :ARG1~e.2 (s2 / service~e.4 
+                  :mod (t / this~e.3))))
+
+
+# sentence: Those who wish to communicate with the operating team of the site may * * correspond with us through this form http : //www.albetaqa.com/contact.php
+# co-referenced nodes: p2
+(p / possible-01~e.12 
+      :ARG1 (c / correspond-01~e.15 
+            :ARG0 (p2 / person 
+                  :ARG0-of (w / wish-01~e.2 
+                        :ARG1 (c2 / communicate-01~e.4 
+                              :ARG0 p2 
+                              :ARG2~e.5 (t / team~e.8 
+                                    :ARG0-of (o / operate-01~e.7 
+                                          :ARG1~e.9 (s / site~e.11)))))) 
+            :ARG1~e.16 (w2 / we~e.17) 
+            :medium (f / form~e.20 
+                  :mod (t2 / this~e.19) 
+                  :mod (u / url-entity :value "http://www.albetaqa.com/contact.php"~e.21))))
+
+
+# sentence: He added : " We will ask the arrested persons to tell us from which stores they bought their clothes and at which hair salons they did their hair so that we can shut them down . "
+# co-referenced nodes: p a4 w
+(a / add-01~e.1 
+      :ARG0 (h / he~e.0) 
+      :ARG1 (a2 / ask-02~e.6 
+            :ARG0 (w / we~e.4,31) 
+            :ARG1 (t / tell-01~e.11 
+                  :ARG0 p 
+                  :ARG1 (a4 / and~e.20 
+                        :op1 (s / store~e.15 
+                              :ARG2-of (b / buy-01~e.17 
+                                    :ARG0 p~e.16 
+                                    :ARG1 (c / clothes~e.19 
+                                          :poss~e.18 p~e.18))) 
+                        :op2 (s2 / salon~e.24 
+                              :mod (h2 / hair~e.23) 
+                              :location-of (d / do-02~e.26 
+                                    :ARG1 (h3 / hair~e.28 
+                                          :part-of~e.27 p~e.27) 
+                                    :ARG2 p~e.25))) 
+                  :ARG2 w~e.12) 
+            :ARG2 (p / person~e.9 
+                  :ARG1-of (a3 / arrest-01~e.8)) 
+            :purpose~e.29,30 (p2 / possible-01~e.32 
+                  :ARG1 (s3 / shut-down-05~e.33,35 
+                        :ARG0 w 
+                        :ARG1 a4))))
+
+
+# sentence: Since the start of this campaign in April / " April " , warnings have been issued to thousands of women , among whom hundreds have been arrested for not abiding by the religious dress code .
+# co-referenced nodes: w3
+(i / issue-01~e.16 
+      :ARG1 (t / thing 
+            :ARG0-of (w / warn-01~e.13,16)) 
+      :ARG2~e.17 (w2 / woman~e.20 
+            :quant~e.19 (m / multiple~e.18 :op1~e.18 1000~e.18) 
+            :ARG2-of (i2 / include-91~e.22 
+                  :ARG1 (w3 / woman~e.20 
+                        :quant (m2 / multiple~e.24 :op1~e.24 100~e.24) 
+                        :ARG1-of (a / arrest-01~e.27 
+                              :ARG2~e.28 (a2 / abide-01~e.30 :polarity~e.29 -~e.29 
+                                    :ARG0 w3 
+                                    :ARG1~e.31 (c2 / code~e.35 
+                                          :mod (d2 / dress-01~e.34) 
+                                          :mod (r / religion~e.33))))))) 
+      :time (s / since~e.0 
+            :op1 (s2 / start-01~e.2 
+                  :ARG1~e.3 (c / campaign-01~e.5 
+                        :mod (t2 / this~e.4)) 
+                  :time~e.6 (d / date-entity :month~e.7,10 4~e.7,10))))
+
+
+# sentence: Women , whether Iranian or foreign , have been required to wear the veil since the Islamic Revolution in the year 1979 , but recent years saw some relaxation , particularly with respect to wearing the veil .
+# co-referenced nodes: a v
+(c / contrast-01~e.23 
+      :ARG1 (r / require-01~e.9 
+            :ARG1 (w3 / wear-01~e.11 
+                  :ARG0 a 
+                  :ARG1 (v / veil~e.13)) 
+            :ARG2 (a / and 
+                  :op1 (w / woman~e.0 
+                        :mod (c2 / country :wiki "Iran" 
+                              :name (n / name :op1 "Iran"~e.3))) 
+                  :op2 (w2 / woman~e.0 
+                        :mod (f / foreign~e.5))) 
+            :time (s / since~e.14 
+                  :op1 (e / event :wiki "Iranian_Revolution" 
+                        :name (n2 / name :op1 "Islamic"~e.16 :op2 "Revolution"~e.17) 
+                        :time (d / date-entity :year~e.20 1979~e.21)))) 
+      :ARG2 (s2 / see-01~e.26 
+            :ARG0 (y / year~e.25 
+                  :mod (r2 / recent~e.24)) 
+            :ARG1 (r3 / relax-01~e.28 
+                  :ARG1 (w4 / wear-01~e.34 
+                        :ARG1 v~e.36 
+                        :mod (p / particular~e.30)) 
+                  :mod (s3 / some~e.27))))
+
+
+# sentence: The Ministry requested that the officers of this Committee hand over the persons whom they arrest to regular police forces , which are to carry out their own interrogations of them .
+# co-referenced nodes: p p3
+(r / request-01~e.2 
+      :ARG0 (m / ministry~e.1) 
+      :ARG1~e.3 (h / hand-over-02~e.9,10 
+            :ARG0 (p3 / person~e.12 
+                  :ARG0-of (h2 / have-org-role-91~e.6 
+                        :ARG1 (c / committee~e.8 
+                              :mod (t / this~e.7)) 
+                        :ARG2 (o / officer~e.5))) 
+            :ARG1 (p / person~e.12 
+                  :ARG1-of (a / arrest-01~e.15 
+                        :ARG0 p3~e.14)) 
+            :ARG2~e.16 (f / force~e.19 
+                  :mod (p2 / police~e.18) 
+                  :ARG1-of (r2 / regular-03~e.17) 
+                  :ARG0-of (i / interrogate-01~e.28 
+                        :ARG1~e.26 p~e.26))))
+
+
+# sentence: This religious police force is also under investigation following a campaign of raids during which an Asian woman fell to her death from the fifth floor last May in the region of Holy Mecca .
+# co-referenced nodes: 5 w
+(i / investigate-01~e.7 
+      :ARG1 (f / force~e.3 
+            :mod (p / police~e.2) 
+            :mod (t / this~e.0) 
+            :mod (r / religion~e.1)) 
+      :ARG1-of (c / cause-01 
+            :ARG0 (c2 / campaign~e.10 
+                  :consist-of~e.11 (r2 / raid-01~e.12)) 
+            :time-of~e.13 (f2 / fall-01~e.18 
+                  :ARG1 (w / woman~e.17 
+                        :mod (c3 / continent :wiki "Asia" 
+                              :name (n / name :op1 "Asia"~e.16))) 
+                  :ARG3~e.22 (f3 / floor~e.25 
+                        :ord (o / ordinal-entity~e.24 :value~e.24 5~e.24)) 
+                  :ARG4~e.19 (d / die-01~e.21 
+                        :ARG1~e.20 w~e.20) 
+                  :time~e.13 (d2 / date-entity :month~e.27 5~e.27 
+                        :mod (l / last~e.26)) 
+                  :location~e.28 (r3 / region~e.30 
+                        :mod~e.31 (c4 / city :wiki "Mecca" 
+                              :name (n2 / name :op1 "Mecca"~e.33) 
+                              :mod (h / holy~e.32))))) 
+      :mod (a / also~e.5))
+
+
+# sentence: It came to a head . On the afternoon of June / June 12 the Al - Qassam Brigades had had it with this collaborator group 's continuation of its Zionist and American plans to eliminate the Islamic Movement .
+# co-referenced nodes: g m2
+(m / multi-sentence 
+      :snt1 (c / come-04~e.1 
+            :ARG1 (i / it~e.0,21,29) 
+            :ARG2~e.2 (h / head~e.4)) 
+      :snt2 (h2 / have-00~e.19,20 
+            :ARG0 (m2 / military :wiki "Izz_ad-Din_al-Qassam_Brigades" 
+                  :name (n / name :op1 "Al-Qassam"~e.15,17 :op2 "Brigades"~e.18)) 
+            :ARG2~e.22 (c2 / continue-01~e.27 
+                  :ARG0~e.26 (g / group~e.25 
+                        :ARG0-of (c3 / collaborate-01) 
+                        :mod (t2 / this~e.23)) 
+                  :ARG1 (p / plan-01~e.33 
+                        :ARG0 g 
+                        :ARG1 (e / eliminate-01~e.35 
+                              :ARG0 (a2 / and~e.31 
+                                    :op1 m2 
+                                    :op2 g) 
+                              :ARG1 (m3 / movement-07~e.38 
+                                    :ARG0 (r / religious-group :wiki "Islam" 
+                                          :name (n4 / name :op1 "Islamic"~e.37)))) 
+                        :mod (t / thing :wiki "Zionism" 
+                              :name (n2 / name :op1 "Zionism")) 
+                        :mod (c4 / country :wiki "United_States" 
+                              :name (n3 / name :op1 "United"~e.32 :op2 "States"~e.32)))) 
+            :time (d / date-entity :month~e.10,12 6~e.10,12 :day 12~e.13 
+                  :dayperiod (a / afternoon~e.8))))
+
+
+# sentence: In order to fight this habit , the Kingdom has enacted anti - tobacco and anti - drug laws for the protection of society , including the application of the death penalty against drug smugglers and a prohibition against taking them .
+# co-referenced nodes: k d4
+(e / enact-01~e.10 
+      :ARG0 (k / kingdom~e.8) 
+      :ARG1~e.19 (a3 / and 
+            :op1 (l / law~e.18 
+                  :ARG0-of (o / oppose-01~e.11,15 
+                        :ARG1 (t / tobacco~e.13))) 
+            :op2 (l2 / law~e.18 
+                  :ARG0-of (o2 / oppose-01~e.32,38 
+                        :ARG1 (d / drug~e.17,33))) 
+            :purpose (p / protect-01~e.21 
+                  :ARG1~e.22 (s / society~e.23)) 
+            :ARG2-of (i / include-01~e.25 
+                  :ARG1 (a2 / and~e.35 
+                        :op1 (a / apply-02~e.27 
+                              :ARG1~e.28 (p3 / penalty~e.31 
+                                    :mod (d3 / die-01~e.30)) 
+                              :ARG2 (p2 / person~e.34 
+                                    :ARG0-of~e.34 (s2 / smuggle-01~e.34 
+                                          :ARG1 (d4 / drug~e.33)))) 
+                        :op2 (p4 / prohibit-01~e.37 
+                              :ARG1 (t2 / take-01~e.39 
+                                    :ARG1 d4~e.40))))) 
+      :purpose~e.0,1,2 (f / fight-01~e.3 
+            :ARG0 k 
+            :ARG1 (h / habit~e.5 
+                  :mod (t3 / this~e.4))))
+
+
+# sentence: The Regional Director of the World Health Organization in the Kingdom said : " The number of physicians who smoke reached , in some of the Arab countries , more than 37 % of all physicians .
+# co-referenced nodes: p
+(s / say-01~e.11 
+      :ARG0 (p4 / person 
+            :ARG0-of (h / have-org-role-91~e.3 
+                  :ARG1 (o / organization :wiki "World_Health_Organization" 
+                        :name (n3 / name :op1 "World"~e.5 :op2 "Health"~e.6 :op3 "Organization"~e.7)) 
+                  :ARG2 (d / director~e.2 
+                        :mod (r2 / region~e.1))) 
+            :location (k / kingdom~e.10)) 
+      :ARG1 (r / reach-01~e.20 
+            :ARG0 (n / number~e.15 
+                  :quant-of~e.16 (p / physician~e.17 
+                        :ARG0-of (s2 / smoke-02~e.19))) 
+            :ARG1 (m / more-than~e.29,30 
+                  :op1 (p2 / percentage-entity~e.32 :value 37~e.31 
+                        :ARG3-of (i / include-91 
+                              :ARG1 p 
+                              :ARG2 (p3 / physician~e.35 
+                                    :quant (a / all~e.34))))) 
+            :location~e.22 (c2 / country~e.27 
+                  :ARG1-of (i2 / include-91 
+                        :ARG2 (c / country~e.27 
+                              :mod (e / ethnic-group :wiki "Arabs" 
+                                    :name (n2 / name :op1 "Arab"~e.26)))) 
+                  :quant~e.24 (s3 / some~e.23))))
+
+
+# sentence: Saudi Sues Genies on Harassment Charges . A Saudi man in the Jazan region filed a claim against a band of genies who harass and annoy him every day .
+# co-referenced nodes: p r2 g m2
+(m / multi-sentence 
+      :snt1 (s / sue-02~e.1 
+            :ARG0 (p / person 
+                  :mod (c / country :wiki "Saudi_Arabia" 
+                        :name (n / name :op1 "Saudi"~e.0,8 :op2 "Arabia"))) 
+            :ARG1 (g / genie~e.2) 
+            :ARG2~e.3 (h / harass-01~e.4 
+                  :ARG0 g 
+                  :ARG1 p 
+                  :ARG2-of (c2 / charge-05~e.5 
+                        :ARG1 g))) 
+      :snt2 (f / file-01~e.14 
+            :ARG0 (m2 / man~e.9 
+                  :mod (c4 / country :wiki "Saudi_Arabia" 
+                        :name (n2 / name :op1 "Saudi"~e.0,8 :op2 "Arabia")) 
+                  :location~e.10 (p2 / province :wiki "Jizan" 
+                        :name (n3 / name :op1 "Jazan"~e.12))) 
+            :ARG1 (c3 / claim-01~e.16) 
+            :ARG3 (b / band~e.19 
+                  :consist-of~e.20 (g2 / genie~e.21) 
+                  :ARG0-of (h2 / harass-01~e.23 
+                        :ARG1 m2 
+                        :frequency (r2 / rate-entity-91 
+                              :ARG3 (t / temporal-quantity :quant 1 
+                                    :unit (d / day~e.28)))) 
+                  :ARG0-of (a / annoy-01~e.25 
+                        :ARG1 m2 
+                        :frequency r2))))
+
+
+# sentence: Old Man Robs a Bank .. Only to Return to Jail
+# co-referenced nodes: m
+(r / rob-01~e.2 
+      :ARG0 (m / man~e.1 
+            :mod (o / old~e.0)) 
+      :ARG1 (b / bank~e.4) 
+      :purpose (r2 / return-01~e.8 
+            :ARG1 m 
+            :ARG2~e.9 (j / jail~e.10) 
+            :mod (o2 / only~e.6)))
+
+
+# sentence: A 74 - year - old homeless thief fulfilled his only wish , which was to return to jail for the next five years .
+# co-referenced nodes: p
+(f / fulfill-01~e.8 
+      :ARG0 (p / person~e.7 
+            :ARG0-of~e.7 (s / steal-01~e.7) 
+            :ARG0-of (h / have-03 :polarity - 
+                  :ARG1 (h2 / home)) 
+            :age~e.5 (t3 / temporal-quantity :quant 74~e.1 
+                  :unit (y2 / year~e.3))) 
+      :ARG1 (w / wish-01~e.11 
+            :ARG0~e.9 p~e.9 
+            :ARG1 (r / return-01~e.16 
+                  :ARG1 p 
+                  :ARG4~e.17 (j / jail~e.18) 
+                  :time (a / after 
+                        :op1 (n2 / now) 
+                        :duration (t2 / temporal-quantity :quant 5~e.22 
+                              :unit (y / year~e.23)))) 
+            :mod (o / only~e.10)))
+
+
+# sentence: During the trial , the Public Prosecutor said that the old , alcoholic thief had become homeless and committed the theft in order to return to prison .
+# co-referenced nodes: p p5
+(s / say-01~e.7 
+      :ARG0 (p / person 
+            :ARG0-of (h3 / have-org-role-91 
+                  :ARG3 (p2 / prosecute-01~e.6 
+                        :ARG0~e.6 p~e.6 
+                        :ARG1-of (p3 / public-02~e.5)))) 
+      :ARG1~e.8 (a2 / and~e.17 
+            :op1 (b / become-01~e.15 
+                  :ARG1 (p5 / person~e.13 
+                        :mod (o / old~e.10) 
+                        :mod (a / alcohol) 
+                        :ARG0-of~e.13 (s2 / steal-01~e.13)) 
+                  :ARG2 (h / homeless~e.16)) 
+            :op2 (s3 / steal-01~e.20 
+                  :ARG0 p5~e.13 
+                  :purpose~e.21,22,23 (r / return-01~e.24 
+                        :ARG1 p5 
+                        :ARG4~e.25 (p4 / prison~e.26)))) 
+      :time~e.0 (d / during~e.0 
+            :op1 (t / try-02~e.2)))
+
+
+# sentence: The Court also found that Newnham had been convicted on charges of shoplifting from stores almost every year over a period of 36 years .
+# co-referenced nodes: p
+(f / find-01~e.3 
+      :ARG0 (c / court~e.1) 
+      :ARG1~e.4 (c2 / convict-01~e.8 
+            :ARG1 (p / person :wiki - 
+                  :name (n / name :op1 "Newnham"~e.5)) 
+            :ARG2~e.9 (s / shoplift-01~e.12 
+                  :ARG0 p 
+                  :ARG2~e.13 (s2 / store~e.14) 
+                  :ARG2-of (c3 / charge-05~e.10 
+                        :ARG1 p)) 
+            :frequency (r / rate-entity-91 
+                  :ARG3 (a / almost~e.15 
+                        :op1 (t2 / temporal-quantity :quant 1 
+                              :unit (y3 / year~e.17,23)))) 
+            :duration~e.21 (t / temporal-quantity :quant 36~e.22 
+                  :unit (y / year~e.17,23))) 
+      :mod (a2 / also~e.2))
+
+
+# sentence: Newnham said that robbing the bank was much easier than sorting out his affairs and his retirement spending outside the prison .
+# co-referenced nodes: p
+(s / say-01~e.1 
+      :ARG0 (p / person :wiki - 
+            :name (n / name :op1 "Newnham"~e.0)) 
+      :ARG1~e.2 (e / easy-05~e.8 
+            :ARG1 (r / rob-01~e.3 
+                  :ARG0 p 
+                  :ARG1 (b / bank~e.5)) 
+            :degree~e.8 (m / more~e.8 
+                  :quant (m2 / much~e.7)) 
+            :compared-to~e.9 (s2 / sort-01~e.10 
+                  :ARG0 p 
+                  :ARG1 (a / and~e.14 
+                        :op1 (a2 / affair~e.13 
+                              :poss~e.12 p~e.12) 
+                        :op2 (t / thing 
+                              :ARG3-of (s3 / spend-01~e.17 
+                                    :ARG0 p 
+                                    :ARG4 (r2 / retire-01~e.16 
+                                          :ARG0 p)))) 
+                  :location (o / outside~e.18 
+                        :op1 (p2 / prison~e.20)))))
+
+
+# sentence: The issue therefore does not concern some opinions that provoke waves of objection , but rather it fundamentally concerns a vision of the role of the Church , its ideology , and its universal message .
+# co-referenced nodes: i o3
+(c4 / cause-01~e.2 
+      :ARG1 (c / contrast-01~e.14 
+            :ARG1 (c2 / concern-02~e.5 :polarity~e.4 -~e.4 
+                  :ARG0 (i / issue-02~e.1) 
+                  :ARG1 (t / thing~e.7 
+                        :ARG1-of~e.7 (o / opine-01~e.7) 
+                        :ARG0-of (p / provoke-01~e.9 
+                              :ARG1 (w / wave-04~e.10 
+                                    :ARG1~e.11 (o2 / object-01~e.12))) 
+                        :mod (s / some~e.6))) 
+            :ARG2 (c3 / concern-02~e.18 
+                  :ARG0 i~e.16 
+                  :ARG1 (e / envision-01~e.20 
+                        :ARG1~e.21 (a / and~e.31 
+                              :op1 (r / role~e.23 
+                                    :poss~e.24 (o3 / organization :wiki "Christian_Church" 
+                                          :name (n / name :op1 "Church"~e.26))) 
+                              :op2 (i2 / ideology~e.29 
+                                    :poss~e.28 o3~e.28) 
+                              :op3 (m / message~e.34 
+                                    :mod (u / universal~e.33) 
+                                    :poss~e.32 o3~e.32))) 
+                  :manner~e.17 (f / fundamental~e.17))))
+
+
+# sentence: So the beginning denied the relationship between Islam and reason , as though Islam is a religion that is hostile to reason and there is no place for reason in the Islamic faith .
+# co-referenced nodes: r2
+(d / deny-01~e.3 
+      :ARG0 (t / thing~e.2 
+            :ARG2-of~e.2 (b / begin-01~e.2)) 
+      :ARG1 (r / relation-03 
+            :ARG0 (r2 / religious-group :wiki "Islam" 
+                  :name (n / name :op1 "Islam"~e.7)) 
+            :ARG2 (r3 / reason~e.28)) 
+      :conj-as-if~e.11 (a / and~e.8,22 
+            :op1 (h / hostile~e.19 
+                  :domain~e.14,18 (r5 / religion~e.16 
+                        :mod r2~e.13)) 
+            :op1 (p / place~e.26 :polarity~e.25 -~e.25 
+                  :beneficiary (r6 / reason~e.9,21,28) 
+                  :prep-in~e.29 (f / faith~e.32 
+                        :mod r2~e.31))))
+
+
+# sentence: The search for a war in which victory would be easy is in reality no more than an electoral campaign . This campaign can only succeed in electing or re - electing the neo - conservatives as leaders of the United States . But it is a success whose price is to push the world toward destruction , fabricated crises that detract from the real challenges , and the absence of a compass and priorities .
+# co-referenced nodes: c3 p w3
+(m / multi-sentence 
+      :snt1 (c2 / campaign-01~e.19 
+            :ARG1 (s / search-01~e.1 
+                  :ARG2~e.2 (w / war~e.4 
+                        :ARG2-of (w2 / win-01~e.7 
+                              :ARG1-of (e2 / easy-05~e.10)))) 
+            :mod (e / elect-01~e.18) 
+            :mod (n / no-more-than~e.14,15,16) 
+            :mod (i / in-reality~e.5,12,13,26)) 
+      :snt2 (s2 / succeed-01~e.25 
+            :ARG0 (c8 / campaign-01~e.22 
+                  :mod (t2 / this~e.21)) 
+            :ARG1~e.26 (o / or~e.28 
+                  :op1 (e3 / elect-01~e.27,31 
+                        :ARG1 (c3 / conservative~e.35 
+                              :mod (n2 / neo~e.33)) 
+                        :ARG2~e.36 (p / person~e.37 
+                              :ARG0-of~e.37 (l / lead-02~e.37 
+                                    :ARG1~e.38 (c4 / country :wiki "United_States" 
+                                          :name (n3 / name :op1 "United"~e.40 :op2 "States"~e.41))))) 
+                  :op2 (r / reelect-01 
+                        :ARG1 c3 
+                        :ARG2 p)) 
+            :ARG1-of (p2 / possible-01~e.23 
+                  :mod (o2 / only~e.24))) 
+      :snt3 (c / contrast-01~e.43 
+            :ARG2 (s3 / succeed-01~e.47 
+                  :domain~e.45 (i3 / it~e.44) 
+                  :ARG1-of (p6 / price-01~e.49 
+                        :ARG2~e.51 (t3 / thing~e.52 
+                              :ARG0-of~e.52 (p4 / push-02~e.52 
+                                    :ARG1 (w3 / world~e.54) 
+                                    :ARG2 (a / and~e.67 
+                                          :op1 (d / destroy-01~e.56 
+                                                :ARG1 w3) 
+                                          :op2 (c5 / crisis~e.59 
+                                                :ARG1-of (f / fabricate-01~e.58) 
+                                                :ARG0-of (d2 / detract-01~e.61 
+                                                      :ARG2~e.62 (t / thing~e.65 
+                                                            :ARG2-of~e.65 (c6 / challenge-01~e.65) 
+                                                            :mod (r2 / real~e.64)))) 
+                                          :op3 (a2 / absent-01~e.69 
+                                                :ARG1~e.70 (a3 / and~e.73 
+                                                      :op1 (c7 / compass~e.72) 
+                                                      :op2 (p5 / priority~e.74))))))))))
+
+

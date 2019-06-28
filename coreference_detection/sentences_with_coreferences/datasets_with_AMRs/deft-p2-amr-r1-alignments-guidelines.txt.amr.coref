@@ -1,0 +1,1364 @@
+# sentence: If that is the case , after the child is born , the father will go to the mother 's home , and present the family matriarch with gifts , asking to be accepted as the father .
+# co-referenced nodes: p3 c h3
+(a / and~e.22 
+      :op1 (g / go-02~e.15 
+            :ARG0 (p3 / person 
+                  :ARG0-of (h3 / have-rel-role-91 
+                        :ARG1 c 
+                        :ARG2 (f / father~e.13,36))) 
+            :ARG4~e.16 (h / home~e.20 
+                  :poss (p4 / person 
+                        :ARG0-of (h4 / have-rel-role-91~e.19 
+                              :ARG1 c 
+                              :ARG2 (m / mother~e.18))))) 
+      :op2 (p / present-01~e.23 
+            :ARG0 p3 
+            :ARG1~e.27 (g2 / gift~e.28) 
+            :ARG2 (p2 / person 
+                  :ARG0-of (h2 / have-org-role-91 
+                        :ARG1 (f2 / family~e.25) 
+                        :ARG2 (m2 / matriarch~e.26)))) 
+      :op3 (a3 / ask-02~e.30 
+            :ARG0 p3 
+            :ARG1 (a4 / accept-01~e.33 
+                  :ARG1 h3)) 
+      :time~e.34 (a2 / after~e.6 
+            :op1 (b / birth-01 
+                  :ARG1 (c / child~e.8))) 
+      :condition~e.0 (t / that~e.1))
+
+
+# sentence: This dynamic metropolis never ceases its movement .
+# co-referenced nodes: m
+(c / cease-01~e.4 :polarity~e.3 -~e.3 
+      :ARG0 (m / metropolis~e.2 
+            :mod (d / dynamic~e.1) 
+            :mod (t / this~e.0)) 
+      :ARG1 (m2 / move-01~e.6 
+            :ARG1~e.5 m~e.5) 
+      :time (e2 / ever~e.3))
+
+
+# sentence: The boy wants the girl to believe him .
+# co-referenced nodes: b
+(w / want-01~e.2 
+      :ARG0 (b / boy~e.1) 
+      :ARG1 (b2 / believe-01~e.6 
+            :ARG0 (g / girl~e.4) 
+            :ARG1 b~e.7))
+
+
+# sentence: The boy has a desire to be believed by the girl .
+# co-referenced nodes: b
+(d / desire-01~e.2,4 
+      :ARG0 (b / boy~e.1) 
+      :ARG1 (b2 / believe-01~e.7 
+            :ARG0~e.8 (g / girl~e.10) 
+            :ARG1 b))
+
+
+# sentence: The boy saw the girl who wanted him .
+# co-referenced nodes: b
+(s / see-01~e.2 
+      :ARG0 (b / boy~e.1) 
+      :ARG1 (g / girl~e.4 
+            :ARG0-of (w / want-01~e.6 
+                  :ARG1 b~e.7)))
+
+
+# sentence: The boy came and left .
+# co-referenced nodes: b
+(a / and~e.3 
+      :op1 (c / come-01~e.2 
+            :ARG1 (b / boy~e.1)) 
+      :op2 (l / leave-11~e.4 
+            :ARG0 b))
+
+
+# sentence: The boy wants to eat an apple .
+# co-referenced nodes: b
+(w / want-01~e.2 
+      :ARG0 (b / boy~e.1) 
+      :ARG1 (e / eat-01~e.4 
+            :ARG0 b 
+            :ARG1 (a / apple~e.6)))
+
+
+# sentence: The girl wants to eat a banana .
+# co-referenced nodes: g
+(w / want-01~e.2 
+      :ARG0 (g / girl~e.1) 
+      :ARG1 (e / eat-01~e.4 
+            :ARG0 g 
+            :ARG1 (b / banana~e.6)))
+
+
+# sentence: Darrell Phillips , vice president of human resources for Hollingworth & Vose
+# co-referenced nodes: -
+(p / person :wiki - 
+      :name (n / name :op1 "Darrell"~e.0 :op2 "Phillips"~e.1) 
+      :ARG0-of (h2 / have-org-role-91~e.8 
+            :ARG1 (c / company :wiki - 
+                  :name (n2 / name :op1 "Hollingworth"~e.9 :op2 "&"~e.10 :op3 "Vose"~e.11)) 
+            :ARG2 (p2 / president~e.4 
+                  :mod (v / vice~e.3) 
+                  :topic~e.5 (r / resource~e.7 
+                        :mod (h / human~e.6)))))
+
+
+# sentence: He went to the store to buy wood for a new fence .
+# co-referenced nodes: h
+(g / go-02~e.1 
+      :ARG0 (h / he~e.0) 
+      :ARG4~e.2 (s / store~e.4) 
+      :purpose (b / buy-01~e.6 
+            :ARG0 h 
+            :ARG1 (w / wood~e.7 
+                  :purpose~e.8 (f / fence~e.11 
+                        :mod (n / new~e.10)))))
+
+
+# sentence: My friend recorded a song for me .
+# co-referenced nodes: i
+(r / record-01~e.2 
+      :ARG0 (p / person 
+            :ARG0-of (h / have-rel-role-91 
+                  :ARG1~e.0 (i / i~e.0) 
+                  :ARG2 (f / friend~e.1))) 
+      :ARG1 (s / song~e.4) 
+      :beneficiary~e.5 i~e.6)
+
+
+# sentence: CEO of IBM
+# co-referenced nodes: IBM
+(p / person 
+      :ARG0-of (h / have-org-role-91~e.1 
+            :ARG1 (c2 / company :wiki "IBM" 
+                  :name (n / name :op1 "IBM"~e.2)) 
+            :ARG2 (c / CEO~e.0)))
+
+
+# sentence: high tech companies like IBM and Google
+# co-referenced nodes: IBM
+(c / company~e.2 
+      :mod (t / tech~e.1 
+            :ARG1-of (h / high-02~e.0)) 
+      :example~e.3 (a / and~e.5 
+            :op1 (c2 / company :wiki "IBM" 
+                  :name (n / name :op1 "IBM"~e.4)) 
+            :op2 (c3 / company :wiki "Google" 
+                  :name (n2 / name :op1 "Google"~e.6))))
+
+
+# sentence: They feared him even when he was behind bars .
+# co-referenced nodes: h
+(f / fear-01~e.1 
+      :ARG0 (t / they~e.0) 
+      :ARG1 (h / he~e.2) 
+      :concession (e / even-when~e.3,4 
+            :op1 (i / imprison-01~e.7,8 
+                  :ARG1 h~e.5)))
+
+
+# sentence: Xinhua News Agency , Shanghai , February 10 , by wire ( reporters Jinhu Xie and Chijian Zhang )
+# co-referenced nodes: -
+(b / byline-91 
+      :ARG0 (p3 / publication :wiki "Xinhua_News_Agency" 
+            :name (n / name :op1 "Xinhua"~e.0 :op2 "News"~e.1 :op3 "Agency"~e.2)) 
+      :ARG1 (a / and~e.15 
+            :op1 (p / person~e.12 :wiki - 
+                  :name (n3 / name :op1 "Jinhu"~e.13 :op2 "Xie"~e.14) 
+                  :ARG0-of~e.12 (r / report-01~e.12)) 
+            :op2 (p2 / person~e.12 :wiki - 
+                  :name (n4 / name :op1 "Chijian"~e.16 :op2 "Zhang"~e.17) 
+                  :ARG0-of~e.12 (r2 / report-01~e.12))) 
+      :ARG4 (w / wire~e.10) 
+      :location (c2 / city :wiki "Shanghai" 
+            :name (n2 / name :op1 "Shanghai"~e.4)) 
+      :time (d / date-entity :month~e.6 2~e.6 :day 10~e.7))
+
+
+# sentence: I went to the store and back .
+# co-referenced nodes: i s
+(a / and~e.5 
+      :op1 (g / go-02~e.1 
+            :ARG0 (i / i~e.0) 
+            :ARG4~e.2 (s / store~e.4)) 
+      :op2 (r / return-01~e.6 
+            :ARG1 i 
+            :ARG3 s))
+
+
+# sentence: I pass the resort on my way to work .
+# co-referenced nodes: i
+(p / pass-02~e.1 
+      :ARG0 (i / i~e.0) 
+      :ARG1 (r / resort~e.3) 
+      :subevent-of~e.4 (g / go-02~e.6 
+            :ARG0~e.5 i~e.5 
+            :ARG4~e.7 (w / work-01~e.8)))
+
+
+# sentence: My friend ran next to me .
+# co-referenced nodes: i
+(r / run-02~e.2 
+      :ARG0 (p / person 
+            :ARG0-of (h / have-rel-role-91 
+                  :ARG1~e.0 (i / i~e.0) 
+                  :ARG2 (f / friend~e.1))) 
+      :location (n / next-to~e.3,4 
+            :op1 i~e.5))
+
+
+# sentence: He said he would support them as long as they did n't break any rules .
+# co-referenced nodes: h t
+(s / say-01~e.1 
+      :ARG0 (h / he~e.0) 
+      :ARG1 (s2 / support-01~e.4 
+            :ARG0 h~e.2 
+            :ARG1 (t / they~e.5) 
+            :condition (a / as-long-as~e.6,7,8 
+                  :op1 (b / break-18~e.12 :polarity~e.11 -~e.11 
+                        :ARG0 t~e.9 
+                        :ARG1 (r / rule~e.14 
+                              :mod (a2 / any~e.13))))))
+
+
+# sentence: He had to wait as long as ten years .
+# co-referenced nodes: h
+(o / obligate-01~e.1,2 
+      :ARG1 (h / he~e.0) 
+      :ARG2 (w / wait-01~e.3 
+            :ARG1 h 
+            :duration~e.4 (t / temporal-quantity :quant 10~e.7 
+                  :unit (y / year~e.8) 
+                  :ARG1-of (l / long-03~e.5))))
+
+
+# sentence: You may stay for as long as you like .
+# co-referenced nodes: y
+(p / permit-01~e.1 
+      :ARG1 (s / stay-01~e.2 
+            :ARG1 (y / you~e.0) 
+            :duration~e.6 (l / like-02~e.8 
+                  :ARG0 y~e.7)))
+
+
+# sentence: I think , therefore I am .
+# co-referenced nodes: i2
+(i / infer-01~e.3 
+      :ARG1 (b / be-02~e.5 
+            :ARG1 (i2 / i~e.4)) 
+      :ARG2 (t / think-01~e.1 
+            :ARG0 i2~e.0))
+
+
+# sentence: The mayor announced his resignation on Twitter .
+# co-referenced nodes: p2 m
+(a / announce-01~e.2 
+      :ARG0 (p2 / person 
+            :ARG0-of (h / have-org-role-91 
+                  :ARG2 (m / mayor~e.1))) 
+      :ARG1 (r / resign-01~e.4 
+            :ARG0 p2 
+            :ARG1 m) 
+      :medium~e.5 (p / product :wiki "Twitter" 
+            :name (n / name :op1 "Twitter"~e.6)))
+
+
+# sentence: Patrick Makau finished the marathon in 2 hours , 3 minutes and 38 seconds .
+# co-referenced nodes: p
+(f / finish-07~e.2 
+      :ARG0 (p / person :wiki "Patrick_Makau_Musyoki" 
+            :name (n / name :op1 "Patrick"~e.0 :op2 "Makau"~e.1)) 
+      :ARG1 (r / run-02 
+            :ARG0 p 
+            :ARG1 (m / marathon~e.4) 
+            :duration (s2 / sum-of 
+                  :op1 (t2 / temporal-quantity :quant 2~e.6 
+                        :unit (h / hour~e.7)) 
+                  :op2 (t3 / temporal-quantity :quant 3~e.9 
+                        :unit (m2 / minute~e.10)) 
+                  :op3 (t4 / temporal-quantity :quant 38~e.12 
+                        :unit (s3 / second~e.13)))))
+
+
+# sentence: Dad , I need more money .
+# co-referenced nodes: i
+(s / say-01 
+      :ARG0 i 
+      :ARG1 (n / need-01~e.3 
+            :ARG0 (i / i~e.2) 
+            :ARG1 (m / money~e.5 
+                  :mod (m2 / more~e.4))) 
+      :ARG2 (p / person 
+            :ARG0-of (h / have-rel-role-91 
+                  :ARG1 i 
+                  :ARG2 (f / father))))
+
+
+# sentence: " We are roses , " said the roses .
+# co-referenced nodes: r
+(s / say-01~e.6 
+      :ARG0 (r / rose~e.3,8) 
+      :ARG1 (r2 / rose~e.8 
+            :domain~e.2 r))
+
+
+# sentence: The boy lost his toy .
+# co-referenced nodes: b
+(l / lose-02~e.2 
+      :ARG0 (b / boy~e.1) 
+      :ARG1 (t / toy~e.4 
+            :poss~e.3 b~e.3))
+
+
+# sentence: The boy said , " I am hungry ."
+# co-referenced nodes: b
+(s / say-01~e.2 
+      :ARG0 (b / boy~e.1) 
+      :ARG1 (h / hunger-01~e.7 
+            :ARG0 b~e.5))
+
+
+# sentence: When he opened his eyes , John saw himself in the mirror .
+# co-referenced nodes: p
+(s / see-01~e.7 
+      :ARG0 (p / person :wiki - 
+            :name (n / name :op1 "John"~e.6)) 
+      :ARG1 p 
+      :location~e.9 (m / mirror~e.11) 
+      :time~e.0 (o / open-01~e.2 
+            :ARG0 p~e.1 
+            :ARG1 (e / eye~e.4 
+                  :part-of~e.3 p~e.3)))
+
+
+# sentence: When he opened his eyes , John tried not to look at himself .
+# co-referenced nodes: p -
+(t / try-01~e.7 
+      :ARG0 (p / person :wiki - 
+            :name (n / name :op1 "John"~e.6)) 
+      :ARG1 (l / look-01~e.10 :polarity~e.8 -~e.8 
+            :ARG0 p 
+            :ARG1 p) 
+      :time~e.0 (o / open-01~e.2 
+            :ARG0 p~e.1 
+            :ARG1 (e / eye~e.4 
+                  :part-of~e.3 p~e.3)))
+
+
+# sentence: Roosevelt announced his decision to run for reelection .
+# co-referenced nodes: p
+(a / announce-01~e.1 
+      :ARG0 (p / person :wiki "Franklin_D._Roosevelt" 
+            :name (n / name :op1 "Roosevelt"~e.0)) 
+      :ARG1 (d / decide-01~e.3 
+            :ARG0~e.2 p~e.2 
+            :ARG1 (r / run-02~e.5 
+                  :ARG0 p 
+                  :ARG1~e.6 (r2 / reelect-01~e.7 
+                        :ARG1 p))))
+
+
+# sentence: The boy wants to eat chocolate .
+# co-referenced nodes: b
+(w / want-01~e.2 
+      :ARG0 (b / boy~e.1) 
+      :ARG1 (e / eat-01~e.4 
+            :ARG0 b 
+            :ARG1 (c / chocolate~e.5)))
+
+
+# sentence: John said that his mother and his biology teacher support his decision to quit smoking .
+# co-referenced nodes: p
+(s / say-01~e.1 
+      :ARG0 (p / person :wiki - 
+            :name (n / name :op1 "John"~e.0)) 
+      :ARG1~e.2 (s2 / support-01~e.9 
+            :ARG0 (a / and~e.5 
+                  :op1 (p3 / person 
+                        :ARG0-of (h / have-rel-role-91 
+                              :ARG1~e.3 p~e.3 
+                              :ARG2 (m / mother~e.4))) 
+                  :op2 (p2 / person~e.8 
+                        :ARG0-of~e.8 (t / teach-01~e.8 
+                              :ARG1 (b / biology~e.7) 
+                              :ARG2~e.6 p~e.6))) 
+            :ARG1 (d / decide-01~e.11 
+                  :ARG0~e.10 p~e.10 
+                  :ARG1 (q / quit-01~e.13 
+                        :ARG0 p 
+                        :ARG1 (s3 / smoke-02~e.14 
+                              :ARG0 p)))))
+
+
+# sentence: John is a lawyer . The lawyer is famous . A famous lawyer . John is a famous lawyer .
+# co-referenced nodes: -
+(m / multi-sentence 
+      :snt1 (l / lawyer~e.3,6,12,18 
+            :domain~e.1,7,15 (p / person :wiki - 
+                  :name (n / name :op1 "John"~e.0,14))) 
+      :snt2 (f / fame-01~e.8,11,17 
+            :ARG1 (l2 / lawyer~e.3,6,12,18)) 
+      :snt3 (l3 / lawyer~e.12,18 
+            :ARG1-of (f2 / fame-01~e.11,17)) 
+      :snt4 (l4 / lawyer~e.12,18 
+            :ARG1-of (f3 / fame-01~e.11,17) 
+            :domain~e.7 (p2 / person :wiki - 
+                  :name (n2 / name :op1 "John"~e.0,14))))
+
+
+# sentence: John is n't here , he must be sick .
+# co-referenced nodes: p -
+(i / infer-01~e.6 
+      :ARG1 (s / sick-05~e.8 
+            :ARG1 (p / person :wiki - 
+                  :name (n / name :op1 "John"~e.0))) 
+      :ARG2 (b / be-located-at-91~e.1,7 :polarity~e.2 -~e.2 
+            :ARG1 p~e.5 
+            :ARG2 (h / here~e.3)))
+
+
+# sentence: The big fish wants to eat the little fish .
+# co-referenced nodes: f
+(w / want-01~e.3 
+      :ARG0 (f / fish~e.2 
+            :mod (b / big~e.1)) 
+      :ARG1 (e / eat-01~e.5 
+            :ARG0 f 
+            :ARG1 (f2 / fish~e.8 
+                  :mod (l / little~e.7))))
+
+
+# sentence: Should we increase security at the expense of democratic principles ?
+# co-referenced nodes: w
+(r / recommend-01~e.0 :mode~e.10 interrogative~e.10 
+      :ARG1 (i / increase-01~e.2 
+            :ARG0 (w / we~e.1) 
+            :ARG1 (s / security~e.3) 
+            :manner (c / compromise-02 
+                  :ARG0 w 
+                  :ARG1 (p / principle~e.9 
+                        :mod (d / democracy~e.8)))))
+
+
+# sentence: He had his house repaired at his own expense .
+# co-referenced nodes: h2
+(h / have-04 
+      :ARG0~e.6 (h2 / he~e.6) 
+      :ARG1 (r / repair-01~e.4 
+            :ARG1 (h3 / house~e.3 
+                  :poss h2~e.0,1,2) 
+            :ARG3-of (p / pay-01 
+                  :ARG0 h2)))
+
+
+# sentence: She works for UBS , the biggest bank in Switzerland .
+# co-referenced nodes: UBS
+(w / work-01~e.1 
+      :ARG0 (s / she~e.0) 
+      :ARG2~e.2 (b / bank~e.7 :wiki "UBS" 
+            :name (n / name :op1 "UBS"~e.3) 
+            :mod (b2 / big~e.6 
+                  :degree~e.6 (m / most~e.6) 
+                  :compared-to~e.8 (c / country :wiki "Switzerland" 
+                        :name (n2 / name :op1 "Switzerland"~e.9)))))
+
+
+# sentence: She works for UBS , a big Swiss bank .
+# co-referenced nodes: UBS
+(w / work-01~e.1 
+      :ARG0 (s / she~e.0) 
+      :ARG2~e.2 (b / bank~e.8 :wiki "UBS" 
+            :name (n / name :op1 "UBS"~e.3) 
+            :mod (b2 / big~e.6) 
+            :mod (c / country :wiki "Switzerland" 
+                  :name (n2 / name :op1 "Switzerland"~e.7))))
+
+
+# sentence: They lobbied Congress to repeal the 15 @-@ year @-@ old law .
+# co-referenced nodes: g
+(l / lobby-01~e.1 
+      :ARG0 (t / they~e.0) 
+      :ARG1 (r / repeal-01~e.4 
+            :ARG0 g 
+            :ARG1 (l2 / law~e.11 
+                  :age~e.10 (t2 / temporal-quantity :quant 15~e.6 
+                        :unit (y / year~e.8)))) 
+      :ARG2 (g / government-organization :wiki "United_States_Congress" 
+            :name (n / name :op1 "Congress"~e.2)))
+
+
+# sentence: When I met her for the first time , Mary still worked for Goldman Sachs .
+# co-referenced nodes: p
+(w / work-01~e.11 
+      :ARG0 (p / person :wiki - 
+            :name (n / name :op1 "Mary"~e.9)) 
+      :ARG2~e.12 (c / company :wiki "Goldman_Sachs" 
+            :name (n2 / name :op1 "Goldman"~e.13 :op2 "Sachs"~e.14)) 
+      :mod (s / still~e.10) 
+      :time~e.0,7 (m / meet-03~e.2 
+            :ARG0 (i / i~e.1) 
+            :ARG1~e.3 p~e.3 
+            :ord~e.4 (o / ordinal-entity~e.6 :value~e.6 1~e.6)))
+
+
+# sentence: North Korea agreed to dismantle the nuclear reactor in return for economic aid .
+# co-referenced nodes: c
+(a / agree-01~e.2 
+      :ARG0 (c / country :wiki "North_Korea" 
+            :name (n / name :op1 "North"~e.0 :op2 "Korea"~e.1)) 
+      :ARG1 (d / dismantle-01~e.4 
+            :ARG0 c 
+            :ARG1 (r / reactor~e.7 
+                  :mod (n2 / nucleus~e.6)) 
+            :ARG3-of~e.8 (r2 / return-05~e.9 
+                  :ARG0 c 
+                  :ARG1~e.10 (a2 / aid-01~e.12 
+                        :ARG1 (e2 / economy~e.11) 
+                        :ARG2 c))))
+
+
+# sentence: The company paid $ 20,000 in return for the release of all claims .
+# co-referenced nodes: c
+(p / pay-01~e.2 
+      :ARG0 (c / company~e.1) 
+      :ARG1 (m / monetary-quantity :quant 20000~e.4 
+            :unit (d / dollar~e.3)) 
+      :ARG3~e.7 (r / release-01~e.9 
+            :ARG1~e.10 (c2 / claim-02~e.12 
+                  :mod (a / all~e.11)) 
+            :ARG2 c))
+
+
+# sentence: During negotiations between North Korea and the US , North Korean officials promised that the country will freeze its nuclear program .
+# co-referenced nodes: c
+(p / promise-01~e.12 
+      :ARG0 (p2 / person 
+            :ARG0-of (h / have-org-role-91 
+                  :ARG1 (c / country~e.15 :wiki "North_Korea" 
+                        :name (n / name :op1 "North"~e.9 :op2 "Korea"~e.10)) 
+                  :ARG2 (o / official~e.11))) 
+      :ARG1 (f / freeze-01~e.17 
+            :ARG0 c 
+            :ARG1 (p3 / program~e.20 
+                  :mod (n2 / nucleus~e.19) 
+                  :poss~e.18 c~e.18)) 
+      :time~e.0 (n3 / negotiate-01~e.1 
+            :ARG0 c~e.3,4 
+            :ARG1~e.5 (c2 / country~e.15 :wiki "United_States" 
+                  :name (n4 / name :op1 "US"~e.7))))
+
+
+# sentence: During negotiations between North Korea and the US , North Korean officials promised that North Korea will freeze its nuclear program .
+# co-referenced nodes: c
+(p / promise-01~e.12 
+      :ARG0 (p2 / person 
+            :ARG0-of (h / have-org-role-91 
+                  :ARG1 (c / country :wiki "North_Korea" 
+                        :name (n / name :op1 "North"~e.9 :op2 "Korea"~e.10)) 
+                  :ARG2 (o / official~e.11))) 
+      :ARG1~e.13 (f / freeze-01~e.17 
+            :ARG0 c~e.14,15 
+            :ARG1 (p3 / program~e.20 
+                  :mod (n2 / nucleus~e.19) 
+                  :poss~e.18 c~e.18)) 
+      :time~e.0 (n3 / negotiate-01~e.1 
+            :ARG0 c~e.3,4 
+            :ARG1 (c2 / country :wiki "United_States" 
+                  :name (n4 / name :op1 "US"~e.7))))
+
+
+# sentence: North Korean officials promised that North Korea will soon begin to freeze its nuclear program .
+# co-referenced nodes: c
+(p / promise-01~e.3 
+      :ARG0 (p2 / person 
+            :ARG0-of (h / have-org-role-91 
+                  :ARG1 (c / country :wiki "North_Korea" 
+                        :name (n / name :op1 "North"~e.0 :op2 "Korea"~e.1)) 
+                  :ARG2 (o / official~e.2))) 
+      :ARG1~e.4 (b / begin-01~e.9 
+            :ARG0 c~e.5,6 
+            :ARG1 (f / freeze-01~e.11 
+                  :ARG0 c 
+                  :ARG1 (p3 / program~e.14 
+                        :mod (n2 / nucleus~e.13) 
+                        :poss~e.12 c~e.12)) 
+            :time (s / soon~e.8)))
+
+
+# sentence: I have to renew my car insurance every six months .
+# co-referenced nodes: i
+(o / obligate-01 
+      :ARG2 (r / renew-01~e.3 
+            :ARG0 (i / i~e.0,4) 
+            :ARG1 (i2 / insure-02~e.6 
+                  :ARG1 (c / car~e.5 
+                        :poss i) 
+                  :ARG3 i) 
+            :frequency (r2 / rate-entity-91 
+                  :ARG3 (t / temporal-quantity :quant 6~e.8 
+                        :unit (m / month~e.9)))))
+
+
+# sentence: Barack Obama was elected president of the United States in 2008 .
+# co-referenced nodes: p
+(e / elect-01~e.3 
+      :ARG1 (p / person :wiki "Barack_Obama" 
+            :name (n / name :op1 "Barack"~e.0 :op2 "Obama"~e.1)) 
+      :ARG2 (p2 / president~e.4 
+            :ARG2-of (h / have-org-role-91~e.5 
+                  :ARG0 p 
+                  :ARG1 (c / country :wiki "United_States" 
+                        :name (n2 / name :op1 "United"~e.7 :op2 "States"~e.8)))) 
+      :time~e.9 (d / date-entity :year 2008~e.10))
+
+
+# sentence: The police identified the murderer 2 months after the murder .
+# co-referenced nodes: m
+(i / identify-01~e.2 
+      :ARG0 (p / police~e.1) 
+      :ARG1 (p2 / person~e.4 
+            :ARG0-of~e.4 (m / murder-01~e.4,9)) 
+      :time (a / after~e.7 
+            :op1 m 
+            :quant (t / temporal-quantity :quant 2~e.5 
+                  :unit (m2 / month~e.6))))
+
+
+# sentence: He cleans bathrooms and empties the trash for the school .
+# co-referenced nodes: h2
+(h / have-org-role-91 
+      :ARG0 (h2 / he~e.0) 
+      :ARG1 (s / school~e.9) 
+      :ARG3 (a / and~e.3 
+            :op1 (c / clean-01~e.1 
+                  :ARG0 h2 
+                  :ARG1 (b / bathroom~e.2)) 
+            :op2 (e / empty-01~e.4 
+                  :ARG0 h2 
+                  :ARG2 (t / trash~e.6))))
+
+
+# sentence: US President Roosevelt announced his decision to run for reelection .
+# co-referenced nodes: p
+(a / announce-01~e.3 
+      :ARG0 (p / person :wiki "Franklin_D._Roosevelt" 
+            :name (n / name :op1 "Roosevelt"~e.2) 
+            :ARG0-of (h / have-org-role-91 
+                  :ARG1 (c / country :wiki "United_States" 
+                        :name (n2 / name :op1 "US"~e.0)) 
+                  :ARG2 (p2 / president~e.1))) 
+      :ARG1 (d / decide-01~e.5 
+            :ARG0~e.4 p~e.4 
+            :ARG1 (r / run-02~e.7 
+                  :ARG0 p 
+                  :ARG1~e.8 (r2 / reelect-01~e.9 
+                        :ARG1 p))))
+
+
+# sentence: Buffalo buffalo Buffalo buffalo buffalo buffalo Buffalo buffalo .
+# co-referenced nodes: c
+(b / buffalo-00 
+      :ARG0 (b2 / buffalo 
+            :source (c / city :wiki "Buffalo,_New_York" 
+                  :name (n / name :op1 "Buffalo"~e.0,1,2,3,4,5,6,7)) 
+            :ARG1-of (b4 / buffalo-00 
+                  :ARG0 (b5 / buffalo 
+                        :source c))) 
+      :ARG1 (b3 / buffalo 
+            :source c))
+
+
+# sentence: He hit the lamp with his head .
+# co-referenced nodes: h2
+(h / hit-01~e.1 
+      :ARG0 (h2 / he~e.0) 
+      :ARG1 (l / lamp~e.3) 
+      :ARG2~e.4 (h3 / head~e.6 
+            :part-of~e.5 h2~e.5))
+
+
+# sentence: He ate the pizza with his fingers .
+# co-referenced nodes: h
+(e / eat-01~e.1 
+      :ARG0 (h / he~e.0) 
+      :ARG1 (p / pizza~e.3) 
+      :instrument~e.4 (f / finger~e.6 
+            :part-of~e.5 h~e.5))
+
+
+# sentence: He sold two of his ten horses .
+# co-referenced nodes: h
+(s / sell-01~e.1 
+      :ARG0 (h / he~e.0) 
+      :ARG1 (h2 / horse~e.6 :quant 2~e.2 
+            :ARG1-of (i / include-91 
+                  :ARG2 (h3 / horse~e.6 :quant 10~e.5 
+                        :poss~e.4 h~e.4))))
+
+
+# sentence: The dolphin wanted to breathe .
+# co-referenced nodes: d
+(w / want-01~e.2 
+      :ARG0 (d / dolphin~e.1) 
+      :ARG1 (b / breathe-01~e.4 
+            :ARG0 d))
+
+
+# sentence: The dolphin surfaced to breathe .
+# co-referenced nodes: d
+(s / surface-01~e.2 
+      :ARG1 (d / dolphin~e.1) 
+      :purpose (b / breathe-01~e.4 
+            :ARG0 d))
+
+
+# sentence: I was tempted to buy his boat .
+# co-referenced nodes: i
+(t / tempt-01~e.2 
+      :ARG1 (i / i~e.0) 
+      :ARG3 (b / buy-01~e.4 
+            :ARG0 i 
+            :ARG1 (b2 / boat~e.6 
+                  :poss~e.5 (h / he~e.5))))
+
+
+# sentence: He was injured and therefore unable to play .
+# co-referenced nodes: h
+(i / injure-01~e.2 
+      :ARG1 (h / he~e.0) 
+      :ARG0-of (c / cause-01~e.4 
+            :ARG1 (p / possible-01~e.5 :polarity~e.5 -~e.5 
+                  :ARG1 (p2 / play-01~e.7 
+                        :ARG0 h))))
+
+
+# sentence: I can n't do work at home , because she shouts at me .
+# co-referenced nodes: i
+(p / possible-01~e.1 :polarity~e.2 -~e.2 
+      :ARG1 (w / work-01~e.3,4 
+            :ARG0 (i / i~e.0) 
+            :location~e.5 (h / home~e.6)) 
+      :ARG1-of (c / cause-01~e.8 
+            :ARG0 (s / shout-01~e.10 
+                  :ARG0 (s2 / she~e.9) 
+                  :ARG2~e.11 i~e.12)))
+
+
+# sentence: The boy arrived and left on Tuesday .
+# co-referenced nodes: b
+(a / and~e.3 
+      :op1 (a2 / arrive-01~e.2 
+            :ARG1 (b / boy~e.1)) 
+      :op2 (l / leave-11~e.4 
+            :ARG0 b) 
+      :time (d / date-entity 
+            :weekday (t / tuesday~e.6)))
+
+
+# sentence: He bought flowers for his mother .
+# co-referenced nodes: h
+(b / buy-01~e.1 
+      :ARG0 (h / he~e.0) 
+      :ARG1 (f / flower~e.2) 
+      :ARG4~e.3 (p / person 
+            :ARG0-of (h2 / have-rel-role-91 
+                  :ARG1~e.4 h~e.4 
+                  :ARG2 (m / mother~e.5))))
+
+
+# sentence: He acted as if he owned the company .
+# co-referenced nodes: h
+(a / act-01~e.1 
+      :ARG0 (h / he~e.0) 
+      :conj-as-if~e.2,3 (o / own-01~e.5 
+            :ARG0 h~e.4 
+            :ARG1 (c / company~e.7)))
+
+
+# sentence: How did you get him to help you ?
+# co-referenced nodes: y
+(g / get-04~e.3 
+      :ARG0 (y / you~e.2) 
+      :ARG1 (h / help-01~e.6 
+            :ARG0 (h2 / he~e.4) 
+            :ARG1 y~e.7) 
+      :manner~e.0 (a / amr-unknown~e.0))
+
+
+# sentence: John and Mary are husband and wife .
+# co-referenced nodes: -
+(h / have-rel-role-91 
+      :ARG0 (p / person :wiki - 
+            :name (n / name :op1 "John"~e.0)) 
+      :ARG1 (p2 / person :wiki - 
+            :name (n2 / name :op1 "Mary"~e.2)) 
+      :ARG2 (h2 / husband~e.4) 
+      :ARG3 (w / wife~e.6))
+
+
+# sentence: Mary 's ex @-@ husband John
+# co-referenced nodes: -
+(p / person :wiki - 
+      :name (n / name :op1 "John"~e.5) 
+      :ARG0-of (h / have-rel-role-91~e.1 
+            :ARG1 (p2 / person :wiki - 
+                  :name (n2 / name :op1 "Mary"~e.0)) 
+            :ARG2 (h2 / husband~e.4) 
+            :time (e / ex~e.2)))
+
+
+# sentence: U.S. president Roosevelt announced his decision to run for reelection .
+# co-referenced nodes: p
+(a / announce-01~e.3 
+      :ARG0 (p / person :wiki "Franklin_D._Roosevelt" 
+            :name (n / name :op1 "Roosevelt"~e.2) 
+            :ARG0-of (h / have-org-role-91 
+                  :ARG1 (c / country :wiki "United_States" 
+                        :name (n2 / name :op1 "U.S."~e.0)) 
+                  :ARG2 (p2 / president~e.1))) 
+      :ARG1 (d / decide-01~e.5 
+            :ARG0~e.4 p~e.4 
+            :ARG1 (r / run-02~e.7 
+                  :ARG0 p 
+                  :ARG1~e.8 (r2 / reelect-01~e.9 
+                        :ARG1 p))))
+
+
+# sentence: While Sarkozy 's remarks were a sign of progress they were not sufficient .
+# co-referenced nodes: t
+(s / suffice-01~e.12 :polarity~e.11 -~e.11 
+      :ARG0 (t / thing~e.3 
+            :ARG1-of~e.3 (r / remark-01~e.3 
+                  :ARG0~e.2 (p / person :wiki "Nicolas_Sarkozy" 
+                        :name (n / name :op1 "Sarkozy"~e.1)))) 
+      :concession (s2 / signal-07~e.6 
+            :ARG0 t~e.9 
+            :ARG1~e.7 (p2 / progress-01~e.8)))
+
+
+# sentence: Tim gave the book to Martha instead of Claire .
+# co-referenced nodes: p b -
+(g / give-01~e.1 
+      :ARG0 (p / person :wiki - 
+            :name (n / name :op1 "Tim"~e.0)) 
+      :ARG1 (b / book~e.3) 
+      :ARG2~e.4 (p2 / person :wiki - 
+            :name (n2 / name :op1 "Martha"~e.5)) 
+      :ARG1-of (i / instead-of-91~e.6,7 
+            :ARG2 (g2 / give-01~e.1 
+                  :ARG0 p 
+                  :ARG1 b 
+                  :ARG2~e.7 (p3 / person :wiki - 
+                        :name (n3 / name :op1 "Claire"~e.8)))))
+
+
+# sentence: Tim went for an early morning bike ride instead of sleeping in .
+# co-referenced nodes: p
+(r / ride-01~e.7 
+      :ARG0 (p / person :wiki - 
+            :name (n / name :op1 "Tim"~e.0)) 
+      :ARG1 (b / bike~e.6) 
+      :time (e / early~e.4 
+            :op1 (d / date-entity 
+                  :dayperiod (m / morning~e.5))) 
+      :ARG1-of (i / instead-of-91~e.8,9 
+            :ARG2 (s / sleep-00~e.10 
+                  :ARG0 p)))
+
+
+# sentence: Job creation is not expected to slow down but will instead accelerate .
+# co-referenced nodes: c
+(e / expect-01~e.4 
+      :ARG1 (a / accelerate-01~e.11 
+            :ARG1 (c / create-01~e.1 
+                  :ARG1 (j / job~e.0)) 
+            :ARG1-of (i / instead-of-91~e.10 
+                  :ARG2 (s / slow-down-03~e.6,7 
+                        :ARG1 c))))
+
+
+# sentence: He wanted to win at all cost .
+# co-referenced nodes: h
+(w / want-01~e.1 
+      :ARG0 (h / he~e.0) 
+      :ARG1 (w2 / win-01~e.3 
+            :ARG0 h) 
+      :degree (a / at-all-cost~e.4,5,6))
+
+
+# sentence: He told me that he can n't come after all .
+# co-referenced nodes: h
+(t / tell-01~e.1 
+      :ARG0 (h / he~e.0,4) 
+      :ARG1 (p / possible-01~e.5 :polarity~e.6 -~e.6 
+            :ARG1 (c / come-01~e.7 
+                  :ARG1 h) 
+            :concession (a / after-all~e.8,9)) 
+      :ARG2 (i / i~e.2))
+
+
+# sentence: I 'm not angry , but disappointed .
+# co-referenced nodes: i
+(d / disappoint-01~e.6 
+      :ARG1 (i / i~e.0) 
+      :ARG1-of (i2 / instead-of-91 
+            :ARG2 (a / angry~e.3 
+                  :domain~e.1 i)))
+
+
+# sentence: I would rather go swimming than watch golf .
+# co-referenced nodes: i
+(p / prefer-01 
+      :ARG0 (i / i~e.0) 
+      :ARG1 (s / swim-01~e.4 
+            :ARG0 i) 
+      :ARG2 (w / watch-01~e.6 
+            :ARG0 i 
+            :ARG1 (g / golf~e.7)))
+
+
+# sentence: I wear shoes that are comfortable as opposed to stylish .
+# co-referenced nodes: s
+(w / wear-01~e.1 
+      :ARG0 (i / i~e.0) 
+      :ARG1 (s / shoe~e.2 
+            :ARG0-of (c / comfortable-02~e.5 
+                  :ARG1-of (i2 / instead-of-91 
+                        :ARG2 (s2 / stylish~e.9 
+                              :domain~e.4 s)))))
+
+
+# sentence: She should solve the problem rather than complain about it .
+# co-referenced nodes: p s2
+(r / recommend-01~e.1 
+      :ARG1 (s / solve-01~e.2 
+            :ARG0 (s2 / she~e.0) 
+            :ARG1 (p / problem~e.4) 
+            :ARG1-of (i / instead-of-91 
+                  :ARG2 (c / complain-01~e.7 
+                        :ARG0 s2 
+                        :ARG1 p))))
+
+
+# sentence: The clinic advised him to take methadone in place of heroin .
+# co-referenced nodes: h
+(a / advise-01~e.2 
+      :ARG0 (c / clinic~e.1) 
+      :ARG1 (h / he~e.3) 
+      :ARG2 (t / take-01~e.5 
+            :ARG0 h 
+            :ARG1 (m / methadone~e.6) 
+            :ARG1-of (i / instead-of-91~e.9 
+                  :ARG2 (t2 / take-01~e.5 
+                        :ARG0 h 
+                        :ARG1~e.9 (h2 / heroin~e.10)))))
+
+
+# sentence: John still loves his ex .
+# co-referenced nodes: p
+(l / love-01~e.2 
+      :ARG0 (p / person :wiki - 
+            :name (n / name :op1 "John"~e.0)) 
+      :ARG1 (p2 / person 
+            :ARG0-of (h / have-rel-role-91 
+                  :ARG1~e.3 p~e.3 
+                  :ARG2 (s / significant-other) 
+                  :time (e / ex~e.4))))
+
+
+# sentence: John met his partner online .
+# co-referenced nodes: p
+(m / meet-02~e.1 
+      :ARG0 (p / person :wiki - 
+            :name (n / name :op1 "John"~e.0)) 
+      :ARG1 (p2 / person 
+            :ARG0-of (h / have-rel-role-91 
+                  :ARG1~e.2 p~e.2 
+                  :ARG2 (p3 / partner~e.3))) 
+      :medium (o / online~e.4))
+
+
+# sentence: Russia started to take over Crimea .
+# co-referenced nodes: c
+(s / start-01~e.1 
+      :ARG0 (c / country :wiki "Russia" 
+            :name (n / name :op1 "Russia"~e.0)) 
+      :ARG1~e.2 (t / take-over-12~e.3,4 
+            :ARG0 c 
+            :ARG1 (p / peninsula :wiki "Crimea" 
+                  :name (n2 / name :op1 "Crimea"~e.5))))
+
+
+# sentence: We told him over and over to leave .
+# co-referenced nodes: h
+(t / tell-01~e.1 
+      :ARG0 (w / we~e.0) 
+      :ARG1 (l / leave-11~e.7 :mode imperative 
+            :ARG0 h) 
+      :ARG2 (h / he~e.2) 
+      :frequency (o / over-and-over~e.3,4,5))
+
+
+# sentence: The ratio of boys to girls in the class is 3 @:@ 2 .
+# co-referenced nodes: c
+(e / equal-01 :ARG2 "3/2"~e.10,12 
+      :ARG1 (r / ratio-of~e.1,2 
+            :op1 (n / number 
+                  :quant-of (b / boy~e.3 
+                        :location~e.6 (c / class~e.8))) 
+            :op2 (n2 / number 
+                  :quant-of (g / girl~e.5 
+                        :location c))))
+
+
+# sentence: Parliament voted 222 @-@ 221 to adopt the bill .
+# co-referenced nodes: p
+(v / vote-01~e.1 
+      :ARG0 (p / parliament~e.0) 
+      :ARG1 (a / adopt-01~e.6 
+            :ARG0 p 
+            :ARG1 (b / bill~e.8)) 
+      :ARG2 (s / score-entity :op1 222~e.2 :op2 221~e.4))
+
+
+# sentence: She bought an axe so that she could chop down the tree .
+# co-referenced nodes: s
+(b / buy-01~e.1 
+      :ARG0 (s / she~e.0) 
+      :ARG1 (a / axe~e.3) 
+      :purpose~e.4,5 (c / chop-down-02~e.8,9 
+            :ARG0 s~e.6 
+            :ARG1 (t / tree~e.11)))
+
+
+# sentence: She failed the test , but remained optimistic nonetheless .
+# co-referenced nodes: s
+(f / fail-01~e.1 
+      :ARG1 (s / she~e.0) 
+      :ARG2 (t / test~e.3) 
+      :concession-of~e.5,8 (r / remain-01~e.6 
+            :ARG1 s 
+            :ARG3 (o / optimistic~e.7)))
+
+
+# sentence: We insist that you adhere to the contract or else we will sue you .
+# co-referenced nodes: y a2 w
+(a / and 
+      :op1 (i / insist-01~e.1 
+            :ARG0 (w / we~e.0) 
+            :ARG1 (a2 / adhere-02 
+                  :ARG0 (y / you) 
+                  :ARG1 (c / contract))) 
+      :op2 (s / sue-02~e.12 
+            :ARG0 w~e.10 
+            :ARG1 y~e.13 
+            :condition~e.9 (h / have-polarity-91 :ARG2 - 
+                  :ARG1 a2~e.3,4,5,6,7)))
+
+
+# sentence: In order for you to participate in the barbecue , you must sign up by Wednesday .
+# co-referenced nodes: y p
+(r / require-01 
+      :ARG0 (p / participate-01~e.5 
+            :ARG0 (y / you~e.3,10) 
+            :ARG1~e.6 (b / barbecue-01~e.8)) 
+      :ARG1 (s / sign-up-03~e.12,13 
+            :ARG0 y 
+            :ARG3 p 
+            :time (b2 / by~e.14 
+                  :op1 (d / date-entity 
+                        :weekday (w / wednesday~e.15)))))
+
+
+# sentence: The boy wants to be kissed .
+# co-referenced nodes: b
+(w / want-01~e.2 
+      :ARG0 (b / boy~e.1) 
+      :ARG1 (k / kiss-01~e.5 
+            :ARG1 b))
+
+
+# sentence: We treated CHO @-@ K1 cells with HRG ligand to induce maximal ERBB3 phosphorylation ( Fig . 6a ) .
+# co-referenced nodes: w
+(t / treat-04~e.1 
+      :ARG0 (w / we~e.0) 
+      :ARG1 (c / cell~e.5 
+            :source (c2 / cell-line :wiki - 
+                  :name (n / name :op1 "CHO-K1"~e.2,4))) 
+      :ARG2 (l / ligand~e.8 :wiki "HRG_(gene)" 
+            :name (n2 / name :op1 "histidine-rich" :op2 "glycoprotein")) 
+      :purpose (i / induce-01~e.10 
+            :ARG0 w 
+            :ARG2 (p / phosphorylate-01~e.13 
+                  :ARG1 (e / enzyme :wiki "ERBB3" 
+                        :name (n3 / name :op1 "ERBB3"~e.12)) 
+                  :degree (m / maximum~e.11))) 
+      :ARG1-of (d / describe-01 
+            :ARG0 (f / figure :mod "6a"~e.17)))
+
+
+# sentence: She moved out as soon as she turned 18 .
+# co-referenced nodes: s
+(m / move-01~e.1 
+      :ARG0 (s / she~e.0,6) 
+      :ARG1 s 
+      :ARG2 (o / out~e.2) 
+      :time~e.3,5 (a / as-soon-as~e.3,4,5 
+            :op1 (t / turn-02~e.7 
+                  :ARG2 (a2 / age-01 
+                        :ARG1 s 
+                        :ARG2 (t2 / temporal-quantity :quant 18~e.8 
+                              :unit (y / year))))))
+
+
+# sentence: As far as the CEO is concerned , he is the best at everything .
+# co-referenced nodes: c
+(t / think-01 
+      :ARG0 (c / CEO~e.4) 
+      :ARG1 (g / good-03~e.11 
+            :ARG1 c~e.8 
+            :ARG2~e.12 (e / everything~e.13) 
+            :degree~e.11 (m / most~e.11)))
+
+
+# sentence: As much as I would like to come , I can n't .
+# co-referenced nodes: i c
+(p / possible-01~e.10 :polarity~e.11 -~e.11 
+      :ARG1 (c / come-01 
+            :ARG1 (i / i)) 
+      :concession (l / like-02~e.5 
+            :ARG0 i~e.3 
+            :ARG1~e.6 c~e.7,8,9))
+
+
+# sentence: As amusing as a Bachmann presidential candidacy would be , it will never happen .
+# co-referenced nodes: p2 p
+(r / run-02 :polarity~e.12 -~e.12 
+      :ARG0 (p / person :wiki "Michele_Bachmann" 
+            :name (n / name :op1 "Bachmann"~e.4)) 
+      :ARG1 (p2 / president~e.5) 
+      :time~e.0,2 (e / ever~e.12) 
+      :concession (a / amuse-01~e.1 
+            :ARG0 (r2 / run-02 
+                  :ARG0 p 
+                  :ARG1 p2)))
+
+
+# sentence: Her fingernails are as long as her fingers .
+# co-referenced nodes: s
+(l / long-03~e.4 
+      :ARG1 (f / fingernail~e.1 
+            :part-of~e.0 (s / she~e.0)) 
+      :degree (e / equal) 
+      :compared-to~e.5 (f2 / finger~e.7 
+            :part-of~e.6 s~e.6))
+
+
+# sentence: We estimate that the cartel makes as much as $ 300 million from drug trafficking .
+# co-referenced nodes: c
+(e / estimate-01~e.1 
+      :ARG0 (w / we~e.0) 
+      :ARG1~e.2 (m / make-05~e.5 
+            :ARG0 (c / cartel~e.4) 
+            :ARG1 (a / as-much-as~e.6,7,8 
+                  :op1 (m2 / monetary-quantity :quant 300000000~e.10,11 
+                        :unit (d2 / dollar~e.9))) 
+            :ARG2~e.12 (t / traffic-01~e.14 
+                  :ARG0 c 
+                  :ARG1 (d / drug~e.13))))
+
+
+# sentence: He sold as many cars as his competitor .
+# co-referenced nodes: h
+(s / sell-01~e.1 
+      :ARG0 (h / he~e.0,6) 
+      :ARG1 (c / car~e.4 
+            :quant (q / quantity 
+                  :degree (e / equal) 
+                  :compared-to (p / person 
+                        :ARG0-of (c2 / compete-02 
+                              :ARG1 h)))))
+
+
+# sentence: He bought as much beer as he could carry .
+# co-referenced nodes: h
+(b / buy-01~e.1 
+      :ARG0 (h / he~e.0,6) 
+      :ARG1 (b2 / beer~e.4 
+            :quant (q / quantity 
+                  :degree (m2 / most) 
+                  :compared-to (p / possible-01~e.7 
+                        :ARG1 (c / carry-01~e.8 
+                              :ARG0 h 
+                              :ARG1 (b3 / beer~e.4))))))
+
+
+# sentence: He damaged his own car .
+# co-referenced nodes: h
+(d / damage-01~e.1 
+      :ARG0 (h / he~e.0) 
+      :ARG1 (c / car~e.4 
+            :poss~e.2 h~e.2))
+
+
+# sentence: She will extract your tooth without hurting you .
+# co-referenced nodes: y s
+(e / extract-01~e.2 
+      :ARG0 (s / she~e.0) 
+      :ARG1 (t / tooth~e.4 
+            :part-of~e.3 (y / you~e.3)) 
+      :manner (h / hurt-01~e.6 :polarity~e.5 -~e.5 
+            :ARG0 s 
+            :ARG1 y~e.7))
+
+
+# sentence: Oswald went through with his plan .
+# co-referenced nodes: p
+(g / go-through-20~e.1,2 
+      :ARG0 (p / person :wiki "Lee_Harvey_Oswald" 
+            :name (n / name :op1 "Oswald"~e.0)) 
+      :ARG1~e.3 (p2 / plan~e.5 
+            :poss~e.4 p~e.4))
+
+
+# sentence: I felt absolutely helpless .
+# co-referenced nodes: i
+(f / feel-01~e.1 
+      :ARG0 (i / i~e.0) 
+      :ARG1 (h / helpless~e.3 
+            :degree (a / absolute~e.2) 
+            :domain i))
+
+
+# sentence: She arrived at the party without her husband .
+# co-referenced nodes: s
+(a / arrive-01~e.1 
+      :ARG1 (s / she~e.0,6) 
+      :ARG4~e.2 (p / party~e.4) 
+      :manner (a2 / accompany-01 :polarity~e.5 -~e.5 
+            :ARG0 (p2 / person 
+                  :ARG0-of (h / have-rel-role-91 
+                        :ARG1 s 
+                        :ARG2 (h2 / husband~e.7))) 
+            :ARG1 s))
+
+
+# sentence: The company successfully promoted its new product .
+# co-referenced nodes: c
+(p / promote-02~e.3 
+      :ARG0 (c / company~e.1) 
+      :ARG1 (p2 / product~e.6 
+            :mod (n / new~e.5) 
+            :poss~e.4 c~e.4) 
+      :ARG1-of (s / succeed-01~e.2 
+            :ARG0 c))
+
+
+# sentence: I do n't want to leave .
+# co-referenced nodes: i
+(w / want-01~e.3 
+      :ARG0 (i / i~e.0) 
+      :ARG1 (l / leave-11~e.5 :polarity~e.2 -~e.2 
+            :ARG0 i))
+
+
+# sentence: A 7.8 earthquake struck eastern Iran , killing 40 people in the village of Hiduj , severely damaging many of its buildings , and triggering an international aid response .
+# co-referenced nodes: e v
+(s / strike-01~e.3 
+      :ARG1 (e2 / east~e.4 
+            :part-of (c / country :wiki "Iran" 
+                  :name (n / name :op1 "Iran"~e.5))) 
+      :ARG2 (e / earthquake~e.2 
+            :quant (s2 / seismic-quantity :quant 7.8~e.1) 
+            :ARG0-of (k / kill-01~e.7 
+                  :ARG1 (p / person~e.9 :quant 40~e.8) 
+                  :location~e.10 (v / village~e.12 :wiki "Hiduj" 
+                        :name (n2 / name :op1 "Hiduj"~e.14))) 
+            :ARG0-of (d / damage-01~e.17 
+                  :ARG1 (b / building~e.21 
+                        :quant~e.19 (m / many~e.18) 
+                        :location~e.20 v~e.20) 
+                  :degree (s3 / severe~e.16)) 
+            :ARG0-of (t / trigger-01~e.24 
+                  :ARG1 (r / respond-01~e.28 
+                        :ARG1 e 
+                        :ARG2 (a / aid-01~e.27) 
+                        :mod (i / international~e.26)))))
+
+
+# sentence: The knight was killed by a sword blow .
+# co-referenced nodes: k2
+(k / kill-01~e.3 
+      :ARG1 (k2 / knight~e.1) 
+      :manner~e.4 (b / blow-14~e.7 
+            :ARG1 k2 
+            :ARG2 (s / sword~e.6)))
+
+
+# sentence: For Google , analysts expected a profit of $ 5 per share on revenue of $ 15 billion .
+# co-referenced nodes: c
+(e / expect-01~e.4 
+      :ARG0 (p / person 
+            :ARG1-of (a / analyze-01)) 
+      :ARG1 (a2 / and 
+            :op1 (p2 / profit-01~e.6 
+                  :ARG0 (c / company :wiki "Google" 
+                        :name (n / name :op1 "Google"~e.1)) 
+                  :ARG2 (r / rate-entity-91 
+                        :ARG1 (m / monetary-quantity :quant 5~e.9 
+                              :unit (d / dollar~e.8)) 
+                        :ARG2 (s / share~e.11 :quant 1))) 
+            :op2 (h / have-quant-91 
+                  :ARG1 (r2 / revenue~e.13 
+                        :poss c) 
+                  :ARG2 (m2 / monetary-quantity :quant 15000000000~e.16,17 
+                        :unit (d2 / dollar~e.15)))))
+
+
+# sentence: For their honeymoon , the couple flew first class to Hawaii .
+# co-referenced nodes: c
+(f / fly-01~e.6 
+      :ARG1 (c / couple~e.5) 
+      :destination~e.9 (s / state :wiki "Hawaii" 
+            :name (n / name :op1 "Hawaii"~e.10)) 
+      :manner (c2 / class~e.8 
+            :ord (o / ordinal-entity~e.7 :value~e.7 1~e.7)) 
+      :subevent-of (h / honeymoon-01~e.2 
+            :ARG0~e.1 c~e.1))
+
+
+# sentence: We hold these truths to be self @-@ evident , that all men are created equal , that they are endowed by their Creator with certain unalienable Rights , that among these are Life , Liberty and the pursuit of Happiness .
+# co-referenced nodes: e c m
+(h / hold-02~e.1 
+      :ARG0 (w / we~e.0) 
+      :ARG1~e.10,17 (a / and 
+            :op1 (c / create-01~e.14,23 
+                  :ARG1 (m / man~e.12 
+                        :mod (a2 / all~e.11)) 
+                  :ARG4 (e2 / equal~e.15) 
+                  :ARG1-of (e3 / evidence-01~e.8 
+                        :ARG0 c)) 
+            :op2 (e / endow-01~e.20 
+                  :ARG0 (p / person 
+                        :ARG0-of c) 
+                  :ARG1 (r / right~e.27 
+                        :ARG1-of (t2 / take-away-05 
+                              :ARG1-of (p2 / possible-01 :polarity -~e.26)) 
+                        :ARG2-of (i / include-91~e.30 
+                              :ARG1 (a3 / and~e.36 
+                                    :op1 (l / live-01~e.33 
+                                          :ARG0 m) 
+                                    :op2 (f / free-04 
+                                          :ARG1 m) 
+                                    :op3 (p3 / pursue-01~e.38 
+                                          :ARG0 m 
+                                          :ARG1~e.39 (h2 / happy~e.40 
+                                                :domain~e.5,19,32 m))))) 
+                  :ARG2 m~e.18 
+                  :ARG1-of (e4 / evidence-01~e.8 
+                        :ARG0 e))))
+
+

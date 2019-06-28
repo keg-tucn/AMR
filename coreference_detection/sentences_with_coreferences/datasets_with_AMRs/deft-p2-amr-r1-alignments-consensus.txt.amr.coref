@@ -1,0 +1,1930 @@
+# sentence: Pierre Vinken , 61 years old , will join the board as a nonexecutive director Nov. 29 .
+# co-referenced nodes: p -
+(j / join-01~e.8 
+      :ARG0 (p / person :wiki - 
+            :name (p2 / name :op1 "Pierre"~e.0 :op2 "Vinken"~e.1) 
+            :age~e.5 (t / temporal-quantity :quant 61~e.3 
+                  :unit (y / year~e.4))) 
+      :ARG1 (b / board~e.10 
+            :ARG1-of (h / have-org-role-91~e.11 
+                  :ARG0 p 
+                  :ARG2 (d2 / director~e.14 
+                        :mod (e / executive~e.13 :polarity~e.13 -~e.13)))) 
+      :time~e.11 (d / date-entity :month~e.15 11~e.15 :day 29~e.16))
+
+
+# sentence: Rudolph Agnew , 55 years old and former chairman of Consolidated Gold Fields PLC , was named a nonexecutive director of this British industrial conglomerate .
+# co-referenced nodes: p - c5
+(n / name-03~e.16 
+      :ARG1 (p / person :wiki - 
+            :name (r / name :op1 "Rudolph"~e.0 :op2 "Agnew"~e.1) 
+            :age~e.5 (t / temporal-quantity :quant 55~e.3 
+                  :unit (y / year~e.4)) 
+            :ARG0-of (h / have-org-role-91~e.9 
+                  :ARG1 (c5 / conglomerate~e.24 :wiki "Consolidated_Gold_Fields" 
+                        :name (c / name :op1 "Consolidated"~e.10 :op2 "Gold"~e.11 :op3 "Fields"~e.12 :op4 "PLC"~e.13) 
+                        :mod (c2 / country :wiki "United_Kingdom" 
+                              :name (b / name :op1 "Britain"~e.22)) 
+                        :mod (i / industry~e.23)) 
+                  :ARG2 (c3 / chairman~e.8) 
+                  :time (f / former~e.7))) 
+      :ARG2 (d / director~e.19 
+            :mod (e / executive~e.18 :polarity~e.18 -~e.18) 
+            :ARG2-of (h2 / have-org-role-91 
+                  :ARG0 p 
+                  :ARG1 c5)))
+
+
+# sentence: A form of asbestos once used to make Kent cigarette filters has caused a high percentage of cancer deaths among a group of workers exposed to it more than 30 years ago , researchers reported .
+# co-referenced nodes: a2
+(r / report-01~e.34 
+      :ARG0 (p4 / person~e.33 
+            :ARG0-of~e.33 (r2 / research-01~e.33)) 
+      :ARG1 (c / cause-01~e.12 
+            :ARG0 (a2 / asbestos~e.3 
+                  :mod~e.2 (f / form~e.1) 
+                  :ARG1-of (u / use-01~e.5,7 
+                        :ARG2~e.7 (m / make-01~e.7 
+                              :ARG1 (p / product~e.10 
+                                    :ARG0-of~e.10 (f2 / filter-02~e.10) 
+                                    :mod (c2 / cigarette~e.9 :wiki "Kent_(cigarette)" 
+                                          :name (n / name :op1 "Kent"~e.8)))) 
+                        :time (o / once~e.4))) 
+            :ARG1 (p3 / percentage~e.15 
+                  :ARG3-of (i / include-91~e.19 
+                        :ARG1 (p7 / person~e.18 
+                              :ARG1-of~e.18 (d / die-01~e.18 
+                                    :ARG1-of (c4 / cause-01 
+                                          :ARG0 (c3 / cancer~e.17)))) 
+                        :ARG2 (p6 / person~e.23 
+                              :ARG0-of~e.23 (w2 / work-01~e.23) 
+                              :ARG1-of (e / expose-01~e.24 
+                                    :ARG2~e.25 a2~e.26 
+                                    :time (b / before~e.31 
+                                          :op1~e.31 (n2 / now~e.31) 
+                                          :quant (m2 / more-than~e.27,28 
+                                                :op1 (t / temporal-quantity :quant 30~e.29 
+                                                      :unit (y / year~e.30))))))) 
+                  :ARG1-of (h / high-02~e.14))))
+
+
+# sentence: The asbestos fiber , crocidolite , is unusually resilient once it enters the lungs , with even brief exposures to it causing symptoms that show up decades later , researchers said .
+# co-referenced nodes: c
+(s / say-01~e.30 
+      :ARG0 (p / person~e.29 
+            :ARG0-of~e.29 (r / research-01~e.29)) 
+      :ARG1 (a2 / and 
+            :op1 (r2 / resilient~e.8 
+                  :mod (u / usual~e.7 :polarity~e.7 -~e.7) 
+                  :domain~e.6 (c / crocidolite~e.4 
+                        :mod (f / fiber~e.2 
+                              :mod (a / asbestos~e.1))) 
+                  :time (e / enter-01~e.11 
+                        :ARG0 c~e.10 
+                        :ARG1 (l / lung~e.13))) 
+            :op2 (c2 / cause-01~e.19,21 
+                  :ARG0 (e2 / expose-01~e.18 
+                        :ARG2~e.19 c~e.20 
+                        :duration (b / brief~e.17 
+                              :mod (e3 / even~e.16))) 
+                  :ARG1 (s2 / symptom~e.22 
+                        :ARG1-of (s3 / show-up-02~e.24,25 
+                              :time (l2 / late~e.27 
+                                    :degree~e.27 (m / more~e.27 
+                                          :quant (m2 / multiple~e.26 
+                                                :op1~e.26 (t / temporal-quantity~e.26 :quant~e.26 1~e.9,26 
+                                                      :unit~e.26 (d2 / decade~e.26))))))))))
+
+
+# sentence: Lorillard Inc. , the unit of New York - based Loews Corp. that makes Kent cigarettes , stopped using crocidolite in its Micronite cigarette filters in 1956 .
+# co-referenced nodes: u
+(s2 / stop-01~e.17 
+      :ARG0 (u / unit~e.4 :wiki "Lorillard_Tobacco_Company" 
+            :name (l / name :op1 "Lorillard"~e.0 :op2 "Inc."~e.1) 
+            :part-of~e.5 (c3 / company :wiki "Loews_Corporation" 
+                  :name (l2 / name :op1 "Loews"~e.10 :op2 "Corp."~e.11) 
+                  :ARG1-of (b / base-01~e.9 
+                        :location (c2 / city :wiki "New_York_City" 
+                              :name (n / name :op1 "New"~e.6 :op2 "York"~e.7)))) 
+            :ARG0-of (m2 / make-01~e.13 
+                  :ARG1 (c4 / cigarette~e.15 :wiki "Kent_(cigarette)" 
+                        :name (k / name :op1 "Kent"~e.14)))) 
+      :ARG1 (u2 / use-01~e.18 
+            :ARG0 u 
+            :ARG1 (c5 / crocidolite~e.19) 
+            :prep-in~e.20,25 (p / product~e.24 :wiki - 
+                  :name (n3 / name :op1 "Micronite"~e.22) 
+                  :ARG0-of~e.24 (f / filter-02~e.24) 
+                  :mod (c6 / cigarette~e.23) 
+                  :poss~e.21 u~e.21)) 
+      :time~e.25 (d / date-entity :year 1956~e.26))
+
+
+# sentence: Although preliminary findings were reported more than a year ago , the latest results appear in today 's New England Journal of Medicine , a forum likely to bring new attention to the problem .
+# co-referenced nodes: p
+(a / appear-01~e.14 
+      :ARG1 (t4 / thing~e.13 
+            :ARG2-of~e.13 (r3 / result-01~e.13 
+                  :time (l / late~e.12 
+                        :degree~e.12 (m / most~e.12)))) 
+      :location~e.15 (j / journal :wiki "The_New_England_Journal_of_Medicine" 
+            :name (n / name :op1 "New"~e.18 :op2 "England"~e.19 :op3 "Journal"~e.20 :op4 "of"~e.21 :op5 "Medicine"~e.22) 
+            :time~e.17 (t / today~e.16) 
+            :mod (f / forum~e.25 
+                  :ARG0-of (b / bring-01~e.28 
+                        :ARG1 (a2 / attend-02 
+                              :ARG1 p 
+                              :mod (n2 / new~e.29)) 
+                        :ARG2~e.31 (p / problem~e.33) 
+                        :ARG1-of (l2 / likely-01~e.26)))) 
+      :concession~e.0 (r2 / report-01~e.4 
+            :ARG1 (t2 / thing~e.2 
+                  :ARG1-of~e.2 (f2 / find-01~e.2) 
+                  :mod (p2 / preliminary~e.1)) 
+            :time (b2 / before~e.9 
+                  :op1~e.9 (n3 / now~e.9) 
+                  :quant (m3 / more-than~e.5,6 
+                        :op1 (t3 / temporal-quantity :quant 1~e.7 
+                              :unit (y / year~e.8))))))
+
+
+# sentence: The Lorillard spokeswoman said asbestos was used in `` very modest amounts '' in making paper for the filters in the early 1950 s and replaced with a different type of filter in 1956 .
+# co-referenced nodes: a
+(s / say-01~e.3 
+      :ARG0 (p4 / person 
+            :ARG0-of (h / have-org-role-91 
+                  :ARG1 (c / company :wiki "Lorillard_Tobacco_Company" 
+                        :name (l / name :op1 "Lorillard"~e.1)) 
+                  :ARG2 (s2 / spokeswoman~e.2))) 
+      :ARG1 (a3 / and~e.24 
+            :op1 (u / use-01~e.6,14 
+                  :ARG1 (a / asbestos~e.4 
+                        :quant (a2 / amount~e.11 
+                              :mod (m / modest~e.10 
+                                    :degree (v / very~e.9)))) 
+                  :ARG2~e.14 (m2 / make-01~e.14 
+                        :ARG1 (p / paper~e.15) 
+                        :time~e.19 (e2 / early~e.21 
+                              :op1 (d3 / date-entity :decade~e.23 1950~e.22)) 
+                        :purpose~e.16 (p2 / product~e.18 
+                              :ARG0-of~e.18 (f / filter-02~e.18)))) 
+            :op2 (r / replace-01~e.25 
+                  :ARG1 a 
+                  :ARG2~e.26 (p3 / product~e.31 
+                        :ARG0-of~e.31 (f2 / filter-02~e.31 
+                              :mod~e.30 (t / type~e.29 
+                                    :ARG1-of (d2 / differ-02~e.28)))) 
+                  :time~e.32 (d / date-entity :year 1956~e.33))))
+
+
+# sentence: The plant , which is owned by Hollingsworth & Vose Co. , was under contract with Lorillard to make the cigarette filters .
+# co-referenced nodes: p
+(c / contract-02~e.14 
+      :ARG0 (p / plant~e.1 
+            :ARG1-of (o / own-01~e.5 
+                  :ARG0~e.6 (c2 / company :wiki - 
+                        :name (h / name :op1 "Hollingsworth"~e.7 :op2 "&"~e.8 :op3 "Vose"~e.9 :op4 "Co."~e.10)))) 
+      :ARG1 (m / make-01~e.18 
+            :ARG0 p 
+            :ARG1 (p2 / product~e.21 
+                  :ARG0-of~e.21 (f / filter-02~e.21) 
+                  :mod (c4 / cigarette~e.20))) 
+      :ARG2~e.15 (c3 / company :wiki "Lorillard_Tobacco_Company" 
+            :name (l / name :op1 "Lorillard"~e.16)))
+
+
+# sentence: The U.S. is one of the few industrialized nations that does n't have a higher standard of regulation for the smooth , needle - like fibers such as crocidolite that are classified as amphobiles , according to Brooke T. Mossman , a professor of pathlogy at the University of Vermont College of Medicine .
+# co-referenced nodes: -
+(s / say-01~e.35,36 
+      :ARG0 (p2 / person :wiki - 
+            :name (b / name :op1 "Brooke"~e.37 :op2 "T."~e.38 :op3 "Mossman"~e.39) 
+            :ARG0-of (h3 / have-org-role-91~e.45 
+                  :ARG1 (c2 / college~e.50 
+                        :mod~e.51 (m / medicine~e.52) 
+                        :part-of (u2 / university :wiki "University_of_Vermont" 
+                              :name (u3 / name :op1 "University"~e.47 :op2 "of"~e.48 :op3 "Vermont"~e.49))) 
+                  :ARG2 (p3 / professor~e.42 
+                        :topic~e.43 (p / pathology~e.44)))) 
+      :ARG1 (i2 / include-91 
+            :ARG1 (c / country :wiki "United_States" 
+                  :name (u / name :op1 "U.S."~e.1)) 
+            :ARG2 (n / nation~e.8 
+                  :ARG0-of (h / have-03~e.12 :polarity~e.11 -~e.11 
+                        :ARG1 (s2 / standard~e.15 
+                              :ARG1-of (h2 / high-02~e.14 
+                                    :degree~e.14 (m2 / more~e.14)) 
+                              :prep-with-of~e.16 (r / regulate-01~e.17 
+                                    :ARG1~e.18 (f2 / fiber~e.25 
+                                          :ARG1-of (s3 / smooth-06~e.20) 
+                                          :ARG2-of (r2 / resemble-01~e.24 
+                                                :ARG1 (n2 / needle~e.22)) 
+                                          :ARG1-of (c4 / classify-01~e.31 
+                                                :ARG2~e.32 (a / amphobile~e.33)) 
+                                          :example~e.26,27 (c3 / crocidolite~e.28))))) 
+                  :ARG1-of (i3 / include-91 
+                        :ARG2 (n3 / nation~e.8 
+                              :ARG1-of (i / industrialize-01~e.7)) 
+                        :ARG3 (f / few~e.6)))))
+
+
+# sentence: More common chrysotile fibers are curly and are more easily rejected by the body , Dr. Mossman explained .
+# co-referenced nodes: f
+(e / explain-01~e.17 
+      :ARG0 (d / doctor~e.15 :wiki - 
+            :name (m / name :op1 "Mossman"~e.16)) 
+      :ARG1 (a / and 
+            :op1 (c / curly~e.5 
+                  :domain~e.4,7 (f / fiber~e.3 
+                        :mod (c2 / chrysotile~e.2) 
+                        :mod (c3 / common~e.1 
+                              :degree (m2 / more~e.0)))) 
+            :op2 (r / reject-01~e.10 
+                  :ARG0~e.11 (b / body~e.13) 
+                  :ARG1 f 
+                  :ARG1-of (e2 / easy-05~e.9 
+                        :degree (m3 / more~e.8)))))
+
+
+# sentence: Workers dumped large burlap sacks of the imported material into a huge bin , poured in cotton and acetate fibers and mechanically mixed the dry fibers in a process used to make filters .
+# co-referenced nodes: p2 m4 b2
+(a / and~e.20 
+      :op1 (d / dump-01~e.1 
+            :ARG0 (p2 / person~e.0 
+                  :ARG0-of~e.0 (w / work-01~e.0)) 
+            :ARG1 (m2 / material~e.8 
+                  :ARG1-of (i / import-01~e.7) 
+                  :quant~e.5 (s / sack~e.4 
+                        :consist-of (b / burlap~e.3) 
+                        :mod (l / large~e.2))) 
+            :destination~e.9 (b2 / bin~e.12 
+                  :mod (h / huge~e.11))) 
+      :op2 (p / pour-01~e.14 
+            :ARG0 p2 
+            :ARG1 (a2 / and~e.17,20 
+                  :op1 (f / fiber~e.19 
+                        :mod (c / cotton~e.16)) 
+                  :op2 (f2 / fiber~e.19 
+                        :mod (a3 / acetate~e.18))) 
+            :ARG3 b2) 
+      :op3 (m / mix-01~e.22 
+            :ARG0 p2 
+            :ARG1 (f3 / fiber~e.25 
+                  :ARG1-of (d2 / dry-08~e.24)) 
+            :manner~e.21 (m3 / mechanical~e.21)) 
+      :prep-in~e.15,26 (p3 / process-02~e.28 
+            :ARG1 m4 
+            :ARG1-of (u / use-01~e.29,31 
+                  :ARG2~e.31 (m4 / make-01~e.31 
+                        :ARG1 (p4 / product~e.32 
+                              :ARG0-of~e.32 (f4 / filter-02~e.32))))))
+
+
+# sentence: `` There 's no question that some of those workers and managers contracted asbestos - related diseases , '' said Darrell Phillips , vice president of human resources for Hollingsworth & Vose .
+# co-referenced nodes: -
+(s / say-01~e.19 
+      :ARG0 (p / person :wiki - 
+            :name (d / name :op1 "Darrell"~e.20 :op2 "Phillips"~e.21) 
+            :ARG0-of (h / have-org-role-91~e.28 
+                  :ARG1 (c2 / company :wiki - 
+                        :name (h2 / name :op1 "Hollingsworth"~e.29 :op2 "&"~e.30 :op3 "Vose"~e.31)) 
+                  :ARG2 (p5 / president~e.24 
+                        :mod (v / vice~e.23) 
+                        :topic~e.25 (r2 / resource~e.27 
+                              :mod (h3 / human~e.26))))) 
+      :ARG1 (q / question-03~e.4 :polarity~e.3 -~e.3 
+            :ARG1 (c / contract-04~e.12 
+                  :ARG1 (p4 / person 
+                        :ARG1-of (i / include-91 
+                              :ARG2 (a / and~e.10 
+                                    :op1 (p2 / person~e.9 
+                                          :ARG0-of~e.9 (w / work-01~e.9)) 
+                                    :op2 (p3 / person~e.11 
+                                          :ARG0-of~e.11 (m / manage-01~e.11)) 
+                                    :mod (t / that~e.5,8)))) 
+                  :ARG2 (d2 / disease~e.16 
+                        :ARG1-of (r / relate-01~e.15 
+                              :ARG2 (a2 / asbestos~e.13))))))
+
+
+# sentence: `` But you have to recognize that these events took place 35 years ago .
+# co-referenced nodes: y
+(c / contrast-01~e.1 
+      :ARG2 (o / obligate-01 
+            :ARG1 y 
+            :ARG2 (r / recognize-02~e.5 
+                  :ARG0 (y / you~e.2) 
+                  :ARG1~e.6 (e / event~e.8 
+                        :mod (t / this~e.7) 
+                        :time (b / before~e.13 
+                              :op1~e.13 (n / now~e.13) 
+                              :quant (t2 / temporal-quantity :quant 35~e.11 
+                                    :unit (y2 / year~e.12)))))))
+
+
+# sentence: Longer maturities are thought to indicate declining interest rates because they permit portfolio managers to retain relatively higher rates for a longer period .
+# co-referenced nodes: m
+(t / think-01~e.3 
+      :ARG1 (i / indicate-01~e.5 
+            :ARG0 (m / maturity~e.1 
+                  :ARG1-of (l / long-03~e.0 
+                        :degree~e.0 (m2 / more~e.0))) 
+            :ARG1 (d / decline-01~e.6 
+                  :ARG1 (r / rate~e.8 
+                        :mod (i2 / interest~e.7))) 
+            :ARG1-of (c / cause-01~e.4,9 
+                  :ARG0 (p / permit-01~e.11 
+                        :ARG0 m~e.10 
+                        :ARG1 (r2 / retain-01~e.15 
+                              :ARG0 (p2 / person~e.13 
+                                    :ARG0-of~e.13 (m3 / manage-01~e.13 
+                                          :ARG1 (p3 / portfolio~e.12))) 
+                              :ARG1 (r3 / rate~e.18 
+                                    :ARG1-of (h / high-02~e.17 
+                                          :degree~e.17 (m4 / more~e.17) 
+                                          :mod (r4 / relative~e.16))) 
+                              :duration~e.19 (p4 / period~e.22 
+                                    :ARG1-of (l2 / long-03~e.21 
+                                          :degree~e.21 (m5 / more~e.21))))))))
+
+
+# sentence: Nevertheless , said Brenda Malizia Negus , editor of Money Fund Report , yields `` may blip up again before they blip down '' because of recent rises in short - term interest rates .
+# co-referenced nodes: - t
+(s / say-01~e.2 
+      :ARG0 (p3 / person :wiki - 
+            :name (b / name :op1 "Brenda"~e.3 :op2 "Malizia"~e.4 :op3 "Negus"~e.5) 
+            :ARG0-of (h2 / have-org-role-91~e.8 
+                  :ARG1 (p2 / publication :wiki - 
+                        :name (m / name :op1 "Money"~e.9 :op2 "Fund"~e.10 :op3 "Report"~e.11)) 
+                  :ARG2 (e / editor~e.7))) 
+      :ARG1 (p / possible-01~e.15 
+            :ARG1 (b2 / blip-00~e.16 
+                  :ARG1 (t / thing~e.13 
+                        :ARG1-of~e.13 (y2 / yield-03~e.13)) 
+                  :mod (a / again~e.18) 
+                  :time (b3 / before~e.19 
+                        :op1 (b4 / blip-00~e.21 
+                              :ARG1 t~e.20 
+                              :direction (d / down~e.22))) 
+                  :direction (u / up~e.17) 
+                  :ARG1-of (c / cause-01~e.24 
+                        :ARG0~e.25 (r / rise-01~e.27 
+                              :ARG1~e.28 (r2 / rate~e.33 
+                                    :mod (i / interest~e.32) 
+                                    :duration~e.31 (s2 / short~e.29)) 
+                              :time (r3 / recent~e.26)))) 
+            :ARG1-of (h / have-concession-91~e.0)))
+
+
+# sentence: Despite recent declines in yields , investors continue to pour cash into money funds .
+# co-referenced nodes: p2
+(c2 / continue-01~e.7 
+      :ARG0 (p2 / person~e.6 
+            :ARG0-of~e.6 (i / invest-01~e.6)) 
+      :ARG1 (p / pour-01~e.9 
+            :ARG0 p2 
+            :ARG1 (c / cash~e.10) 
+            :ARG3~e.11 (f / fund~e.13 
+                  :mod (m / money~e.12))) 
+      :concession~e.0 (d / decline-01~e.2 
+            :ARG1~e.3 (t / thing~e.4 
+                  :ARG1-of~e.4 (y2 / yield-03~e.4)) 
+            :time (r / recent~e.1)))
+
+
+# sentence: Typically , money - fund yields beat comparable short - term investments because portfolio managers can vary maturities and go after the highest rates .
+# co-referenced nodes: p2 t3
+(b / beat-03~e.6 
+      :ARG0 (t3 / thing~e.5 
+            :ARG1-of~e.5 (y2 / yield-03~e.5 
+                  :ARG0 (f / fund~e.4 
+                        :mod (m5 / money~e.2)))) 
+      :ARG1 (t / thing~e.11 
+            :ARG1-of~e.11 (i / invest-01~e.11 
+                  :duration~e.10 (s2 / short~e.8)) 
+            :ARG2-of (c2 / comparable-03~e.7 
+                  :ARG1 t3)) 
+      :ARG1-of (t2 / typical-02~e.0) 
+      :ARG1-of (c / cause-01~e.12 
+            :ARG0 (p / possible-01~e.15 
+                  :ARG1 (a / and~e.18 
+                        :op1 (v / vary-01~e.16 
+                              :ARG0 (p2 / person~e.14 
+                                    :ARG0-of~e.14 (m / manage-01~e.14 
+                                          :ARG1 (p3 / portfolio~e.13))) 
+                              :ARG1 (m2 / maturity~e.17)) 
+                        :op2 (g / go-03~e.19,20 
+                              :ARG0 p2 
+                              :ARG1 (r / rate~e.23 
+                                    :ARG1-of (h / high-02~e.22 
+                                          :degree~e.22 (m3 / most~e.22))))))))
+
+
+# sentence: It invests heavily in dollar - denominated securities overseas and is currently waiving management fees , which boosts its yield .
+# co-referenced nodes: i3
+(a / and~e.9 
+      :op1 (i / invest-01~e.1 
+            :ARG0 (i3 / it~e.0) 
+            :ARG2~e.3 (s / security~e.7 
+                  :ARG1-of (d / denominate-01~e.6 
+                        :ARG2 (d2 / dollar~e.4)) 
+                  :location (o / overseas~e.8)) 
+            :manner~e.2 (h / heavy~e.2)) 
+      :op2 (w / waive-01~e.12 
+            :ARG0 i3 
+            :ARG1 (f / fee~e.14 
+                  :mod (m / manage-01~e.13)) 
+            :ARG0-of (b2 / boost-01~e.17 
+                  :ARG1 (t / thing~e.19 
+                        :ARG1-of~e.19 (y / yield-03~e.19 
+                              :ARG0~e.18 i3~e.18))) 
+            :time (c / current~e.11)))
+
+
+# sentence: The 30 - day simple yield fell to an average 8.19 % from 8.22 % ; the 30 - day compound yield slid to an average 8.53 % from 8.56 % .
+# co-referenced nodes: 30
+(a / and 
+      :op1 (f / fall-01~e.6 
+            :ARG1 (t3 / thing~e.5 
+                  :ARG1-of~e.5 (y / yield-03~e.5 
+                        :mod (t / temporal-quantity :quant 30~e.1 
+                              :unit (d / day~e.3)) 
+                        :ARG1-of (s2 / simple-02~e.4))) 
+            :ARG3~e.12 (p2 / percentage-entity~e.14 :value 8.22~e.13) 
+            :ARG4~e.7 (p / percentage-entity~e.11 :value 8.19~e.10 
+                  :ARG2-of (a4 / average-01~e.9))) 
+      :op2 (s / slide-02~e.22 
+            :ARG1 (t4 / thing~e.21 
+                  :ARG1-of~e.21 (y2 / yield-03~e.21 
+                        :mod (t2 / temporal-quantity :quant 30~e.1,17 
+                              :unit (d2 / day~e.3,19)) 
+                        :mod (c / compound~e.20))) 
+            :ARG3~e.28 (p4 / percentage-entity~e.30 :value 8.56~e.29) 
+            :ARG4~e.23 (p3 / percentage-entity~e.27 :value 8.53~e.26 
+                  :ARG2-of (a2 / average-01~e.25))))
+
+
+# sentence: J.P. Bolduc , vice chairman of W.R. Grace & Co. , which holds a 83.4 % interest in this energy - services company , was elected a director .
+# co-referenced nodes: p
+(e / elect-01~e.25 
+      :ARG1 (p / person :wiki - 
+            :name (j / name :op1 "J.P."~e.0 :op2 "Bolduc"~e.1) 
+            :ARG0-of (h2 / have-org-role-91~e.5 
+                  :ARG1 (c / company~e.12 :wiki "W._R._Grace_and_Company" 
+                        :name (w / name :op1 "W.R."~e.6 :op2 "Grace"~e.7 :op3 "&"~e.8 :op4 "Co."~e.9) 
+                        :ARG0-of~e.12 (h / hold-01~e.12 
+                              :ARG1 (i / interest~e.16 
+                                    :quant (p2 / percentage-entity~e.15 :value 83.4~e.14) 
+                                    :prep-in~e.17 (c3 / company~e.22 
+                                          :mod (t / this~e.18) 
+                                          :mod (s / service~e.21 
+                                                :mod (e3 / energy~e.19)))))) 
+                  :ARG2 (c2 / chairman~e.4 
+                        :mod (v / vice~e.3)))) 
+      :ARG2 (d / director~e.27 
+            :ARG2-of (h3 / have-org-role-91 
+                  :ARG0 p)))
+
+
+# sentence: He succeeds Terrence D. Daniels , formerly a W.R. Grace vice chairman , who resigned .
+# co-referenced nodes: c2
+(s / succeed-02~e.1 
+      :ARG0 (h / he~e.0) 
+      :ARG1 (p / person :wiki - 
+            :name (t / name :op1 "Terrence"~e.2 :op2 "D."~e.3 :op3 "Daniels"~e.4) 
+            :ARG0-of (r / resign-01~e.14 
+                  :ARG1 c2) 
+            :ARG0-of (h2 / have-org-role-91 
+                  :ARG1 (c / company :wiki "W._R._Grace_and_Company" 
+                        :name (w / name :op1 "W.R."~e.8 :op2 "Grace"~e.9)) 
+                  :ARG2 (c2 / chairman~e.11 
+                        :mod (v / vice~e.10)) 
+                  :time (f / former~e.6))))
+
+
+# sentence: McDermott International Inc. said its Babcock & Wilcox unit completed the sale of its Bailey Controls Operations to Finmeccanica S.p . A. for $ 295 million .
+# co-referenced nodes: c u
+(s / say-01~e.3 
+      :ARG0 (c / company :wiki "McDermott_International" 
+            :name (m / name :op1 "McDermott"~e.0 :op2 "International"~e.1 :op3 "Inc."~e.2)) 
+      :ARG1 (c2 / complete-01~e.9 
+            :ARG0 (u / unit~e.8 :wiki "Babcock_&_Wilcox" 
+                  :name (b / name :op1 "Babcock"~e.5 :op2 "&"~e.6 :op3 "Wilcox"~e.7) 
+                  :part-of~e.4 c~e.4) 
+            :ARG1 (s2 / sell-01~e.11 
+                  :ARG0 u 
+                  :ARG1 (o / organization :wiki - 
+                        :name (b2 / name :op1 "Bailey"~e.14 :op2 "Controls"~e.15 :op3 "Operations"~e.16) 
+                        :part-of u) 
+                  :ARG2~e.17 (c4 / company :wiki "Finmeccanica" 
+                        :name (f / name :op1 "Finmeccanica"~e.18 :op2 "S.p.A.")) 
+                  :ARG3~e.22 (m2 / monetary-quantity :quant 295000000~e.24,25 
+                        :unit (d / dollar~e.23)))))
+
+
+# sentence: It employs 2,700 people and has annual revenue of about $ 370 million .
+# co-referenced nodes: i
+(a2 / and~e.4 
+      :op1 (e / employ-01~e.1 
+            :ARG0 (i / it~e.0) 
+            :ARG1 (p / person~e.3 :quant 2700~e.2)) 
+      :op2 (h2 / have-03~e.5 
+            :ARG0 i 
+            :ARG1 (r / revenue~e.7 
+                  :quant (r2 / rate-entity-91~e.6 
+                        :ARG1 (a / about~e.9 
+                              :op1 (m / monetary-quantity :quant 370000000~e.11,12 
+                                    :unit (d / dollar~e.10))) 
+                        :ARG2~e.6 (t / temporal-quantity~e.6 :quant~e.6 1~e.6 
+                              :unit~e.6 (y / year~e.6))))))
+
+
+# sentence: Until Congress acts , the government has n't any authority to issue new debt obligations of any kind , the Treasury said .
+# co-referenced nodes: g4
+(s / say-01~e.21 
+      :ARG0 (g3 / government-organization :wiki "United_States_Department_of_the_Treasury" 
+            :name (t / name :op1 "Treasury"~e.20)) 
+      :ARG1 (a / authorize-01~e.9 :polarity~e.7 -~e.7 
+            :ARG1 (i / issue-01~e.11 
+                  :ARG0 g4 
+                  :ARG1 (o2 / obligation~e.14 
+                        :mod (d / debt~e.13) 
+                        :mod (n / new~e.12) 
+                        :mod (k / kind~e.17 
+                              :mod (a3 / any~e.8,16)))) 
+            :ARG2 (g4 / government-organization~e.5 
+                  :ARG0-of~e.5 (g / govern-01~e.5)) 
+            :time (u / until~e.0 
+                  :op1 (a2 / act-02~e.2 
+                        :ARG0 (g2 / government-organization :wiki "United_States_Congress" 
+                              :name (c / name :op1 "Congress"~e.1))))))
+
+
+# sentence: The government 's borrowing authority dropped at midnight Tuesday to $ 2.80 trillion from $ 2.87 trillion .
+# co-referenced nodes: g
+(d4 / drop-01~e.5 
+      :ARG1 (t / thing 
+            :ARG1-of (b / borrow-01~e.3 
+                  :ARG0 g 
+                  :ARG1-of (a / authorize-01~e.4 
+                        :ARG2~e.2 (g / government-organization~e.1 
+                              :ARG0-of~e.1 (g2 / govern-01~e.1))))) 
+      :ARG3 (m2 / monetary-quantity :quant 2870000000000~e.15,16 
+            :unit (d3 / dollar~e.10,14)) 
+      :ARG4 (m / monetary-quantity :quant 2800000000000~e.11,12 
+            :unit (d2 / dollar~e.10,14)) 
+      :time (d / date-entity :time "0:00" 
+            :weekday (w / wednesday)))
+
+
+# sentence: The Treasury said the U.S. will default on Nov. 9 if Congress does n't act by then .
+# co-referenced nodes: d
+(s / say-01~e.2 
+      :ARG0 (g / government-organization :wiki "United_States_Department_of_the_Treasury" 
+            :name (n / name :op1 "Treasury"~e.1)) 
+      :ARG1 (d2 / default-01~e.6 
+            :ARG1 (c / country :wiki "United_States" 
+                  :name (u / name :op1 "U.S."~e.4)) 
+            :time~e.7 (d / date-entity :month~e.8 11~e.8 :day 9~e.9) 
+            :condition~e.10 (a / act-02~e.14 :polarity~e.13 -~e.13 
+                  :ARG0 (g2 / government-organization :wiki "United_States_Congress" 
+                        :name (n2 / name :op1 "Congress"~e.11)) 
+                  :time (b / by~e.15 
+                        :op1 d))))
+
+
+# sentence: Clark J. Vitulli was named senior vice president and general manager of this U.S. sales and marketing arm of Japanese auto maker Mazda Motor Corp .
+# co-referenced nodes: p a2
+(n / name-03~e.4 
+      :ARG1 (p / person :wiki - 
+            :name (c / name :op1 "Clark"~e.0 :op2 "J."~e.1 :op3 "Vitulli"~e.2)) 
+      :ARG2 (a / and~e.8 
+            :op1 (p2 / president~e.7 
+                  :mod (v / vice~e.6) 
+                  :mod (s / senior~e.5)) 
+            :op2 (p3 / person~e.10 
+                  :ARG0-of~e.10 (m2 / manage-01~e.10 
+                        :ARG1 a2) 
+                  :mod (g / general~e.9)) 
+            :ARG2-of (h / have-org-role-91~e.11 
+                  :ARG0 p 
+                  :ARG1 (a2 / arm~e.17 
+                        :mod (t / this~e.12) 
+                        :part-of~e.18 (c4 / company~e.21 :wiki "Mazda" 
+                              :name (m / name :op1 "Mazda"~e.22 :op2 "Motor"~e.23 :op3 "Corp"~e.24) 
+                              :mod (c3 / country :wiki "Japan" 
+                                    :name (j / name :op1 "Japan"~e.19)) 
+                              :ARG0-of~e.21 (m4 / make-01~e.21 
+                                    :ARG1 (a4 / auto~e.20))) 
+                        :mod (c2 / country :wiki "United_States" 
+                              :name (u / name :op1 "U.S."~e.13)) 
+                        :ARG0-of (s2 / sell-01~e.14) 
+                        :ARG0-of (m3 / market-01~e.16)))))
+
+
+# sentence: In the new position he will oversee Mazda 's U.S. sales , service , parts and marketing operations .
+# co-referenced nodes: h
+(o2 / oversee-01~e.6 
+      :ARG0 (h / he~e.4) 
+      :ARG1 (a / and~e.15 
+            :op1 (o / operation~e.17 
+                  :ARG0-of (s / sell-01~e.10)) 
+            :op2 (o4 / operation~e.17 
+                  :mod (s2 / service-05~e.12)) 
+            :op3 (o5 / operation~e.17 
+                  :mod (p / part~e.14)) 
+            :op4 (o6 / operation~e.17 
+                  :ARG0-of (m2 / market-01~e.16)) 
+            :poss~e.8 (c2 / company :wiki "Mazda" 
+                  :name (m / name :op1 "Mazda"~e.7)) 
+            :mod (c3 / country :wiki "United_States" 
+                  :name (n / name :op1 "U.S."~e.9))) 
+      :ARG3-of (h2 / have-org-role-91 
+            :ARG0 h 
+            :ARG2 (p2 / position~e.3 
+                  :mod (n2 / new~e.2))))
+
+
+# sentence: When it 's time for their biannual powwow , the nation 's manufacturing titans typically jet off to the sunny confines of resort towns like Boca Raton and Hot Springs .
+# co-referenced nodes: t
+(j / jet-off-01~e.15,16 
+      :ARG1 (t / titan~e.13 
+            :ARG0-of (m / manufacture-01~e.12) 
+            :mod~e.11 (n / nation~e.10)) 
+      :ARG2~e.17 (t3 / town~e.23 
+            :mod (r / resort~e.22) 
+            :example~e.24 (a / and~e.27 
+                  :op1 (c2 / city :wiki "Boca_Raton,_Florida" 
+                        :name (b / name :op1 "Boca"~e.25 :op2 "Raton"~e.26)) 
+                  :op2 (c3 / city :wiki "Hot_Springs,_Arkansas" 
+                        :name (h / name :op1 "Hot"~e.28 :op2 "Springs"~e.29))) 
+            :mod (c / confine~e.20 
+                  :mod (s / sunny~e.19))) 
+      :ARG1-of (t2 / typical-02~e.14) 
+      :time~e.0,3 (p / powwow~e.7 
+            :poss t~e.1 
+            :frequency (r2 / rate-entity-91~e.6 :ARG1~e.6 2~e.6 
+                  :ARG2~e.6 (t4 / temporal-quantity~e.3,6 :quant~e.6 1~e.6 
+                        :unit~e.6 (y / year~e.6)))))
+
+
+# sentence: The National Association of Manufacturers settled on the Hoosier capital of Indianapolis for its fall board meeting .
+# co-referenced nodes: o
+(s / settle-01~e.5 
+      :ARG0 (o / organization :wiki "National_Association_of_Manufacturers" 
+            :name (n / name :op1 "National"~e.1 :op2 "Association"~e.2 :op3 "of"~e.3 :op4 "Manufacturers"~e.4)) 
+      :ARG1 (m / meet-03~e.16 
+            :ARG0 (b / board~e.15 
+                  :part-of o) 
+            :time (d / date-entity 
+                  :season (f / fall~e.14)) 
+            :location (c / city :wiki "Indianapolis" 
+                  :name (i / name :op1 "Indianapolis"~e.11) 
+                  :ARG0-of (h / have-org-role-91 
+                        :ARG1 (s2 / state :wiki "Indiana" 
+                              :name (n3 / name :op1 "Indiana")) 
+                        :ARG2 (c2 / capital~e.9)))))
+
+
+# sentence: And the city decided to treat its guests more like royalty or rock stars than factory owners .
+# co-referenced nodes: c
+(a / and~e.0 
+      :op2 (d / decide-01~e.3 
+            :ARG0 (c / city~e.2) 
+            :ARG1 (t / treat-01~e.5 
+                  :ARG0 c 
+                  :ARG1 (g / guest~e.7 
+                        :poss~e.6 c~e.6) 
+                  :ARG2 (o / or~e.11 
+                        :op1 (r / royalty~e.10) 
+                        :op2 (s / star~e.13 
+                              :mod (r2 / rock~e.12)) 
+                        :degree (m / more~e.8) 
+                        :compared-to~e.14 (p / person~e.16 
+                              :ARG0-of~e.16 (o2 / own-01~e.16 
+                                    :ARG1 (f / factory~e.15)))))))
+
+
+# sentence: The idea , of course : to prove to 125 corporate decision makers that the buckle on the Rust Belt is n't so rusty after all , that it 's a good place for a company to expand .
+# co-referenced nodes: c4
+(p / prove-01~e.7 
+      :ARG1~e.13,27 (a / and 
+            :op1 (r2 / rust-01~e.23 :polarity~e.21 -~e.21 
+                  :ARG1 (b / buckle~e.15 
+                        :location~e.16 (c4 / country-region :wiki "Rust_Belt" 
+                              :name (r / name :op1 "Rust"~e.18 :op2 "Belt"~e.19))) 
+                  :mod (a2 / after-all~e.24,25) 
+                  :degree (s / so~e.22)) 
+            :op2 (p3 / place~e.32 
+                  :mod (g / good~e.31) 
+                  :domain~e.29 c4~e.28 
+                  :prep-for~e.33 (e / expand-01~e.37 
+                        :ARG1 (c2 / company~e.35)))) 
+      :ARG2~e.8 (p2 / person~e.11 :quant 125~e.9 
+            :ARG0-of~e.11 (d / decide-01~e.11) 
+            :mod (c3 / corporation~e.10)) 
+      :domain (i / idea~e.1) 
+      :mod (o / of-course~e.3,4))
+
+
+# sentence: On the receiving end of the message were officials from giants like Du Pont and Maytag , along with lesser knowns like Trojan Steel and the Valley Queen Cheese Factory .
+# co-referenced nodes: -
+(r / receive-01~e.2 
+      :ARG0 (p / person 
+            :ARG0-of (h / have-org-role-91 
+                  :ARG1 (a3 / and 
+                        :op1 (g / giant~e.10 
+                              :example~e.11 (a / and~e.14 
+                                    :op1 (c / company :wiki "DuPont" 
+                                          :name (d / name :op1 "Du"~e.12 :op2 "Pont"~e.13)) 
+                                    :op2 (c2 / company :wiki "Maytag" 
+                                          :name (m / name :op1 "Maytag"~e.15)))) 
+                        :op2 (c5 / company 
+                              :ARG1-of (k / know-02 
+                                    :degree (l / less~e.19)) 
+                              :example~e.21 (a2 / and~e.24 
+                                    :op1 (c3 / company :wiki - 
+                                          :name (t / name :op1 "Trojan"~e.22 :op2 "Steel"~e.23)) 
+                                    :op2 (c4 / company :wiki - 
+                                          :name (v / name :op1 "Valley"~e.26 :op2 "Queen"~e.27 :op3 "Cheese"~e.28 :op4 "Factory"~e.29))))) 
+                  :ARG2 (o5 / official~e.8))) 
+      :ARG1~e.4 (t2 / thing~e.6 
+            :ARG1-of~e.6 (m3 / message-01~e.6)))
+
+
+# sentence: The next morning , with a police escort , busloads of executives and their wives raced to the Indianapolis Motor Speedway , unimpeded by traffic or red lights .
+# co-referenced nodes: p2 s
+(r / race-01~e.15 
+      :ARG0 (a / and~e.12 
+            :op1 (p2 / person 
+                  :ARG0-of (h / have-org-role-91 
+                        :ARG2 (e / executive~e.11))) 
+            :op2 (p3 / person 
+                  :ARG0-of (h2 / have-rel-role-91 
+                        :ARG1~e.13 p2~e.13 
+                        :ARG2 (w / wife~e.14))) 
+            :quant~e.10 (b / busload~e.9) 
+            :ARG1-of (e2 / escort-01~e.7 
+                  :ARG0 (p / police~e.6) 
+                  :ARG4 s)) 
+      :ARG2~e.16 (s / sports-facility :wiki "Indianapolis_Motor_Speedway" 
+            :name (i / name :op1 "Indianapolis"~e.18 :op2 "Motor"~e.19 :op3 "Speedway"~e.20)) 
+      :ARG1-of (i2 / impede-01~e.22 :polarity~e.22 -~e.22 
+            :ARG0~e.23 (o / or~e.25 
+                  :op1 (t / traffic~e.24) 
+                  :op2 (l / light~e.27 
+                        :ARG1-of (r2 / red-02~e.26)))) 
+      :time (d / date-entity 
+            :dayperiod (m2 / morning~e.2) 
+            :mod (n2 / next~e.1)))
+
+
+# sentence: No dummies , the drivers pointed out they still had space on their machines for another sponsor 's name or two .
+# co-referenced nodes: p2
+(p / point-out-02~e.5,6 
+      :ARG0 (p2 / person~e.4 
+            :ARG0-of~e.4 (d / drive-01~e.4) 
+            :mod (d2 / dummy~e.1 :polarity~e.0 -~e.0)) 
+      :ARG1 (h / have-03~e.9 
+            :ARG0 p2~e.7 
+            :ARG1 (s / space~e.10 
+                  :location~e.11 (m / machine~e.13 
+                        :poss~e.12 p2~e.12) 
+                  :prep-for~e.14 (n / name~e.18 
+                        :quant (o / or~e.19 :op1 1 :op1 2~e.20) 
+                        :poss~e.17 (c / company~e.16 
+                              :ARG0-of~e.16 (s4 / sponsor-01~e.16) 
+                              :mod (a / another~e.15)))) 
+            :mod (s3 / still~e.8)))
+
+
+# sentence: Back downtown , the execs squeezed in a few meetings at the hotel before boarding the buses again .
+# co-referenced nodes: p
+(s / squeeze-02~e.5 
+      :ARG0 (p / person 
+            :ARG0-of (h2 / have-org-role-91 
+                  :ARG2 (e / executive~e.4))) 
+      :ARG1~e.6 (m / meet-03~e.9 
+            :location~e.10 (h / hotel~e.12) 
+            :quant (f / few~e.8)) 
+      :time (b / before~e.13 
+            :op1 (b2 / board-01~e.14 
+                  :ARG0 p 
+                  :ARG1 (b3 / bus~e.16) 
+                  :mod (a / again~e.17))) 
+      :location (d / downtown~e.1 
+            :mod (b4 / back~e.0)))
+
+
+# sentence: Knowing a tasty -- and free -- meal when they eat one , the executives gave the chefs a standing ovation .
+# co-referenced nodes: p m
+(g / give-01~e.15 
+      :ARG0 (p / person 
+            :ARG0-of (h / have-org-role-91 
+                  :ARG2 (e / executive~e.14))) 
+      :ARG1 (o / ovation~e.20 
+            :manner (s / stand-01~e.19 
+                  :ARG1 p)) 
+      :ARG2 (c / chef~e.17) 
+      :ARG1-of (c2 / cause-01 
+            :ARG0 (k / know-04~e.0 
+                  :ARG0 p 
+                  :ARG1 (m / meal~e.7 
+                        :mod (t / tasty~e.2) 
+                        :ARG1-of (f / free-03~e.5)) 
+                  :time~e.8 (e2 / eat-01~e.10 
+                        :ARG0 p 
+                        :ARG1 m))))
+
+
+# sentence: More than a few CEOs say the red - carpet treatment tempts them to return to a heartland city for future meetings .
+# co-referenced nodes: p
+(s / say-01~e.5 
+      :ARG0 (p / person 
+            :ARG0-of (h2 / have-org-role-91 
+                  :ARG2 (c / CEO~e.4)) 
+            :quant (m / more-than~e.0,1 
+                  :op1 (f / few~e.3))) 
+      :ARG1 (t / tempt-01~e.11 
+            :ARG1 p 
+            :ARG2 (t2 / treat-01~e.10 
+                  :manner (c3 / carpet~e.9 
+                        :ARG1-of (r2 / red-02~e.7))) 
+            :ARG3 (r / return-01~e.14 
+                  :ARG1 p 
+                  :ARG4~e.15 (c2 / city~e.18 
+                        :location (h / heartland~e.17)) 
+                  :purpose~e.19 (m2 / meet-03~e.21 
+                        :time (f2 / future~e.20)))))
+
+
+# sentence: But for now , they 're looking forward to their winter meeting -- Boca in February .
+# co-referenced nodes: t
+(c2 / contrast-01~e.0 
+      :ARG2~e.1 (l / look-forward-03~e.6,7 
+            :ARG0 (t / they~e.4) 
+            :ARG1~e.8 (m / meet-03~e.11 
+                  :ARG0~e.9 t~e.9 
+                  :time (d2 / date-entity 
+                        :season (w / winter~e.10)) 
+                  :location (c / city :wiki "Boca_Raton,_Florida" 
+                        :name (b / name :op1 "Boca"~e.13)) 
+                  :time~e.14 (d3 / date-entity :month~e.15 2~e.15)) 
+            :time (n / now~e.2)))
+
+
+# sentence: South Korea registered a trade deficit of $ 101 million in October , reflecting the country 's economic sluggishness , according to government figures released Wednesday .
+# co-referenced nodes: c g2
+(s3 / say-01~e.20,21 
+      :ARG0 (f / figure~e.23 
+            :source (g2 / government-organization~e.22 
+                  :ARG0-of~e.22 (g / govern-01~e.22)) 
+            :ARG1-of (r3 / release-01~e.24 
+                  :ARG0 g2 
+                  :time (d3 / date-entity 
+                        :weekday (w / wednesday~e.25)))) 
+      :ARG1 (r / register-02~e.2 
+            :ARG0 (c / country :wiki "South_Korea" 
+                  :name (s / name :op1 "South"~e.0 :op2 "Korea"~e.1)) 
+            :ARG1 (d4 / deficit~e.5 
+                  :mod (t / trade-01~e.4) 
+                  :quant~e.6 (m / monetary-quantity :quant 101000000~e.8,9 
+                        :unit (d / dollar~e.7)) 
+                  :ARG1-of (r2 / reflect-01~e.13 
+                        :ARG2 (s2 / sluggish~e.18 
+                              :domain~e.16 (e / economy~e.17 
+                                    :poss~e.16 c~e.15)))) 
+            :time~e.10 (d2 / date-entity :month~e.11 10~e.11)))
+
+
+# sentence: Preliminary tallies by the Trade and Industry Ministry showed another trade deficit in October , the fifth monthly setback this year , casting a cloud on South Korea 's export - oriented economy .
+# co-referenced nodes: 1
+(s2 / show-01~e.8 
+      :ARG0 (t2 / tally-01~e.1 
+            :ARG0~e.2 (g / government-organization :wiki "Ministry_of_Trade,_Industry_and_Energy_(South_Korea)" 
+                  :name (t / name :op1 "Trade"~e.4 :op2 "and"~e.5 :op3 "Industry"~e.6 :op4 "Ministry"~e.7)) 
+            :mod (p / preliminary~e.0)) 
+      :ARG1 (d2 / deficit~e.11 
+            :mod (t3 / trade-01~e.10) 
+            :mod (a2 / another~e.9) 
+            :mod (s3 / setback~e.18 
+                  :ord (o2 / ordinal-entity~e.16 :value~e.16 5~e.16 
+                        :range (y / year~e.20 
+                              :mod (t4 / this~e.19))) 
+                  :frequency (r / rate-entity-91~e.17 :ARG1~e.17 1~e.17 
+                        :ARG2~e.17 (t5 / temporal-quantity~e.17 :quant~e.17 1~e.17 
+                              :unit~e.17 (m2 / month~e.17)))) 
+            :ARG0-of (c2 / cast-01~e.22 
+                  :ARG1 (c3 / cloud~e.24) 
+                  :ARG2~e.25 (e / economy~e.32 
+                        :ARG1-of (o / orient-01~e.31 
+                              :ARG2 (e2 / export-01~e.29)) 
+                        :poss~e.28 (c / country :wiki "South_Korea" 
+                              :name (s / name :op1 "South"~e.26 :op2 "Korea"~e.27)))) 
+            :time~e.12 (d / date-entity :month~e.13 10~e.13)))
+
+
+# sentence: Exports in October stood at $ 5.29 billion , a mere 0.7 % increase from a year earlier , while imports increased sharply to $ 5.39 billion , up 20 % from last October .
+# co-referenced nodes: 10
+(c / contrast-01~e.19 
+      :ARG1 (s / stand-04~e.3 
+            :ARG1 (t2 / thing~e.0 
+                  :ARG1-of~e.0 (e / export-01~e.0 
+                        :time~e.1 (d / date-entity :month~e.2 10~e.2))) 
+            :ARG2~e.4 (m / monetary-quantity :quant 5290000000~e.6,7 
+                  :unit (d2 / dollar~e.5) 
+                  :ARG4-of (u / up-02~e.28 
+                        :ARG2 (p / percentage-entity~e.12 :value 0.7~e.11 
+                              :mod (m4 / mere~e.10)) 
+                        :ARG3 (m5 / monetary-quantity 
+                              :time~e.19 (e2 / early~e.17 
+                                    :degree~e.17 (m3 / more~e.17 
+                                          :quant (t / temporal-quantity :quant 1~e.15 
+                                                :unit (y / year~e.16)))))))) 
+      :ARG2 (i / increase-01~e.13,21,28 
+            :ARG1 (t3 / thing~e.20 
+                  :ARG0-of~e.20 (i2 / import-01~e.20)) 
+            :ARG2 (p2 / percentage-entity~e.30 :value 20~e.29) 
+            :ARG3~e.31 (m6 / monetary-quantity 
+                  :time~e.19 (d4 / date-entity :month~e.33 10~e.33 
+                        :mod (l / last~e.32))) 
+            :ARG4 (m2 / monetary-quantity :quant 5390000000~e.25,26 
+                  :unit (d3 / dollar~e.24)) 
+            :manner~e.22 (s2 / sharp~e.22)))
+
+
+# sentence: Government officials said exports at the end of the year would remain under a government target of $ 68 billion .
+# co-referenced nodes: g2
+(s / say-01~e.2 
+      :ARG0 (p / person 
+            :ARG0-of (h / have-org-role-91 
+                  :ARG1 (g2 / government-organization 
+                        :ARG0-of~e.0 (g / govern-01)) 
+                  :ARG2 (o / official~e.1))) 
+      :ARG1 (r / remain-01~e.11 
+            :ARG1 (t / thing~e.3 
+                  :ARG1-of~e.3 (e3 / export-01~e.3) 
+                  :time~e.4 (e / end-01~e.6 
+                        :ARG1~e.7 (y / year~e.9))) 
+            :ARG3 (u / under~e.12 
+                  :op1 (m2 / monetary-quantity :quant 68000000000~e.18,19 
+                        :unit (d2 / dollar~e.17) 
+                        :ARG1-of (t2 / target-01~e.15 
+                              :ARG0 g2~e.14)))))
+
+
+# sentence: From January to October , the nation 's accumulated exports increased 4 % from the same period last year to $ 50.45 billion .
+# co-referenced nodes: 1 y 10
+(i / increase-01~e.10 
+      :ARG1 (t / thing~e.9 
+            :ARG1-of~e.9 (e / export-01~e.9 
+                  :ARG0~e.7 (n / nation~e.6)) 
+            :ARG1-of (a / accumulate-01~e.8)) 
+      :ARG2 (p / percentage-entity~e.12 :value 4~e.11) 
+      :ARG3 (m2 / monetary-quantity 
+            :time (d5 / date-interval 
+                  :op1 (d6 / date-entity :month~e.1 1~e.1 
+                        :mod (y / year~e.18 
+                              :mod (l / last~e.17))) 
+                  :op2 (d7 / date-entity :month~e.3 10~e.3 
+                        :mod y))) 
+      :ARG4~e.19 (m / monetary-quantity :quant 50450000000~e.21,22 
+            :unit (d / dollar~e.20) 
+            :time (d2 / date-interval 
+                  :op1 (d3 / date-entity :month~e.1 1~e.1) 
+                  :op2 (d4 / date-entity :month~e.3 10~e.3))))
+
+
+# sentence: Newsweek , trying to keep pace with rival Time magazine , announced new advertising rates for 1990 and said it will introduce a new incentive plan for advertisers .
+# co-referenced nodes: m2
+(a2 / and~e.17 
+      :op1 (a / announce-01~e.11 
+            :ARG0 (m2 / magazine~e.9 :wiki "Newsweek" 
+                  :name (n / name :op1 "Newsweek"~e.0)) 
+            :ARG1 (r / rate~e.14 
+                  :mod (n3 / new~e.12) 
+                  :mod (a4 / advertise-01~e.13) 
+                  :time~e.15 (d / date-entity :year 1990~e.16))) 
+      :op2 (s / say-01~e.18 
+            :ARG0 m2 
+            :ARG1 (i / introduce-02~e.21 
+                  :ARG0 m2 
+                  :ARG1 (p3 / plan~e.25 
+                        :mod (n4 / new~e.23) 
+                        :ARG0-of (i2 / incentivize-01~e.24 
+                              :ARG1~e.26 (c2 / company~e.27 
+                                    :ARG0-of~e.27 (a3 / advertise-01~e.27)))))) 
+      :ARG1-of (c / cause-01 
+            :ARG0 (t3 / try-01~e.2 
+                  :ARG0 m2 
+                  :ARG1~e.3 (k2 / keep-up-05~e.4 
+                        :ARG0 m2 
+                        :ARG1 (m / magazine~e.9 :wiki "Time_(magazine)" 
+                              :name (t / name :op1 "Time"~e.8) 
+                              :ARG1-of (r2 / rival-01~e.7 
+                                    :ARG0 m2))))))
+
+
+# sentence: The new ad plan from Newsweek , a unit of the Washington Post Co. , is the second incentive plan the magazine has offered advertisers in three years .
+# co-referenced nodes: m
+(p3 / plan~e.19 
+      :domain~e.15 (p4 / plan~e.3 
+            :mod (n2 / new~e.1) 
+            :mod (a / advertise-01~e.2) 
+            :source~e.4 (m / magazine :wiki "Newsweek" 
+                  :name (n / name :op1 "Newsweek"~e.5) 
+                  :part-of (c2 / company :wiki "The_Washington_Post" 
+                        :name (w / name :op1 "Washington"~e.11 :op2 "Post"~e.12 :op3 "Co."~e.13)))) 
+      :ARG1-of (o / offer-01~e.23 
+            :ARG0 m~e.21 
+            :ARG3 (c3 / company~e.24 
+                  :ARG0-of~e.24 (a2 / advertise-01~e.24))) 
+      :ARG0-of (i2 / incentivize-01~e.18) 
+      :ord (o2 / ordinal-entity~e.17 :value~e.17 2~e.17 
+            :range (t / temporal-quantity :quant 3~e.26 
+                  :unit~e.8 (y / year~e.27))))
+
+
+# sentence: Plans that give advertisers discounts for maintaining or increasing ad spending have become permanent fixtures at the news weeklies and underscore the fierce competition between Newsweek , Time Warner Inc. 's Time magazine , and Mortimer B. Zuckerman 's U.S. News & World Report .
+# co-referenced nodes: p2 c7 m3
+(a2 / and~e.19 
+      :op1 (b / become-01~e.12 
+            :ARG1 (p2 / plan~e.0 
+                  :ARG0-of (g / give-01~e.2 
+                        :ARG1 (t / thing~e.4 
+                              :ARG2-of~e.4 (d / discount-01~e.4)) 
+                        :ARG2 (c7 / company~e.3 
+                              :ARG0-of~e.3 (a3 / advertise-01~e.3)) 
+                        :ARG1-of (c8 / cause-01 
+                              :ARG0 (o / or~e.7 
+                                    :op1 (m2 / maintain-01~e.6 
+                                          :ARG0 c7 
+                                          :ARG1 (m3 / monetary-quantity 
+                                                :ARG3-of (s / spend-01~e.10 
+                                                      :ARG0 c7 
+                                                      :ARG1 (a4 / advertise-01~e.9)))) 
+                                    :op2 (i / increase-01~e.8 
+                                          :ARG0 c7 
+                                          :ARG1 m3))))) 
+            :ARG2 (f2 / fixture~e.14 
+                  :mod (p3 / permanent~e.13) 
+                  :prep-at~e.15 (m4 / magazine 
+                        :mod (r / rate-entity-91~e.18 
+                              :ARG3 (t3 / temporal-quantity :quant 1~e.18 
+                                    :unit (w / week~e.18))) 
+                        :mod (n2 / news~e.17)))) 
+      :op2 (u2 / underscore-01~e.20 
+            :ARG0 p2 
+            :ARG1 (c2 / compete-02~e.23 
+                  :ARG0 (a / and~e.34 
+                        :op1 (m5 / magazine :wiki "Newsweek" 
+                              :name (n / name :op1 "Newsweek"~e.25)) 
+                        :op2 (m6 / magazine :wiki "Time_(magazine)" 
+                              :name (t2 / name :op1 "Time"~e.31 :op2 "Magazine"~e.32) 
+                              :poss~e.30 (c / company :wiki "Time_Warner" 
+                                    :name (n3 / name :op1 "Time"~e.27 :op2 "Warner"~e.28 :op3 "Inc."~e.29))) 
+                        :op3 (m7 / magazine :wiki "U.S._News_&_World_Report" 
+                              :name (u / name :op1 "U.S."~e.39 :op2 "News"~e.40 :op3 "&"~e.41 :op4 "World"~e.42 :op5 "Report"~e.43) 
+                              :poss~e.38 (p / person :wiki "Mortimer_Zuckerman" 
+                                    :name (m / name :op1 "Mortimer"~e.35 :op2 "B."~e.36 :op3 "Zuckerman"~e.37)))) 
+                  :manner (f / fierce~e.22))))
+
+
+# sentence: Alan Spoon , recently named Newsweek president , said Newsweek 's ad rates would increase 5 % in January .
+# co-referenced nodes: p m
+(s / say-01~e.8 
+      :ARG0 (p / person :wiki - 
+            :name (a / name :op1 "Alan"~e.0 :op2 "Spoon"~e.1) 
+            :ARG1-of (n2 / name-03~e.4 
+                  :ARG2 (p3 / president~e.6 
+                        :ARG2-of (h / have-org-role-91~e.10 
+                              :ARG0 p 
+                              :ARG1 (m / magazine :wiki "Newsweek" 
+                                    :name (n / name :op1 "Newsweek"~e.5)))) 
+                  :time (r / recent~e.3))) 
+      :ARG1 (i / increase-01~e.14 
+            :ARG0 m 
+            :ARG1 (r2 / rate~e.12 
+                  :mod (a2 / advertise-01~e.11) 
+                  :poss~e.10 m~e.9) 
+            :ARG2 (p2 / percentage-entity~e.16 :value 5~e.15) 
+            :time~e.17 (d / date-entity :month~e.18 1~e.18)))
+
+
+# sentence: It did n't take long .
+# co-referenced nodes: i
+(t / take-10~e.3 
+      :ARG0 (i / it~e.0) 
+      :ARG1 (l / long-03~e.4 :polarity~e.2 -~e.2 
+            :ARG1 i))
+
+
+# sentence: Already it is changing development patterns for the worse and causing localized traffic congestion around its exits .
+# co-referenced nodes: i p
+(a / and~e.9 
+      :op1 (c / change-01~e.3 
+            :ARG0 (i / it~e.1) 
+            :ARG1 (p / pattern~e.5 
+                  :mod (d / develop-02~e.4)) 
+            :ARG1-of (c4 / cause-01~e.10 
+                  :ARG0 (w / worsen-01~e.8 
+                        :ARG1 p))) 
+      :op2 (c2 / cause-01~e.10 
+            :ARG0 i 
+            :ARG1 (c3 / congest-01~e.13 
+                  :ARG1 (a2 / around~e.14 
+                        :op1 (e / exit~e.16 
+                              :poss~e.15 i~e.15)) 
+                  :ARG2 (t / traffic~e.12) 
+                  :ARG1-of (l2 / localize-01~e.11))) 
+      :time (a3 / already~e.0))
+
+
+# sentence: Traffic has more than doubled in one section of Huguenot Trail since 288 opened , reports Will Jones .
+# co-referenced nodes: -
+(r2 / report-01~e.15 
+      :ARG0 (p / person :wiki - 
+            :name (w / name :op1 "Will"~e.16 :op2 "Jones"~e.17)) 
+      :ARG1 (d / double-01~e.4 
+            :ARG1 (t / traffic~e.0 
+                  :location~e.5 (s / section~e.7 :quant 1~e.6 
+                        :part-of~e.8 (r / road :wiki - 
+                              :name (h / name :op1 "Huguenot"~e.9 :op2 "Trail"~e.10)))) 
+            :time (s2 / since~e.11 
+                  :op1 (o / open-01~e.13 
+                        :ARG1 (r3 / road :wiki "Virginia_State_Route_288" 
+                              :name (x / name :op1 288~e.12)))) 
+            :mod (m / more-than~e.2,3)))
+
+
+# sentence: Dale Totten , resident engineer for the Virginia Department of Transportation , noted that VDOT would four - lane the road for about $ 13 million if it had more money .
+# co-referenced nodes: g
+(n / note-01~e.12 
+      :ARG0 (p / person :wiki - 
+            :name (d / name :op1 "Dale"~e.0 :op2 "Totten"~e.1) 
+            :ARG0-of (h2 / have-org-role-91~e.5 
+                  :ARG1 (g / government-organization :wiki "Virginia_Department_of_Transportation" 
+                        :name (v / name :op1 "Virginia"~e.7 :op2 "Department"~e.8 :op3 "of"~e.9 :op4 "Transportation"~e.10)) 
+                  :ARG2 (p3 / person~e.4 
+                        :ARG0-of~e.4 (e2 / engineer-01~e.4) 
+                        :mod (p2 / person~e.3 
+                              :ARG0-of~e.3 (r / reside-01~e.3))))) 
+      :ARG1 (l2 / lane-01~e.18 :quant 4~e.16 
+            :ARG0 g 
+            :ARG1 (r2 / road~e.20) 
+            :condition~e.26 (h / have-03~e.28 
+                  :ARG0 g~e.27 
+                  :ARG1 (m2 / money~e.30 
+                        :mod (m3 / more~e.29))) 
+            :ARG1-of (c / cost-01 
+                  :ARG2 (a / about~e.22 
+                        :op1 (m / monetary-quantity~e.30 :quant 13000000~e.24,25 
+                              :unit (d2 / dollar~e.23))))))
+
+
+# sentence: One reason is that VDOT , at the behest of local politicians and boosters , spent all its friggin ' money on 288 !
+# co-referenced nodes: g
+(c / cause-01 
+      :ARG0 (s / spend-01~e.15 
+            :ARG0 (g / government-organization :wiki "Virginia_Department_of_Transportation" 
+                  :name (v / name :op1 "VDOT"~e.4)) 
+            :ARG1~e.21 (r / road :wiki "Virginia_State_Route_288" 
+                  :name (n / name :op1 288~e.22)) 
+            :ARG3 (m / money~e.20 
+                  :poss~e.17 g~e.17 
+                  :mod (x / friggin') 
+                  :mod (a / all~e.16)) 
+            :ARG1-of (c2 / cause-01 
+                  :ARG0 (a2 / and~e.12 
+                        :op1 (p / politician~e.11) 
+                        :op2 (p2 / person~e.13 
+                              :ARG0-of~e.13 (b2 / boost-01~e.13)) 
+                        :ARG1-of (l / local-02~e.10)))))
+
+
+# sentence: Where 's Homer Simpson when you need him ?
+# co-referenced nodes: p
+(b / be-located-at-91~e.1 
+      :ARG1 (p / person :wiki "Homer_Simpson" 
+            :name (h / name :op1 "Homer"~e.2 :op2 "Simpson"~e.3)) 
+      :ARG2 (a / amr-unknown~e.0) 
+      :time~e.4 (n / need-01~e.6 
+            :ARG0 (y / you~e.5) 
+            :ARG1 p~e.7))
+
+
+# sentence: As we predicted , Route 288 is generating residential development in scarcely populated areas all around its exits , overtaxing the local country roads .
+# co-referenced nodes: r2
+(g / generate-01~e.7 
+      :ARG0 (r2 / road :wiki "Virginia_State_Route_288" 
+            :name (r / name :op1 "Route"~e.4 :op2 288~e.5)) 
+      :ARG1 (d / develop-02~e.9 
+            :ARG1 (r3 / residence~e.8) 
+            :location~e.10 (a / area~e.13 
+                  :ARG1-of (p2 / populate-01~e.12 
+                        :mod (s / scarce~e.11)) 
+                  :location (a2 / around~e.15 
+                        :op1 (e / exit~e.17 
+                              :part-of~e.16 r2~e.16) 
+                        :mod (a3 / all~e.14))) 
+            :ARG0-of (o / overtax-01~e.19 
+                  :ARG2 (r4 / road~e.23 
+                        :ARG1-of (l / local-02~e.21 
+                              :ARG2 (c2 / country~e.22))))) 
+      :ARG1-of (p / predict-01~e.2 
+            :ARG0 (w / we~e.1)))
+
+
+# sentence: While the limited access highway might provide limited traffic relief for people driving back and forth between Chesterfield and Goochland counties , other people are making choices about where they live and work ,
+# co-referenced nodes: p
+(c5 / contrast-01~e.0 
+      :ARG1 (c2 / choose-01~e.25,26 
+            :ARG0 (p / person~e.23 
+                  :mod (o / other~e.22)) 
+            :ARG1~e.27 (a / and~e.31 
+                  :op1 (l / location 
+                        :location-of (w / work-01~e.32 
+                              :ARG0 p)) 
+                  :op2 (l4 / location 
+                        :location-of~e.28 (l2 / live-01~e.30 
+                              :ARG0 p~e.29)))) 
+      :ARG2 (p4 / possible-01~e.5 
+            :ARG1 (r2 / relieve-01~e.6,9 
+                  :ARG0 (h / highway~e.4 
+                        :ARG1-of (a2 / access-01~e.3 
+                              :ARG1-of (l3 / limit-01~e.2,7))) 
+                  :ARG1 (t / traffic~e.8) 
+                  :ARG2~e.10 (p2 / person~e.11 
+                        :ARG0-of (d / drive-01~e.12 
+                              :location (b / between~e.16,18 
+                                    :op1 (c3 / county :wiki "Chesterfield_County,_Virginia" 
+                                          :name (c / name :op1 "Chesterfield"~e.17 :op2 "County"~e.20)) 
+                                    :op2 (c4 / county :wiki "Goochland_County,_Virginia" 
+                                          :name (g3 / name :op1 "Goochland"~e.19 :op2 "County"~e.20))) 
+                              :direction (a3 / and~e.14 
+                                    :op1 (b2 / back~e.13) 
+                                    :op2 (f / forth~e.15)))))))
+
+
+# sentence: If Route 288 has already created a $ 13 million road - construction in just this one exist , think of the liability it has created for all of its exits !
+# co-referenced nodes: r2
+(t / think-01~e.19 :mode~e.31 imperative~e.31 
+      :ARG0 (y / you) 
+      :ARG1~e.20 (l / liable-01~e.22 
+            :ARG1-of (c / create-01~e.25 
+                  :ARG0 r2~e.23 
+                  :ARG3 (e / exit~e.30 
+                        :mod (a / all~e.27) 
+                        :poss~e.29 r2~e.29))) 
+      :ARG1-of (c5 / cause-01 
+            :ARG0 (c2 / create-01~e.5 
+                  :ARG0 (r2 / road :wiki "Virginia_State_Route_288" 
+                        :name (r / name :op1 "Route"~e.1 :op2 288~e.2)) 
+                  :ARG1 (c3 / construct-01~e.12 
+                        :ARG1 (r3 / road~e.10) 
+                        :ARG1-of (c4 / cost-01 
+                              :ARG2 (m / monetary-quantity :quant 13000000~e.8,9 
+                                    :unit (d / dollar~e.7))) 
+                        :location (e2 / exit~e.30 :quant 1~e.16 
+                              :mod (t2 / this~e.15) 
+                              :mod (j / just~e.14))) 
+                  :time (a2 / already~e.4))))
+
+
+# sentence: To the brainiacs who thought Route 288 was such a great idea :
+# co-referenced nodes: i
+(s / say-01 
+      :ARG0 i 
+      :ARG2 (b / brainiac~e.2 
+            :ARG0-of (t / think-01~e.4 
+                  :ARG1 (i / idea~e.11 
+                        :mod (g / great~e.10 
+                              :mod (s2 / such~e.8)) 
+                        :domain~e.7 (r2 / road :wiki "Virginia_State_Route_288" 
+                              :name (r / name :op1 "Route"~e.5 :op2 288~e.6))))))
+
+
+# sentence: If there enough of them to create new traffic congestion in new places , then what is the alternative ?
+# co-referenced nodes: t3
+(a / alternative~e.18 
+      :domain~e.16 (a2 / amr-unknown~e.15) 
+      :condition~e.0 (e / enough~e.2 
+            :quant-of~e.3 (t3 / they~e.4) 
+            :ARG0-of (c / create-01~e.6 
+                  :ARG1 (c2 / congest-01~e.9 
+                        :ARG0 t3 
+                        :ARG2 (t2 / traffic~e.8) 
+                        :location (p / place~e.12 
+                              :mod (n2 / new~e.11)) 
+                        :mod (n / new~e.7,11)))))
+
+
+# sentence: I 'd usually take the pro @-@ road position -
+# co-referenced nodes: i
+(t / take-01~e.3 
+      :ARG0 (i / i~e.0) 
+      :ARG1 (p / position-02~e.8 
+            :ARG0 i 
+            :ARG2 (f / favor-01~e.5 
+                  :ARG1 (r / road~e.7))) 
+      :mod (u / usual~e.2))
+
+
+# sentence: Virginia Centrist , To add insult to injury , the rest of the state helped pay for 288 in last year 's budget deal -- wiped the slate clean of debt .
+# co-referenced nodes: p2 i r
+(s2 / say-01 
+      :ARG0 i 
+      :ARG1 (c / cause-01~e.3 
+            :ARG0 (h / help-01~e.14 
+                  :ARG0 (r / rest~e.10 
+                        :part-of~e.11 (s / state~e.13)) 
+                  :ARG1 (p2 / pay-01~e.15 
+                        :ARG0 r 
+                        :ARG3~e.16 (r2 / road :wiki "Virginia_State_Route_288" 
+                              :name (x / name :op1 288~e.17)) 
+                        :time~e.18 (d / deal-01~e.23 
+                              :ARG2 (b / budget~e.22) 
+                              :time~e.21 (y / year~e.20 
+                                    :mod (l / last~e.19)))) 
+                  :ARG0-of (a / add-02~e.4 
+                        :ARG1 (i / insult-01~e.5) 
+                        :ARG2~e.6 (i2 / injure-01~e.7))) 
+            :ARG1 (w / wipe-out-02~e.25 
+                  :ARG0 p2 
+                  :ARG1~e.29 (d2 / debt~e.30))) 
+      :ARG2 (p / person :wiki - 
+            :name (v / name :op1 "Virginia"~e.0 :op2 "Centrist"~e.1)))
+
+
+# sentence: If you get out ahead of the need you are accused of causing sprawl .
+# co-referenced nodes: y
+(a / accuse-01~e.10 
+      :ARG1 (y / you) 
+      :ARG2~e.11 (c / cause-01~e.12 
+            :ARG0 y 
+            :ARG1 (s / sprawl-01~e.13)) 
+      :condition~e.0 (g / get-05~e.2 
+            :ARG1 y~e.1,8 
+            :ARG2 (a2 / ahead~e.4 
+                  :op1~e.5 (n2 / need-01~e.7))))
+
+
+# sentence: If you build where the need is already acute , then the claim is you can n't pave your way out of congestion .
+# co-referenced nodes: y
+(c / claim-01~e.12 
+      :ARG1 (p / possible-01~e.15 :polarity~e.16 -~e.16 
+            :ARG1 (p2 / pave-02~e.17 
+                  :ARG0 (y / you~e.14) 
+                  :ARG1 (w / way~e.19 
+                        :poss~e.18 y~e.18) 
+                  :ARG2 (o / out-06~e.20 
+                        :ARG2~e.21 (c2 / congest-01~e.22)))) 
+      :condition~e.0 (b / build-01~e.2 
+            :ARG0 y~e.1 
+            :location~e.3 (p3 / place 
+                  :location-of~e.3 (n / need-01~e.5 
+                        :mod (a / acute~e.8 
+                              :time (a2 / already~e.7))))))
+
+
+# sentence: However , this situation hammers home the validity of the state auditor 's report finding that the CTB and VDOT fail to fund transportation projects based on a comprehensive state transportation plan , but rather , based on whoever does the best job of lobbying .
+# co-referenced nodes: p f4
+(c3 / contrast-01~e.0,33 
+      :ARG2 (h / hammer-02~e.4 
+            :ARG0 (s / situation~e.3 
+                  :mod (t / this~e.2)) 
+            :ARG1 (v2 / valid-02~e.7 
+                  :ARG1~e.8 (t2 / thing~e.13 
+                        :ARG1-of~e.13 (r / report-01~e.13 
+                              :ARG0 (p / person 
+                                    :ARG0-of (h3 / have-org-role-91~e.12 
+                                          :ARG1 (s4 / state~e.10) 
+                                          :ARG3 (a / audit-01~e.11 
+                                                :ARG0-of p)))) 
+                        :ARG0-of (f / find-02~e.14 
+                              :ARG1~e.15 (f4 / fund-01~e.22 
+                                    :ARG0 (a2 / and~e.18 
+                                          :op1 (g / government-organization :wiki "Commonwealth_Transportation_Board" 
+                                                :name (c / name :op1 "CTB"~e.17)) 
+                                          :op2 (g2 / government-organization :wiki "Virginia_Department_of_Transportation" 
+                                                :name (v / name :op1 "VDOT"~e.19))) 
+                                    :ARG1 (p2 / project~e.24 
+                                          :mod (t3 / transport-01~e.23)) 
+                                    :ARG1-of (b4 / base-02~e.25 
+                                          :ARG2 (p4 / person 
+                                                :ARG0-of (l / lobby-01~e.44 
+                                                      :manner (g3 / good~e.41 
+                                                            :degree~e.41 (m / most~e.41)))) 
+                                          :ARG1-of (i / instead-of-91 
+                                                :ARG2 (b2 / base-02~e.25,36 
+                                                      :ARG1 f4 
+                                                      :ARG2 (p3 / plan-01~e.31 
+                                                            :ARG1 (t5 / transport-01~e.30 
+                                                                  :ARG4 (s3 / state~e.29)) 
+                                                            :manner (c2 / comprehensive~e.28))))))))) 
+            :destination (h2 / home~e.5)))
+
+
+# sentence: Moreover , Senator Chichester and his toadies would make this worse by pouring more money into this flawed institution .
+# co-referenced nodes: p
+(a / and 
+      :op2 (p2 / pour-01~e.12 
+            :ARG0 (a2 / and~e.4 
+                  :op1 (p / person :wiki "John_Chichester" 
+                        :name (n / name :op1 "Chichester"~e.3) 
+                        :ARG0-of (h / have-org-role-91~e.2 
+                              :ARG1 (g / government-organization :wiki "Senate_of_Virginia" 
+                                    :name (n2 / name :op1 "Senate"~e.2)))) 
+                  :op2 (t / toady~e.6 
+                        :poss~e.5 p~e.5)) 
+            :ARG1 (m2 / money~e.14 
+                  :mod (m3 / more~e.13)) 
+            :ARG3~e.15 (i / institution~e.18 
+                  :mod (t3 / this~e.16) 
+                  :ARG1-of (f / flaw-01~e.17)) 
+            :ARG0-of (c / cause-01 
+                  :ARG1 (w / worsen-01~e.8,10 
+                        :ARG1 (t4 / this~e.9)))))
+
+
+# sentence: In Virginia , it 's to benefit private business plans and not to serve the public interest .
+# co-referenced nodes: i
+(a / and~e.10 
+      :op1 (h / have-purpose-91~e.4 
+            :ARG1 (i / it~e.3) 
+            :ARG2 (b / benefit-01~e.6 
+                  :ARG1 (p / plan~e.9 
+                        :mod (b2 / business~e.8 
+                              :ARG1-of (p2 / private-03~e.7))))) 
+      :op2 (h2 / have-purpose-91 :polarity~e.11 -~e.11 
+            :ARG1 i 
+            :ARG2 (s2 / serve-01~e.13 
+                  :ARG1 (i2 / interest~e.16 
+                        :poss (p3 / public~e.15)))) 
+      :location (s / state :wiki "Virginia" 
+            :name (v / name :op1 "Virginia"~e.1)))
+
+
+# sentence: TMT : I do n't understand your point .
+# co-referenced nodes: i p -
+(s / say-01 
+      :ARG0 (i / i~e.2) 
+      :ARG1 (u / understand-01~e.5 :polarity~e.4 -~e.4 
+            :ARG0 i 
+            :ARG1 (p2 / point~e.7 
+                  :poss~e.6 p~e.6)) 
+      :ARG2 (p / person :wiki - 
+            :name (t / name :op1 "TMT"~e.0)))
+
+
+# sentence: when was the last time you were stuck in traffic that you were n't on your way to or from some sort of business ?
+# co-referenced nodes: y b
+(s / stick-01~e.7 
+      :ARG1 (y / you~e.5,11,15) 
+      :ARG2~e.8 (t / traffic~e.9) 
+      :time~e.0,4 (a / amr-unknown~e.0 
+            :mod (l2 / last~e.3) 
+            :time-of~e.0 (o / or~e.18 :polarity~e.13 -~e.13 
+                  :op1 (b2 / be-destined-for-91~e.12 
+                        :ARG1 y 
+                        :ARG2 (b / business~e.23 
+                              :mod~e.22 (s2 / sort~e.21 
+                                    :mod (s3 / some~e.20)))) 
+                  :op2 (b3 / be-from-91~e.19 
+                        :ARG1 y 
+                        :ARG2 b))))
+
+
+# sentence: It seems to me that the whole point of roads is to facilitate the public interest in getting to and from private businesses .
+# co-referenced nodes: p r b
+(s / seem-01~e.1 
+      :ARG1 (h / have-purpose-91~e.7 
+            :ARG1 (r / road~e.9) 
+            :ARG2 (f / facilitate-01~e.12 
+                  :ARG0 r 
+                  :ARG1 (i3 / interest-01~e.15 
+                        :ARG1 (p / public~e.14) 
+                        :ARG2~e.16 (a / and~e.19 
+                              :op1 (g / get-05~e.17 
+                                    :ARG0 p 
+                                    :ARG2~e.20 (b / business~e.22 
+                                          :ARG1-of (p2 / private-03~e.21))) 
+                              :op2 (g2 / get-05~e.17 
+                                    :ARG0 p 
+                                    :source~e.20 b)))) 
+            :mod (w / whole~e.6)) 
+      :ARG2~e.2 (i / i~e.3))
+
+
+# sentence: Since our road expenditures nowhere near match the increase in business or state domestic product , it is no wonder we suffer congestion problems .
+# co-referenced nodes: - w
+(w2 / wonder-02~e.19 :polarity~e.18 -~e.18 
+      :ARG1 (s / suffer-01~e.21 
+            :ARG0 (w / we~e.20) 
+            :ARG1 (p / problem~e.23 
+                  :topic (c / congest-01~e.22))) 
+      :ARG1-of (c2 / cause-01~e.0 
+            :ARG0 (m / match-01~e.6 :polarity~e.4 -~e.4 
+                  :ARG1 (t / thing~e.3 
+                        :ARG1-of~e.3 (e / expend-01~e.3 
+                              :ARG0~e.1 w~e.1 
+                              :ARG2 (r / road~e.2))) 
+                  :ARG2 (t2 / thing~e.8 
+                        :ARG2-of~e.8 (i / increase-01~e.8 
+                              :ARG1~e.9 (o2 / or~e.11 
+                                    :op1 (b2 / business~e.10) 
+                                    :op2 (p2 / product~e.14 
+                                          :mod (d / domestic~e.13) 
+                                          :mod (s2 / state~e.12))))))))
+
+
+# sentence: If we recognize that roads primaarily benefit businesses then we should do two things :
+# co-referenced nodes: w
+(r2 / recommend-01~e.10 
+      :ARG1 (d / do-02~e.11 
+            :ARG0 w 
+            :ARG1 (t / thing~e.13 :quant 2~e.12)) 
+      :condition~e.0 (r / recognize-02~e.2 
+            :ARG0 (w / we~e.1,9) 
+            :ARG1~e.3 (b / benefit-01~e.6 
+                  :ARG0 (r3 / road~e.4) 
+                  :ARG1 (b2 / business~e.7) 
+                  :mod (p / primary~e.5))))
+
+
+# sentence: let business pay for more of our transportation bill , ( which they will pass to us , of course ) and incentivize them to locate where they put the least stress on the system , even if that means more overall travel .
+# co-referenced nodes: b l2 w
+(a / and~e.21 
+      :op1 (p / pay-01~e.2 :mode~e.0 imperative~e.0 
+            :ARG0 (b / business~e.1) 
+            :ARG1 (t2 / thing 
+                  :ARG1-of (p3 / pass-05~e.14 
+                        :ARG0 b 
+                        :ARG2~e.15 w~e.16 
+                        :mod (o2 / of-course~e.18,19))) 
+            :ARG3~e.3 (t4 / thing~e.8 
+                  :ARG1-of~e.8 (b2 / bill-01~e.8 
+                        :ARG2~e.6 (w / we~e.6) 
+                        :ARG3 (t / transport-01~e.7)) 
+                  :mod (m / more~e.4))) 
+      :op2 (i / incentivize-01~e.22 :mode~e.0 imperative~e.0 
+            :ARG0 w 
+            :ARG1 b 
+            :ARG2 (l2 / locate-01~e.25 
+                  :ARG0 b 
+                  :ARG1 b 
+                  :location~e.25,26 (s3 / stress-02~e.31 
+                        :ARG0 b~e.27 
+                        :ARG1~e.32 (s2 / system~e.34) 
+                        :degree (l3 / least~e.30))) 
+            :concession (e / even-if~e.36,37 
+                  :op1 (m2 / mean-01~e.39 
+                        :ARG1 l2 
+                        :ARG2 (t3 / travel-01~e.42 
+                              :mod (m3 / more~e.40) 
+                              :mod (o / overall~e.41))))))
+
+
+# sentence: TMT said `` In Virginia , it 's to benefit private business plans and not to serve the public interest . ''
+# co-referenced nodes: i -
+(s2 / say-01~e.1 
+      :ARG0 (p2 / person :wiki - 
+            :name (n / name :op1 "TMT"~e.0)) 
+      :ARG1~e.3 (a / and~e.13 
+            :op1 (h / have-purpose-91~e.7 
+                  :ARG1 (i / it~e.6) 
+                  :ARG2 (b / benefit-01~e.9 
+                        :ARG1 (p3 / plan~e.12 
+                              :mod (b2 / business~e.11 
+                                    :ARG1-of (p4 / private-03~e.10))))) 
+            :op2 (h2 / have-purpose-91 :polarity~e.14 -~e.14 
+                  :ARG1 i 
+                  :ARG2 (s / serve-01~e.16 
+                        :ARG1 (i2 / interest~e.19 
+                              :poss (p / public~e.18)))) 
+            :location (s3 / state :wiki "Virginia" 
+                  :name (n2 / name :op1 "Virginia"~e.4))))
+
+
+# sentence: I do n't see the point of this statement because it appears to demonize private business plans and put the public interest above all else .
+# co-referenced nodes: t
+(s / see-01~e.3 :polarity~e.2 -~e.2 
+      :ARG0 (i / i~e.0) 
+      :ARG1 (p / point~e.5 
+            :poss~e.6 (t / thing~e.8 
+                  :ARG1-of~e.8 (s2 / state-01~e.8) 
+                  :mod (t2 / this~e.7))) 
+      :ARG1-of (c / cause-01~e.9 
+            :ARG0 (a / appear-02~e.11 
+                  :ARG1~e.12 (a2 / and~e.17 
+                        :op1 (d / demonize-01~e.13 
+                              :ARG0 t 
+                              :ARG1 (p2 / plan~e.16 
+                                    :mod (b / business~e.15 
+                                          :ARG1-of (p3 / private-03~e.14)))) 
+                        :op2 (p4 / put-01~e.18 
+                              :ARG0 t 
+                              :ARG1 (i2 / interest~e.21 
+                                    :poss (p5 / public~e.20)) 
+                              :ARG2 (a3 / above~e.22 
+                                    :op1 (a4 / all~e.23 
+                                          :mod (e2 / else~e.24))))))))
+
+
+# sentence: I think they are so tightly intertwined that they are virtually one and the same .
+# co-referenced nodes: t2
+(t / think-01~e.1 
+      :ARG0 (i / i~e.0) 
+      :ARG1 (i2 / intertwine-01~e.6 
+            :ARG1 (t2 / they~e.2) 
+            :ARG0-of (c / cause-01~e.4 
+                  :ARG1~e.7 (s / same-01~e.14 
+                        :ARG1 t2~e.8 
+                        :mod (v / virtual~e.10))) 
+            :ARG0-of (t3 / tight-05~e.5)))
+
+
+# sentence: but in the aggregate if we demonize business long enough we will eventually find out we all work for the Devil .
+# co-referenced nodes: w
+(c / contrast-01~e.0 
+      :ARG2 (f / find-01~e.13 
+            :ARG0 (w / we) 
+            :ARG1 (w2 / work-01~e.17 
+                  :ARG0 (w3 / we~e.15 
+                        :mod (a / all~e.16)) 
+                  :ARG2~e.18 (d / devil~e.20)) 
+            :time (e / eventual~e.12) 
+            :prep-in~e.1 (a2 / aggregate~e.3) 
+            :condition~e.4 (d3 / demonize-01~e.6 
+                  :ARG0 w~e.5,10 
+                  :ARG1 (b / business~e.7) 
+                  :ARG1-of (l / long-03~e.8 
+                        :degree (e2 / enough~e.9)))))
+
+
+# sentence: Even you see rail to Dulles as a positive because Dulles is a job center that promotes bi @-@ directional demand on the rail .
+# co-referenced nodes: a
+(s / see-01~e.2 
+      :ARG0 (y / you~e.1 
+            :mod (e / even~e.0)) 
+      :ARG1 (r / rail~e.3 
+            :destination~e.4 (a / airport :wiki "Washington_Dulles_International_Airport" 
+                  :name (d / name :op1 "Dulles"~e.5))) 
+      :ARG2~e.6 (p / positive~e.8) 
+      :ARG1-of (c / cause-01~e.9 
+            :ARG0 (c2 / center~e.14 
+                  :mod (j / job~e.13) 
+                  :domain~e.11 a~e.10 
+                  :ARG0-of (p2 / promote-02~e.16 
+                        :ARG1 (d2 / demand-01~e.20 
+                              :ARG1~e.21 (r2 / rail~e.23) 
+                              :mod (b / bi-directional~e.17,19))))))
+
+
+# sentence: they should have destinations at both ends in order that we get maximum use out of our investment :
+# co-referenced nodes: w
+(r / recommend-01~e.1 
+      :ARG1 (h / have-03~e.2 
+            :ARG0 (t / they~e.0) 
+            :ARG1 (d / destination~e.3 
+                  :location~e.4 (e / end~e.6 
+                        :mod (b / both~e.5)))) 
+      :purpose~e.7,8,9,13 (u / use-01~e.13 
+            :ARG0 (w / we~e.10) 
+            :ARG1~e.15 (t2 / thing~e.17 
+                  :ARG2-of~e.17 (i / invest-01~e.17 
+                        :ARG0~e.16 w~e.16)) 
+            :degree (m / maximum~e.12)))
+
+
+# sentence: we need more places in order to get closer to the balance you say we need .
+# co-referenced nodes: w
+(n / need-01~e.1 
+      :ARG0 (w / we~e.0) 
+      :ARG1 (p / place~e.3 
+            :mod (m / more~e.2)) 
+      :purpose~e.4,5,6 (g / get-03~e.7 
+            :ARG1 w 
+            :ARG2 (c / close-10~e.8 
+                  :ARG1 w 
+                  :ARG2~e.9 (b / balance~e.11 
+                        :ARG1-of (n2 / need-01~e.15 
+                              :ARG0 w~e.14 
+                              :ARG1-of (s / say-01~e.13 
+                                    :ARG0 (y / you~e.12)))) 
+                  :degree~e.8 (m2 / more~e.2,8))))
+
+
+# sentence: The Huguenot Trail road widening was already planned , due to the heavy demands of development on the Chesterfield side , the new schools , and a whole bunch of existing developments that were zoned years ago and at that time funneled through Robious Road .
+# co-referenced nodes: - b2
+(p / plan-01~e.7 
+      :ARG1 (w / widen-01~e.4 
+            :ARG1 (r2 / road~e.3 :wiki - 
+                  :name (h / name :op1 "Huguenot"~e.1 :op2 "Trail"~e.2))) 
+      :time (a / already~e.6) 
+      :ARG1-of (c2 / cause-01~e.9,10 
+            :ARG0 (a2 / and~e.25 
+                  :op1 (d / demand-01~e.13 
+                        :ARG0~e.14 (d2 / develop-02~e.15 
+                              :location~e.16 (s / side~e.19 
+                                    :mod (c / county :wiki "Chesterfield_County,_Virginia" 
+                                          :name (n / name :op1 "Chesterfield"~e.18)))) 
+                        :degree (h2 / heavy~e.12)) 
+                  :op2 (s2 / school~e.23 
+                        :mod (n2 / new~e.22)) 
+                  :op3 (t / thing~e.31 
+                        :ARG1-of~e.31 (d3 / develop-02~e.31) 
+                        :quant~e.29 (b / bunch~e.28 
+                              :mod (w2 / whole~e.27)) 
+                        :ARG1-of (e / exist-01~e.30) 
+                        :ARG1-of (z / zone-01~e.34 
+                              :time~e.40 (b2 / before~e.36 
+                                    :op1~e.36 (n4 / now~e.36) 
+                                    :quant (m / multiple~e.35 
+                                          :op1~e.35 (t3 / temporal-quantity~e.35,40 :quant~e.35 1~e.35 
+                                                :unit~e.35 (y / year~e.35))))) 
+                        :ARG1-of (f / funnel-01~e.41 
+                              :path~e.42 (r3 / road :wiki - 
+                                    :name (n3 / name :op1 "Robious"~e.43 :op2 "Road"~e.44)) 
+                              :time~e.40 b2)))))
+
+
+# sentence: 288 , for those of us that actually use it , is wonderful - instead of Powhatan and Western Chesterfield being bottlenecked by lack of roads ,
+# co-referenced nodes: a r
+(w2 / wonderful-03~e.12 
+      :ARG1 (r / road :wiki "Virginia_State_Route_288" 
+            :name (x / name :op1 288~e.0)) 
+      :ARG2 (w3 / we~e.5 
+            :ARG0-of (u / use-01~e.8 
+                  :ARG1 r~e.9 
+                  :mod (a2 / actual~e.7))) 
+      :ARG1-of (i / instead-of-91~e.4,14,15,24 
+            :ARG2 (b / bottleneck-01~e.21 
+                  :ARG0~e.22 (l / lack-01~e.23 
+                        :ARG0 a 
+                        :ARG1~e.24 (r2 / road~e.25)) 
+                  :ARG1 (a / and~e.17 
+                        :op1 (c / county :wiki "Powhatan_County,_Virginia" 
+                              :name (p / name :op1 "Powhatan"~e.16)) 
+                        :op2 (w4 / west~e.18 
+                              :part-of (c2 / county :wiki "Chesterfield_County,_Virginia" 
+                                    :name (w / name :op1 "Chesterfield"~e.19)))))))
+
+
+# sentence: we can actually get some commercial development and have the ability to work closer to where we live .
+# co-referenced nodes: w2
+(a / and~e.7 
+      :op1 (p / possible-01~e.1 
+            :ARG1 (d / develop-02~e.6 
+                  :ARG3 (w2 / we~e.0) 
+                  :mod (c / commerce~e.5))) 
+      :op2 (p2 / possible-01~e.1 
+            :ARG1 (w / work-01~e.12 
+                  :ARG0 w2 
+                  :location~e.15 (c2 / close-10~e.13 
+                        :ARG2 (l / live-01~e.17 
+                              :ARG0 w2~e.16) 
+                        :degree~e.13 (m / more~e.13)))))
+
+
+# sentence: I have no desire to live in any city ,
+# co-referenced nodes: i
+(d / desire-01~e.1,3 :polarity~e.2 -~e.2 
+      :ARG0 (i / i~e.0) 
+      :ARG1 (l / live-01~e.5 
+            :ARG0 i 
+            :location~e.6 (c / city~e.8 
+                  :mod (a / any~e.7))))
+
+
+# sentence: I will not work in a downtown area ,
+# co-referenced nodes: i
+(r / refuse-01 
+      :ARG0 i 
+      :ARG1 (w / work-01~e.3 
+            :ARG0 (i / i~e.0) 
+            :location~e.4 (a / area~e.7 
+                  :mod (d / downtown~e.6))))
+
+
+# sentence: I will not use mass transit , which is not safe for female commuters that work long and irregular hours ,
+# co-referenced nodes: i - w
+(r2 / refuse-01 
+      :ARG0 i 
+      :ARG1 (u / use-01~e.3 
+            :ARG0 (i / i~e.0) 
+            :ARG1 (t / transit~e.5 
+                  :mod (m / mass~e.4) 
+                  :ARG0-of (s / safe-01~e.10 :polarity~e.2,9 -~e.9 
+                        :ARG1~e.11 (f / female~e.12 
+                              :ARG0-of (c / commute-01~e.13) 
+                              :ARG0-of (w / work-01~e.15 
+                                    :time (h / hour~e.19 
+                                          :ARG2-of (r / regular-02~e.18 :polarity~e.18 -~e.18 
+                                                :ARG1 w)) 
+                                    :ARG1-of (l / long-03~e.16)))))))
+
+
+# sentence: How exactly I 'm supposed to keep horses on a 1 @/@ 4 acre lot is beyond me .
+# co-referenced nodes: i
+(u / understand-01 :polarity - 
+      :ARG0 i 
+      :ARG1 (t / thing 
+            :manner-of~e.0 (k / keep-01~e.6 
+                  :ARG0 (i / i~e.2,17) 
+                  :ARG1 (h / horse~e.7) 
+                  :location~e.8 (l / lot~e.14 
+                        :mod (a / area-quantity :quant "1/4"~e.2,10,12 
+                              :unit (a2 / acre~e.13))) 
+                  :ARG2-of (s / suppose-02~e.4 
+                        :ARG1 i)) 
+            :mod (e / exact~e.1)))
+
+
+# sentence: and I 'd still pay to live in the country .
+# co-referenced nodes: i
+(a / and~e.0 
+      :op2 (p / pay-01~e.4 
+            :ARG0 (i / i~e.1) 
+            :ARG3 (l / live-01~e.6 
+                  :ARG0 i 
+                  :location~e.7 (c / country~e.9)) 
+            :mod (s / still~e.3)))
+
+
+# sentence: Many people have legitimate preferences - horses , hunting , gardening , certain types of small business - that makes them NOT want to live in an urban core .
+# co-referenced nodes: p2
+(p / prefer-01~e.4 
+      :ARG0 (p2 / person~e.1 
+            :quant (m / many~e.0)) 
+      :ARG1 (a / and 
+            :op1 (h / horse~e.6) 
+            :op2 (h2 / hunt-01~e.8) 
+            :op3 (g / garden-01~e.10) 
+            :op4 (b / business~e.16 
+                  :mod (s / small~e.15) 
+                  :mod~e.14 (t / type~e.13 
+                        :mod (c / certain~e.12)))) 
+      :ARG1-of (l / legitimate-02~e.3) 
+      :ARG0-of (m2 / make-02~e.19 
+            :ARG1 (w / want-01~e.22 :polarity~e.21 -~e.21 
+                  :ARG0 p2~e.20 
+                  :ARG1 (l2 / live-01~e.24 
+                        :ARG0 p2 
+                        :location~e.25 (c3 / core~e.28 
+                              :mod (u / urban~e.27))))))
+
+
+# sentence: Anonymous 6 @:@ 37 , You have every right to live in the country if that 's where you wish to live .
+# co-referenced nodes: p l
+(s / say-01 
+      :ARG1 (r / right-05~e.8 
+            :ARG1 p~e.5 
+            :ARG2 (l / live-01 
+                  :ARG0 p 
+                  :location (c / country)) 
+            :mod (e2 / every~e.7) 
+            :condition~e.14 (w / wish-01~e.19 
+                  :ARG0 p 
+                  :ARG1 l~e.10,11,12,13,17,21)) 
+      :ARG2 (p / person :wiki - 
+            :name (n / name :op1 "Anonymous"~e.0 :op2 "6:37"~e.1,3)))
+
+
+# sentence: Ray Hyde - My comments were directed at investors who lobby to place roads near where they own property and the incompetent system that funds these requests without regard to their link or lack thereof to a master transportation plan .
+# co-referenced nodes: p2 t5 i2 - r l2
+(s2 / say-01 
+      :ARG0 i2 
+      :ARG1 (d / direct-01~e.6 
+            :ARG1 (t3 / thing~e.4 
+                  :ARG1-of~e.4 (c / comment-01~e.4 
+                        :ARG0~e.3 (i2 / i~e.3))) 
+            :ARG2~e.7 (a / and~e.19 
+                  :op1 (p2 / person~e.8 
+                        :ARG0-of~e.8 (i / invest-01~e.8) 
+                        :ARG0-of (l / lobby-01~e.10 
+                              :ARG1 (p3 / place-01~e.12 
+                                    :ARG1 (r / road~e.13) 
+                                    :ARG2 (n2 / near-02~e.14 
+                                          :ARG1 r 
+                                          :ARG2 (o / own-01~e.17 
+                                                :ARG0 p2 
+                                                :ARG1 (p4 / property~e.18)))))) 
+                  :op2 (s / system~e.22 
+                        :ARG1-of (c2 / competent-01~e.21 :polarity~e.21 -~e.21) 
+                        :ARG0-of (f / fund-01~e.24 
+                              :ARG1 (t5 / thing~e.26 
+                                    :ARG1-of~e.26 (r2 / request-01~e.26) 
+                                    :mod (t / this~e.25)) 
+                              :manner (r3 / regard-01~e.28 :polarity~e.27 -~e.27 
+                                    :ARG1~e.29 (o2 / or~e.32 
+                                          :op1 (l2 / link-01~e.31 
+                                                :ARG1~e.30 t5~e.30 
+                                                :ARG2 (p5 / plan-01 
+                                                      :ARG1 (t2 / transport-01) 
+                                                      :mod (m / master))) 
+                                          :op2 (l3 / lack-01~e.33 
+                                                :ARG1~e.35 l2~e.37,38,39))))))) 
+      :ARG2 (p / person :wiki - 
+            :name (n / name :op1 "Ray"~e.0 :op2 "Hyde"~e.1)))
+
+

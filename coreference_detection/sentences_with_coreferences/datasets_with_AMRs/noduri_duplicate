@@ -1,0 +1,109 @@
+nod co-referentiat daca: nu avem nimic dupa un nod
+			avem ~e...
+			avem )
+
+			defapt daca in AMR pe linia lui nu este '/' -> nu are concept pt ca conceptul e deja referentiat de variabila x
+
+
+
+
+(s / say-01~e.0,1 
+      :ARG0 (s2 / statistic~e.9 
+            :source (g / government-organization :wiki "Ministry_of_Economic_Affairs_(Taiwan)" 
+                  :name (n / name :op1 "Ministry"~e.5 :op2 "of"~e.6 :op3 "Economy"~e.7) 
+                  :poss~e.3 c~e.2)) 
+      :ARG1 (m2 / monetary-quantity :quant 20900000000~e.22,23 
+            :unit (d / dollar~e.25 
+                  :mod (c2 / country :wiki "United_States" 
+                        :name (n3 / name :op1 "US"~e.24))) 
+            :domain~e.3,21 (v / volume~e.12 
+                  :quant-of~e.13 (t / trade-01~e.14 
+                        :ARG0~e.15 (m / mainland~e.16) 
+                        :ARG2 (c / country :wiki "Taiwan" 
+                              :name (n2 / name :op1 "Taiwan"~e.18))) 
+                  :time (y / year~e.20 
+                        :mod (l / last~e.19)))))
+
+ (s / say-01~e.0,1 
+      :ARG0 (s2 / statistic~e.9 
+            :source (g / government-organization :wiki "Ministry_of_Economic_Affairs_(Taiwan)" 
+                  :name (n / name :op1 "Ministry"~e.5 :op2 "of"~e.6 :op3 "Economy"~e.7) 
+                  :poss~e.3 (COREF_c / country)~e.2)) 
+      :ARG1 (m2 / monetary-quantity :quant 20900000000~e.22,23 
+            :unit (d / dollar~e.25 
+                  :mod (c2 / country :wiki "United_States" 
+                        :name (n3 / name :op1 "US"~e.24))) 
+            :domain~e.3,21 (v / volume~e.12 
+                  :quant-of~e.13 (t / trade-01~e.14 
+                        :ARG0~e.15 (m / mainland~e.16) 
+                        :ARG2 (c / country :wiki "Taiwan" 
+                              :name (n2 / name :op1 "Taiwan"~e.18))) 
+                  :time (y / year~e.20 
+                        :mod (l / last~e.19)))))
+
+
+
+
+
+(a / and 
+      :op1 (v / value-01~e.5 
+            :ARG1~e.6 (t / thing~e.9 
+                  :ARG1-of~e.9 (e / export-01~e.9 
+                        :ARG0~e.8 (c / country :wiki "Taiwan" 
+                              :name (n / name :op1 "Taiwan"~e.7)) 
+                        :ARG2~e.10 (m / mainland~e.12))) 
+            :ARG2 (m2 / monetary-quantity :quant 17800000000 
+                  :unit (d / dollar~e.36 
+                        :mod (c4 / country :wiki "United_States" 
+                              :name (n2 / name :op1 "US"~e.35)))) 
+            :ARG1-of (i / increase-01~e.20 
+                  :ARG2~e.21 (p / percentage-entity~e.23 :value 20~e.22) 
+                  :ARG4 m2~e.14,15,16,17 
+                  :ARG1-of (c2 / compare-01~e.24 
+                        :ARG2~e.25 (y / year~e.27 
+                              :mod (l / last~e.26))))) 
+      :op2 (v3 / value-01~e.31 
+            :ARG1 (t4 / thing~e.30 
+                  :ARG1-of~e.30 (i3 / import-01~e.30)) 
+            :ARG2 (m3 / monetary-quantity :quant 3100000000~e.33,34 
+                  :unit (d3 / dollar~e.36 
+                        :mod c4)) 
+            :ARG1-of (i2 / increase-01~e.39 
+                  :ARG2~e.40 (p2 / percentage-entity~e.42 :value 74~e.41) 
+                  :ARG4 m3 
+                  :ARG1-of (c3 / compare-01~e.43 
+                        :ARG2~e.44 y~e.45,46))) 
+      :part-of (v2 / volume~e.2 
+            :mod (t3 / this~e.1)))
+
+ (a / and 
+      :op1 (v / value-01~e.5 
+            :ARG1~e.6 (t / thing~e.9 
+                  :ARG1-of~e.9 (e / export-01~e.9 
+                        :ARG0~e.8 (c / country :wiki "Taiwan" 
+                              :name (n / name :op1 "Taiwan"~e.7)) 
+                        :ARG2~e.10 (m / mainland~e.12))) 
+            :ARG2 (m2 / monetary-quantity :quant 17800000000 
+                  :unit (d / dollar~e.36 
+                        :mod (c4 / country :wiki "United_States" 
+                              :name (n2 / name :op1 "US"~e.35)))) 
+            :ARG1-of (i / increase-01~e.20 
+                  :ARG2~e.21 (p / percentage-entity~e.23 :value 20~e.22) 
+                  :ARG4 (COREF_m2 / monetary-quantity)~e.14,15,16,17 
+                  :ARG1-of (c2 / compare-01~e.24 
+                        :ARG2~e.25 (y / year~e.27 
+                              :mod (l / last~e.26))))) 
+      :op2 (v3 / value-01~e.31 
+            :ARG1 (t4 / thing~e.30 
+                  :ARG1-of~e.30 (i3 / import-01~e.30)) 
+            :ARG2 (m3 / monetary-quantity :quant 3100000000~e.33,34 
+                  :unit (d3 / dollar~e.36 
+                        :mod c4)) 
+            :ARG1-of (i2 / increase-01~e.39 
+                  :ARG2~e.40 (p2 / percentage-entity~e.42 :value 74~e.41) 
+                  :ARG4 m3 
+                  :ARG1-of (c3 / compare-01~e.43 
+                        :ARG2~e.44 y~e.45,46))) 
+      :part-of (v2 / volume~e.2 
+            :mod (t3 / this~e.1)))
+
