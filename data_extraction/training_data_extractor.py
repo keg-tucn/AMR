@@ -6,8 +6,8 @@ from tqdm import tqdm
 
 from Baseline import baseline
 from amr_util import TrainingDataStats
+from data_extraction import dependency_extractor_factory
 from data_extraction import input_file_parser
-from data_extraction.dependency_extractor import DependencyExtractor
 from definitions import PROJECT_ROOT_DIR
 from models import amr_data
 from models.amr_graph import AMR, ParserError
@@ -138,8 +138,12 @@ def generate_training_data(file_path, parser_parameters, compute_dependencies=Tr
                 date_entities = []
                 dependencies = {}
             else:
+
+                dependency_extractor_implementation = dependency_extractor_factory \
+                    .get_dependency_extractor_implementation(parser_parameters)
+
                 try:
-                    dependencies = DependencyExtractor.extract_dependencies_spacy(new_sentence)
+                    dependencies = dependency_extractor_implementation.extract_dependencies(new_sentence)
                 except Exception as e:
                     logging.warn("Dependency parsing failed at sentence %s with exception %s.", new_sentence, str(e))
                     dependencies = {}
