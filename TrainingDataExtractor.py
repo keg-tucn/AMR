@@ -2,6 +2,9 @@ import logging
 
 from tqdm import tqdm
 
+import spacy
+import neuralcoref
+
 import AMRData
 from AMRGraph import AMR
 from amr_util import TrainingDataStats
@@ -11,6 +14,9 @@ from preprocessing.DependencyExtractor import extract_dependencies
 from collections import namedtuple
 from preprocessing.action_sequence_generators.simple_asg__informed_swap import SimpleInformedSwapASG
 from preprocessing.action_sequence_generators.simple_asg import SimpleASG
+
+from coreference_detection.coreference_detection import duplicate_concept_data_on_amr_for_coreferenced_nodes, \
+    has_AMR_coreferenced_nodes, remove_wiki_and_name_concepts_from_amr
 
 TrainingDataExtraction = namedtuple("TrainingDataExtraction", "data stats")
 TrainingData = namedtuple("TrainingData", "sentence, action_sequence, amr_original, dependencies, named_entities, "
@@ -22,8 +28,7 @@ from Baseline import baseline
 
 # Given a file with sentences and aligned amrs,
 # it returns an array of (TrainingData)
-def generate_training_data(file_path, compute_dependencies=False):
-    sentence_amr_triples = SentenceAMRPairsExtractor.extract_sentence_amr_pairs(file_path)
+def generate_training_data(file_path, compute_dependencies=False, nlp=None):
     fail_sentences = []
     unaligned_nodes = {}
     unaligned_nodes_after = {}
@@ -35,78 +40,111 @@ def generate_training_data(file_path, compute_dependencies=False):
     temporal_quantity_exceptions = 0
     quantity_exceptions = 0
     processed_sentence_ids = []
-    #change this to true if you want coref handling (graphs trnaformed to trees)
-    coref_handling = False
+
+    exceptions_by_preprocessing_for_found_coref_sentences = 0
+    coref_handling = True if nlp is not None else False
+
+    sentence_amr_triples = SentenceAMRPairsExtractor.extract_sentence_amr_pairs(file_path)
+
+    if coref_handling:
+        # statistics for the co-reference data sets
+        coref_statistics = {}
+        coref_statistics['nr_of_sentences_with_corefs_which_did_not_raise_exceptions'] = 0
+        coref_statistics['nr_of_sentences_with_corefs_which_raised_exceptions'] = 0
+        coref_statistics['nr_of_sentences_with_corefs_which_entered_ASG'] = 0
+        coref_statistics['nr_of_sentences_in_which_we_found_corefs'] = 0
+
+        sentence_has_corefs = False
+
+    # logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.DEBUG)
+
+
     for i in tqdm(range(0, len(sentence_amr_triples))):
+
         try:
             logging.debug("Started processing example %d", i)
             concepts_metadata = {}
             (sentence, amr_str, amr_id) = sentence_amr_triples[i]
 
+            sentence_has_corefs = False
+
+            # coreference handling
+            if coref_handling:
+                doc = nlp(unicode(sentence, 'utf-8'))
+
+                if doc._.has_coref:                 # if has_AMR_coreferenced_nodes(amr_str):
+                    sentence_has_corefs = True
+                    coref_statistics['nr_of_sentences_in_which_we_found_corefs'] += 1
+
+                    amr_str = duplicate_concept_data_on_amr_for_coreferenced_nodes(amr_str)
+
+            # amr_str = remove_wiki_and_name_concepts_from_amr(amr_str) # possible fix to named entity bug but it does not improve the system -> needs more analysis
 
             amr = AMR.parse_string(amr_str)
 
-            #coreference handling
-            if coref_handling:
+            try:
+                TrainingDataStats.get_unaligned_nodes(amr, unaligned_nodes)
                 try:
-                    new_amr_str = baseline(amr_str)
-                    amr = AMR.parse_string(new_amr_str)
-                except:
-                    amr = AMR.parse_string(amr_str)
+                    (new_amr, _) = TokensReplacer.replace_have_org_role(amr, "ARG1")
+                    (new_amr, _) = TokensReplacer.replace_have_org_role(amr, "ARG2")
+                except Exception as e:
+                    have_org_role_exceptions += 1
+                    raise e
 
-            TrainingDataStats.get_unaligned_nodes(amr, unaligned_nodes)
-            try:
-                (new_amr, _) = TokensReplacer.replace_have_org_role(amr, "ARG1")
-                (new_amr, _) = TokensReplacer.replace_have_org_role(amr, "ARG2")
-            except Exception as e:
-                have_org_role_exceptions += 1
-                raise e
+                try:
+                    (new_amr, new_sentence, named_entities) = TokensReplacer.replace_named_entities(amr, sentence)
+                    for name_entity in named_entities:
+                        concepts_metadata[name_entity[0]] = name_entity[5]
+                except Exception as e:
+                    named_entity_exceptions += 1
+                    raise e
 
-            try:
-                (new_amr, new_sentence, named_entities) = TokensReplacer.replace_named_entities(amr, sentence)
-                for name_entity in named_entities:
-                    concepts_metadata[name_entity[0]] = name_entity[5]
-            except Exception as e:
-                named_entity_exceptions += 1
-                raise e
+                try:
+                    (new_amr, new_sentence, date_entities) = TokensReplacer.replace_date_entities(new_amr, new_sentence)
+                    for date_entity in date_entities:
+                        concepts_metadata[date_entity[0]] = date_entity[5]
+                except Exception as e:
+                    date_entity_exceptions += 1
+                    raise e
 
-            try:
-                (new_amr, new_sentence, date_entities) = TokensReplacer.replace_date_entities(new_amr, new_sentence)
-                for date_entity in date_entities:
-                    concepts_metadata[date_entity[0]] = date_entity[5]
-            except Exception as e:
-                date_entity_exceptions += 1
-                raise e
+                try:
+                    (new_amr, new_sentence, _) = TokensReplacer.replace_temporal_quantities(new_amr, new_sentence)
+                except Exception as e:
+                    temporal_quantity_exceptions += 1
+                    raise e
+                try:
+                    (new_amr, new_sentence, _) = TokensReplacer.replace_quantities_default(new_amr, new_sentence,
+                                                                                           ['monetary-quantity',
+                                                                                            'mass-quantity',
+                                                                                            'energy-quantity',
+                                                                                            'distance-quantity',
+                                                                                            'volume-quantity',
+                                                                                            'power-quantity'
+                                                                                            ])
+                except Exception as e:
+                    quantity_exceptions += 1
+                    raise e
 
-            try:
-                (new_amr, new_sentence, _) = TokensReplacer.replace_temporal_quantities(new_amr, new_sentence)
             except Exception as e:
-                temporal_quantity_exceptions += 1
-                raise e
-            try:
-                (new_amr, new_sentence, _) = TokensReplacer.replace_quantities_default(new_amr, new_sentence,
-                                                                                       ['monetary-quantity',
-                                                                                        'mass-quantity',
-                                                                                        'energy-quantity',
-                                                                                        'distance-quantity',
-                                                                                        'volume-quantity',
-                                                                                        'power-quantity'
-                                                                                        ])
-            except Exception as e:
-                quantity_exceptions += 1
+                if coref_handling and sentence_has_corefs:
+                    exceptions_by_preprocessing_for_found_coref_sentences += 1
                 raise e
 
             TrainingDataStats.get_unaligned_nodes(new_amr, unaligned_nodes_after)
             custom_amr = AMRData.CustomizedAMR()
             custom_amr.create_custom_AMR(new_amr)
 
+
             coreferences_count += TrainingDataStats.get_coreferences_count(custom_amr)
             #TODO: put here the new version of the action seq generator
 
-            asg_implementation = SimpleInformedSwapASG(1,False)
+            coref_statistics['nr_of_sentences_with_corefs_which_entered_ASG'] += 1
+
+            asg_implementation = SimpleInformedSwapASG(1, False)
             #asg_implementation = SimpleASG(1,False)
             action_sequence = asg_implementation.generate_action_sequence(custom_amr, new_sentence)
             #action_sequence = ActionSequenceGenerator.generate_action_sequence(custom_amr, new_sentence)
+
             if compute_dependencies is False:
                 # training_data.append(TrainingData(new_sentence, action_sequence, amr_str, concepts_metadata, amr_id))
                 named_entities = []
@@ -123,12 +161,34 @@ def generate_training_data(file_path, compute_dependencies=False):
                 TrainingData(new_sentence, action_sequence, amr_str, deps, named_entities, date_entities,
                              concepts_metadata, amr_id))
             processed_sentence_ids.append(amr_id)
+
+            if coref_handling and sentence_has_corefs:
+                coref_statistics['nr_of_sentences_with_corefs_which_did_not_raise_exceptions'] += 1
+
         except Exception as e:
             fail_sentences.append(sentence)
             logging.debug("Exception is: '%s'. Failed at: %d with sentence %s.", e, i, sentence)
 
+            if coref_handling and sentence_has_corefs:
+                coref_statistics['nr_of_sentences_with_corefs_which_raised_exceptions'] += 1
+
     logging.info("Failed: %d out of %d", len(fail_sentences), len(sentence_amr_triples))
+
+    if coref_handling:
+        print("Dataset %s", file_path)
+        print("Sentences with corefs that didn't raise exceptions: ", coref_statistics['nr_of_sentences_with_corefs_which_did_not_raise_exceptions'])
+        print("Sentences with corefs that raised exceptions: ", coref_statistics['nr_of_sentences_with_corefs_which_raised_exceptions'])
+        print("Sentences in which we found corefs: ",  coref_statistics['nr_of_sentences_in_which_we_found_corefs'], " out of ", len(sentence_amr_triples))
+        print("Preprocessing exceptions when we had sentences on which corefs were found: ", exceptions_by_preprocessing_for_found_coref_sentences)
+        print("Nr of amrs which entered ASG: ", coref_statistics['nr_of_sentences_with_corefs_which_entered_ASG'])
+        print("Exception: have_org_role {}\nnamed_entity {}\ndate_entity {}\ntemporal_quantity {}\nquantity {}".format(
+            have_org_role_exceptions,
+            named_entity_exceptions,
+            date_entity_exceptions,
+            temporal_quantity_exceptions,
+            quantity_exceptions))
     # logging.critical("|%s|%d|%d|%d", file_path, len(fail_sentences), len(sentence_amr_pairs), len(sentence_amr_pairs) - len(fail_sentences))
+
     return TrainingDataExtraction(training_data,
                                   TrainingDataStats.TrainingDataStatistics(unaligned_nodes, unaligned_nodes_after,
                                                                            coreferences_count,
