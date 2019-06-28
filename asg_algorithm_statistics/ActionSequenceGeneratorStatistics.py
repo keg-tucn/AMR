@@ -344,7 +344,7 @@ for split in splits:
     sentence_lengths_all = [0]*MAX_SENTENCE_LEN
     sentence_lengths_success = [0]*MAX_SENTENCE_LEN
     for data_set in data_sets[split]:
-        my_file_path = 'resources/alignments/split/'+split+"/"+"deft-p2-amr-r2-alignments-"+split+"-"+data_set+".txt"
+        my_file_path = '../resources/alignments/split/'+split+"/"+"deft-p2-amr-r2-alignments-"+split+"-"+data_set+".txt"
         print("Generating statistics for "+my_file_path)
 
         asg_implementation = SimpleASG(input_no_of_swaps, input_should_rotate)
