@@ -272,6 +272,10 @@ def get_dependency_features(stack_0_idx, stack_1_idx, stack_2_idx, buffer_0_idx,
     :param parser_parameters: collection of model properties
     :return: encoded dependency features
     """
+
+    if parser_parameters.model_parameters.no_dep_features == 0:
+        return []
+
     if parser_parameters.with_enhanced_dep_info:
         dep_0_on_1 = oh_encode_amr_rel(None)
         dep_1_on_0 = oh_encode_amr_rel(None)

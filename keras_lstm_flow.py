@@ -351,6 +351,11 @@ def train(model_name, train_case_name, train_data, test_data, parser_parameters)
     no_dep_features = model_parameters.no_dep_features
     action_set_size = ActionSet.action_set_size()
 
+    if parser_parameters.with_enhanced_dep_info:
+        dep_features_size = model_parameters.no_dep_features * len(__AMR_RELATIONS)
+    else:
+        dep_features_size = model_parameters.no_dep_features * 1
+
     embedding_matrix = word_embeddings_reader.get_embeddings_matrix(model_parameters.embeddings_dim)
 
     model = get_model(embedding_matrix, parser_parameters)
@@ -362,7 +367,7 @@ def train(model_name, train_case_name, train_data, test_data, parser_parameters)
                          no_buffer_tokens + no_stack_tokens:no_buffer_tokens + no_stack_tokens + action_set_size]] + \
                         [x_train_full[:, :,
                          no_buffer_tokens + no_stack_tokens + action_set_size:
-                         no_buffer_tokens + no_stack_tokens + action_set_size + no_dep_features]]
+                         no_buffer_tokens + no_stack_tokens + action_set_size + dep_features_size]]
 
     history = model.fit(x_train_full_part, y_train_full,
                         epochs=model_parameters.train_epochs, batch_size=16, validation_split=0.1,
@@ -515,13 +520,18 @@ def test(model_name, test_case_name, data, parser_parameters):
     no_dep_features = model_parameters.no_dep_features
     action_set_size = ActionSet.action_set_size()
 
+    if parser_parameters.with_enhanced_dep_info:
+        dep_features_size = model_parameters.no_dep_features * len(__AMR_RELATIONS)
+    else:
+        dep_features_size = model_parameters.no_dep_features * 1
+
     x_test_full_part = [x_test_full[:, :, i] for i in range(no_buffer_tokens)] + \
                        [x_test_full[:, :, no_buffer_tokens + i] for i in range(no_stack_tokens)] + \
                        [x_test_full[:, :,
                         no_buffer_tokens + no_stack_tokens: no_buffer_tokens + no_stack_tokens + action_set_size]] + \
                        [x_test_full[:, :,
                         no_buffer_tokens + no_stack_tokens + action_set_size:
-                        no_buffer_tokens + no_stack_tokens + action_set_size + no_dep_features]]
+                        no_buffer_tokens + no_stack_tokens + action_set_size + dep_features_size]]
 
     model_accuracy = model.evaluate(x_test_full_part, y_test_full)
 
