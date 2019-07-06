@@ -3,27 +3,6 @@ import numpy as np
 from amr_util import word_embeddings_processor
 from data_extraction import frameset_parser, word_embeddings_reader
 
-propbank_frames = None
-nombank_frames = None
-
-
-def init_propbank_frames():
-    global propbank_frames
-
-    propbank_frames = frameset_parser.load_frames("propbank")
-
-
-def init_nombank_frames():
-    global nombank_frames
-
-    nombank_frames = frameset_parser.load_frames("nombank")
-
-
-def get_propbank_frame(token):
-    global propbank_frames
-
-    return propbank_frames.get(token, None)
-
 
 def compute_best_roleset(token, token_context, source):
     """
@@ -33,9 +12,7 @@ def compute_best_roleset(token, token_context, source):
     :return: the beset roleset and the matching degree
     """
 
-    global propbank_frames
-
-    token_frameset = get_propbank_frame(token)
+    token_frameset = frameset_parser.get_frameset(token, source)
 
     if token_frameset is not None and len(token_frameset.rolesets):
         similarities = [(r, compute_context_roleset_similarity(token_context, r)) for r in
@@ -79,8 +56,7 @@ if __name__ == "__main__":
     emb_dim = 200
     word_embeddings_reader.init_embeddings_matrix(emb_dim)
 
-    init_propbank_frames()
-    init_nombank_frames()
+    frameset_parser.init_frames()
 
     roleset, sim = compute_best_roleset("run", ["factory"], "propbank")
     print roleset.id, roleset.name, sim

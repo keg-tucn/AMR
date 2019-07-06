@@ -5,6 +5,8 @@ def simplify_word(word):
     try:
         if word != simplify_verb(word):
             return simplify_verb(word)
+        else:
+            return word
     except:
         try:
             if word != simplify_noun(word):
@@ -34,7 +36,12 @@ def is_adjective(word):
     return en.is_adjective(word)
 
 
+def is_adverb(word):
+    return en.is_adverb(word)
+
+
 if __name__ == "__main__":
+    print simplify_word("fellow")
     print simplify_word("particles")
     print simplify_word("negotiated")
     print simplify_word("played")

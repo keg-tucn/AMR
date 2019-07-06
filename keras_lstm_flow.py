@@ -6,9 +6,9 @@ from keras.optimizers import SGD
 from keras.utils import plot_model
 
 from Baseline import reentrancy_restoring
-from amr_util import frameset_matcher, tokenizer_util, keras_plotter
+from amr_util import tokenizer_util, keras_plotter
 from constants import __AMR_RELATIONS
-from data_extraction import dataset_loader, word_embeddings_reader
+from data_extraction import dataset_loader, frameset_parser, word_embeddings_reader
 from definitions import PROJECT_ROOT_DIR, TRAINED_MODELS_DIR, RESULT_METRICS_DIR
 from feature_extraction import feature_vector_generator
 from models.parameters import *
@@ -44,7 +44,7 @@ def tokens_to_sentence(tokens, index_to_word_map):
 
 def init_util_services():
     feature_vector_generator.init_label_binarizers()
-    frameset_matcher.init_propbank_frames()
+    frameset_parser.init_frames()
 
 
 def generate_amr_dicts_files():

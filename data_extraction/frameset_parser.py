@@ -2,10 +2,31 @@ import pickle as js
 from os import path, listdir
 from xml.etree import ElementTree
 
+from deprecated import deprecated
 from tqdm import tqdm
 
 from definitions import *
 from models.frameset import Frameset
+
+propbank_frames = None
+nombank_frames = None
+
+
+def init_frames():
+    init_propbank_frames()
+    init_nombank_frames()
+
+
+def init_propbank_frames():
+    global propbank_frames
+
+    propbank_frames = load_frames("propbank")
+
+
+def init_nombank_frames():
+    global nombank_frames
+
+    nombank_frames = load_frames("nombank")
 
 
 def extract_frames_to_dump_file(source):
@@ -53,6 +74,16 @@ def get_merged_frameset(token):
     return Frameset.merge_framesets(propbank, nombank)
 
 
+def get_frameset(token, source):
+    global propbank_frames, nombank_frames
+
+    if source == "propbank":
+        return propbank_frames.get(token, None)
+    elif source == "nombank":
+        return nombank_frames.get(token, None)
+
+
+@deprecated
 def get_frameset_from_bank(token, source):
     if source == "propbank":
         return get_propbank_frameset(token)
@@ -61,6 +92,7 @@ def get_frameset_from_bank(token, source):
     return None
 
 
+@deprecated
 def get_propbank_frameset(token):
     propbank_path = "%s/%s.xml" % (PROPBANK_FRAMES, token)
     if path.isfile(propbank_path):
@@ -72,6 +104,7 @@ def get_propbank_frameset(token):
         return None
 
 
+@deprecated
 def get_nombank_frameset(token):
     nombank_path = "%s/%s.xml" % (NOMBANK_FRAMES, token)
     if path.isfile(nombank_path):

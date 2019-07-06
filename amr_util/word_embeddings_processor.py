@@ -1,10 +1,12 @@
 import numpy as np
-from nltk.tokenize.stanford import StanfordTokenizer
+from spacy.lang.en import English
+from spacy.tokenizer import Tokenizer
 
 from data_extraction import word_embeddings_reader
-from definitions import STANFORD_POSTAGGER_JAR
 
-tokenizer = StanfordTokenizer(path_to_jar=STANFORD_POSTAGGER_JAR)
+# tokenizer = StanfordTokenizer(path_to_jar=STANFORD_POSTAGGER_JAR)
+nlp = English()
+tokenizer = Tokenizer(nlp.vocab)
 
 
 def compute_cosine_similarity(token_1, token_2):
@@ -59,7 +61,8 @@ def compute_similarity_to_sentence(token, sentence):
     global tokenizer
 
     token_to_token_similarity = []
-    sentence_tokens = tokenizer.tokenize(sentence)
+    # sentence_tokens = tokenizer.tokenize(sentence)
+    sentence_tokens = [token.text.encode("utf-8") for token in nlp(sentence.decode("utf-8"))]
     for sentence_token in sentence_tokens:
         token_to_token_similarity.append(compute_cosine_similarity(token, sentence_token.encode("utf-8")))
     if len(token_to_token_similarity):
@@ -87,14 +90,14 @@ if __name__ == "__main__":
     emb_dim = 200
     word_embeddings_reader.init_embeddings_matrix(emb_dim)
 
-    father = word_embeddings_reader.get_token_embedding_from_reduced("father")
-    mother = word_embeddings_reader.get_token_embedding_from_reduced("mother")
-    ball = word_embeddings_reader.get_token_embedding_from_reduced("ball")
-    crocodile = word_embeddings_reader.get_token_embedding_from_reduced("crocodile")
-    france = word_embeddings_reader.get_token_embedding_from_reduced("france")
-    italy = word_embeddings_reader.get_token_embedding_from_reduced("italy")
-    paris = word_embeddings_reader.get_token_embedding_from_reduced("paris")
-    rome = word_embeddings_reader.get_token_embedding_from_reduced("rome")
+    father = word_embeddings_reader.get_token_embedding_from_full("father")
+    mother = word_embeddings_reader.get_token_embedding_from_full("mother")
+    ball = word_embeddings_reader.get_token_embedding_from_full("ball")
+    crocodile = word_embeddings_reader.get_token_embedding_from_full("crocodile")
+    france = word_embeddings_reader.get_token_embedding_from_full("france")
+    italy = word_embeddings_reader.get_token_embedding_from_full("italy")
+    paris = word_embeddings_reader.get_token_embedding_from_full("paris")
+    rome = word_embeddings_reader.get_token_embedding_from_full("rome")
 
     print "cosine_similarity(father, mother) = %f" % compute_cosine_similarity_vectors(father, mother)
     print "cosine_similarity(ball, crocodile) = %f" % compute_cosine_similarity_vectors(ball, crocodile)
@@ -107,4 +110,4 @@ if __name__ == "__main__":
     print "cosine similarity (woman, mother): %f" % compute_cosine_similarity("woman", "mother")
     print "cosine similarity (make, made): %f" % compute_cosine_similarity("make", "made")
     print "cosine similarity (do, did): %f" % compute_cosine_similarity("do", "did")
-    print "cosine similarity (do, did): %f" % compute_cosine_similarity("do-01", "did")
+    print "cosine similarity (do-01, did): %f" % compute_cosine_similarity("do-01", "did")
