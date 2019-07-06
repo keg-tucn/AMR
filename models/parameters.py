@@ -10,6 +10,14 @@ class ASGParameters:
         self.swap_distance = swap_distance
         self.rotate = rotate
 
+    @classmethod
+    def init_from_dict(cls, params_dict):
+        parameters = ASGParameters()
+        for key in params_dict:
+            setattr(parameters, key, params_dict[key])
+
+        return parameters
+
 
 SIMPLE_ACTION_SET = ["SH", "RL", "RR", "DN", "SW"]
 SIMPLE_WITH_SWAPS_ACTION_SET = ["SH", "RL", "RR", "DN", "SW", "SW_2", "SW_3"]
@@ -67,6 +75,14 @@ class ModelParameters:
         self.dropout = dropout
         self.recurrent_dropout = recurrent_dropout
 
+    @classmethod
+    def init_from_dict(cls, params_dict):
+        parameters = ModelParameters()
+        for key in params_dict:
+            setattr(parameters, key, params_dict[key])
+
+        return parameters
+
 
 class ParserParameters:
     def __init__(self,
@@ -90,3 +106,14 @@ class ParserParameters:
         self.with_reattach = with_reattach
         self.with_gold_concept_labels = with_gold_concept_labels
         self.with_gold_relation_labels = with_gold_relation_labels
+
+    @classmethod
+    def init_from_dict(cls, params_dict):
+        parameters = ParserParameters()
+        for key in params_dict:
+            setattr(parameters, key, params_dict[key])
+
+        parameters.asg_parameters = ASGParameters.init_from_dict(dict(parameters.asg_parameters))
+        parameters.model_parameters = ModelParameters.init_from_dict(dict(parameters.model_parameters))
+
+        return parameters

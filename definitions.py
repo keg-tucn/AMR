@@ -1,5 +1,5 @@
-import os
 import ConfigParser
+import os
 
 PROJECT_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -39,3 +39,5 @@ TRAINED_MODELS_DIR = PROJECT_ROOT_DIR + "/" + config.get("TRAINED_MODELS", "MODE
 
 RESULT_PLOTS_DIR = PROJECT_ROOT_DIR + "/" + config.get("RESULTS", "PLOTS_DIR")
 RESULT_METRICS_DIR = PROJECT_ROOT_DIR + "/" + config.get("RESULTS", "METRICS_DIR")
+
+PARAMETERS_FILE = PROJECT_ROOT_DIR + "/" + config.get("PARAMETERS", "PARAMS_PATH")

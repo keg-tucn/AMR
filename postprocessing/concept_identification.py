@@ -39,4 +39,7 @@ def annotate_node_concepts(node):
         node.label = node_label
 
     for child in node.children:
-        annotate_node_concepts(child[0])
+        if child[1] == "polarity":
+            child[0].label = "-"
+        if child[1] != "name":
+            annotate_node_concepts(child[0])

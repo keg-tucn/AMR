@@ -9,7 +9,7 @@ from Baseline import reentrancy_restoring
 from amr_util import tokenizer_util, keras_plotter
 from constants import __AMR_RELATIONS
 from data_extraction import dataset_loader, frameset_parser, word_embeddings_reader
-from definitions import PROJECT_ROOT_DIR, TRAINED_MODELS_DIR, RESULT_METRICS_DIR
+from definitions import *
 from feature_extraction import feature_vector_generator
 from models.parameters import *
 from postprocessing import action_concept_transfer, action_sequence_reconstruction

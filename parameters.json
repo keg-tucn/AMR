@@ -1,12 +1,12 @@
 {
   "asg_parameters": {
-    "asg_alg": "simple_informed_swap",
+    "asg_alg": "simple",
     "no_swaps": 1,
     "swap_distance": 1,
     "rotate": "false"
   },
   "model_parameters": {
-    "no_stack_tokens": 3,
+    "no_stack_tokens": 1,
     "no_buffer_tokens": 1,
     "no_dep_features": 6,
     "embeddings_dim": 200,
