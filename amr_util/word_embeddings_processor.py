@@ -62,7 +62,7 @@ def compute_similarity_to_sentence(token, sentence):
 
     token_to_token_similarity = []
     # sentence_tokens = tokenizer.tokenize(sentence)
-    sentence_tokens = [token.text.encode("utf-8") for token in nlp(sentence.decode("utf-8"))]
+    sentence_tokens = [t.text.encode("utf-8") for t in nlp(sentence.decode("utf-8"))]
     for sentence_token in sentence_tokens:
         token_to_token_similarity.append(compute_cosine_similarity(token, sentence_token.encode("utf-8")))
     if len(token_to_token_similarity):

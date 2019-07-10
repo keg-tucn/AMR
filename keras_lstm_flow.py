@@ -292,7 +292,7 @@ def get_model(embedding_matrix, parser_parameters):
                   loss="categorical_crossentropy",
                   metrics=["accuracy"])
 
-    # plot_model(model, to_file="model.png")
+    plot_model(model, to_file=PROJECT_ROOT_DIR + "/model.png")
     print model.summary()
 
     return model
