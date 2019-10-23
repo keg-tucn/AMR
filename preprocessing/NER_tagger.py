@@ -34,9 +34,9 @@ class StanfordTagger(TaggerI):
                           'instantiated directly. Did you mean '
                           'StanfordPOSTagger or StanfordNERTagger?')
         self._stanford_jar = find_jar(
-                self._JAR, path_to_jar,
-                searchpath=(), url=_stanford_url,
-                verbose=verbose)
+            self._JAR, path_to_jar,
+            searchpath=(), url=_stanford_url,
+            verbose=verbose)
 
         self._stanford_model = find_file(model_filename,
                                          env_vars=('STANFORD_MODELS',),
@@ -52,11 +52,9 @@ class StanfordTagger(TaggerI):
         A property that returns the command that will be executed.
         """
 
-
     def tag(self, tokens):
         # This function should return list of tuple rather than list of list
         return sum(self.tag_sents([tokens]), [])
-
 
     def tag_sents(self, sentences):
         encoding = self._encoding
@@ -90,8 +88,6 @@ class StanfordTagger(TaggerI):
 
         return self.parse_output(stanpos_output, sentences)
 
-
-
     def parse_output(self, text, sentences=None):
         # Output the tagged sentences
         tagged_sentences = []
@@ -102,8 +98,6 @@ class StanfordTagger(TaggerI):
                 sentence.append((''.join(word_tags[:-1]), word_tags[-1]))
             tagged_sentences.append(sentence)
         return tagged_sentences
-
-
 
 
 class StanfordPOSTagger(StanfordTagger):
@@ -119,7 +113,8 @@ class StanfordPOSTagger(StanfordTagger):
         >>> from nltk.tag import StanfordPOSTagger
         >>> st = StanfordPOSTagger('english-bidirectional-distsim.tagger')
         >>> st.tag('What is the airspeed of an unladen swallow ?'.split())
-        [('What', 'WP'), ('is', 'VBZ'), ('the', 'DT'), ('airspeed', 'NN'), ('of', 'IN'), ('an', 'DT'), ('unladen', 'JJ'), ('swallow', 'VB'), ('?', '.')]
+        [('What', 'WP'), ('is', 'VBZ'), ('the', 'DT'), ('airspeed', 'NN'), ('of', 'IN'),
+        ('an', 'DT'), ('unladen', 'JJ'), ('swallow', 'VB'), ('?', '.')]
     """
     _SEPARATOR = '_'
     _JAR = 'stanford-postagger.jar'
@@ -133,7 +128,6 @@ class StanfordPOSTagger(StanfordTagger):
                 '-model', self._stanford_model, '-textFile',
                 self._input_file_path, '-tokenize', 'false',
                 '-outputFormatOptions', 'keepEmptySentences']
-
 
 
 class StanfordNERTagger(StanfordTagger):

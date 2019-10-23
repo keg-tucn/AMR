@@ -1,8 +1,8 @@
-
 class DataFiltering:
     """
     data: given as a list of (sentence,amr) pairs
     """
+
     def __init__(self, data):
         self.filters = []
         self.data = data
@@ -12,16 +12,16 @@ class DataFiltering:
 
     def execute(self):
         new_data = []
-        for (sentence,amr,custom_amr,amr_id) in self.data:
+        for (sentence, amr, custom_amr, amr_id) in self.data:
 
             pass_filters = True
 
             for f in self.filters:
 
-                if not f.is_ok(sentence,amr,custom_amr,amr_id):
+                if not f.is_ok(sentence, amr, custom_amr, amr_id):
                     pass_filters = False
                     break
 
             if pass_filters:
-                new_data.append((sentence,amr,custom_amr,amr_id))
+                new_data.append((sentence, amr, custom_amr, amr_id))
         return new_data

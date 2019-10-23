@@ -1,0 +1,15 @@
+With Stanford Parser
+Data length: 10217
+Total number of dependencies between tokens: 51602
+Total number of dependencies between tokens that have an AMR relation: 14507
+Percentage of mapped dependency relations: 0.281133
+Percentage of direct dependencies: 0.115393
+Percentage of inverse dependencies: 0.884607
+
+With SpaCy Parser
+Data length: 10217
+Total number of dependencies between tokens: 86217
+Total number of dependencies between tokens that have an AMR relation: 12357
+Percentage of mapped dependency relations: 0.143324
+Percentage of direct dependencies: 0.121955
+Percentage of inverse dependencies: 0.878045 

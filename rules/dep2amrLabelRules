@@ -37,8 +37,8 @@ vmod	:mod	---
 mwe	:NONE	---
 mark	:NONE	---
 advmod	:mod	---
-neg	:polarity-	---
-rcmod	:mod	???	
+neg	:polarity	---
+rcmod	:mod	???
 quantmod	:time	---
 nn	:NONE	---
 npadvmod	:mod	---
@@ -53,7 +53,7 @@ prt	:NONE	---
 parataxis	:NONE	---
 punct	:NONE	---
 ref	:NONE	---
-sdep	:ARG0	??? 
+sdep	:ARG0	???
 xsubj	:ARG0	---
 
 discourse	:NONE	---

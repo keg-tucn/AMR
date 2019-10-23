@@ -2,8 +2,8 @@ from operator import itemgetter
 
 import dynet as dy
 
-from amr_util.Node import Node
-import amr_util.Actions as act
+from models.node import Node
+import models.actions as act
 import logging
 
 WORD_DIM = 64
@@ -17,6 +17,7 @@ RR = 2
 DN = 3
 SW = 4
 NUM_ACTIONS = len(act.acts)
+
 
 # TODO: think of training  a model for each action and have an ensamble decide the next one ?
 
@@ -32,6 +33,7 @@ def conv_actions(actions):
 class TransitionParser:
     def __init__(self, model, vocab):
         self.vocab = vocab
+
         self.pW_comp = model.add_parameters((LSTM_DIM, LSTM_DIM * 2))
         self.pb_comp = model.add_parameters((LSTM_DIM,))
         self.pW_s2h = model.add_parameters((LSTM_DIM, LSTM_DIM * 2))
@@ -55,55 +57,70 @@ class TransitionParser:
 
     # returns an expression of the loss for the sequence of actions
     # (that is, the oracle_actions if present or the predicted sequence otherwise)
-    def parse(self, tokens, oracle_actions=None, concepts_metadata = None, use_model_predictions = False):
-        logging.debug("Parsing with model predictions %s: %s with oracle %s concepts_metadata %s", use_model_predictions, self.preety_tokens(tokens), oracle_actions, concepts_metadata)
+    def parse(self, tokens, oracle_actions=None, concepts_metadata=None, use_model_predictions=False):
+        logging.debug("Parsing with model predictions %s: %s with oracle %s concepts_metadata %s",
+                      use_model_predictions, self.preety_tokens(tokens), oracle_actions, concepts_metadata)
+
         dy.renew_cg()
+
         if oracle_actions:
             oracle_actions = list(oracle_actions)
             oracle_actions.reverse()
+
         stack_top = self.stackRNN.initial_state()
-        toks = list(tokens)
-        toks.reverse()
+        tokens = list(tokens)
+        tokens.reverse()
         stack = []
+
         cur = self.buffRNN.initial_state()
         buffer = []
         empty_buffer_emb = dy.parameter(self.pempty_buffer_emb)
         empty_stack_emb = dy.parameter(self.pempty_stack_emb)
+
         weight_comp = dy.parameter(self.pW_comp)
         bias_comp = dy.parameter(self.pb_comp)
         weight_s2h = dy.parameter(self.pW_s2h)
         bias_s2h = dy.parameter(self.pb_s2h)
         weight_act = dy.parameter(self.pW_act)
         bias_act = dy.parameter(self.pb_act)
+
         losses = []
         good_predictions = []
         predicted_actions = []
         invalid_actions = 0
-        for tok in toks:
+
+        for tok in tokens:
             tok_embedding = self.WORDS_LOOKUP[tok]
             cur = cur.add_input(tok_embedding)
-            buffer.append((cur.output(), tok_embedding,  self.convert_token(tok)))
+            buffer.append((cur.output(), tok_embedding, self.convert_token(tok)))
 
         while not (len(stack) <= 1 and len(buffer) == 0):
+
             # based on parser state, get valid actions
             valid_actions = []
-            if len(buffer) > 0:  # can only reduce & delete if elements in buffer
+            # can only reduce & delete if elements in buffer
+            if len(buffer) > 0:
                 valid_actions += [SH, DN]
-            if len(stack) >= 2:  # can only shift if 2 elements on stack
+            # can only shift if 2 elements on stack
+            if len(stack) >= 2:
                 valid_actions += [RL, RR]
+            # can only swap if we have at least 3 elements on the stack
+            # and the previous action is not also a swap
             if len(stack) >= 3 and (predicted_actions and predicted_actions[-1] != SW):
-                valid_actions += [SW]  # can only swap if we have at least 3 elements on the stack. don't predict 2 consecutive swaps
+                valid_actions += [SW]
 
             logging.info("valid actions %s", conv_actions(valid_actions))
             # compute probability of each of the actions and choose an action
             # either from the oracle or if there is no oracle, based on the model
             if not valid_actions:
                 logging.warn("stack" + str(len(stack)) + "buffer" + str(len(buffer)))
+
             action = valid_actions[0]
             predicted_action = action
             label = None
             concept_key = None
             log_probs = None
+
             if len(valid_actions) > 1:
                 buffer_embedding = buffer[-1][0] if buffer else empty_buffer_emb
                 stack_embedding = stack[-1][0].output() if stack else empty_stack_emb  # the stack has something here
@@ -115,6 +132,7 @@ class TransitionParser:
                 if oracle_actions is None:
                     logging.warn("no oracle! using predicted action %s", predicted_action)
                     action = predicted_action
+
             if oracle_actions is not None:
                 if oracle_actions:
                     oracle_action = oracle_actions.pop()
@@ -182,4 +200,5 @@ class TransitionParser:
             logging.info('ROOT --> {0}'.format(head))
         # print("losses" + str(map(lambda x: x.scalar_value(), losses)))
         # print(head.preety_print())
-        return -dy.esum(losses) if losses else None, head, sum(good_predictions), len(good_predictions), predicted_actions, invalid_actions
+        return -dy.esum(losses) if losses else None, head, sum(good_predictions), len(
+            good_predictions), predicted_actions, invalid_actions

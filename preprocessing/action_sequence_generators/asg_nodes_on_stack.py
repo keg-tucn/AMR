@@ -1,11 +1,8 @@
 import copy
-import amr_util.Actions as act
-import logging
 
-# should def move the exceptions somewhere else
-from preprocessing.ActionSequenceGenerator import SwapException
-from preprocessing.ActionSequenceGenerator import TokenOnStackException
-from preprocessing.ActionSequenceGenerator import RotateException
+import models.actions as act
+from models.amr_data import CustomizedAMR
+
 
 # TO DO: keep on stack (variable,index) pairs
 
@@ -14,7 +11,7 @@ class NodesOnStackASG:
 
     def __init__(self, no_of_swaps):
         self.no_of_swaps = no_of_swaps
-        self.amr_graph = {}
+        self.amr_graph = CustomizedAMR()
         self.buffer = []
         self.buffer_indices = []
         self.stack = []
@@ -89,7 +86,7 @@ class NodesOnStackASG:
         top = len(self.stack) - 1
 
         first_element_stack = self.stack[top]
-        second_element_stack = self.stack[top-1]
+        second_element_stack = self.stack[top - 1]
         node_var_first = first_element_stack[0]
         node_var_second = second_element_stack[0]
 
@@ -109,7 +106,7 @@ class NodesOnStackASG:
     def reduce_left(self):
         top = len(self.stack) - 1
         first_element_stack = self.stack[top]
-        second_element_stack = self.stack[top-1]
+        second_element_stack = self.stack[top - 1]
         node_var_first = first_element_stack[0]
         node_var_second = second_element_stack[0]
 
@@ -147,7 +144,7 @@ class NodesOnStackASG:
         if len(self.buffer_indices) != 0:
             self.current_token = self.buffer_indices[0]
 
-    def brk(self, no_of_nodes):
+    def brk(self, no_nodes):
         self.stack.append(self.current_token)
         tokens_to_concept = self.amr_graph.tokens_to_concepts_dict[self.current_token]
         self.actions.append(act.AMRAction("BRK", tokens_to_concept[1], tokens_to_concept[0]))
@@ -157,7 +154,7 @@ class NodesOnStackASG:
 
     def delete(self):
         self.actions.append(act.AMRAction.build("DN"))
-        i=self.buffer_indices.pop(0)
+        i = self.buffer_indices.pop(0)
         self.removed_indices.append(i)
         if len(self.buffer_indices) != 0:
             self.current_token = self.buffer_indices[0]
@@ -183,5 +180,5 @@ class NodesOnStackASG:
             if child in list_of_children:
                 amr_graph.relations_dict[(node, parent)][1].remove(child)
 
-        except Exception as e:
+        except Exception as _:
             raise Exception("Cannot remove child")

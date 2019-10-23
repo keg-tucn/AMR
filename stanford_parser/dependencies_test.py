@@ -11,7 +11,3 @@ class TestCase(unittest.TestCase):
         self.assertEqual(hierarchy.isa("dep", "dep"), False)
 
         self.assertEqual(hierarchy.isa("predet", "mod"), True)
-
-        
-        
-    

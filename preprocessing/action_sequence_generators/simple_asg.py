@@ -1,13 +1,10 @@
-from asg import ASG
 import logging
-import amr_util.Actions as act
 
-# should def move the exceptions somewhere else
-from preprocessing.ActionSequenceGenerator import SwapException
-from preprocessing.ActionSequenceGenerator import TokenOnStackException
-from preprocessing.ActionSequenceGenerator import RotateException
+from asg import ASG
+from asg_exceptions import *
 
-""" This is the deterministic version of the algorithm for action sequence generation
+""" 
+    This is the deterministic version of the algorithm for action sequence generation
     as described in Silviana Campean's thesis
     (the code being refactored to use the methods in the ASG class)
 """
@@ -16,7 +13,7 @@ from preprocessing.ActionSequenceGenerator import RotateException
 class SimpleASG(ASG):
 
     def __init__(self, no_of_swaps, should_rotate):
-        ASG.__init__(self,no_of_swaps)
+        ASG.__init__(self, no_of_swaps)
         self.should_rotate = should_rotate
 
     def generate_action_sequence(self, amr_graph, sentence):
@@ -82,4 +79,3 @@ class SimpleASG(ASG):
                     else:
                         self.delete()
         return self.actions
-

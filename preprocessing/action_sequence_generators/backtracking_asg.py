@@ -1,8 +1,5 @@
 from asg import ASG
-import amr_util.Actions as act
-import copy
-import sys
-import logging
+
 """
 ASG: Action sequence generator
 """
@@ -11,7 +8,7 @@ ASG: Action sequence generator
 class BacktrackingASG(ASG):
 
     def __init__(self, no_of_swaps, max_depth):
-        ASG.__init__(self,no_of_swaps)
+        ASG.__init__(self, no_of_swaps)
         self.max_depth = max_depth
 
     def generate_action_sequence(self, amr_graph, sentence):
@@ -87,7 +84,7 @@ class BacktrackingASG(ASG):
                 self.undo_shift()
 
             # try to swap
-            for i in range(1, self.no_of_swaps+1):
+            for i in range(1, self.no_of_swaps + 1):
                 if self.can_swap_n(i):
                     self.swap_n(i)
                     done = self.generate_action_sequence_recursive(depth)
@@ -105,7 +102,7 @@ class BacktrackingASG(ASG):
             return False
 
         # check I haven't already performed this swap (like, just before)
-        if no_of_actions_done>0:
+        if no_of_actions_done > 0:
             last_added_action = self.actions[-1]
             action_to_be_performed = BacktrackingASG._get_swap_action_name(n)
             if last_added_action.action == action_to_be_performed:
@@ -115,7 +112,7 @@ class BacktrackingASG(ASG):
         if no_of_actions_done >= self.no_of_swaps:
             top_actions = len(self.actions) - 1
             all_swaps = True
-            for i in range(top_actions, top_actions - self.no_of_swaps,-1):
+            for i in range(top_actions, top_actions - self.no_of_swaps, -1):
                 action = self.actions[i]
                 action_name = self.actions[i].action
                 all_swaps = all_swaps and BacktrackingASG._is_swap_action(action_name)
@@ -138,7 +135,7 @@ class BacktrackingASG(ASG):
         second_parent = self.amr_graph.parent_dict[node_var_second]
         BacktrackingASG._add_child(self.amr_graph, node_var_second, second_parent, node_var_first)
 
-        #delete action from actions
+        # delete action from actions
         self.actions.pop()
 
     def undo_reduce_left(self):
@@ -146,7 +143,7 @@ class BacktrackingASG(ASG):
         # add the indice back on stack
         index = self.removed_indices.pop()
         stack_length = len(self.stack)
-        self.stack.insert(stack_length-1,index)
+        self.stack.insert(stack_length - 1, index)
 
         # add back the kid
         top = len(self.stack) - 1
@@ -169,12 +166,12 @@ class BacktrackingASG(ASG):
 
     def undo_shift(self):
         self.current_token = self.stack.pop()
-        self.buffer_indices.insert(0,self.current_token)
+        self.buffer_indices.insert(0, self.current_token)
         self.actions.pop()
 
     def undo_delete(self):
         self.actions.pop()
-        self.buffer_indices.insert(0,self.current_token)
+        self.buffer_indices.insert(0, self.current_token)
         self.current_token = self.removed_indices.pop()
 
     @staticmethod
@@ -284,6 +281,7 @@ class BacktrackingASGFixedReduce(BacktrackingASG):
                             self.undo_swap_n(i)
 
         return False
+
 
 """
 This is a "merge" between BacktrackingASGInformedSwap and SimpleInformedSwapASG
@@ -396,4 +394,3 @@ class BacktrackingASGInformedSwap(BacktrackingASG):
             return True
         else:
             return False
-

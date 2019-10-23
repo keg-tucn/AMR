@@ -40,6 +40,7 @@ DEBUG_LOG = sys.stderr
 # value: the matching triple count
 match_triple_dict = {}
 
+
 def build_arg_parser():
     """
     Build an argument parser using argparse. Use it when python version is 2.7 or later.
@@ -57,9 +58,12 @@ def build_arg_parser():
                              'instead of a single document-level smatch score (Default: false)')
     parser.add_argument('--pr', action='store_true', default=False,
                         help="Output precision and recall as well as the f-score. Default: false")
-    parser.add_argument('--justinstance', action='store_true', default=False, help="just pay attention to matching instances")
-    parser.add_argument('--justattribute', action='store_true', default=False, help="just pay attention to matching attributes")
-    parser.add_argument('--justrelation', action='store_true', default=False, help="just pay attention to matching relations")
+    parser.add_argument('--justinstance', action='store_true', default=False,
+                        help="just pay attention to matching instances")
+    parser.add_argument('--justattribute', action='store_true', default=False,
+                        help="just pay attention to matching attributes")
+    parser.add_argument('--justrelation', action='store_true', default=False,
+                        help="just pay attention to matching relations")
 
     return parser
 
@@ -75,17 +79,22 @@ def build_arg_parser2():
                       help='Two files containing AMR pairs. AMRs in each file are ' \
                            'separated by a single blank line. This option is required.')
     parser.add_option("-r", "--restart", dest="r", type="int", help='Restart number (Default: 4)')
-    parser.add_option('--significant', dest="significant", type="int", default=2, help='significant digits to output (default: 2)')
+    parser.add_option('--significant', dest="significant", type="int", default=2,
+                      help='significant digits to output (default: 2)')
     parser.add_option("-v", "--verbose", action='store_true', dest="v", help='Verbose output (Default:False)')
-    parser.add_option("--vv", "--veryverbose", action='store_true', dest="vv", help='Very Verbose output (Default:False)')
+    parser.add_option("--vv", "--veryverbose", action='store_true', dest="vv",
+                      help='Very Verbose output (Default:False)')
     parser.add_option("--ms", "--multiple_score", action='store_true', dest="ms",
                       help='Output multiple scores (one AMR pair a score) instead of ' \
                            'a single document-level smatch score (Default: False)')
     parser.add_option('--pr', "--precision_recall", action='store_true', dest="pr",
                       help="Output precision and recall as well as the f-score. Default: false")
-    parser.add_option('--justinstance', action='store_true', default=False, help="just pay attention to matching instances")
-    parser.add_option('--justattribute', action='store_true', default=False, help="just pay attention to matching attributes")
-    parser.add_option('--justrelation', action='store_true', default=False, help="just pay attention to matching relations")
+    parser.add_option('--justinstance', action='store_true', default=False,
+                      help="just pay attention to matching instances")
+    parser.add_option('--justattribute', action='store_true', default=False,
+                      help="just pay attention to matching attributes")
+    parser.add_option('--justrelation', action='store_true', default=False,
+                      help="just pay attention to matching relations")
     parser.set_defaults(r=4, v=False, ms=False, pr=False)
     return parser
 
@@ -114,7 +123,8 @@ def get_best_match(instance1, attribute1, relation1,
     # weight_dict is a dictionary that maps a pair of node
     (candidate_mappings, weight_dict) = compute_pool(instance1, attribute1, relation1,
                                                      instance2, attribute2, relation2,
-                                                     prefix1, prefix2, doinstance=doinstance, doattribute=doattribute, dorelation=dorelation)
+                                                     prefix1, prefix2, doinstance=doinstance, doattribute=doattribute,
+                                                     dorelation=dorelation)
     if veryVerbose:
         print >> DEBUG_LOG, "Candidate mappings:"
         print >> DEBUG_LOG, candidate_mappings
@@ -158,12 +168,14 @@ def get_best_match(instance1, attribute1, relation1,
             best_match_num = match_num
     return best_mapping, best_match_num
 
+
 def normalize(item):
     """
     lowercase and remove quote signifiers from items that are about to be compared
     """
     item = item.lower().rstrip('_')
     return item
+
 
 def compute_pool(instance1, attribute1, relation1,
                  instance2, attribute2, relation2,
@@ -201,7 +213,7 @@ def compute_pool(instance1, attribute1, relation1,
             for j in range(0, len(instance2)):
                 # if both triples are instance triples and have the same value
                 if normalize(instance1[i][0]) == normalize(instance2[j][0]) and \
-                   normalize(instance1[i][2]) == normalize(instance2[j][2]):
+                        normalize(instance1[i][2]) == normalize(instance2[j][2]):
                     # get node index by stripping the prefix
                     node1_index = int(instance1[i][1][len(prefix1):])
                     node2_index = int(instance2[j][1][len(prefix2):])
@@ -218,7 +230,7 @@ def compute_pool(instance1, attribute1, relation1,
             for j in range(0, len(attribute2)):
                 # if both attribute relation triple have the same relation name and value
                 if normalize(attribute1[i][0]) == normalize(attribute2[j][0]) \
-                   and normalize(attribute1[i][2]) == normalize(attribute2[j][2]):
+                        and normalize(attribute1[i][2]) == normalize(attribute2[j][2]):
                     node1_index = int(attribute1[i][1][len(prefix1):])
                     node2_index = int(attribute2[j][1][len(prefix2):])
                     candidate_mapping[node1_index].add(node2_index)
@@ -328,7 +340,7 @@ def smart_init_mapping(candidate_mapping, instance1, instance2):
                 result[i] = candidates[rid]
                 break
     return result
-        
+
 
 def random_init_mapping(candidate_mapping):
     """
@@ -365,7 +377,7 @@ def random_init_mapping(candidate_mapping):
             result.append(-1)
     return result
 
- 
+
 def compute_match(mapping, weight_dict):
     """
     Given a node mapping, compute match number based on weight_dict.
@@ -415,7 +427,7 @@ def compute_match(mapping, weight_dict):
         print >> DEBUG_LOG, "match computing complete, result:", match_num
     # update match_triple_dict
     match_triple_dict[tuple(mapping)] = match_num
-    return match_num  
+    return match_num
 
 
 def move_gain(mapping, node_id, old_id, new_id, weight_dict, match_num):
@@ -583,7 +595,7 @@ def get_best_gain(mapping, candidate_mappings, weight_dict, instance_len, cur_ma
                     use_swap = False
     # compute swap gain
     for i, m in enumerate(mapping):
-        for j in range(i+1, len(mapping)):
+        for j in range(i + 1, len(mapping)):
             m2 = mapping[j]
             # swap operation (i, m) (j, m2) -> (i, m2) (j, m)
             # j starts from i+1, to avoid duplicate swap
@@ -701,18 +713,18 @@ def main(arguments):
     if arguments.pr:
         pr_flag = True
     # optionally turn off some of the node comparison
-    doinstance=True
-    doattribute=True
-    dorelation=True
+    doinstance = True
+    doattribute = True
+    dorelation = True
     if arguments.justinstance:
-        doattribute=False
-        dorelation=False
+        doattribute = False
+        dorelation = False
     if arguments.justattribute:
-        doinstance=False
-        dorelation=False
+        doinstance = False
+        dorelation = False
     if arguments.justrelation:
-        doinstance=False
-        doattribute=False
+        doinstance = False
+        doattribute = False
     # matching triple number
     total_match_num = 0
     # triple number in test file
@@ -779,7 +791,8 @@ def main(arguments):
             print >> DEBUG_LOG, relation2
         (best_mapping, best_match_num) = get_best_match(instance1, attributes1, relation1,
                                                         instance2, attributes2, relation2,
-                                                        prefix1, prefix2, doinstance=doinstance, doattribute=doattribute, dorelation=dorelation)
+                                                        prefix1, prefix2, doinstance=doinstance,
+                                                        doattribute=doattribute, dorelation=dorelation)
         if verbose:
             print >> DEBUG_LOG, "best match number", best_match_num
             print >> DEBUG_LOG, "best node mapping", best_mapping
@@ -801,11 +814,11 @@ def main(arguments):
             (precision, recall, best_f_score) = compute_f(best_match_num,
                                                           test_triple_num,
                                                           gold_triple_num)
-            #print "Sentence", sent_num
+            # print "Sentence", sent_num
             if pr_flag:
-                print "Precision: "+floatdisplay % precision
-                print "Recall: "+floatdisplay % recall
-            print "F-score: "+floatdisplay % best_f_score
+                print "Precision: " + floatdisplay % precision
+                print "Recall: " + floatdisplay % recall
+            print "F-score: " + floatdisplay % best_f_score
         total_match_num += best_match_num
         total_test_num += test_triple_num
         total_gold_num += gold_triple_num
@@ -820,11 +833,12 @@ def main(arguments):
     if single_score:
         (precision, recall, best_f_score) = compute_f(total_match_num, total_test_num, total_gold_num)
         if pr_flag:
-            print "Precision: "+floatdisplay % precision
-            print "Recall: "+floatdisplay % recall
-        print "F-score: "+floatdisplay % best_f_score
+            print "Precision: " + floatdisplay % precision
+            print "Recall: " + floatdisplay % recall
+        print "F-score: " + floatdisplay % best_f_score
     args.f[0].close()
     args.f[1].close()
+
 
 if __name__ == "__main__":
     parser = None
@@ -837,6 +851,7 @@ if __name__ == "__main__":
     # use optparse if python version is 2.5 or 2.6
     if sys.version_info[1] < 7:
         import optparse
+
         if len(sys.argv) == 1:
             print >> ERROR_LOG, "No argument given. Please run smatch.py -h \
             to see the argument description."
@@ -850,7 +865,7 @@ if __name__ == "__main__":
                                  see the argument description."
             exit(1)
         # assert there are 2 file names following -f.
-        assert(len(args.f) == 2)
+        assert (len(args.f) == 2)
         for file_path in args.f:
             if not os.path.exists(file_path):
                 print >> ERROR_LOG, "Given file", args.f[0], "does not exist"
@@ -861,6 +876,7 @@ if __name__ == "__main__":
     #  use argparse if python version is 2.7 or later
     else:
         import argparse
+
         parser = build_arg_parser()
         args = parser.parse_args()
     main(args)

@@ -1,29 +1,30 @@
 import copy
 import re
 from operator import itemgetter
-from amr_util.Node import Node
+
+from models.node import Node
 
 
 def replace_date_entities(amr, sentence):
     amr_copy = copy.deepcopy(amr)
 
-    date_rels = ['calendar',
-                 'century',
-                 'day',
-                 'dayperiod',
-                 'decade',
-                 'month',
-                 'quant',
-                 'quarter',
-                 'season',
-                 'time',
-                 'time-of',
-                 'timezone',
-                 'unit',
-                 'weekday',
-                 'year']
+    date_rels = ["calendar",
+                 "century",
+                 "day",
+                 "dayperiod",
+                 "decade",
+                 "month",
+                 "quant",
+                 "quarter",
+                 "season",
+                 "time",
+                 "time-of",
+                 "timezone",
+                 "unit",
+                 "weekday",
+                 "year"]
     date_entities = [k for k in amr_copy.keys() if k in amr_copy.node_to_concepts.keys() and
-                     amr_copy.node_to_concepts[k] == 'date-entity']
+                     amr_copy.node_to_concepts[k] == "date-entity"]
 
     if len(date_entities) == 0:
         return amr, sentence, []
@@ -37,7 +38,7 @@ def replace_date_entities(amr, sentence):
         for op_rel in op_rel_list:
             if op_rel in date_rels:
                 child = op_rel_list[op_rel][0]
-                # if it's not in node_to_tokens, all good
+                # if it"s not in node_to_tokens, all good
                 if child not in amr_copy.node_to_concepts.keys():
                     literals.append(child)
                     relations.append(op_rel)
@@ -81,7 +82,7 @@ def replace_date_entities(amr, sentence):
                   [amr_copy.node_to_concepts[date_entity[0]]] +
                   tokens[(span_max - total_displacement + 1):]][0]
         total_displacement = total_displacement + span_max - span_min
-    sentence_copy = ' '.join(t for t in tokens)
+    sentence_copy = " ".join(t for t in tokens)
     return amr_copy, sentence_copy, date_entities
 
 
@@ -116,7 +117,8 @@ def replace_named_entities(amr, sentence):
     for literals_triplet in literals_triplets:
         literals_list = literals_triplet[2]
         tokens = [int(amr_copy.node_to_tokens[literal][0][0]) for literal in literals_list]
-        named_entities.append((literals_triplet[0], literals_triplet[1], literals_triplet[2], min(tokens), max(tokens), literals_triplet[3]))
+        named_entities.append((literals_triplet[0], literals_triplet[1], literals_triplet[2], min(tokens), max(tokens),
+                               literals_triplet[3]))
 
     # Remove name vars from node_to_concepts
     name_variables = [n[1] for n in named_entities]
@@ -165,7 +167,7 @@ def replace_named_entities(amr, sentence):
                   [amr_copy.node_to_concepts[named_entity[0]]] +
                   tokens[(span_max - total_displacement + 1):]][0]
         total_displacement = total_displacement + span_max - span_min
-    sentence_copy = ' '.join(t for t in tokens)
+    sentence_copy = " ".join(t for t in tokens)
     return amr_copy, sentence_copy, named_entities
 
 
@@ -174,12 +176,12 @@ def replace_temporal_quantities(amr, sentence):
 
     # Find all the "temporal-quantity" nodes.
     temporal_quantity_nodes = [k for k in amr_copy if k in amr_copy.node_to_concepts
-                               and amr_copy.node_to_concepts[k] == 'temporal-quantity']
+                               and amr_copy.node_to_concepts[k] == "temporal-quantity"]
 
     # Find the "quant" and "unit" nodes corresponding to the temporal quantity.
-    quant_unit_tokens = [(k, amr_copy[k]['quant'][0], amr_copy[k]['unit'][0])
-                         if 'quant' in amr_copy[k] and 'unit' in amr_copy[k]
-                         else (k, '', '')
+    quant_unit_tokens = [(k, amr_copy[k]["quant"][0], amr_copy[k]["unit"][0])
+                         if "quant" in amr_copy[k] and "unit" in amr_copy[k]
+                         else (k, "", "")
                          for k in temporal_quantity_nodes]
 
     quant_unit_tokens_align = [(t[0], t[1], t[2],
@@ -187,7 +189,7 @@ def replace_temporal_quantities(amr, sentence):
                                 int(amr_copy.node_to_tokens[t[2]][0]))
                                if t[1] in amr_copy.node_to_tokens and
                                   t[2] in amr_copy.node_to_tokens
-                               else (t, '', '', -1, -1)
+                               else (t, "", "", -1, -1)
                                for t in quant_unit_tokens]
 
     for t in quant_unit_tokens_align:
@@ -196,8 +198,8 @@ def replace_temporal_quantities(amr, sentence):
 
         else:
             if not (abs(t[3] - t[4]) == 1 or
-                        (abs(t[3] - t[4]) == 2
-                         and sentence.split(' ')[max(t[3], t[4]) - 1] == '@-@')):
+                    (abs(t[3] - t[4]) == 2
+                     and sentence.split(" ")[max(t[3], t[4]) - 1] == "@-@")):
                 raise ValueError("Quant and unit not consecutive or separated by @-@ for sentence %s" % sentence)
     # Remove units from node_to_concepts
     units = [t[2] for t in quant_unit_tokens_align]
@@ -243,7 +245,7 @@ def replace_temporal_quantities(amr, sentence):
                   [amr_copy.node_to_concepts[temporal_quantity[0]]] +
                   tokens[(span_max - total_displacement + 1):]][0]
         total_displacement = total_displacement + span_max - span_min
-    sentence_copy = ' '.join(t for t in tokens)
+    sentence_copy = " ".join(t for t in tokens)
     return amr_copy, sentence_copy, quant_unit_tokens_align
 
 
@@ -252,15 +254,15 @@ def replace_quantities_default(amr, sentence, quantities):
 
     # Find all the "quantity" nodes.
     quantity_nodes = [k for k in amr_copy if k in amr_copy.node_to_concepts
-                               and amr_copy.node_to_concepts[k] in quantities]
+                      and amr_copy.node_to_concepts[k] in quantities]
 
     if len(quantity_nodes) == 0:
         return amr, sentence, []
 
     # Find the "quant" and "unit" nodes corresponding to the temporal quantity.
-    quant_unit_tokens = [(k, amr_copy[k]['quant'][0], amr_copy[k]['unit'][0])
-                         if 'quant' in amr_copy[k] and 'unit' in amr_copy[k]
-                         else (k, '', '')
+    quant_unit_tokens = [(k, amr_copy[k]["quant"][0], amr_copy[k]["unit"][0])
+                         if "quant" in amr_copy[k] and "unit" in amr_copy[k]
+                         else (k, "", "")
                          for k in quantity_nodes]
 
     quant_unit_tokens_align = [(t[0], t[1], t[2],
@@ -268,7 +270,7 @@ def replace_quantities_default(amr, sentence, quantities):
                                 int(amr_copy.node_to_tokens[t[2]][0]))
                                if t[1] in amr_copy.node_to_tokens and
                                   t[2] in amr_copy.node_to_tokens
-                               else (t, '', '', -1, -1)
+                               else (t, "", "", -1, -1)
                                for t in quant_unit_tokens]
 
     for t in quant_unit_tokens_align:
@@ -277,8 +279,8 @@ def replace_quantities_default(amr, sentence, quantities):
 
         else:
             if not (abs(t[3] - t[4]) == 1 or
-                        (abs(t[3] - t[4]) == 2
-                         and sentence.split(' ')[max(t[3], t[4]) - 1] == '@-@')):
+                    (abs(t[3] - t[4]) == 2
+                     and sentence.split(" ")[max(t[3], t[4]) - 1] == "@-@")):
                 raise ValueError("Quant and unit not consecutive or separated by @-@ for sentence %s" % sentence)
     # Remove units from node_to_concepts
     units = [t[2] for t in quant_unit_tokens_align]
@@ -309,7 +311,7 @@ def replace_quantities_default(amr, sentence, quantities):
 
     # Add node_to_tokens for the temporal quantities with token as the "min" token spanned by the quantity and unit
     quantity_spans = [(t[0], min(t[3], t[4]), max(t[3], t[4]))
-                               for t in quant_unit_tokens_align]
+                      for t in quant_unit_tokens_align]
     quantity_spans = sorted(quantity_spans, key=itemgetter(1))
 
     tokens = sentence.split(" ")
@@ -326,7 +328,7 @@ def replace_quantities_default(amr, sentence, quantities):
                   [amr_copy.node_to_concepts[quantity[0]]] +
                   tokens[(span_max - total_displacement + 1):]][0]
         total_displacement = total_displacement + span_max - span_min
-    sentence_copy = ' '.join(t for t in tokens)
+    sentence_copy = " ".join(t for t in tokens)
     return amr_copy, sentence_copy, quant_unit_tokens_align
 
 
@@ -334,14 +336,15 @@ def replace_have_org_role(amr, relation_to_bubble_up):
     amr_copy = copy.deepcopy(amr)
 
     # get the unaligned have-org-role-91 nodes which have an ARG1 child, i.e. they can be replaced
-    have_org_role_nodes = [k for k in amr_copy.node_to_concepts if amr_copy.node_to_concepts[k] == 'have-org-role-91'
+    have_org_role_nodes = [k for k in amr_copy.node_to_concepts if amr_copy.node_to_concepts[k] == "have-org-role-91"
                            and k not in amr_copy.node_to_tokens
                            and amr_copy[k]
                            and relation_to_bubble_up in amr_copy[k]]
     if len(have_org_role_nodes) == 0:
         return amr, []
 
-    amr_copy.node_to_concepts = dict((k, v) for k, v in amr_copy.node_to_concepts.iteritems() if k not in have_org_role_nodes)
+    amr_copy.node_to_concepts = dict(
+        (k, v) for k, v in amr_copy.node_to_concepts.iteritems() if k not in have_org_role_nodes)
     for h in have_org_role_nodes:
         node = amr_copy.pop(h)
         new_node = node[relation_to_bubble_up]

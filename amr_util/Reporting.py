@@ -22,4 +22,6 @@ class AMRResult:
         self.smatch_result = smatch_result
 
     def __str__(self):
-        return "%s,%d,%s,%d,%f,%d,%s,%s,%s" % (self.path, self.epoch, self.type, self.size, self.accuracy, self.invalid_actions, self.bins, self.histogram, self.smatch_result)
+        return "%s,%d,%s,%d,%f,%d,%s,%s,%s" % (
+            self.path, self.epoch, self.type, self.size, self.accuracy, self.invalid_actions, self.bins, self.histogram,
+            self.smatch_result)

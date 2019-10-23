@@ -1,22 +1,14 @@
 import logging
-import amr_util.Actions as act
 
-# roxanappop: start
-class SwapException(Exception):
-    pass
-class TokenOnStackException(Exception):
-    pass
-class RotateException(Exception):
-    pass
-# roxanappop: end
+import models.actions as act
+from action_sequence_generators.asg_exceptions import *
 
 
 def generate_action_sequence(amr_graph, sentence, verbose=True):
-   return generate_action_sequence_impl(amr_graph, sentence, 1, False, verbose)
+    return generate_action_sequence_impl(amr_graph, sentence, 1, False, verbose)
 
 
 def generate_action_sequence_impl(amr_graph, sentence, no_of_swaps, should_rotate, verbose=True):
-
     if verbose is False:
         logging.disable(logging.INFO)
 
@@ -109,7 +101,6 @@ def generate_action_sequence_impl(amr_graph, sentence, no_of_swaps, should_rotat
 
 
 def reduce_right(actions, stack, top, node_var_first, node_var_second, amr_graph):
-
     actions.append(
         act.AMRAction.build_labeled("RR", amr_graph.relations_dict[(node_var_first, node_var_second)][0]))
     second_parent = amr_graph.parent_dict[node_var_second]
@@ -139,17 +130,17 @@ def swap_n(actions, stack, top, n):
     # we swap the second and (n+1)th node
     aux = stack[top - 1]
     stack[top - 1] = stack[top - n - 1]
-    stack[top - n -1] = aux
+    stack[top - n - 1] = aux
     action_name = "SW"
     if n > 1:
-        suffix = "_"+str(n)
+        suffix = "_" + str(n)
         action_name += suffix
     actions.append(act.AMRAction.build(action_name))
 
 
 def rotate(actions, stack, top):
     # we swap the second and last node
-    last_index = len(stack)-1
+    last_index = len(stack) - 1
     aux = stack[top - 1]
     stack[top - 1] = stack[last_index]
     stack[last_index] = aux
@@ -176,4 +167,3 @@ def check_relation_dict_consistency(amr_graph):
             if child not in child_list:
                 is_consistent = False
     return is_consistent
-

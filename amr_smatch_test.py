@@ -4,10 +4,11 @@ Checks that printing a parsed AMR yields the same thing.
 
 from os import listdir
 
-import TrainingDataExtractor as tde
-from postprocessing import ActionSequenceReconstruction as asr
+from data_extraction import training_data_extractor as tde
+from postprocessing import action_sequence_reconstruction as asr
 from smatch import smatch_amr
 from smatch import smatch_util
+from models.parameters import ParserParameters
 
 
 def check_smatch_identical(print_info, amrstr1, amrstr2):
@@ -43,13 +44,13 @@ original_corpus = filter(lambda x: "dump" not in x and "audit" not in x, directo
 for f in original_corpus:
     mypath_f = mypath + "/" + f
     print(mypath_f)
-    data += tde.generate_training_data(mypath_f).data
+    data += tde.generate_training_data(mypath_f, parser_parameters=ParserParameters()).data
 
 fail_count = 0
 for elem in data:
     sentence = elem.sentence
     action_sequence = elem.action_sequence
-    amr_string = elem.amr_original
+    amr_string = elem.original_amr
     amr1 = smatch_amr.AMR.parse_AMR_line(amr_string)
     if amr1 is None:
         print 'Could not parse original amr'

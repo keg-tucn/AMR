@@ -1,10 +1,8 @@
-from asg import ASG
 import logging
-import amr_util.Actions as act
 
-# should def move the exceptions somewhere else
-from preprocessing.ActionSequenceGenerator import SwapException
-from preprocessing.ActionSequenceGenerator import TokenOnStackException
+from asg import ASG
+from asg_exceptions import *
+
 """
     This is the simple deterministic alg (as designed by Silviana)
     but swaps are done only if they can help
@@ -14,8 +12,8 @@ from preprocessing.ActionSequenceGenerator import TokenOnStackException
 
 class SimpleInformedSwapASG(ASG):
 
-    def __init__(self, no_of_swaps,should_rotate):
-        ASG.__init__(self,no_of_swaps)
+    def __init__(self, no_of_swaps, should_rotate):
+        ASG.__init__(self, no_of_swaps)
         self.should_rotate = should_rotate
 
     def generate_action_sequence(self, amr_graph, sentence):
@@ -43,14 +41,14 @@ class SimpleInformedSwapASG(ASG):
                 swapped = False
             else:
 
-                for i in range(1,self.no_of_swaps+1):
+                for i in range(1, self.no_of_swaps + 1):
                     if self.can_swap_n(i):
                         self.swap_n(i)
                         swapped = True
                         break
                         last_action_swap = i
                         # I can still shift or delete
-                #try to rotate, which is still a swapping operation
+                # try to rotate, which is still a swapping operation
                 if self.should_rotate and self.can_rotate():
                     self.rotate()
                     swapped = True

@@ -3,15 +3,13 @@ Methods that set up the AMR from smatch score processing.
 Please see some examples in the main.
 """
 
-
 import smatch
 import smatch_amr as amr
 import numpy as np
 import copy
 
 
-def smatch_best_match_numbers(amr1, amr2,
-                   doinstance=True, doattribute=True, dorelation=True):
+def smatch_best_match_numbers(amr1, amr2, doinstance=True, doattribute=True, dorelation=True):
     """
     The "best match" number is the number of matching nodes. Larger for larger matching AMRs.
     :param amr1: expected in smatch_amr format
@@ -42,6 +40,7 @@ def smatch_best_match_numbers(amr1, amr2,
 
     test_triple_num = 0
     gold_triple_num = 0
+
     if doinstance:
         test_triple_num += len(instance1)
         gold_triple_num += len(instance2)
@@ -55,14 +54,15 @@ def smatch_best_match_numbers(amr1, amr2,
     return best_match_num, test_triple_num, gold_triple_num
 
 
-def smatch_f_score(amr1, amr2,
-                   doinstance=True, doattribute=True, dorelation=True):
+def smatch_f_score(amr1, amr2, doinstance=True, doattribute=True, dorelation=True):
+    (best_match_num, test_triple_num, gold_triple_num) = \
+        smatch_best_match_numbers(amr1, amr2, doinstance, doattribute, dorelation)
 
-    best_match_num, test_triple_num, gold_triple_num = smatch_best_match_numbers(amr1, amr2,
-                   doinstance, doattribute, dorelation)
-    (precision, recall, best_f_score) = smatch.compute_f(
-        best_match_num, test_triple_num, gold_triple_num)
+    (precision, recall, best_f_score) = \
+        smatch.compute_f(best_match_num, test_triple_num, gold_triple_num)
+
     return best_f_score
+
 
 def clean_node_value(nv):
     return nv.strip(' \t\n\r').split('~', 1)[0]
@@ -87,7 +87,7 @@ class SmatchAccumulator:
         self.total_amr2_num = 0
         self.smatch_sum = 0
         self.inv_smatch_sum = 0
-        self.last_f_score = 0;
+        self.last_f_score = 0
 
     def compute_and_add(self, amr1, amr2):
         self.n += 1
@@ -116,7 +116,7 @@ class SmatchAccumulator:
 
     def print_all(self):
         if self.n == 0:
-          print ("No results")
+            print ("No results")
         else:
             result = self.get_result()
             print("Min: %f" % result.min)
@@ -150,25 +150,23 @@ class AMRSmatchResult:
     def headers():
         return "min,max,arith_mean,harm_mean,global_smatch_f_score"
 
-if __name__ == "__main__":
-    smatch.veryVerbose=False
 
+if __name__ == "__main__":
+    smatch.veryVerbose = False
+    # AMR for sentence "I 'd also be having a chat with him about his behaviour."
     str1 = """
-    ( c / chat-01~e.6 
-	:ARG0  ( i / i~e.0 )
-	:ARG1  ( b / behave-01 
-		:ARG0  ( h / he~e.8,10 ))
-	:ARG2~e.7  h)
-	:mod  ( a / also~e.2 ))
+    (c / chat-01~e.6 
+      :ARG0 (i / i~e.0) 
+      :ARG1 (b / behave-01 
+            :ARG0 h) 
+      :ARG2~e.7 (h / he~e.8,10) 
+      :mod (a / also~e.2))
     """
     amr1 = amr.AMR.parse_AMR_line(str1)
-    #clean_all_node_names(amr1)
+    clean_all_node_names(amr1)
     print amr1.pretty_print()
 
-    #print smatch_f_score(amr1, copy.deepcopy(amr1))
-
-
-    str2="""
+    str2 = """
     (c / contrast-01~e.0 
       :ARG2 (n / need-01~e.15 
             :mod (a2 / also~e.14) 
@@ -183,4 +181,7 @@ if __name__ == "__main__":
     clean_all_node_names(amr2)
     print amr2.pretty_print()
 
+    print smatch_f_score(amr1, copy.deepcopy(amr1))
+    print smatch_f_score(amr2, copy.deepcopy(amr2))
     print smatch_f_score(amr1, amr2)
+    print smatch_f_score(amr2, amr1)
