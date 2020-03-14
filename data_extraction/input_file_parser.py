@@ -12,8 +12,7 @@ def extract_data_records(file_path):
     token_regex = re.compile('^(?:# ::tok )(.*)$')
     amr_start_indices = [index for index in range(0, len(lines)) if token_regex.match(lines[index])]
 
-    triples = map(lambda i: (token_regex.match(lines[i]).group(1), _get_amr(lines, i), _get_id(lines, i)),
-                  amr_start_indices)
+    triples = [(token_regex.match(lines[i]).group(1), _get_amr(lines, i), _get_id(lines, i)) for i in amr_start_indices]
     return triples
 
 

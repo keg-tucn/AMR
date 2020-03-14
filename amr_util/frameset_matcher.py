@@ -59,7 +59,7 @@ if __name__ == "__main__":
     frameset_parser.init_frames()
 
     roleset, sim = compute_best_roleset("run", ["factory"], "propbank")
-    print roleset.id, roleset.name, sim
+    print((roleset.id, roleset.name, sim))
 
     roleset, sim = compute_best_roleset("run", ["marathon"], "propbank")
-    print roleset.id, roleset.name, sim
+    print((roleset.id, roleset.name, sim))

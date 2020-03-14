@@ -23,7 +23,7 @@ class NodesOnStackASG:
     def initialize_fields(self, amr_graph, sentence):
         self.amr_graph = copy.deepcopy(amr_graph)
         self.buffer = sentence.split(" ")
-        self.buffer_indices = range(len(self.buffer))
+        self.buffer_indices = list(range(len(self.buffer)))
         self.stack = []
         self.actions = []
         self.removed_indices = []
@@ -58,7 +58,7 @@ class NodesOnStackASG:
         node_parent = parent_element_stack[0]
         node_child = child_element_stack[0]
 
-        if (node_child, node_parent) in self.amr_graph.relations_dict.keys():
+        if (node_child, node_parent) in list(self.amr_graph.relations_dict.keys()):
             if len(self.amr_graph.relations_dict[(node_child, node_parent)][1]) == 0:
                 return True
         return False

@@ -23,9 +23,9 @@ class CustomizedAMR:
     # elements such as polarity
     def create_tokens_to_concepts_dict(self, amr_graph):
         exceptions = ["-", "interrogative"]
-        for node_variable in amr_graph.node_to_tokens.keys():
+        for node_variable in list(amr_graph.node_to_tokens.keys()):
             tokens = amr_graph.node_to_tokens[node_variable]
-            if node_variable in amr_graph.node_to_concepts.keys():
+            if node_variable in list(amr_graph.node_to_concepts.keys()):
                 concept = amr_graph.node_to_concepts[node_variable]
                 self.tokens_to_concepts_dict[int(tokens[0])] = (node_variable, concept)
             else:
@@ -40,11 +40,11 @@ class CustomizedAMR:
     # (I would need to support some merge action to also need that info)
     def create_tokens_to_concept_list_dict(self, amr_graph):
         exceptions = ["-", "interrogative"]
-        for node_variable in amr_graph.node_to_tokens.keys():
+        for node_variable in list(amr_graph.node_to_tokens.keys()):
             tokens = amr_graph.node_to_tokens[node_variable]
-            if node_variable in amr_graph.node_to_concepts.keys():
+            if node_variable in list(amr_graph.node_to_concepts.keys()):
                 t = int(tokens[0])
-                if t not in self.tokens_to_concept_list_dict.keys():
+                if t not in list(self.tokens_to_concept_list_dict.keys()):
                     self.tokens_to_concept_list_dict[t] = []
                 concept = amr_graph.node_to_concepts[node_variable]
                 self.tokens_to_concept_list_dict[t].append((node_variable, concept))
@@ -54,7 +54,7 @@ class CustomizedAMR:
                     # ex: '-': [('5', 'f')
                     for token_tuple in tokens:
                         t = int(token_tuple[0])
-                        if t not in self.tokens_to_concept_list_dict.keys():
+                        if t not in list(self.tokens_to_concept_list_dict.keys()):
                             self.tokens_to_concept_list_dict[t] = []
                         self.tokens_to_concept_list_dict[t].append((node_variable, node_variable))
 
@@ -81,11 +81,11 @@ class CustomizedAMR:
     #                     self.tokens_to_concept_list_dict[t].append((node_variable, node_variable))
 
     def add_parent_and_edge(self, key, parent, edge, data):
-        if (key, parent) not in self.relations_dict.keys() and (key, "") not in self.relations_dict.keys():
+        if (key, parent) not in list(self.relations_dict.keys()) and (key, "") not in list(self.relations_dict.keys()):
             data.edgeToParent = edge
             self.relations_dict[(key, parent)] = (edge, [], "")
         else:
-            if (key, "") in self.relations_dict.keys():
+            if (key, "") in list(self.relations_dict.keys()):
                 t = list(self.relations_dict[(key, "")])
                 t[0] = edge
                 self.relations_dict[(key, parent)] = tuple(t)
@@ -96,10 +96,10 @@ class CustomizedAMR:
                 self.relations_dict[(key, parent)] = tuple(t)
 
     def add_child(self, child, concept):
-        if concept not in self.parent_dict.keys() and (concept, "") not in self.relations_dict.keys():
+        if concept not in list(self.parent_dict.keys()) and (concept, "") not in list(self.relations_dict.keys()):
             self.relations_dict[(concept, "")] = ("", [child], "")
         else:
-            if (concept, "") in self.relations_dict.keys():
+            if (concept, "") in list(self.relations_dict.keys()):
                 t = list(self.relations_dict[(concept, "")])
                 t[1].append(child)
                 self.relations_dict[(concept, "")] = tuple(t)
@@ -122,23 +122,23 @@ class CustomizedAMR:
         self.create_tokens_to_concepts_dict(amr_graph)
         self.create_tokens_to_concept_list_dict(amr_graph)
 
-        for item in amr_graph.items():
+        for item in list(amr_graph.items()):
             data = AMRNode()
             concept = item[0]
-            for key, children_list in item[1].iteritems():
+            for key, children_list in item[1].items():
                 for child in children_list:
                     # because the child is represented as ('p') for example, we get child[0] => 'p'
                     child_var = child[0]
                     self.add_child(child_var, concept)
                     self.add_parent_and_edge(child_var, concept, key, data)
                     self.parent_dict[child_var] = concept
-        for key, value in self.relations_dict.iteritems():
+        for key, value in self.relations_dict.items():
             if key[1] == "":
                 self.parent_dict[key[0]] = ""
 
-        for item in self.relations_dict.items():
+        for item in list(self.relations_dict.items()):
             concept = item[0][0]
-            for key, value in amr_graph.node_to_tokens.iteritems():
+            for key, value in amr_graph.node_to_tokens.items():
                 if key is concept:
                     t = list(self.relations_dict[item[0]])
                     if type(value[0]) is tuple:

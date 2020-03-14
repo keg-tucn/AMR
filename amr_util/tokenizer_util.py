@@ -54,17 +54,17 @@ def sequence_to_text(sequence):
 
 if __name__ == "__main__":
     word_index_map = get_word_index_map()
-    print "Words to indices map: %d" % len(word_index_map)
+    print(("Words to indices map: %d" % len(word_index_map)))
 
     index_word_map = get_index_word_map()
-    print "Indices to words map: %d" % len(index_word_map)
+    print(("Indices to words map: %d" % len(index_word_map)))
 
-    index_word_map_copy = {v: k for k, v in word_index_map.items()}
-    print cmp(index_word_map, index_word_map_copy)
+    index_word_map_copy = {v: k for k, v in list(word_index_map.items())}
+    print((cmp(index_word_map, index_word_map_copy)))
 
     sentence = "He went to the store to buy wood for a new fence ."
     tokens_sequence = text_to_sequence(sentence)
 
-    print "Original sentence:", sentence
-    print "Tokens sequence:", tokens_sequence
-    print "Reconstructed sentence:", sequence_to_text(tokens_sequence)
+    print(("Original sentence:", sentence))
+    print(("Tokens sequence:", tokens_sequence))
+    print(("Reconstructed sentence:", sequence_to_text(tokens_sequence)))

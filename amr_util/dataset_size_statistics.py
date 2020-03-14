@@ -13,7 +13,7 @@ for dataset_partition in dataset_partitions:
     partition_path = AMR_ALIGNMENTS_SPLIT + "/" + dataset_partition
     for dataset_version in dataset_versions:
         directory_content = listdir(partition_path)
-        directory_content_filtered = filter(lambda x: dataset_version in x, directory_content)
+        directory_content_filtered = [x for x in directory_content if dataset_version in x]
         directory_content_filtered = sorted(directory_content_filtered)
         for file_name in directory_content_filtered:
             file_path = partition_path + "/" + file_name
@@ -38,7 +38,7 @@ with open(PROJECT_ROOT_DIR + "/resources/dataset_stats.txt", "w") as stats_file:
     stats_file.write("".rjust(lcw) + "R1".rjust(9 * scw) + "R2".rjust(9 * scw) + "\n")
     stats_file.write("".rjust(lcw) + ("train".rjust(3 * scw) + "dev".rjust(3 * scw) + "test".rjust(3 * scw)) * 2 + "\n")
     stats_file.write("File".rjust(lcw) + ("len".rjust(scw) + "AMR".rjust(scw) + "act".rjust(scw)) * 6)
-    for dataset_name in sorted(dataset_stats.iterkeys()):
+    for dataset_name in sorted(dataset_stats.keys()):
         stats_file.write("\n" + dataset_name.rjust(lcw))
         for dataset_version in dataset_versions:
             if dataset_version in dataset_stats[dataset_name]:

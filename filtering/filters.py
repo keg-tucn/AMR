@@ -50,7 +50,7 @@ class TreeFilter:
 
         nodes = []
 
-        for key in custom_amr.relations_dict.keys():
+        for key in list(custom_amr.relations_dict.keys()):
             node = key[0]
             if node not in nodes:
                 nodes.append(node)
@@ -78,7 +78,7 @@ class TokenToNodeAlignmentFilter:
     def is_ok(self, sentence, amr, custom_amr, amr_id):
 
         for token in range(0, len(sentence)):
-            if token in custom_amr.tokens_to_concept_list_dict.keys():
+            if token in list(custom_amr.tokens_to_concept_list_dict.keys()):
                 if len(custom_amr.tokens_to_concept_list_dict[token]) > self.n:
                     return False
         return True
@@ -113,4 +113,4 @@ class ProjectiveTreeFilter:
         except AmrNotPerfectlyAlignedTreeException as e:
             return False
 
-        return all(projective_order[i] <= projective_order[i + 1] for i in xrange(len(projective_order) - 1))
+        return all(projective_order[i] <= projective_order[i + 1] for i in range(len(projective_order) - 1))

@@ -1,7 +1,7 @@
 import logging
 
 import models.actions as act
-from action_sequence_generators.asg_exceptions import *
+from .action_sequence_generators.asg_exceptions import *
 
 
 def generate_action_sequence(amr_graph, sentence, verbose=True):
@@ -32,7 +32,7 @@ def generate_action_sequence_impl(amr_graph, sentence, no_of_swaps, should_rotat
             top = len(stack) - 1
             node_var_first = amr_graph.tokens_to_concepts_dict[stack[top]][0]
             node_var_second = amr_graph.tokens_to_concepts_dict[stack[top - 1]][0]
-            if (node_var_first, node_var_second) in amr_graph.relations_dict.keys():
+            if (node_var_first, node_var_second) in list(amr_graph.relations_dict.keys()):
                 # first is child of second => reduce right
                 # check if first has any children left to process
                 if len(amr_graph.relations_dict[(node_var_first, node_var_second)][1]) == 0:
@@ -40,7 +40,7 @@ def generate_action_sequence_impl(amr_graph, sentence, no_of_swaps, should_rotat
                     reduce_succeeded = True
 
             else:
-                if (node_var_second, node_var_first) in amr_graph.relations_dict.keys():
+                if (node_var_second, node_var_first) in list(amr_graph.relations_dict.keys()):
                     # second is child of first => reduce left
                     # check if second has any children left to process
                     if len(amr_graph.relations_dict[(node_var_second, node_var_first)][1]) == 0:
@@ -85,7 +85,7 @@ def generate_action_sequence_impl(amr_graph, sentence, no_of_swaps, should_rotat
 
             else:
                 # try to shift the current token
-                if current_token in amr_graph.tokens_to_concepts_dict.keys():
+                if current_token in list(amr_graph.tokens_to_concepts_dict.keys()):
                     stack.append(current_token)
                     tokens_to_concept = amr_graph.tokens_to_concepts_dict[current_token]
                     actions.append(act.AMRAction("SH", tokens_to_concept[1], tokens_to_concept[0]))
@@ -160,7 +160,7 @@ def remove_child(amr_graph, node, parent, child):
 
 def check_relation_dict_consistency(amr_graph):
     is_consistent = True
-    for (child, parent) in amr_graph.relations_dict.keys():
+    for (child, parent) in list(amr_graph.relations_dict.keys()):
         if parent in amr_graph.parent_dict:
             parent_of_parent = amr_graph.parent_dict[parent]
             child_list = amr_graph.relations_dict[(parent, parent_of_parent)][1]

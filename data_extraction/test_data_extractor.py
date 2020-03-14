@@ -19,7 +19,7 @@ def generate_test_data(file_path, verbose=True):
     test_data = []
     named_entity_exceptions = 0
 
-    for i in tqdm(range(0, len(sentence_amr_triples))):
+    for i in tqdm(list(range(0, len(sentence_amr_triples)))):
         (sentence, amr_str, amr_id) = sentence_amr_triples[i]
         try:
             logging.warn("Started processing example %d", i)
@@ -44,4 +44,4 @@ def generate_test_data(file_path, verbose=True):
     return test_data
 
 
-print generate_test_data(AMR_ALIGNMENTS_SPLIT + "/test/deft-p2-amr-r1-alignments-test-bolt.txt", False)
+print((generate_test_data(AMR_ALIGNMENTS_SPLIT + "/test/deft-p2-amr-r1-alignments-test-bolt.txt", False)))

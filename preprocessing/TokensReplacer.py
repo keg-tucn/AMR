@@ -23,7 +23,7 @@ def replace_date_entities(amr, sentence):
                  "unit",
                  "weekday",
                  "year"]
-    date_entities = [k for k in amr_copy.keys() if k in amr_copy.node_to_concepts.keys() and
+    date_entities = [k for k in list(amr_copy.keys()) if k in list(amr_copy.node_to_concepts.keys()) and
                      amr_copy.node_to_concepts[k] == "date-entity"]
 
     if len(date_entities) == 0:
@@ -39,7 +39,7 @@ def replace_date_entities(amr, sentence):
             if op_rel in date_rels:
                 child = op_rel_list[op_rel][0]
                 # if it"s not in node_to_tokens, all good
-                if child not in amr_copy.node_to_concepts.keys():
+                if child not in list(amr_copy.node_to_concepts.keys()):
                     literals.append(child)
                     relations.append(op_rel)
                     node.add_child(Node(None, child), op_rel)
@@ -53,16 +53,16 @@ def replace_date_entities(amr, sentence):
 
     # Remove literals from node_to_tokens
     literals = sum([d[1] for d in date_entities], [])
-    amr_copy.node_to_tokens = dict((key, value) for key, value in amr_copy.node_to_tokens.iteritems()
+    amr_copy.node_to_tokens = dict((key, value) for key, value in amr_copy.node_to_tokens.items()
                                    if key not in literals)
 
     for l in literals:
-        if l in amr_copy.keys():
+        if l in list(amr_copy.keys()):
             amr_copy.pop(l)
 
     for date_entity in date_entities:
         amr_copy[date_entity[0]] = dict(
-            (key, value) for key, value in amr_copy[date_entity[0]].iteritems() if key not in date_entity[2])
+            (key, value) for key, value in amr_copy[date_entity[0]].items() if key not in date_entity[2])
 
     # Add name root vars in node_to_tokens and update incrementally the token indices of the affected nodes
     date_entities = sorted(date_entities, key=itemgetter(3))
@@ -122,32 +122,32 @@ def replace_named_entities(amr, sentence):
 
     # Remove name vars from node_to_concepts
     name_variables = [n[1] for n in named_entities]
-    amr_copy.node_to_concepts = dict((key, value) for key, value in amr_copy.node_to_concepts.iteritems()
+    amr_copy.node_to_concepts = dict((key, value) for key, value in amr_copy.node_to_concepts.items()
                                      if key not in name_variables)
 
     # Remove literals from node_to_tokens
     literals = sum([n[2] for n in named_entities], [])
-    amr_copy.node_to_tokens = dict((key, value) for key, value in amr_copy.node_to_tokens.iteritems()
+    amr_copy.node_to_tokens = dict((key, value) for key, value in amr_copy.node_to_tokens.items()
                                    if key not in literals)
 
     # Remove name vars and literals from amr_copy_copy dict
     for l in literals:
-        if l in amr_copy.keys():
+        if l in list(amr_copy.keys()):
             amr_copy.pop(l)
     for n in name_variables:
-        if n in amr_copy.keys():
+        if n in list(amr_copy.keys()):
             amr_copy.pop(n)
 
     # Update name root vars to have no name and wiki children
     for name_entity in named_entities:
         name_root = name_entity[0]
-        if "wiki" in amr_copy[name_root].keys():
+        if "wiki" in list(amr_copy[name_root].keys()):
             wiki_content = amr_copy[name_root]["wiki"][0]
-            if wiki_content in amr_copy.keys():
+            if wiki_content in list(amr_copy.keys()):
                 amr_copy.pop(wiki_content)
             name_entity[5].add_child(Node(None, "\"" + wiki_content + "\""), "wiki")
         amr_copy[name_root] = dict(
-            (key, value) for key, value in amr_copy[name_root].iteritems() if key != "name" and key != "wiki")
+            (key, value) for key, value in amr_copy[name_root].items() if key != "name" and key != "wiki")
 
     # Add name root vars in node_to_tokens and update incrementally the token indices of the affected nodes
     named_entities = sorted(named_entities, key=itemgetter(3))
@@ -203,28 +203,28 @@ def replace_temporal_quantities(amr, sentence):
                 raise ValueError("Quant and unit not consecutive or separated by @-@ for sentence %s" % sentence)
     # Remove units from node_to_concepts
     units = [t[2] for t in quant_unit_tokens_align]
-    amr_copy.node_to_concepts = dict((key, value) for key, value in amr_copy.node_to_concepts.iteritems()
+    amr_copy.node_to_concepts = dict((key, value) for key, value in amr_copy.node_to_concepts.items()
                                      if key not in units)
 
     # Remove quant and unit from node_to_tokens
     quants = [t[1] for t in quant_unit_tokens_align]
-    amr_copy.node_to_tokens = dict((key, value) for key, value in amr_copy.node_to_tokens.iteritems()
+    amr_copy.node_to_tokens = dict((key, value) for key, value in amr_copy.node_to_tokens.items()
                                    if key not in units
                                    and key not in quants)
 
     # Remove quant and unit from amr dict
     for q in quants:
-        if q in amr_copy.keys():
+        if q in list(amr_copy.keys()):
             amr_copy.pop(q)
     for u in units:
-        if u in amr_copy.keys():
+        if u in list(amr_copy.keys()):
             amr_copy.pop(u)
 
     # Remove quant and unit children from temporal-quantity in dict
     temp_quantities = [t[0] for t in quant_unit_tokens]
     for temp_quantity in temp_quantities:
         amr_copy[temp_quantity] = dict(
-            (key, value) for key, value in amr_copy[temp_quantity].iteritems() if key != "quant" and key != "unit")
+            (key, value) for key, value in amr_copy[temp_quantity].items() if key != "quant" and key != "unit")
 
     # Add node_to_tokens for the temporal quantities with token as the "min" token spanned by the quantity and unit
     temporal_quantity_spans = [(t[0], min(t[3], t[4]), max(t[3], t[4]))
@@ -284,21 +284,21 @@ def replace_quantities_default(amr, sentence, quantities):
                 raise ValueError("Quant and unit not consecutive or separated by @-@ for sentence %s" % sentence)
     # Remove units from node_to_concepts
     units = [t[2] for t in quant_unit_tokens_align]
-    amr_copy.node_to_concepts = dict((key, value) for key, value in amr_copy.node_to_concepts.iteritems()
+    amr_copy.node_to_concepts = dict((key, value) for key, value in amr_copy.node_to_concepts.items()
                                      if key not in units)
 
     # Remove quant and unit from node_to_tokens
     quants = [t[1] for t in quant_unit_tokens_align]
-    amr_copy.node_to_tokens = dict((key, value) for key, value in amr_copy.node_to_tokens.iteritems()
+    amr_copy.node_to_tokens = dict((key, value) for key, value in amr_copy.node_to_tokens.items()
                                    if key not in units
                                    and key not in quants)
 
     # Remove quant and unit from amr dict
     for q in quants:
-        if q in amr_copy.keys():
+        if q in list(amr_copy.keys()):
             amr_copy.pop(q)
     for u in units:
-        if u in amr_copy.keys():
+        if u in list(amr_copy.keys()):
             if len(amr_copy[u]) != 0:
                 raise ValueError("The unit node has additional children for sentence %s" % sentence)
             amr_copy.pop(u)
@@ -307,7 +307,7 @@ def replace_quantities_default(amr, sentence, quantities):
     node_quantities = [t[0] for t in quant_unit_tokens]
     for quantity in node_quantities:
         amr_copy[quantity] = dict(
-            (key, value) for key, value in amr_copy[quantity].iteritems() if key != "quant" and key != "unit")
+            (key, value) for key, value in amr_copy[quantity].items() if key != "quant" and key != "unit")
 
     # Add node_to_tokens for the temporal quantities with token as the "min" token spanned by the quantity and unit
     quantity_spans = [(t[0], min(t[3], t[4]), max(t[3], t[4]))
@@ -344,7 +344,7 @@ def replace_have_org_role(amr, relation_to_bubble_up):
         return amr, []
 
     amr_copy.node_to_concepts = dict(
-        (k, v) for k, v in amr_copy.node_to_concepts.iteritems() if k not in have_org_role_nodes)
+        (k, v) for k, v in amr_copy.node_to_concepts.items() if k not in have_org_role_nodes)
     for h in have_org_role_nodes:
         node = amr_copy.pop(h)
         new_node = node[relation_to_bubble_up]

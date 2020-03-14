@@ -35,16 +35,16 @@ def process_sentence(sentence):
         for item in new_sentence_list:
             new_sentence = new_sentence + item + ' '
 
-        print tagged_list
-        print new_sentence_list
-        print new_sentence
-        print named_entities_location
+        print(tagged_list)
+        print(new_sentence_list)
+        print(new_sentence)
+        print(named_entities_location)
 
         return new_sentence, named_entities_location
 
-    except Exception, e:
-        print str(e)
+    except Exception as e:
+        print(str(e))
 
 
 if __name__ == "__main__":
-    print process_sentence('Andrea leaves on Monday and returns in July in New York')
+    print(process_sentence('Andrea leaves on Monday and returns in July in New York'))

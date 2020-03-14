@@ -1,7 +1,7 @@
 import re
 import copy
 
-from models.amr_graph import AMR
+from .models.amr_graph import AMR
 
 
 def find_between(s, first, last):
@@ -33,7 +33,7 @@ def baseline(amr):
     variables_compare = list()
     var_final = list()
 
-    for key, value in amr_str.node_to_concepts.iteritems():
+    for key, value in list(amr_str.node_to_concepts.items()):
         variable = key
         variables.append(variable)
 

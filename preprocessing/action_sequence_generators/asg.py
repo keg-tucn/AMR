@@ -19,7 +19,7 @@ class ASG:
     def initialize_fields(self, amr_graph, sentence):
         self.amr_graph = copy.deepcopy(amr_graph)
         self.buffer = sentence.split(" ")
-        self.buffer_indices = range(len(self.buffer))
+        self.buffer_indices = list(range(len(self.buffer)))
         self.stack = []
         self.actions = []
         self.removed_indices = []
@@ -46,7 +46,7 @@ class ASG:
     def can_reduce(self, parent, child):
         node_parent = ASG._get_concept_for_index(self.amr_graph, self.stack[parent])
         node_child = ASG._get_concept_for_index(self.amr_graph, self.stack[child])
-        if (node_child, node_parent) in self.amr_graph.relations_dict.keys():
+        if (node_child, node_parent) in list(self.amr_graph.relations_dict.keys()):
             if len(self.amr_graph.relations_dict[(node_child, node_parent)][1]) == 0:
                 return True
         return False
@@ -64,10 +64,10 @@ class ASG:
         return len(self.stack) >= n + 2 and self.no_of_swaps != 0
 
     def can_shift(self):
-        return not self.is_buffer_empty() and self.current_token in self.amr_graph.tokens_to_concepts_dict.keys()
+        return not self.is_buffer_empty() and self.current_token in list(self.amr_graph.tokens_to_concepts_dict.keys())
 
     def can_delete(self):
-        return not self.is_buffer_empty() and self.current_token not in self.amr_graph.tokens_to_concepts_dict.keys()
+        return not self.is_buffer_empty() and self.current_token not in list(self.amr_graph.tokens_to_concepts_dict.keys())
 
     def reduce_right(self):
         top = len(self.stack) - 1

@@ -155,7 +155,7 @@ def to_round(val):
             return denom[didx]
 
 
-class StrLiteral(unicode):
+class StrLiteral(str):
     def __str__(self):
         return '"%s"' % "".join(self)
 
@@ -250,7 +250,7 @@ class ListMap(defaultdict):
         return [(k, v) for k, v in self._key_value]
 
     def values(self):
-        return [v for k, v in self.items()]
+        return [v for k, v in list(self.items())]
 
     def itemsfor(self, k):
         return [(k, v) for v in self.getall(k)]
@@ -347,10 +347,10 @@ class Alphabet(object):
         self.num_labels = 0
 
     def indexes(self):
-        return self._index_to_label.keys()
+        return list(self._index_to_label.keys())
 
     def labels(self):
-        return self._label_to_index.keys()
+        return list(self._label_to_index.keys())
 
     def size(self):
         return self.num_labels
@@ -393,9 +393,9 @@ class Alphabet(object):
 
     def to_dict(self, index_to_label=False):
         if not index_to_label:
-            new_table = dict([(str(key), value) for key, value in self._label_to_index.items()])
+            new_table = dict([(str(key), value) for key, value in list(self._label_to_index.items())])
         else:
-            new_table = dict([(key, str(value)) for key, value in self._index_to_label.items()])
+            new_table = dict([(key, str(value)) for key, value in list(self._index_to_label.items())])
         return new_table
 
     @classmethod
@@ -408,12 +408,12 @@ class Alphabet(object):
             alphabet._label_to_index = dictionary
             # dict([(eval(key),value) if key[0] =='(' else (key,value) for key,value in alphabet_dictionary['_label_to_index'].items()])
             alphabet._index_to_label = {}
-            for label, index in alphabet._label_to_index.items():
+            for label, index in list(alphabet._label_to_index.items()):
                 alphabet._index_to_label[index] = label
         else:
             alphabet._index_to_label = dictionary
             alphabet._label_to_index = {}
-            for index, label in alphabet._index_to_label.items():
+            for index, label in list(alphabet._index_to_label.items()):
                 alphabet._label_to_index[label] = index
         # making sure that the dimension agrees
         assert (len(alphabet._index_to_label) == len(alphabet._label_to_index))

@@ -25,12 +25,12 @@ def lemmatize(word):
 
 
 if __name__ == "__main__":
-    print lemmatize("particles")
-    print lemmatize("negotiated")
-    print lemmatize("was")
-    print lemmatize("played")
-    print lemmatize("plays")
-    print lemmatize("-)")
-    print lemmatize("bats")
-    print lemmatize("are")
-    print lemmatize("feet")
+    print((lemmatize("particles")))
+    print((lemmatize("negotiated")))
+    print((lemmatize("was")))
+    print((lemmatize("played")))
+    print((lemmatize("plays")))
+    print((lemmatize("-)")))
+    print((lemmatize("bats")))
+    print((lemmatize("are")))
+    print((lemmatize("feet")))
