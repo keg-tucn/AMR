@@ -1,7 +1,7 @@
 import logging
 
-from asg import ASG
-from asg_exceptions import *
+from .asg import ASG
+from .asg_exceptions import *
 
 """
     This is the simple deterministic alg (as designed by Silviana)

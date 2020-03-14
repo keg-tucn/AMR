@@ -1,6 +1,6 @@
 import json
 
-from keras_lstm_flow import *
+from .keras_lstm_flow import *
 
 if __name__ == "__main__":
     with open(PARAMETERS_FILE, "r") as f:

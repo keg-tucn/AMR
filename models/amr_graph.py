@@ -11,7 +11,7 @@ from util import *
 import sys
 import re
 from optparse import OptionParser
-from dependency_graph import *
+from .dependency_graph import *
 
 
 # Error definitions
@@ -133,7 +133,7 @@ class AMR(defaultdict):
             # roxanappop: add rule for alignment
             ("ALIGNMENT", "~e.([0-9]+)((?:,(?:[0-9]+))*)"),
             ("EDGELABEL", ":[^\s()]+?(?=[~\s])"),
-            ("STRLITERAL", u'("[^"]+"|\u201c[^\u201d]+\u201d)'),
+            ("STRLITERAL", '("[^"]+"|\u201c[^\u201d]+\u201d)'),
             ("LITERAL", "'[^\s(),]+"),
             ("INTERROGATIVE", "\s(interrogative|imperative|expressive)(?=[~\s\)])"),
             ("QUANTITY", "[0-9][0-9Ee^+\-\.,:]*(?=[~\s\)])"),
@@ -157,7 +157,7 @@ class AMR(defaultdict):
                 if type == "LPAR":
                     state = 1
                 else:
-                    raise ParserError, "Unexpected token %s" % (token)
+                    raise ParserError("Unexpected token %s" % (token))
 
             elif state == 1:
                 if type == "IDENTIFIER":
@@ -170,7 +170,7 @@ class AMR(defaultdict):
                     stack.append((PNODE, StrLiteral(token.strip()), None, []))
                     state = 2
                 else:
-                    raise ParserError, "Unexpected token %s" % (token.encode('utf8'))
+                    raise ParserError("Unexpected token %s" % (token.encode('utf8')))
 
             elif state == 2:
                 if type == "SLASH":
@@ -200,7 +200,7 @@ class AMR(defaultdict):
                         state = 0
 
                 else:
-                    raise ParserError, "Unexpected token %s" % (token)
+                    raise ParserError("Unexpected token %s" % (token))
 
             elif state == 3:
                 if type == "IDENTIFIER" or "QUANTITY":
@@ -209,7 +209,7 @@ class AMR(defaultdict):
                     stack.append((PNODE, nodelabel, token, []))
                     state = 4
                 else:
-                    raise ParserError, "Unexpected token %s" % (token)
+                    raise ParserError("Unexpected token %s" % (token))
 
             elif state == 4:
                 if type == "ALIGNMENT":
@@ -234,7 +234,7 @@ class AMR(defaultdict):
                         amr._align_root(parentnodelabel, aligned_tokens)
                         state = 0
                 else:
-                    raise ParserError, "Unexpected token %s" % (token.encode('utf8'))
+                    raise ParserError("Unexpected token %s" % (token.encode('utf8')))
 
             elif state == 5:
                 if type == "ALIGNMENT":
@@ -264,7 +264,7 @@ class AMR(defaultdict):
 
                 elif type == "RPAR":
                     print("Error: should not have RPAR after EDGELABEL")
-                    raise ParserError, "Unexpected token %s" % (token.encode('utf8'))
+                    raise ParserError("Unexpected token %s" % (token.encode('utf8')))
 
             elif state == 6:
                 if type == "ALIGNMENT":
@@ -293,7 +293,7 @@ class AMR(defaultdict):
                     forgetme, parentnodelabel, parentconcept, parent_aligned_tokens = AMR.popFromStack(stack)
 
                     # check for annotation error
-                    if parentnodelabel in amr.node_to_concepts.keys():
+                    if parentnodelabel in list(amr.node_to_concepts.keys()):
                         # concept has been defined by the children,
                         # then they must have different concepts, otherwise the children's concepts should be None
                         # (coreference)
@@ -356,7 +356,7 @@ class AMR(defaultdict):
                     stack.append((EDGE, token[1:], None, []))
                     state = 5
                 else:
-                    raise ParserError, "Unexpected token %s" % (token.encode('utf8'))
+                    raise ParserError("Unexpected token %s" % (token.encode('utf8')))
 
             elif state == 7:
                 if type == "IDENTIFIER":
@@ -365,10 +365,10 @@ class AMR(defaultdict):
                 elif type == "LPAR":
                     state = 1
                 else:
-                    raise ParserError, "Unexpected token %s" % (token)
+                    raise ParserError("Unexpected token %s" % (token))
 
         if state != 0 and stack:
-            raise ParserError, "mismatched parenthesis"
+            raise ParserError("mismatched parenthesis")
 
         return amr
 
@@ -409,13 +409,13 @@ class AMR(defaultdict):
 
         def is_match(dict1, dict2):
             rel_concept_pairs = []
-            for rel, cpt in dict2.items():
+            for rel, cpt in list(dict2.items()):
                 rel_concept_pairs.append(rel + '@' + cpt)
                 if not (rel in dict1 and cpt in dict1[rel]):
                     return None
             return rel_concept_pairs
 
-        subroot = subgraph.keys()[0]  # sub root's concept
+        subroot = list(subgraph.keys())[0]  # sub root's concept
         concepts_on_the_path = []
 
         for v in self.node_to_concepts:
@@ -470,15 +470,15 @@ class AMR(defaultdict):
         for h in self:
             hstr = self.node_to_concepts[h] if h in self.node_to_concepts else h
             hidx = alignment[h][0]
-            if not hidx in dpg.nodes.keys():
+            if not hidx in list(dpg.nodes.keys()):
                 h_node = DNode(hidx, hstr)
                 dpg.addNode(h_node)
 
-            for ds in self[h].values():
+            for ds in list(self[h].values()):
                 d = ds[0]
                 dstr = self.node_to_concepts[d] if d in self.node_to_concepts else d
                 didx = alignment[d][0]
-                if not didx in dpg.nodes.keys():
+                if not didx in list(dpg.nodes.keys()):
                     d_node = DNode(didx, dstr)
                     dpg.addNode(d_node)
                 dpg.addEdge(hidx, didx)
@@ -508,7 +508,7 @@ class AMR(defaultdict):
         l = [m.group(1)]
         if m.group(2) is not None:
             extra_tokens = m.group(2).split(',')
-            for i in xrange(1, len(extra_tokens)):
+            for i in range(1, len(extra_tokens)):
                 l.append(extra_tokens[i])
         return l
 
@@ -523,7 +523,7 @@ class AMR(defaultdict):
     # a list of tokens
     def _align_var_node(self, node, aligned_tokens):
         if aligned_tokens:
-            if node not in self.node_to_tokens.keys():
+            if node not in list(self.node_to_tokens.keys()):
                 self.node_to_tokens[node] = []
             for t in aligned_tokens:
                 self.node_to_tokens[node].append(t)
@@ -532,14 +532,14 @@ class AMR(defaultdict):
     # a list of (token, parent) tuples
     def _align_non_var_node(self, childnode, parentnode, aligned_tokens):
         if aligned_tokens:
-            if childnode not in self.node_to_tokens.keys():
+            if childnode not in list(self.node_to_tokens.keys()):
                 self.node_to_tokens[childnode] = []
             for t in aligned_tokens:
                 self.node_to_tokens[childnode].append((t, parentnode))
 
     def _align_edge(self, edge, parentnode, aligned_tokens):
         if aligned_tokens:
-            if edge not in self.relation_to_tokens.keys():
+            if edge not in list(self.relation_to_tokens.keys()):
                 self.relation_to_tokens[edge] = []
             for t in aligned_tokens:
                 self.relation_to_tokens[edge].append((t, parentnode))
@@ -563,7 +563,7 @@ class AMR(defaultdict):
             # raise ValueError, "Cannot add self-edge (%s, %s, %s)." % (parent, relation, child)
         for c in child:
             x = self[c]
-            for rel, test in self[c].items():
+            for rel, test in list(self[c].items()):
                 if parent in test:
                     if warn:
                         warn.write("WARNING: (%s, %s, %s) produces a cycle with (%s, %s, %s)\n" % (
@@ -610,9 +610,9 @@ class AMR(defaultdict):
                     if n in visited_nodes or (parent, rel, n) in self.reentrance_triples:
                         continue
                     visited_nodes.add(n)
-                    p = len([child for rel, child in self[n].items() if
+                    p = len([child for rel, child in list(self[n].items()) if
                              (n, rel, child[0]) not in self.reentrance_triples]) - 1
-                    for rel, child in reversed(self[n].items()):
+                    for rel, child in reversed(list(self[n].items())):
                         if not (rel, n, child[0]) in amr_triples:
                             if (n, rel, child[0]) not in self.reentrance_triples:
                                 queue.append((child, rel, depth + 1, seqID + '.' + str(p)))
@@ -674,9 +674,9 @@ class AMR(defaultdict):
                             continue
 
                     visited_nodes.add(n)
-                    p = len([child for rel, child in self[n].items() if
+                    p = len([child for rel, child in list(self[n].items()) if
                              (n, rel, child[0]) not in self.reentrance_triples]) - 1
-                    for rel, child in reversed(self[n].items()):
+                    for rel, child in reversed(list(self[n].items())):
                         # print rel,child
                         if not (rel, n, child[0]) in visited_edges:
                             # if child[0] not in visited_nodes or isinstance(child[0],(StrLiteral,Quantity)):
@@ -713,7 +713,7 @@ class AMR(defaultdict):
                     if n in visited_nodes:
                         continue
                     visited_nodes.add(n)
-                    for rel, child in reversed(self[n].items()):
+                    for rel, child in reversed(list(self[n].items())):
                         if not (n, rel, child) in visited_edges:
                             if child in visited_nodes:
                                 stack.append((child, rel, n))
@@ -724,7 +724,7 @@ class AMR(defaultdict):
     def find_rel(self, h_idx, idx):
         """find the relation between head_idx and idx"""
         rels = []
-        for rel, child in self[h_idx].items():
+        for rel, child in list(self[h_idx].items()):
             # print child,idx
             if child == (idx,):
                 rels.append(rel)
@@ -732,7 +732,7 @@ class AMR(defaultdict):
 
     def replace_head(self, old_head, new_head, KEEP_OLD=True):
         """change the focus of current sub graph"""
-        for rel, child in self[old_head].items():
+        for rel, child in list(self[old_head].items()):
             if child != (new_head,):
                 self[new_head].append(rel, child)
         del self[old_head]
@@ -834,9 +834,9 @@ if __name__ == "__main__":
     # amr_ch = AMR.parse_string(s)
     amr_en = AMR.parse_string(s1)
 
-    print str(amr_en)
-    print amr_en.dfs()
-    print amr_en.to_amr_string()
+    print(str(amr_en))
+    print(amr_en.dfs())
+    print(amr_en.to_amr_string())
     # print amr_ch
     # print amr_ch.dfs()
     # print amr_ch.to_amr_string()

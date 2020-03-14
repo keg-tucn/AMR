@@ -2,7 +2,7 @@ import math
 
 from sklearn.neural_network import MLPClassifier
 
-import concepts_relations_extractor
+from . import concepts_relations_extractor
 
 
 def train(train_split_percentage=0.8):

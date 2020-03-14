@@ -56,26 +56,26 @@ class DepGraph(object):
             gov_str, gov_idx = line.split('(')[1].split(',')[0].split('-')
             gov_str = gov_str.strip()
             gov_idx = int(gov_idx)
-            if not gov_idx in dpg.nodes.keys():
+            if not gov_idx in list(dpg.nodes.keys()):
                 gov_node = DNode(gov_idx, gov_str)
                 dpg.addNode(gov_node)
             dep_str, dep_idx = line.strip().split('(')[1].split(',')[1][:-1].split('-')
             dep_str = dep_str.strip()
             dep_idx = int(dep_idx)
-            if not dep_idx in dpg.nodes.keys():
+            if not dep_idx in list(dpg.nodes.keys()):
                 dep_node = DNode(dep_idx, dep_str)
                 dpg.addNode(dep_node)
             dpg.addEdge(gov_idx, dep_idx)
         return dpg
 
     def is_empty(self):
-        return len(self.nodes.keys()) == 0
+        return len(list(self.nodes.keys())) == 0
 
     def numNodes(self):
-        return len(self.nodes.keys())
+        return len(list(self.nodes.keys()))
 
     def nodes_list(self):
-        return self.nodes.keys()
+        return list(self.nodes.keys())
 
     def addNode(self, node):
         self.nodes[node.index] = node

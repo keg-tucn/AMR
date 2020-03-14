@@ -13,7 +13,7 @@ class StanfordDependencyExtractor(DependencyExtractor):
         dependencies = cls.stanford_parser.parseToStanfordDependencies(sentence.strip())
         dependencies_dict = {}
         for (rel, gov, dep) in dependencies.dependencies:
-            if dep.start in indices.keys() and gov.start in indices.keys():
+            if dep.start in list(indices.keys()) and gov.start in list(indices.keys()):
                 dependencies_dict[indices[dep.start]] = (indices[gov.start], rel)
 
         return dependencies_dict

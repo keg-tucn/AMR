@@ -1,5 +1,5 @@
 import unittest
-from standoff import TextStandoff
+from .standoff import TextStandoff
 
 
 class StandoffTestCase(unittest.TestCase):

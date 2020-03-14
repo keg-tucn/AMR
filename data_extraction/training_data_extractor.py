@@ -42,7 +42,7 @@ def generate_training_data(file_path, parser_parameters, compute_dependencies=Tr
     # set to True for co-reference handling (graph transformed to trees)
     coref_handling = False
 
-    for i in tqdm(range(len(sentence_amr_triples))):
+    for i in tqdm(list(range(len(sentence_amr_triples)))):
 
         concepts_metadata = {}
         (sentence, amr_str, amr_id) = sentence_amr_triples[i]
@@ -195,7 +195,7 @@ def extract_amr_ids_from_corpus_as_audit_trail():
                     audit.write("%s\n" % processed_id)
             amr_inputs = []
             for processed_id in processed_ids:
-                line = filter(lambda k: processed_id in k, lines)
+                line = [k for k in lines if processed_id in k]
                 i = lines.index(line[0])
                 amr_input = ""
                 while i < len(lines) and len(lines[i]) > 1:
@@ -206,7 +206,7 @@ def extract_amr_ids_from_corpus_as_audit_trail():
             with open(audit_f + "_content", "wb") as content:
                 for amr_input in amr_inputs:
                     content.write("%s" % amr_input)
-    print len(data)
+    print((len(data)))
 
 
 if __name__ == "__main__":
@@ -222,11 +222,11 @@ if __name__ == "__main__":
     assert len(data) == 23
     for elem in data:
         assert isinstance(elem, TrainData)
-        assert isinstance(elem.sentence, basestring)
+        assert isinstance(elem.sentence, str)
         assert isinstance(elem.action_sequence, list)
-        assert isinstance(elem.original_amr, basestring)
+        assert isinstance(elem.original_amr, str)
         assert isinstance(elem.dependencies, dict)
         assert isinstance(elem.named_entities, list)
         assert isinstance(elem.date_entities, list)
         assert isinstance(elem.concepts_metadata, dict)
-        assert isinstance(elem.amr_id, basestring)
+        assert isinstance(elem.amr_id, str)

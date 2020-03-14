@@ -3,8 +3,8 @@ Methods that set up the AMR from smatch score processing.
 Please see some examples in the main.
 """
 
-import smatch
-import smatch_amr as amr
+from . import smatch
+from . import smatch_amr as amr
 import numpy as np
 import copy
 
@@ -119,11 +119,11 @@ class SmatchAccumulator:
             print ("No results")
         else:
             result = self.get_result()
-            print("Min: %f" % result.min)
-            print("Max: %f" % result.max)
-            print ("Arithm. mean %s" % result.arith_mean)
-            print ("Harm. mean %s" % result.harm_mean)
-            print ("Global smatch f-score %s" % result.global_smatch_f_score)
+            print(("Min: %f" % result.min))
+            print(("Max: %f" % result.max))
+            print(("Arithm. mean %s" % result.arith_mean))
+            print(("Harm. mean %s" % result.harm_mean))
+            print(("Global smatch f-score %s" % result.global_smatch_f_score))
 
     def get_result(self):
         return AMRSmatchResult(
@@ -164,7 +164,7 @@ if __name__ == "__main__":
     """
     amr1 = amr.AMR.parse_AMR_line(str1)
     clean_all_node_names(amr1)
-    print amr1.pretty_print()
+    print(amr1.pretty_print())
 
     str2 = """
     (c / contrast-01~e.0 
@@ -179,9 +179,9 @@ if __name__ == "__main__":
     """
     amr2 = amr.AMR.parse_AMR_line(str2)
     clean_all_node_names(amr2)
-    print amr2.pretty_print()
+    print(amr2.pretty_print())
 
-    print smatch_f_score(amr1, copy.deepcopy(amr1))
-    print smatch_f_score(amr2, copy.deepcopy(amr2))
-    print smatch_f_score(amr1, amr2)
-    print smatch_f_score(amr2, amr1)
+    print(smatch_f_score(amr1, copy.deepcopy(amr1)))
+    print(smatch_f_score(amr2, copy.deepcopy(amr2)))
+    print(smatch_f_score(amr1, amr2))
+    print(smatch_f_score(amr2, amr1))

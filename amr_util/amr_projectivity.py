@@ -16,7 +16,7 @@ def get_children_list_repr(amr, amr_id):
     """
     c = ChildrenListRepresentation()
 
-    for key in amr.relations_dict.keys():
+    for key in list(amr.relations_dict.keys()):
         # key is a pair (node_variable, parent_variable)
         node = key[0]
         # a tuple of the form (relation, children_list, token_list)
@@ -37,7 +37,7 @@ def get_children_list_repr(amr, amr_id):
             c.children_dict[node_token].append(child_token)
 
     # make sure children list is ordered
-    for child_list in c.children_dict.values():
+    for child_list in list(c.children_dict.values()):
         child_list.sort()
 
     return c
@@ -46,7 +46,7 @@ def get_children_list_repr(amr, amr_id):
 def get_descendants(node, children_dict):
     # print("descendants from {0}".format(node))
 
-    if node not in children_dict.keys():
+    if node not in list(children_dict.keys()):
         return []
 
     descendents = []
@@ -79,7 +79,7 @@ def inorder(node, children_dict, added, traversal):
         traversal.append(node)
         added[node] = True
 
-    if node in children_dict.keys():
+    if node in list(children_dict.keys()):
 
         for child in children_dict[node]:
             inorder(child, children_dict, added, traversal)
@@ -92,7 +92,7 @@ def inorder(node, children_dict, added, traversal):
 
 def is_tree(amr):
     nodes = []
-    for key in amr.relations_dict.keys():
+    for key in list(amr.relations_dict.keys()):
         node = key[0]
         if node not in nodes:
             nodes.append(node)
@@ -108,7 +108,7 @@ def is_tree(amr):
 def is_perfectly_aligned(amr):
     all_aligned_tokens = []
     # check each node has tokens aligned
-    for key in amr.relations_dict.keys():
+    for key in list(amr.relations_dict.keys()):
         aligned_tokens = amr.relations_dict[key][2]
         if aligned_tokens == '':
             return False

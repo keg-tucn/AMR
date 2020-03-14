@@ -1,6 +1,6 @@
 import logging
 
-from asg_nodes_on_stack import NodesOnStackASG
+from .asg_nodes_on_stack import NodesOnStackASG
 
 """ 
     This is the deterministic version of the algorithm for action sequence generation
@@ -87,9 +87,9 @@ class SimpleNodesOnStackASG(NodesOnStackASG):
     def can_shift(self):
         if self.is_buffer_empty():
             return False
-        return self.current_token in self.amr_graph.tokens_to_concepts_dict.keys()
+        return self.current_token in list(self.amr_graph.tokens_to_concepts_dict.keys())
 
     def can_delete(self):
         if self.is_buffer_empty():
             return False
-        return self.current_token not in self.amr_graph.tokens_to_concepts_dict.keys()
+        return self.current_token not in list(self.amr_graph.tokens_to_concepts_dict.keys())

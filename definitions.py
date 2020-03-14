@@ -1,4 +1,4 @@
-import ConfigParser
+import configparser
 import os
 
 PROJECT_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -7,7 +7,7 @@ CONFIG_FILE_NAME = "properties.ini"
 
 CONFIG_FILE_PATH = PROJECT_ROOT_DIR + "/" + CONFIG_FILE_NAME
 
-config = ConfigParser.ConfigParser()
+config = configparser.ConfigParser()
 config.read(CONFIG_FILE_PATH)
 
 STANFORD_DEP_PARSER_HOME = PROJECT_ROOT_DIR + "/" + config.get("STANFORD_DEP_PARSER", "PARSER_HOME")

@@ -75,12 +75,12 @@ def precompute_cosine_similarities():
     global full_embeddings_matrix_dict
 
     cross_cosine_similarities = {}
-    for (key_1, value_1), i in zip(full_embeddings_matrix_dict.items(),
-                                   range(len(full_embeddings_matrix_dict.items()))):
-        for (key_2, value_2), j in zip(full_embeddings_matrix_dict.items(),
-                                       range(len(full_embeddings_matrix_dict.items()))):
+    for (key_1, value_1), i in zip(list(full_embeddings_matrix_dict.items()),
+                                   list(range(len(list(full_embeddings_matrix_dict.items()))))):
+        for (key_2, value_2), j in zip(list(full_embeddings_matrix_dict.items()),
+                                       list(range(len(list(full_embeddings_matrix_dict.items()))))):
             if i % 10000 == 0 and j % 10000 == 0:
-                print "%d %d" % (i, j)
+                print(("%d %d" % (i, j)))
             cross_cosine_similarities[(key_1, key_2)] = compute_cosine_similarity_vectors(value_1, value_2)
 
     return cross_cosine_similarities
@@ -99,15 +99,15 @@ if __name__ == "__main__":
     paris = word_embeddings_reader.get_token_embedding_from_full("paris")
     rome = word_embeddings_reader.get_token_embedding_from_full("rome")
 
-    print "cosine_similarity(father, mother) = %f" % compute_cosine_similarity_vectors(father, mother)
-    print "cosine_similarity(ball, crocodile) = %f" % compute_cosine_similarity_vectors(ball, crocodile)
-    print "cosine_similarity(france - paris, rome - italy) = %f" % compute_cosine_similarity_vectors(france - paris,
-                                                                                                     rome - italy)
-    print "cosine_similarity(france - paris, italy - rome) = %f" % compute_cosine_similarity_vectors(france - paris,
-                                                                                                     italy - rome)
+    print(("cosine_similarity(father, mother) = %f" % compute_cosine_similarity_vectors(father, mother)))
+    print(("cosine_similarity(ball, crocodile) = %f" % compute_cosine_similarity_vectors(ball, crocodile)))
+    print(("cosine_similarity(france - paris, rome - italy) = %f" % compute_cosine_similarity_vectors(france - paris,
+                                                                                                     rome - italy)))
+    print(("cosine_similarity(france - paris, italy - rome) = %f" % compute_cosine_similarity_vectors(france - paris,
+                                                                                                     italy - rome)))
 
-    print "cosine similarity (ball, mother): %f" % compute_cosine_similarity("ball", "mother")
-    print "cosine similarity (woman, mother): %f" % compute_cosine_similarity("woman", "mother")
-    print "cosine similarity (make, made): %f" % compute_cosine_similarity("make", "made")
-    print "cosine similarity (do, did): %f" % compute_cosine_similarity("do", "did")
-    print "cosine similarity (do-01, did): %f" % compute_cosine_similarity("do-01", "did")
+    print(("cosine similarity (ball, mother): %f" % compute_cosine_similarity("ball", "mother")))
+    print(("cosine similarity (woman, mother): %f" % compute_cosine_similarity("woman", "mother")))
+    print(("cosine similarity (make, made): %f" % compute_cosine_similarity("make", "made")))
+    print(("cosine similarity (do, did): %f" % compute_cosine_similarity("do", "did")))
+    print(("cosine similarity (do-01, did): %f" % compute_cosine_similarity("do-01", "did")))

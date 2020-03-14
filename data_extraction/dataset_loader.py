@@ -26,7 +26,7 @@ def read_data(file_type, filter_path="deft", parser_parameters=ParserParameters(
     parsed_data = []
 
     directory_content = listdir(dir_path)
-    original_corpus = sorted(filter(lambda x: "dump" not in x and filter_path in x, directory_content))
+    original_corpus = sorted([x for x in directory_content if "dump" not in x and filter_path in x])
 
     for file_name in original_corpus:
         original_file_path = dir_path + "/" + file_name
@@ -34,11 +34,11 @@ def read_data(file_type, filter_path="deft", parser_parameters=ParserParameters(
         print(original_file_path)
 
         if cache and path.exists(dump_file_path):
-            print "cache"
+            print("cache")
             with open(dump_file_path, "rb") as dump_file:
                 parsed_data += js.load(dump_file)
         else:
-            print "generate"
+            print("generate")
             file_data = training_data_extractor.generate_training_data(original_file_path,
                                                                        parser_parameters=parser_parameters).data
             if not path.exists(path.dirname(dump_file_path)):
@@ -65,7 +65,7 @@ def read_original_graphs(file_type, filter_path="deft", cache=True):
     parsed_data = []
 
     directory_content = listdir(dir_path)
-    original_corpus = sorted(filter(lambda x: "dump" not in x and filter_path in x, directory_content))
+    original_corpus = sorted([x for x in directory_content if "dump" not in x and filter_path in x])
 
     for file_name in original_corpus:
         original_file_path = dir_path + "/" + file_name
@@ -73,11 +73,11 @@ def read_original_graphs(file_type, filter_path="deft", cache=True):
         print(original_file_path)
 
         if cache and path.exists(dump_file_path):
-            print "cache"
+            print("cache")
             with open(dump_file_path, "rb") as dump_file:
                 parsed_data += js.load(dump_file)
         else:
-            print "generate"
+            print("generate")
             file_data = input_file_parser.extract_data_records(original_file_path)
 
             parsed_file_data = []
@@ -102,7 +102,7 @@ def read_original_graphs(file_type, filter_path="deft", cache=True):
                 js.dump(parsed_file_data, dump_file)
             parsed_data += parsed_file_data
 
-            print "%d / %d in %s" % (failed_amrs_in_file, len(file_data), original_file_path)
+            print(("%d / %d in %s" % (failed_amrs_in_file, len(file_data), original_file_path)))
 
     return parsed_data
 
@@ -157,14 +157,14 @@ def remove_overlapping_instances(partition_1, partition_2, remove_from=1):
     if remove_from == 1:
         partition_2_ids = [d.amr_id for d in partition_2]
 
-        partition_1 = filter(lambda inst: inst.amr_id not in partition_2_ids, partition_1)
+        partition_1 = [inst for inst in partition_1 if inst.amr_id not in partition_2_ids]
 
         return partition_1, partition_2
 
     elif remove_from == 2:
         partition_1_ids = [d.amr_id for d in partition_1]
 
-        partition_2 = filter(lambda inst: inst.amr_id not in partition_1_ids, partition_2)
+        partition_2 = [inst for inst in partition_2 if inst.amr_id not in partition_1_ids]
 
         return partition_1, partition_2
 

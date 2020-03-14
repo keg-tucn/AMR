@@ -3,7 +3,7 @@ import unittest
 
 class TestCase(unittest.TestCase):
     def testChildren(self):
-        import dependencies
+        from . import dependencies
         hierarchy = dependencies.StanfordDependencyHierarchy()
         self.assertEqual(hierarchy.isa("agent", "arg"), True)
 

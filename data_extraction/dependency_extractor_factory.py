@@ -20,8 +20,8 @@ if __name__ == "__main__":
     sentence = "Autonomous cars shift insurance liability toward manufacturers"
     unicode_sentence = sentence.decode("utf-8")
 
-    print "\nOriginal version Stanford Parser"
-    print StanfordDependencyExtractor.extract_dependencies(sentence)
+    print("\nOriginal version Stanford Parser")
+    print((StanfordDependencyExtractor.extract_dependencies(sentence)))
 
-    print "\nSpaCy Parser"
-    print SpaCyDependencyExtractor.extract_dependencies(unicode_sentence)
+    print("\nSpaCy Parser")
+    print((SpaCyDependencyExtractor.extract_dependencies(unicode_sentence)))

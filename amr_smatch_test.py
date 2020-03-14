@@ -4,32 +4,32 @@ Checks that printing a parsed AMR yields the same thing.
 
 from os import listdir
 
-from data_extraction import training_data_extractor as tde
-from postprocessing import action_sequence_reconstruction as asr
-from smatch import smatch_amr
-from smatch import smatch_util
-from models.parameters import ParserParameters
+from .data_extraction import training_data_extractor as tde
+from .postprocessing import action_sequence_reconstruction as asr
+from .smatch import smatch_amr
+from .smatch import smatch_util
+from .models.parameters import ParserParameters
 
 
 def check_smatch_identical(print_info, amrstr1, amrstr2):
     amr2 = smatch_amr.AMR.parse_AMR_line(amrstr2)
     if amr2 is None:
-        print (print_info + " Could not reparse!!!")
+        print((print_info + " Could not reparse!!!"))
         print("Original:")
-        print amrstr1
+        print(amrstr1)
         print("Could not reparse:")
-        print amrstr2
+        print(amrstr2)
         amr2 = smatch_amr.AMR.parse_AMR_line(amrstr2)
         return False
 
     else:
         smatch_f_score = smatch_util.smatch_f_score(amr1, amr2)
         if smatch_f_score < 1:
-            print(print_info + " Score %f" % smatch_f_score)
+            print((print_info + " Score %f" % smatch_f_score))
             print("Original:")
-            print amrstr1
+            print(amrstr1)
             print("Reconstructed:")
-            print amrstr2
+            print(amrstr2)
             # amr1.pretty_print()
             smatch_amr.AMR.parse_AMR_line(amr_string)
             return False
@@ -40,7 +40,7 @@ def check_smatch_identical(print_info, amrstr1, amrstr2):
 data = []
 mypath = 'resources/alignments/split/dev'
 directory_content = listdir(mypath)
-original_corpus = filter(lambda x: "dump" not in x and "audit" not in x, directory_content)
+original_corpus = [x for x in directory_content if "dump" not in x and "audit" not in x]
 for f in original_corpus:
     mypath_f = mypath + "/" + f
     print(mypath_f)
@@ -53,8 +53,8 @@ for elem in data:
     amr_string = elem.original_amr
     amr1 = smatch_amr.AMR.parse_AMR_line(amr_string)
     if amr1 is None:
-        print 'Could not parse original amr'
-        print amr_string
+        print('Could not parse original amr')
+        print(amr_string)
         fail_count += 1
 
     reprinted = amr1.pretty_print()
@@ -67,4 +67,4 @@ for elem in data:
     if not ok:
         fail_count += 1
 
-print("FAIL COUNT: %i / %i" % (fail_count, len(data)))
+print(("FAIL COUNT: %i / %i" % (fail_count, len(data))))

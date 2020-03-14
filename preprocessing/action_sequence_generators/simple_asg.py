@@ -1,7 +1,7 @@
 import logging
 
-from asg import ASG
-from asg_exceptions import *
+from .asg import ASG
+from .asg_exceptions import *
 
 """ 
     This is the deterministic version of the algorithm for action sequence generation

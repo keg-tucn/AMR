@@ -1,5 +1,5 @@
-from models.amr_graph import AMR
-from utilities import generate_action_sequence, generate_custom_amr, generate_amr_with_literals
+from .models.amr_graph import AMR
+from .utilities import generate_action_sequence, generate_custom_amr, generate_amr_with_literals
 
 # amr = AMR.parse_string("""(a3 / and
 #       :op1 (s / selfish~e.3
@@ -151,14 +151,14 @@ def test_literals(amr_str, sentence):
     (new_amr, new_sentence, named_entities) = generate_amr_with_literals(amr_str, sentence)
     custom_amr = generate_custom_amr(new_amr)
     seq = generate_action_sequence(custom_amr, new_sentence)
-    print seq
+    print(seq)
 
 
 def test_amr(amr_str, sentence):
     amr = AMR.parse_string(amr_str)
     custom_amr = generate_custom_amr(amr)
     seq = generate_action_sequence(custom_amr, sentence)
-    print seq
+    print(seq)
 
 
 test_literals(amr_str, sentence)

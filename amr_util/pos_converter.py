@@ -21,9 +21,9 @@ def convert(word, from_pos, to_pos, with_frameset=False):
 
     if len(result) > 0:
         if with_frameset:
-            return re.sub("\..{1}\.", "-", result[0][0].im_self._synset._name)
+            return re.sub("\..{1}\.", "-", result[0][0].__self__._synset._name)
         else:
-            return result[0][0].im_self._synset._name.split(".")[0]
+            return result[0][0].__self__._synset._name.split(".")[0]
     else:
         return word
 
@@ -76,50 +76,50 @@ def _convert(word, from_pos, to_pos):
 
 
 if __name__ == "__main__":
-    print "death"
+    print("death")
     res = _convert("death", WN_NOUN, WN_VERB)
     for res_i in res:
-        print res_i[0].im_self._synset._name.replace(".v.", "-"), res_i[1]
-    print convert("death", WN_NOUN, WN_VERB)
+        print((res_i[0].__self__._synset._name.replace(".v.", "-"), res_i[1]))
+    print((convert("death", WN_NOUN, WN_VERB)))
 
-    print "\n", "person"
+    print(("\n", "person"))
     res = _convert("person", WN_NOUN, WN_VERB)
     for res_i in res:
-        print res_i[0].im_self._synset._name.replace(".v.", "-"), res_i[1]
-    print convert("person", WN_NOUN, WN_VERB)
+        print((res_i[0].__self__._synset._name.replace(".v.", "-"), res_i[1]))
+    print((convert("person", WN_NOUN, WN_VERB)))
 
-    print "\n", "organization"
+    print(("\n", "organization"))
     res = _convert("organization", WN_NOUN, WN_VERB)
     for res_i in res:
-        print res_i[0].im_self._synset._name.replace(".v.", "-"), res_i[1]
-    print convert("organization", WN_NOUN, WN_VERB)
+        print((res_i[0].__self__._synset._name.replace(".v.", "-"), res_i[1]))
+    print((convert("organization", WN_NOUN, WN_VERB)))
 
-    print "\n", "story"
+    print(("\n", "story"))
     res = _convert("story", WN_NOUN, WN_VERB)
     for res_i in res:
-        print res_i[0].im_self._synset._name.replace(".v.", "-"), res_i[1]
-    print convert("story", WN_NOUN, WN_VERB)
+        print((res_i[0].__self__._synset._name.replace(".v.", "-"), res_i[1]))
+    print((convert("story", WN_NOUN, WN_VERB)))
 
-    print "\n", "boring"
+    print(("\n", "boring"))
     res = _convert("boring", WN_ADJECTIVE, WN_NOUN)
     for res_i in res:
-        print res_i[0].im_self._synset._name.replace(".n.", "-"), res_i[1]
-    print convert("boring", WN_ADJECTIVE, WN_NOUN)
+        print((res_i[0].__self__._synset._name.replace(".n.", "-"), res_i[1]))
+    print((convert("boring", WN_ADJECTIVE, WN_NOUN)))
 
-    print "\n", "trouble"
+    print(("\n", "trouble"))
     res = _convert("trouble", WN_NOUN, WN_ADJECTIVE)
     for res_i in res:
-        print res_i[0].im_self._synset._name.replace(".a.", "-"), res_i[1]
-    print convert("trouble", WN_NOUN, WN_ADJECTIVE)
+        print((res_i[0].__self__._synset._name.replace(".a.", "-"), res_i[1]))
+    print((convert("trouble", WN_NOUN, WN_ADJECTIVE)))
 
-    print "\n", "solve"
+    print(("\n", "solve"))
     res = _convert("solve", WN_VERB, WN_ADJECTIVE_SATELLITE)
     for res_i in res:
-        print res_i[0].im_self._synset._name.replace(".s.", "-"), res_i[1]
-    print convert("solve", WN_VERB, WN_ADJECTIVE_SATELLITE)
+        print((res_i[0].__self__._synset._name.replace(".s.", "-"), res_i[1]))
+    print((convert("solve", WN_VERB, WN_ADJECTIVE_SATELLITE)))
 
-    print "\n", "think"
+    print(("\n", "think"))
     res = _convert("think", WN_VERB, WN_ADJECTIVE)
     for res_i in res:
-        print res_i[0].im_self._synset._name.replace(".a.", "-"), res_i[1]
-    print convert("think", WN_VERB, WN_ADJECTIVE)
+        print((res_i[0].__self__._synset._name.replace(".a.", "-"), res_i[1]))
+    print((convert("think", WN_VERB, WN_ADJECTIVE)))

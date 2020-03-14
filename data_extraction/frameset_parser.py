@@ -40,10 +40,10 @@ def extract_frames_to_dump_file(source):
         frames_dir = ""
         frames_dump_file = ""
 
-    frame_files = filter(lambda x: ".xml" in x, listdir(frames_dir))
+    frame_files = [x for x in listdir(frames_dir) if ".xml" in x]
     frames = {}
 
-    for i in tqdm(range(len(frame_files))):
+    for i in tqdm(list(range(len(frame_files)))):
         file_path = frames_dir + "/" + frame_files[i]
         frame = Frameset.build_from_XML(ElementTree.parse(file_path))
         frames[frame.lemma] = frame
