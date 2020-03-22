@@ -822,6 +822,7 @@ class AMR(defaultdict):
         return (t[0], ()) + (self.__dict__,) + t[3:]
 
 
+import copy as copy
 if __name__ == "__main__":
     opt = OptionParser()
     opt.add_option("-v", action="store_true", dest="verbose")
@@ -830,13 +831,17 @@ if __name__ == "__main__":
 
     s = '''(a / and :op1(恶化 :ARG0(它) :ARG1(模式 :mod(开发)) :time (已经)) :op2(t / 堵塞 :ARG0(它) :ARG1(交通 :mod(局部)) :location(a / around :op1(出口))))'''
     s1 = '''(a  /  and :op1 (c  /  change-01 :ARG0 (i  /  it) :ARG1 (p  /  pattern :mod (d  /  develop-02)) :ARG2 (b  / bad :degree (m  /  more))) :op2 (c2  /  cause-01 :ARG0 i :ARG1 (c3  /  congest-01 :ARG1 (a2  /  around :op1 (e  /  exit :poss i)) :ARG2 (t  /  traffic) :ARG1-of (l2  /  localize-01))) :time (a3  /  already))'''
-    s = s.decode('utf8')
+    # s = s.decode('utf8')
     # amr_ch = AMR.parse_string(s)
     amr_en = AMR.parse_string(s1)
-
     print(str(amr_en))
-    print(amr_en.dfs())
-    print(amr_en.to_amr_string())
+    c2 = copy.deepcopy(amr_en)
+    print(str(c2))
+    if amr_en != c2:
+        print("Issue with deep copy")
+    c3 = copy.deepcopy(c2)
+    print(str(c3))
+
     # print amr_ch
     # print amr_ch.dfs()
     # print amr_ch.to_amr_string()
