@@ -245,10 +245,6 @@ class ListMap(defaultdict):
     def getall(self, k):
         return dict.__getitem__(self, k)
 
-    def items(self):
-        # return [(k,v) for k in self._keys for v in self.getall(k)]
-        return [(k, v) for k, v in self._key_value]
-
     def values(self):
         return [v for k, v in list(self.items())]
 
@@ -283,7 +279,16 @@ class ListMap(defaultdict):
 
     def __reduce__(self):
         t = defaultdict.__reduce__(self)
+        # t[4] is actually a dict iterator over the values
+        # python 2 used iteritems(self) to build it
+        # python 3 uses items(self) to build it
         return (t[0], ()) + (self.__dict__,) + t[3:]
+
+    def items(self):
+        # return [(k,v) for k in self._keys for v in self.getall(k)]
+        # return [(k, v) for k, v in self._key_value]
+        # in python 3 this is used as dict iterator from __reduce__
+        return super().items()
 
 
 from collections import deque
