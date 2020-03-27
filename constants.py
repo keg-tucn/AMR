@@ -3,7 +3,7 @@ import re
 from os import listdir
 from collections import defaultdict
 
-from .definitions import PROJECT_ROOT_DIR
+from definitions import PROJECT_ROOT_DIR
 
 # flags
 # TODO using gflag
