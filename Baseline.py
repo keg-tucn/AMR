@@ -1,7 +1,7 @@
 import re
 import copy
 
-from .models.amr_graph import AMR
+from models.amr_graph import AMR
 
 
 def find_between(s, first, last):

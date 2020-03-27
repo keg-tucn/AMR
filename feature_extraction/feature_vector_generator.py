@@ -167,7 +167,7 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
 
         except InvalidParseException as e:
             exception_count += 1
-            logging.warn(e.message)
+            logging.warn(e)
             exception_count += 1
             continue
 
