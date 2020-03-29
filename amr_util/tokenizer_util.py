@@ -8,6 +8,7 @@ from definitions import TOKENIZER_PATH
 
 
 def generate_tokenizer():
+    print("Generating tokenizer.")
     train_data_sentences = [d.sentence for d in dataset_loader.read_data("training", cache=True)]
     dev_data_sentences = [d.sentence for d in dataset_loader.read_data("dev", cache=True)]
     test_data_sentences = [d.sentence for d in dataset_loader.read_data("test", cache=True)]
@@ -23,7 +24,7 @@ def generate_tokenizer():
 def get_tokenizer():
     if not path.isfile(TOKENIZER_PATH):
         generate_tokenizer()
-
+    print("Loading tokenizer from %s" % TOKENIZER_PATH)
     return pickle.load(open(TOKENIZER_PATH, "rb"), encoding='latin1')
 
 
