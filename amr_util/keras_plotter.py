@@ -14,8 +14,8 @@ def _plot_accuracy(history, model_name, trial_name):
     _config_plot(history.params.get('epochs'))
     plt.title('{} accuracy'.format(model_name))
     plt.ylabel('accuracy')
-    plt.plot(history.history['acc'])
-    plt.plot(history.history['val_acc'])
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
     plt.legend(['train', 'test'], loc='upper left')
     plt.savefig(RESULT_PLOTS_DIR + '/accuracy_{}_{}.png'.format(model_name, trial_name))
 
