@@ -11,3 +11,4 @@ matplotlib==3.2.0
 JPype1==0.7.2
 pattern==3.6
 scikit_learn==0.22.2.post1
+tensorflow
