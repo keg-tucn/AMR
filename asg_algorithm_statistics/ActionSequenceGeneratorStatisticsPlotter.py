@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from os import path
+from os import path, makedirs
 
 abs_path = path.abspath('./plots_asg_statistics')
 print(abs_path)
@@ -19,6 +19,9 @@ def plot_histogram(histogram_data, histogram_names, alg_version, subdirectory, f
 
     no_of_hists = len(histogram_data)
     p = abs_path + "/" + alg_version + "/" + subdirectory + "/" + filename + ".png"
+    if not path.exists(path.dirname(p)):
+        print("Building path %s" % p)
+        makedirs(path.dirname(p))
     fig, axes = plt.subplots(nrows=no_of_hists, ncols=1, figsize=(10, 5 * no_of_hists), sharey=True)
 
     for i in range(0, no_of_hists):
