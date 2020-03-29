@@ -1,4 +1,4 @@
-from .keras_lstm_flow import *
+from keras_lstm_flow import *
 
 if __name__ == "__main__":
 
