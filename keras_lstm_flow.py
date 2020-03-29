@@ -372,9 +372,9 @@ def train(model_name, train_case_name, train_data, test_data, parser_parameters)
     history = model.fit(x_train_full_part, y_train_full,
                         epochs=model_parameters.train_epochs, batch_size=16, validation_split=0.1,
                         callbacks=[
-                            ModelCheckpoint(model_path, monitor="val_acc", verbose=0, save_best_only=True,
+                            ModelCheckpoint(model_path, monitor="val_accuracy", verbose=0, save_best_only=True,
                                             save_weights_only=False, mode="auto", period=1),
-                            EarlyStopping(monitor="val_acc", min_delta=0, patience=model_parameters.train_epochs,
+                            EarlyStopping(monitor="val_accuracy", min_delta=0, patience=model_parameters.train_epochs,
                                           verbose=0, mode="auto")])
 
     keras_plotter.plot_history(history, model_name, train_case_name)
