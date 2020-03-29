@@ -24,7 +24,7 @@ def generate_tokenizer():
 def get_tokenizer():
     if not path.isfile(TOKENIZER_PATH):
         generate_tokenizer()
-    print("Loading tokenizer from %s" % TOKENIZER_PATH)
+        print("Generating tokenizer at %s." % TOKENIZER_PATH)
     return pickle.load(open(TOKENIZER_PATH, "rb"), encoding='latin1')
 
 
