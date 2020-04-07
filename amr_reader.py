@@ -1,9 +1,9 @@
 from os import listdir, path, makedirs
 import pickle as js
 
-from .definitions import PROJECT_ROOT_DIR
-from .data_extraction import training_data_extractor as tde
-from .models.parameters import ParserParameters
+from definitions import PROJECT_ROOT_DIR
+from data_extraction import training_data_extractor as tde
+from models.parameters import ParserParameters
 
 
 def generate_parsed_data(parsed_path, cache, dump_path):

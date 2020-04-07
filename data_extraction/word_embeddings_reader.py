@@ -50,7 +50,7 @@ def _load_embeddings_matrix(word_index, embedding_dim):
 
     embeddings_index = {}
 
-    emb_file = open(GLOVE_EMBEDDINGS + "/" + "glove.6B.{}d.txt".format(embedding_dim))
+    emb_file = open(GLOVE_EMBEDDINGS + "/" + "glove.6B.{}d.txt".format(embedding_dim), encoding="utf-8")
     for line in emb_file:
         values = line.split()
         word = values[0]
