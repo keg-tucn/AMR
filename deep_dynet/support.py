@@ -15,7 +15,7 @@ class Vocab:
     @classmethod
     def from_file(cls, vocab_fname):
         words = []
-        with file(vocab_fname) as fh:
+        with open(vocab_fname) as fh:
             for line in fh:
                 line.strip()
                 word, count = line.split()
