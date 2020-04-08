@@ -4,6 +4,7 @@ import dynet as dy
 
 from models.node import Node
 import models.actions as act
+from models.parameters import SIMPLE_ACTION_SET as act
 import logging
 
 WORD_DIM = 64
@@ -16,14 +17,14 @@ RL = 1
 RR = 2
 DN = 3
 SW = 4
-NUM_ACTIONS = len(act.acts)
+NUM_ACTIONS = len(act)
 
 
 # TODO: think of training  a model for each action and have an ensamble decide the next one ?
 
 
 def conv_action(action):
-    return act.acts[action]
+    return act[action]
 
 
 def conv_actions(actions):

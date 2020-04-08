@@ -3,15 +3,16 @@ import dynet as dy
 from deep_dynet import support as ds
 from deep_dynet import transition_parser as ddtp
 import logging
-from .smatch import smatch_amr
-from .smatch import smatch_util
+from smatch import smatch_amr
+from smatch import smatch_util
 import numpy as np
 import traceback
-from .amr_util.Reporting import AMRResult
-from models import actions as act
-from .amr_reader import read_data
+from amr_util.Reporting import AMRResult
+from models.parameters import SIMPLE_ACTION_SET as act
+from amr_reader import read_data
 
-from .definitions import PROJECT_ROOT_DIR
+
+from definitions import PROJECT_ROOT_DIR
 
 
 def process_data(data, vocab_words, vocab_acts):
@@ -32,7 +33,7 @@ def process_data(data, vocab_words, vocab_acts):
 
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.WARNING)
 
-vocab_acts = ds.Vocab.from_list(act.acts)
+vocab_acts = ds.Vocab.from_list(act)
 vocab_words = ds.Vocab.from_file(PROJECT_ROOT_DIR + '/resources/data/vocab.txt')
 
 test_use_model_prediction = True
