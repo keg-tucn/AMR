@@ -64,7 +64,10 @@ def load_frames(source):
         extract_frames_to_dump_file(source)
 
     with open(frames_dump_path, "rb") as dump_file:
-        return js.load(dump_file)
+		try:
+			return js.load(dump_file)
+		except Exception:
+			extract_frames_to_dump_file(source)
 
 
 def get_merged_frameset(token):
