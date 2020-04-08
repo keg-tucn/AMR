@@ -9,10 +9,10 @@ from data_extraction import dataset_loader
 def get_concepts_relations_pairs():
     if path.exists(path.dirname(CONCEPTS_RELATIONS_DICT)):
         with open(CONCEPTS_RELATIONS_DICT, "rb") as dict_file:
-			try:
-				return js.load(dict_file)
-			except Exception:
-				return extract_concepts_relations_pairs()
+	        try:
+	            return js.load(dict_file)
+	        except Exception:
+	            return extract_concepts_relations_pairs()
     return extract_concepts_relations_pairs()
 
 
