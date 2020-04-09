@@ -7,13 +7,13 @@ def extract_data_records(file_path):
     :param file_path: file to be processed
     :return: list of tuples (sentence, AMR string, AMR id)
     """
-    with open(file_path) as f:
+    print("Extracting data records from %s" % file_path)
+    with open(file_path, encoding="utf-8") as f:
         lines = f.readlines()
     token_regex = re.compile('^(?:# ::tok )(.*)$')
     amr_start_indices = [index for index in range(0, len(lines)) if token_regex.match(lines[index])]
 
-    triples = map(lambda i: (token_regex.match(lines[i]).group(1), _get_amr(lines, i), _get_id(lines, i)),
-                  amr_start_indices)
+    triples = [(token_regex.match(lines[i]).group(1), _get_amr(lines, i), _get_id(lines, i)) for i in amr_start_indices]
     return triples
 
 

@@ -33,7 +33,7 @@ def baseline(amr):
     variables_compare = list()
     var_final = list()
 
-    for key, value in amr_str.node_to_concepts.iteritems():
+    for key, value in list(amr_str.node_to_concepts.items()):
         variable = key
         variables.append(variable)
 

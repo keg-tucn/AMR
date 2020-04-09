@@ -4,6 +4,7 @@ import dynet as dy
 
 from models.node import Node
 import models.actions as act
+from models.parameters import SIMPLE_ACTION_SET as act
 import logging
 
 WORD_DIM = 64
@@ -16,18 +17,18 @@ RL = 1
 RR = 2
 DN = 3
 SW = 4
-NUM_ACTIONS = len(act.acts)
+NUM_ACTIONS = len(act)
 
 
 # TODO: think of training  a model for each action and have an ensamble decide the next one ?
 
 
 def conv_action(action):
-    return act.acts[action]
+    return act[action]
 
 
 def conv_actions(actions):
-    return map(lambda x: conv_action(x), actions)
+    return [conv_action(x) for x in actions]
 
 
 class TransitionParser:
@@ -53,7 +54,7 @@ class TransitionParser:
         return self.vocab.i2w[tok]
 
     def preety_tokens(self, tokens):
-        return map(lambda t: self.convert_token(t), tokens)
+        return [self.convert_token(t) for t in tokens]
 
     # returns an expression of the loss for the sequence of actions
     # (that is, the oracle_actions if present or the predicted sequence otherwise)
@@ -192,7 +193,7 @@ class TransitionParser:
                 head_node.add_child(mod_node, label)
                 stack.append((top_stack_state, head_node))
                 if oracle_actions is None:
-                    print('{0} --> {1}'.format(head_node.token, mod_node.token))
+                    print(('{0} --> {1}'.format(head_node.token, mod_node.token)))
 
         # the head of the tree that remains at the top of the stack is now the root
         head = stack.pop()[1] if stack else Node("unknown")

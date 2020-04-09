@@ -1,9 +1,11 @@
 import logging
 import copy
 
+from asg_algorithm_statistics.ActionSequenceGeneratorStatisticsPlotter import plot_2_line_graph, plot_histogram
 from definitions import PROJECT_ROOT_DIR
 from models import amr_data
 from data_extraction import input_file_parser
+from models.parameters import ParserParameters
 from preprocessing.action_sequence_generators.backtracking_asg import BacktrackingASGFixedReduce
 from preprocessing.action_sequence_generators.backtracking_asg import BacktrackingASGInformedSwap
 from preprocessing.action_sequence_generators.simple_asg__informed_swap import SimpleInformedSwapASG
@@ -15,10 +17,8 @@ from preprocessing.ActionSequenceGenerator import SwapException
 from preprocessing.ActionSequenceGenerator import TokenOnStackException
 from preprocessing.ActionSequenceGenerator import RotateException
 from models.amr_graph import AMR
-from amr_util import TrainingDataStats
+from amr_util import TrainingDataStats, tokenizer_util
 from preprocessing import TokensReplacer
-from ActionSequenceGeneratorStatisticsPlotter import plot_histogram
-from ActionSequenceGeneratorStatisticsPlotter import plot_2_line_graph
 from postprocessing import action_sequence_reconstruction as asr
 from smatch import smatch_util
 from smatch import smatch_amr
@@ -212,9 +212,13 @@ class ActionSeqGenStatistics:
 
                 action_sequence = self.asg_implementation.generate_action_sequence(custom_amr, new_sentence)
 
-                generated_amr_str = asr.reconstruct_all_ne(action_sequence,
+                parser_parameters = ParserParameters(max_len=input_max_sentence_len, with_enhanced_dep_info=False,
+                                                     with_target_semantic_labels=False, with_reattach=True,
+                                                     with_gold_concept_labels=True, with_gold_relation_labels=True)
+                tokens = tokenizer_util.text_to_sequence(sentence)
+                generated_amr_str = asr.reconstruct_all_ne(tokens, action_sequence,
                                                            self.named_entities_metadata,
-                                                           self.date_entities_metadata)
+                                                           self.date_entities_metadata, parser_parameters).amr_print()
 
                 if self.coreference_handling:
                     generated_amr_str = reentrancy_restoring(generated_amr_str)
@@ -311,8 +315,8 @@ data_sets = {"training": ["bolt", "cctv", "dfa", "dfb", "guidelines", "mt09sdl",
 
 input_min_sentence_len = 1
 input_max_sentence_len = 50
-input_no_of_swaps = 2
-input_should_rotate = True
+input_no_of_swaps = 1
+input_should_rotate = False
 alg_version = "simple"
 
 # go over all data (training, dev, tests) and construct histograms for eac datasetl
@@ -327,7 +331,7 @@ for split in splits:
     sentence_lengths_success = [0] * MAX_SENTENCE_LEN
     for data_set in data_sets[split]:
         my_file_path = PROJECT_ROOT_DIR + '/resources/alignments/split/' + split + "/" + "deft-p2-amr-r2-alignments-" + split + "-" + data_set + ".txt"
-        print("Generating statistics for " + my_file_path)
+        print(("Generating statistics for " + my_file_path))
 
         asg_implementation = SimpleASG(input_no_of_swaps, input_should_rotate)
 
@@ -365,7 +369,7 @@ for split in splits:
         sentence_lengths_success = add_lists(sentence_lengths_success, acgStatistics.sentence_lengths_successes)
 
     # print statistics per split
-    print("\nStatistics for " + split)
+    print(("\nStatistics for " + split))
     histogram_data = [
         histogram_overall_split,
         histogram_exceptions_split,

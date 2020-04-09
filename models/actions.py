@@ -1,4 +1,4 @@
-from parameters import ActionSet
+from .parameters import ActionSet
 
 
 class AMRAction:

@@ -1,6 +1,6 @@
 import logging
 
-from asg_nodes_on_stack import NodesOnStackASG
+from .asg_nodes_on_stack import NodesOnStackASG
 import models.actions as act
 
 """ 
@@ -84,7 +84,7 @@ class SimpleInformedWithBreakNodesOnStackASG(NodesOnStackASG):
     def can_break(self, no_of_nodes):
         if self.is_buffer_empty():
             return False
-        if self.current_token in self.amr_graph.tokens_to_concept_list_dict.keys():
+        if self.current_token in list(self.amr_graph.tokens_to_concept_list_dict.keys()):
             aligned_nodes = self.amr_graph.tokens_to_concept_list_dict[self.current_token]
             return len(aligned_nodes) == no_of_nodes
         return False
@@ -132,7 +132,7 @@ class SimpleInformedWithBreakNodesOnStackASG(NodesOnStackASG):
     def can_delete(self):
         if self.is_buffer_empty():
             return False
-        return self.current_token not in self.amr_graph.tokens_to_concepts_dict.keys()
+        return self.current_token not in list(self.amr_graph.tokens_to_concepts_dict.keys())
 
     def can_rotate(self):
 

@@ -9,9 +9,11 @@ from data_extraction import dataset_loader
 def get_concepts_relations_pairs():
     if path.exists(path.dirname(CONCEPTS_RELATIONS_DICT)):
         with open(CONCEPTS_RELATIONS_DICT, "rb") as dict_file:
-            return js.load(dict_file)
-    else:
-        return extract_concepts_relations_pairs()
+	        try:
+	            return js.load(dict_file)
+	        except Exception:
+	            return extract_concepts_relations_pairs()
+    return extract_concepts_relations_pairs()
 
 
 def extract_concepts_relations_pairs(with_relation_frequency=False):
@@ -33,9 +35,9 @@ def extract_concepts_relations_pairs(with_relation_frequency=False):
             amr_graph = graph_data[2]
 
             # iterate over semantic relations dict ( parent_node -> [(relation, [(child_node)])] )
-            for (parent_token, parent_relations) in amr_graph.items():
+            for (parent_token, parent_relations) in list(amr_graph.items()):
                 # iterate over relations of a node
-                for relation in parent_relations.items():
+                for relation in list(parent_relations.items()):
                     child_token = relation[1][0]
                     relation_type = relation[0]
 
@@ -81,13 +83,13 @@ if __name__ == "__main__":
     multiple_rels_pairs = 0
     rels_per_pairs = []
 
-    for item, i in zip(concepts_rels_dict.items(), range(len(concepts_rels_dict.items()))):
+    for item, i in zip(list(concepts_rels_dict.items()), list(range(len(list(concepts_rels_dict.items()))))):
         rels_per_pairs.append(len(item[1]))
         if len(item[1]) > 1:
-            print str(item[0]) + " | " + str(item[1])
+            print(str(item[0]) + " | " + str(item[1]))
             multiple_rels_pairs += 1
 
-    print "%d / %d" % (multiple_rels_pairs, len(concepts_rels_dict.items()))
-    print "%f" % (float(multiple_rels_pairs) / len(concepts_rels_dict.items()))
-    print "%f" % (np.mean(rels_per_pairs))
-    print "%f" % (np.mean(filter(lambda n: n != 1, rels_per_pairs)))
+    print("%d / %d" % (multiple_rels_pairs, len(list(concepts_rels_dict.items()))))
+    print("%f" % (float(multiple_rels_pairs) / len(list(concepts_rels_dict.items()))))
+    print("%f" % (np.mean(rels_per_pairs)))
+    print("%f" % (np.mean([n for n in rels_per_pairs if n != 1])))

@@ -18,7 +18,7 @@ class ASGParameters:
 
         return parameters
 
-
+# TODO: Find where are these configured? (Should they not be attached to the action seq generators?)
 SIMPLE_ACTION_SET = ["SH", "RL", "RR", "DN", "SW"]
 SIMPLE_WITH_SWAPS_ACTION_SET = ["SH", "RL", "RR", "DN", "SW", "SW_2", "SW_3"]
 SIMPLE_WITH_SWAP_BACK_ACTION_SET = ["SH", "RL", "RR", "DN", "SW_BK"]

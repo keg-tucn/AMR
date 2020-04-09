@@ -10,3 +10,4 @@ resources/data
 resources/glove
 plots_asg_statistics/
 .idea
+venv

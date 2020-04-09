@@ -1,4 +1,4 @@
-from asg import ASG
+from .asg import ASG
 
 """
 ASG: Action sequence generator

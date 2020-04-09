@@ -8,6 +8,7 @@ from definitions import TOKENIZER_PATH
 
 
 def generate_tokenizer():
+    print("Generating tokenizer at %s." % TOKENIZER_PATH)
     train_data_sentences = [d.sentence for d in dataset_loader.read_data("training", cache=True)]
     dev_data_sentences = [d.sentence for d in dataset_loader.read_data("dev", cache=True)]
     test_data_sentences = [d.sentence for d in dataset_loader.read_data("test", cache=True)]
@@ -19,12 +20,16 @@ def generate_tokenizer():
 
     pickle.dump(tokenizer, open(TOKENIZER_PATH, "wb"))
 
+    return tokenizer
+
 
 def get_tokenizer():
     if not path.isfile(TOKENIZER_PATH):
-        generate_tokenizer()
-
-    return pickle.load(open(TOKENIZER_PATH, "rb"))
+        return generate_tokenizer()
+    try:
+        return pickle.load(open(TOKENIZER_PATH, "rb"), encoding='latin1')
+    except Exception:
+        return generate_tokenizer()
 
 
 tokenizer = get_tokenizer()
@@ -54,17 +59,17 @@ def sequence_to_text(sequence):
 
 if __name__ == "__main__":
     word_index_map = get_word_index_map()
-    print "Words to indices map: %d" % len(word_index_map)
+    print(("Words to indices map: %d" % len(word_index_map)))
 
     index_word_map = get_index_word_map()
-    print "Indices to words map: %d" % len(index_word_map)
+    print(("Indices to words map: %d" % len(index_word_map)))
 
-    index_word_map_copy = {v: k for k, v in word_index_map.items()}
-    print cmp(index_word_map, index_word_map_copy)
+    index_word_map_copy = {v: k for k, v in list(word_index_map.items())}
+    print((cmp(index_word_map, index_word_map_copy)))
 
     sentence = "He went to the store to buy wood for a new fence ."
     tokens_sequence = text_to_sequence(sentence)
 
-    print "Original sentence:", sentence
-    print "Tokens sequence:", tokens_sequence
-    print "Reconstructed sentence:", sequence_to_text(tokens_sequence)
+    print(("Original sentence:", sentence))
+    print(("Tokens sequence:", tokens_sequence))
+    print(("Reconstructed sentence:", sequence_to_text(tokens_sequence)))

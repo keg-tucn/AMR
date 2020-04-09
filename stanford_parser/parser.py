@@ -1,7 +1,7 @@
 import jpype
 
 from definitions import STANFORD_DEP_PARSER_HOME
-from standoff import TextStandoff
+from .standoff import TextStandoff
 
 
 class ParserError(Exception):
@@ -21,7 +21,7 @@ class Dependencies:
 
         self.tokens = tokens
 
-        self.tokensToPosTags = dict(zip(self.tokens, self.posTags))
+        self.tokensToPosTags = dict(list(zip(self.tokens, self.posTags)))
 
         self.dependencies = dependencies
 
@@ -37,7 +37,7 @@ class Dependencies:
             self.govToDeps.setdefault(gov, [])
             self.govToDeps[gov].append(dep)
             assert not dep in self.depToGov, (dep.text, [(key.text, value.text)
-                                                         for key, value in self.depToGov.iteritems()])
+                                                         for key, value in self.depToGov.items()])
             self.depToGov[dep] = gov
             self.constituentsToRelation[(gov, dep)] = relation
 

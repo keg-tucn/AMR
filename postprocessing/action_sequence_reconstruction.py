@@ -32,7 +32,7 @@ class MetadataReconstructionState:
         self.named_entity_metadata = _named_entity_metadata
         self.date_entity_metadata = _date_entity_metadata
         self.parser_parameters = parser_parameters
-        self.buffer_indices = range(256)
+        self.buffer_indices = list(range(256))
         self.current_token_index = 0
         self.stack = []
         self.index_word_map = tokenizer_util.get_index_word_map()
@@ -221,15 +221,15 @@ if __name__ == "__main__":
 
     tokens = tokenizer_util.text_to_sequence(sentence)
 
-    print "Original actions:"
+    print("Original actions:")
     for act in actions:
-        print act
-    print "Reconstructed actions:"
+        print(act)
+    print("Reconstructed actions:")
     for act in actions_re:
-        print act
+        print(act)
 
     amr_re = reconstruct_all_ne(tokens, actions, [], [], parser_parameters=parser_parameters)
-    print amr_re.amr_print()
+    print(amr_re.amr_print())
 
     sentence = "upgrade fire control systems of Indian tanks ."
 
@@ -254,11 +254,11 @@ if __name__ == "__main__":
 
     tokens_to_concepts_dict = custom_AMR.tokens_to_concepts_dict
 
-    print actions
-    print actions_re
+    print(actions)
+    print(actions_re)
 
     amr_re = reconstruct_all_ne(tokens, actions, [(5, ["Indian"])], [], parser_parameters)
-    print amr_re.amr_print()
+    print(amr_re.amr_print())
 
     amr_str = """(d / difficult~e.5
           :domain~e.4 (r / reach-01~e.7
@@ -287,9 +287,9 @@ if __name__ == "__main__":
 
     tokens = tokenizer_util.text_to_sequence(sentence)
 
-    print actions
-    print actions_re
-    print reconstruct_all_ne(tokens, actions, [], [], parser_parameters)
+    print(actions)
+    print(actions_re)
+    print(reconstruct_all_ne(tokens, actions, [], [], parser_parameters))
 
-    print reconstruct_all_ne(tokens, actions, [(2, ["India"]), (10, ["NSG"])], [(13, ["month", "year"], [2017, 11])],
-                             parser_parameters)
+    print(reconstruct_all_ne(tokens, actions, [(2, ["India"]), (10, ["NSG"])], [(13, ["month", "year"], [2017, 11])],
+                             parser_parameters))

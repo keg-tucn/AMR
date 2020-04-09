@@ -5,7 +5,7 @@ from sklearn.preprocessing import LabelBinarizer
 
 from amr_util import tokenizer_util
 from constants import __AMR_RELATIONS, __DEP_AMR_REL_TABLE
-from feature_extraction_exceptions import InvalidParseException
+from .feature_extraction_exceptions import InvalidParseException
 from models.actions import *
 from models.parameters import *
 
@@ -101,7 +101,7 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
             continue
 
         try:
-            for action, j in zip(action_sequence, range(len(action_sequence))):
+            for action, j in zip(action_sequence, list(range(len(action_sequence)))):
                 next_action_prev_action_ohe = simple_target_label_binarizer.transform([next_action_prev_action.index])[
                                               0, :]
 
@@ -167,7 +167,7 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
 
         except InvalidParseException as e:
             exception_count += 1
-            logging.warn(e.message)
+            logging.warn(e)
             exception_count += 1
             continue
 
@@ -180,7 +180,7 @@ def generate_feature_vectors(x, y, dependencies, amr_ids, parser_parameters):
 
     logging.warning("Exception count " + str(exception_count))
 
-    for action_sequence, i in zip(action_sequences, range(len(action_sequences))):
+    for action_sequence, i in zip(action_sequences, list(range(len(action_sequences)))):
         y_train_instance_matrix = []
         for action in action_sequence:
             y_train_instance_matrix.append(
@@ -198,13 +198,13 @@ def init_label_binarizers():
     global simple_target_label_binarizer, composed_target_label_binarizer, amr_rel_binarizer
 
     simple_target_label_binarizer = LabelBinarizer()
-    simple_target_label_binarizer.fit(range(ActionSet.action_set_size()))
+    simple_target_label_binarizer.fit(list(range(ActionSet.action_set_size())))
 
     composed_target_label_binarizer = LabelBinarizer()
-    composed_target_label_binarizer.fit(range(ActionSet.action_set_size() + 2 * len(__AMR_RELATIONS)))
+    composed_target_label_binarizer.fit(list(range(ActionSet.action_set_size() + 2 * len(__AMR_RELATIONS))))
 
     amr_rel_binarizer = LabelBinarizer()
-    amr_rel_binarizer.fit(range(len(__AMR_RELATIONS)))
+    amr_rel_binarizer.fit(list(range(len(__AMR_RELATIONS))))
 
 
 def decode_parser_action(action_index, with_target_semantic_labels):
@@ -284,17 +284,17 @@ def get_dependency_features(stack_0_idx, stack_1_idx, stack_2_idx, buffer_0_idx,
         dep_0_on_b = oh_encode_amr_rel(None)
         dep_b_on_0 = oh_encode_amr_rel(None)
 
-        if stack_0_idx in dependencies.keys() and dependencies[stack_0_idx][0] == stack_1_idx:
+        if stack_0_idx in list(dependencies.keys()) and dependencies[stack_0_idx][0] == stack_1_idx:
             dep_0_on_1 = oh_encode_amr_rel(get_amr_rel_for_dep_rel(dependencies[stack_0_idx][1]))
-        if stack_1_idx in dependencies.keys() and dependencies[stack_1_idx][0] == stack_0_idx:
+        if stack_1_idx in list(dependencies.keys()) and dependencies[stack_1_idx][0] == stack_0_idx:
             dep_1_on_0 = oh_encode_amr_rel(get_amr_rel_for_dep_rel(dependencies[stack_1_idx][1]))
-        if stack_0_idx in dependencies.keys() and dependencies[stack_0_idx][0] == stack_2_idx:
+        if stack_0_idx in list(dependencies.keys()) and dependencies[stack_0_idx][0] == stack_2_idx:
             dep_0_on_2 = oh_encode_amr_rel(get_amr_rel_for_dep_rel(dependencies[stack_0_idx][1]))
-        if stack_2_idx in dependencies.keys() and dependencies[stack_2_idx][0] == stack_0_idx:
+        if stack_2_idx in list(dependencies.keys()) and dependencies[stack_2_idx][0] == stack_0_idx:
             dep_2_on_0 = oh_encode_amr_rel(get_amr_rel_for_dep_rel(dependencies[stack_2_idx][1]))
-        if stack_0_idx in dependencies.keys() and dependencies[stack_0_idx][0] == buffer_0_idx:
+        if stack_0_idx in list(dependencies.keys()) and dependencies[stack_0_idx][0] == buffer_0_idx:
             dep_0_on_b = oh_encode_amr_rel(get_amr_rel_for_dep_rel(dependencies[stack_0_idx][1]))
-        if buffer_0_idx in dependencies.keys() and dependencies[buffer_0_idx][0] == stack_0_idx:
+        if buffer_0_idx in list(dependencies.keys()) and dependencies[buffer_0_idx][0] == stack_0_idx:
             dep_b_on_0 = oh_encode_amr_rel(get_amr_rel_for_dep_rel(dependencies[buffer_0_idx][1]))
 
         return np.concatenate((dep_0_on_1, dep_1_on_0, dep_0_on_2, dep_2_on_0, dep_0_on_b, dep_b_on_0))
@@ -302,17 +302,17 @@ def get_dependency_features(stack_0_idx, stack_1_idx, stack_2_idx, buffer_0_idx,
     else:
         [dep_0_on_1, dep_1_on_0, dep_0_on_2, dep_2_on_0, dep_0_on_b, dep_b_on_0] = np.zeros(6)
 
-        if stack_0_idx in dependencies.keys() and dependencies[stack_0_idx][0] == stack_1_idx:
+        if stack_0_idx in list(dependencies.keys()) and dependencies[stack_0_idx][0] == stack_1_idx:
             dep_0_on_1 = 1
-        if stack_1_idx in dependencies.keys() and dependencies[stack_1_idx][0] == stack_0_idx:
+        if stack_1_idx in list(dependencies.keys()) and dependencies[stack_1_idx][0] == stack_0_idx:
             dep_1_on_0 = 1
-        if stack_0_idx in dependencies.keys() and dependencies[stack_0_idx][0] == stack_2_idx:
+        if stack_0_idx in list(dependencies.keys()) and dependencies[stack_0_idx][0] == stack_2_idx:
             dep_0_on_2 = 1
-        if stack_2_idx in dependencies.keys() and dependencies[stack_2_idx][0] == stack_0_idx:
+        if stack_2_idx in list(dependencies.keys()) and dependencies[stack_2_idx][0] == stack_0_idx:
             dep_2_on_0 = 1
-        if stack_0_idx in dependencies.keys() and dependencies[stack_0_idx][0] == buffer_0_idx:
+        if stack_0_idx in list(dependencies.keys()) and dependencies[stack_0_idx][0] == buffer_0_idx:
             dep_0_on_b = 1
-        if buffer_0_idx in dependencies.keys() and dependencies[buffer_0_idx][0] == stack_0_idx:
+        if buffer_0_idx in list(dependencies.keys()) and dependencies[buffer_0_idx][0] == stack_0_idx:
             dep_b_on_0 = 1
 
         return np.asanyarray([dep_0_on_1, dep_1_on_0, dep_0_on_2, dep_2_on_0, dep_0_on_b, dep_b_on_0])

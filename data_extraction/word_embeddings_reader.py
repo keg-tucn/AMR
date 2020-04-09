@@ -50,7 +50,7 @@ def _load_embeddings_matrix(word_index, embedding_dim):
 
     embeddings_index = {}
 
-    emb_file = open(GLOVE_EMBEDDINGS + "/" + "glove.6B.{}d.txt".format(embedding_dim))
+    emb_file = open(GLOVE_EMBEDDINGS + "/" + "glove.6B.{}d.txt".format(embedding_dim), encoding="utf-8")
     for line in emb_file:
         values = line.split()
         word = values[0]
@@ -58,12 +58,12 @@ def _load_embeddings_matrix(word_index, embedding_dim):
         embeddings_index[word] = coefs
     emb_file.close()
 
-    print("Found %s word vectors." % len(embeddings_index))
+    print(("Found %s word vectors." % len(embeddings_index)))
 
     embeddings_matrix = np.zeros((len(word_index) + 2, embedding_dim))
     not_found = []
 
-    for word, i in word_index.items():
+    for word, i in list(word_index.items()):
         embedding_vector = embeddings_index.get(word)
         if embedding_vector is not None:
             # words not found in embedding index will be all-zeros.
@@ -71,10 +71,10 @@ def _load_embeddings_matrix(word_index, embedding_dim):
         else:
             match = re.match(special_cases_re, word)
             if match:
-                print "Embedding match for {}".format(word)
+                print(("Embedding match for {}".format(word)))
                 embedding_vector = embeddings_index.get(match.group(1))
             else:
                 not_found.append(word)
 
-    print "First 4 not found: {}".format(not_found[0:4])
+    print(("First 4 not found: {}".format(not_found[0:4])))
     return embeddings_matrix, embeddings_index

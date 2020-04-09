@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
-from os import path
+from os import path, makedirs
 
 abs_path = path.abspath('./plots_asg_statistics')
-print abs_path
+print(abs_path)
 
 
 def plot_histogram(histogram_data, histogram_names, alg_version, subdirectory, filename):
@@ -19,12 +19,15 @@ def plot_histogram(histogram_data, histogram_names, alg_version, subdirectory, f
 
     no_of_hists = len(histogram_data)
     p = abs_path + "/" + alg_version + "/" + subdirectory + "/" + filename + ".png"
+    if not path.exists(path.dirname(p)):
+        print("Building path %s" % p)
+        makedirs(path.dirname(p))
     fig, axes = plt.subplots(nrows=no_of_hists, ncols=1, figsize=(10, 5 * no_of_hists), sharey=True)
 
     for i in range(0, no_of_hists):
         ax = axes[i]
         ax.set_title(histogram_names[i])
-        x_data = range(len(histogram_data[i]))
+        x_data = list(range(len(histogram_data[i])))
         y_data = list(histogram_data[i].values())
         labels = list(histogram_data[i].keys())
         ax.bar(x_data, y_data, align='center')
@@ -42,19 +45,19 @@ def plot_2_line_graph(data1, data2, relative_path):
     fig, axes = plt.subplots(nrows=3, ncols=1, figsize=(10, 5 * 2), sharey=True)
     ax = axes[0]
     ax.set_title("main graph")
-    x_data = range(0, 255)
+    x_data = list(range(0, 255))
     ax.plot(x_data, data1)
     ax.plot(x_data, data2)
 
     ax = axes[1]
     ax.set_title("detailed graph (max length 50)")
-    x_data = range(0, 50)
+    x_data = list(range(0, 50))
     ax.plot(x_data, data1[0:50])
     ax.plot(x_data, data2[0:50])
 
     ax = axes[2]
     ax.set_title("detailed graph (max length 15)")
-    x_data = range(0, 15)
+    x_data = list(range(0, 15))
     ax.plot(x_data, data1[0:15])
     ax.plot(x_data, data2[0:15])
 

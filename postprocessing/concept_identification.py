@@ -1,24 +1,24 @@
-from amr_util import frameset_matcher, nodebox_util, pos_converter
+from amr_util import frameset_matcher, pattern_util, pos_converter
 
 
 def annotate_node_concepts(node):
     node_label = node.label
 
-    node_label = nodebox_util.simplify_word(node_label)
+    node_label = pattern_util.simplify_word(node_label)
 
-    children_tokens = [nodebox_util.simplify_word(n[0].label) for n in node.children]
+    children_tokens = [pattern_util.simplify_word(n[0].label) for n in node.children]
 
     labels_with_source = []
 
-    if nodebox_util.is_verb(node_label):
+    if pattern_util.is_verb(node_label):
         labels_with_source.append((node_label, "propbank"))
-    elif nodebox_util.is_noun(node_label):
+    elif pattern_util.is_noun(node_label):
         labels_with_source.append((node_label, "nombank"))
         labels_with_source.append((pos_converter.convert(node_label, "n", "v"), "propbank"))
-    elif nodebox_util.is_adjective(node_label):
+    elif pattern_util.is_adjective(node_label):
         labels_with_source.append((node_label, "nombank"))
         labels_with_source.append((pos_converter.convert(node_label, "a", "v"), "propbank"))
-    elif nodebox_util.is_adverb(node_label):
+    elif pattern_util.is_adverb(node_label):
         labels_with_source.append((node_label, "nombank"))
         labels_with_source.append((pos_converter.convert(node_label, "r", "v"), "propbank"))
 

@@ -1,7 +1,7 @@
 class Vocab:
     def __init__(self, w2i):
         self.w2i = dict(w2i)
-        self.i2w = {i: w for w, i in w2i.iteritems()}
+        self.i2w = {i: w for w, i in list(w2i.items())}
 
     @classmethod
     def from_list(cls, words):
@@ -15,7 +15,7 @@ class Vocab:
     @classmethod
     def from_file(cls, vocab_fname):
         words = []
-        with file(vocab_fname) as fh:
+        with open(vocab_fname) as fh:
             for line in fh:
                 line.strip()
                 word, count = line.split()
@@ -23,10 +23,10 @@ class Vocab:
         return Vocab.from_list(words)
 
     def size(self):
-        return len(self.w2i.keys())
+        return len(list(self.w2i.keys()))
 
     def get_index_or_add(self, word):
-        if word not in self.w2i.keys():
+        if word not in list(self.w2i.keys()):
             idx = self.size()
             self.w2i[word] = idx
             self.i2w[idx] = word

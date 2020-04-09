@@ -24,7 +24,7 @@ def process_language(content_array):
             tagged = nltk.pos_tag(tokenized)
             chunked = nltk.ne_chunk(tagged, binary=True)
             named_entities = extract_entity_names(chunked)
-            print named_entities
+            print(named_entities)
             result = ''
             tokenized_copy = tokenized
             for i, token in enumerate(tokenized_copy):
@@ -34,8 +34,8 @@ def process_language(content_array):
             for token in tokenized_copy:
                 result = result + token + ' '
 
-    except Exception, e:
-        print str(e)
+    except Exception as e:
+        print(str(e))
 
 
 def process_sentence(sentence):
@@ -68,16 +68,16 @@ def process_sentence(sentence):
         for item in new_sentence_list:
             new_sentence = new_sentence + item + ' '
 
-        print tagged_list
-        print new_sentence_list
-        print new_sentence
-        print named_entities_location
+        print(tagged_list)
+        print(new_sentence_list)
+        print(new_sentence)
+        print(named_entities_location)
 
         return new_sentence, named_entities_location
 
-    except Exception, e:
-        print str(e)
+    except Exception as e:
+        print(str(e))
 
 
 if __name__ == "__main__":
-    print process_sentence('Rami Eid John is studying in San Francisco')
+    print(process_sentence('Rami Eid John is studying in San Francisco'))

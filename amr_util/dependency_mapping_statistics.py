@@ -42,7 +42,7 @@ def load_and_align_data():
 def get_direct_dependencies_pairs(dependencies_dict):
     head_dependant_tokens_pairs = []
 
-    for dep_parent, (dep_child, dep_type) in dependencies_dict.items():
+    for dep_parent, (dep_child, dep_type) in list(dependencies_dict.items()):
         head_dependant_tokens_pairs.append((dep_parent, dep_child))
 
     return head_dependant_tokens_pairs
@@ -51,7 +51,7 @@ def get_direct_dependencies_pairs(dependencies_dict):
 def get_intermediary_step_dependencies_pairs(dependencies_dict):
     head_dependant_tokens_pairs = []
 
-    for dep_parent, (dep_intermediary, _) in dependencies_dict.items():
+    for dep_parent, (dep_intermediary, _) in list(dependencies_dict.items()):
         dep_intermediary_rel = dependencies_dict.get(dep_intermediary, None)
         if dep_intermediary_rel is not None and dep_intermediary_rel[1] != "ROOT":
             dep_child = dep_intermediary_rel[0]
@@ -63,7 +63,7 @@ def get_intermediary_step_dependencies_pairs(dependencies_dict):
 def get_two_intermediary_step_dependencies_pairs(dependencies_dict):
     head_dependant_tokens_pairs = []
 
-    for dep_parent, (dep_first_intermediary, _) in dependencies_dict.items():
+    for dep_parent, (dep_first_intermediary, _) in list(dependencies_dict.items()):
         dep_first_intermediary_rel = dependencies_dict.get(dep_first_intermediary, None)
         if dep_first_intermediary_rel is not None and dep_first_intermediary_rel[1] != "ROOT":
             dep_second_intermediary = dep_first_intermediary_rel[0]
@@ -76,7 +76,7 @@ def get_two_intermediary_step_dependencies_pairs(dependencies_dict):
 
 
 def get_amr_node_for_token(token, amr):
-    for key, value in amr.node_to_tokens.items():
+    for key, value in list(amr.node_to_tokens.items()):
         if str(token) in value or str(token) in value[0]:
             return key
     return None
@@ -89,7 +89,7 @@ def amr_has_relation_for_nodes(node_1, node_2, amr):
 
         if parent_node in amr:
             parent_rels = amr.get(parent_node)
-            for rel in parent_rels.items():
+            for rel in list(parent_rels.items()):
                 if tuple(child_node) in rel:
                     return "direct"
 
@@ -98,7 +98,7 @@ def amr_has_relation_for_nodes(node_1, node_2, amr):
 
         if parent_node in amr:
             parent_rels = amr.get(parent_node)
-            for rel in parent_rels.items():
+            for rel in list(parent_rels.items()):
                 if tuple(child_node) in rel:
                     return "inverse"
 
@@ -175,14 +175,14 @@ if __name__ == "__main__":
 
     present_deps = direct_deps + inverse_deps
 
-    print "Data length: %d" % len(sequences)
-    print "Total number of dependencies between tokens: %d" % total_deps
-    print "Total number of dependencies between tokens that have an AMR relation: %d" % present_deps
-    print "Percentage of mapped dependency relations: %f" % (float(present_deps) / total_deps)
-    print "Percentage of direct dependencies: %f" % (float(direct_deps) / present_deps)
-    print "Percentage of inverse dependencies: %f" % (float(inverse_deps) / present_deps)
-    print "Unaligned node dependencies: %f" % (float(unaligned_node_deps) / total_deps)
-    print "Number of AMR relations mapped through 2 consecutive dependency relations (direct and inverse): %d %d" % (
-        one_step_direct_deps, one_step_inverse_deps)
-    print "Number of AMR relations mapped through 3 consecutive dependency relations (direct and inverse): %d %d" % (
-        two_step_direct_deps, two_step_inverse_deps)
+    print(("Data length: %d" % len(sequences)))
+    print(("Total number of dependencies between tokens: %d" % total_deps))
+    print(("Total number of dependencies between tokens that have an AMR relation: %d" % present_deps))
+    print(("Percentage of mapped dependency relations: %f" % (float(present_deps) / total_deps)))
+    print(("Percentage of direct dependencies: %f" % (float(direct_deps) / present_deps)))
+    print(("Percentage of inverse dependencies: %f" % (float(inverse_deps) / present_deps)))
+    print(("Unaligned node dependencies: %f" % (float(unaligned_node_deps) / total_deps)))
+    print(("Number of AMR relations mapped through 2 consecutive dependency relations (direct and inverse): %d %d" % (
+        one_step_direct_deps, one_step_inverse_deps)))
+    print(("Number of AMR relations mapped through 3 consecutive dependency relations (direct and inverse): %d %d" % (
+        two_step_direct_deps, two_step_inverse_deps)))

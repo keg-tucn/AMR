@@ -40,10 +40,10 @@ def extract_frames_to_dump_file(source):
         frames_dir = ""
         frames_dump_file = ""
 
-    frame_files = filter(lambda x: ".xml" in x, listdir(frames_dir))
+    frame_files = [x for x in listdir(frames_dir) if ".xml" in x]
     frames = {}
 
-    for i in tqdm(range(len(frame_files))):
+    for i in tqdm(list(range(len(frame_files)))):
         file_path = frames_dir + "/" + frame_files[i]
         frame = Frameset.build_from_XML(ElementTree.parse(file_path))
         frames[frame.lemma] = frame
@@ -64,7 +64,10 @@ def load_frames(source):
         extract_frames_to_dump_file(source)
 
     with open(frames_dump_path, "rb") as dump_file:
-        return js.load(dump_file)
+        try:
+            return js.load(dump_file)
+        except Exception:
+            extract_frames_to_dump_file(source)
 
 
 def get_merged_frameset(token):

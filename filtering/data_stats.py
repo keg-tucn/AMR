@@ -59,66 +59,66 @@ def generate_dataset_statistics(file_path, filters):
 
 
 def generate_statistics(file_path):
-    print("Dataset: {0}".format(file_path))
+    print(("Dataset: {0}".format(file_path)))
 
     # NO FILTERS
     instances, filtered_instances = generate_dataset_statistics(file_path, [])
-    print("Filter: none, Total number of instances: {0}, Number of filtered instances: {1}".format(instances,
-                                                                                                   filtered_instances))
+    print(("Filter: none, Total number of instances: {0}, Number of filtered instances: {1}".format(instances,
+                                                                                                   filtered_instances)))
 
     # no missing alignment
     aligned_filters = [NoMissingAllignmentInfoFilter()]
     instances, filtered_instances = generate_dataset_statistics(file_path, aligned_filters)
-    print("Filter: NoMissingAllignmentFilter, Total number of instances: {0}, Number of filtered instances: {1}".format(
-        instances, filtered_instances))
+    print(("Filter: NoMissingAllignmentFilter, Total number of instances: {0}, Number of filtered instances: {1}".format(
+        instances, filtered_instances)))
 
     # tree
     tree_filters = [TreeFilter()]
     instances, filtered_instances = generate_dataset_statistics(file_path, tree_filters)
-    print("Filter: TreeFilter, Total number of instances: {0}, Number of filtered instances: {1}".format(instances,
-                                                                                                         filtered_instances))
+    print(("Filter: TreeFilter, Total number of instances: {0}, Number of filtered instances: {1}".format(instances,
+                                                                                                         filtered_instances)))
 
     # tree with no missing alignment
     aligned_treee_filters = [TreeFilter(), NoMissingAllignmentInfoFilter()]
     instances, filtered_instances = generate_dataset_statistics(file_path, aligned_treee_filters)
-    print(
+    print((
         "Filter: AlignedTreeFilter, Total number of instances: {0}, Number of filtered instances: {1}".format(instances,
-                                                                                                              filtered_instances))
+                                                                                                              filtered_instances)))
 
     # from this point on, statistics are run on amrs that are aligned trees
 
     # aligned tree where token:node relation is 1:0..1
     aligned_treee_token1words_filters = [TreeFilter(), NoMissingAllignmentInfoFilter(), TokenToNodeAlignmentFilter(1)]
     instances, filtered_instances = generate_dataset_statistics(file_path, aligned_treee_token1words_filters)
-    print(
+    print((
         "Filter: Token1WordsFilter, Total number of instances: {0}, Number of filtered instances: {1}".format(instances,
-                                                                                                              filtered_instances))
+                                                                                                              filtered_instances)))
 
     # aligned tree where token:node relation is 1:0..2
     aligned_treee_token2words_filters = [TreeFilter(), NoMissingAllignmentInfoFilter(), TokenToNodeAlignmentFilter(2)]
     instances, filtered_instances = generate_dataset_statistics(file_path, aligned_treee_token2words_filters)
-    print(
+    print((
         "Filter: Token2WordsFilter, Total number of instances: {0}, Number of filtered instances: {1}".format(instances,
-                                                                                                              filtered_instances))
+                                                                                                              filtered_instances)))
 
     # aligned tree where token:node relation is 1:0..3
     aligned_treee_token3words_filters = [TreeFilter(), NoMissingAllignmentInfoFilter(), TokenToNodeAlignmentFilter(3)]
     instances, filtered_instances = generate_dataset_statistics(file_path, aligned_treee_token3words_filters)
-    print(
+    print((
         "Filter: Token3WordsFilter, Total number of instances: {0}, Number of filtered instances: {1}".format(instances,
-                                                                                                              filtered_instances))
+                                                                                                              filtered_instances)))
 
     # perfectly aligned trees
     perfect_align_filters = [PerfectAlignmentFilter()]
     instances, filtered_instances = generate_dataset_statistics(file_path, perfect_align_filters)
-    print("Filter: PerfectlyAlignedAMRTree, Total number of instances: {0}, Number of filtered instances: {1}".format(
-        instances, filtered_instances))
+    print(("Filter: PerfectlyAlignedAMRTree, Total number of instances: {0}, Number of filtered instances: {1}".format(
+        instances, filtered_instances)))
 
     # aligned projective tree
     pojective_filters = [ProjectiveTreeFilter()]
     instances, filtered_instances = generate_dataset_statistics(file_path, pojective_filters)
-    print("Filter: ProjectiveAlignedTreee, Total number of instances: {0}, Number of filtered instances: {1}".format(
-        instances, filtered_instances))
+    print(("Filter: ProjectiveAlignedTreee, Total number of instances: {0}, Number of filtered instances: {1}".format(
+        instances, filtered_instances)))
 
     print("\n")
 
