@@ -1,10 +1,10 @@
-from .models.amr_data import CustomizedAMR
-from .models.amr_graph import AMR
-from .preprocessing import TokensReplacer, ActionSequenceGenerator
+from models.amr_data import CustomizedAMR
+from models.amr_graph import AMR
+from preprocessing import TokensReplacer, ActionSequenceGenerator
 
 
 def pretty_print(amr):
-    for k in list(amr.keys()):
+    for k in amr.keys():
         print(("Key: %s" % (k)))
         list = amr[k]
         if len(list) == 0:
