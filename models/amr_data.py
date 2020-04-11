@@ -27,7 +27,8 @@ class CustomizedAMR:
             tokens = amr_graph.node_to_tokens[node_variable]
             if node_variable in list(amr_graph.node_to_concepts.keys()):
                 concept = amr_graph.node_to_concepts[node_variable]
-                self.tokens_to_concepts_dict[int(tokens[0])] = (node_variable, concept)
+                for token in tokens:
+                    self.tokens_to_concepts_dict[int(token)] = (node_variable, concept)
             else:
                 if node_variable in exceptions:
                     # for "-" tokens are given as a (token, node_variable) pair
@@ -43,11 +44,12 @@ class CustomizedAMR:
         for node_variable in list(amr_graph.node_to_tokens.keys()):
             tokens = amr_graph.node_to_tokens[node_variable]
             if node_variable in list(amr_graph.node_to_concepts.keys()):
-                t = int(tokens[0])
-                if t not in list(self.tokens_to_concept_list_dict.keys()):
-                    self.tokens_to_concept_list_dict[t] = []
-                concept = amr_graph.node_to_concepts[node_variable]
-                self.tokens_to_concept_list_dict[t].append((node_variable, concept))
+                for token in tokens:
+                    t = int(token)
+                    if t not in list(self.tokens_to_concept_list_dict.keys()):
+                        self.tokens_to_concept_list_dict[t] = []
+                    concept = amr_graph.node_to_concepts[node_variable]
+                    self.tokens_to_concept_list_dict[t].append((node_variable, concept))
             else:
                 if node_variable in exceptions:
                     # for "-" tokens are given as a (token, node_variable) pair
