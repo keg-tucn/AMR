@@ -216,14 +216,15 @@ class ActionSeqGenStatistics:
                                                      with_target_semantic_labels=False, with_reattach=True,
                                                      with_gold_concept_labels=True, with_gold_relation_labels=True)
                 tokens = tokenizer_util.text_to_sequence(sentence)
-                generated_amr_str = asr.reconstruct_all_ne(tokens, action_sequence,
+                generated_amr = asr.reconstruct_all_ne(tokens, action_sequence,
                                                            self.named_entities_metadata,
                                                            self.date_entities_metadata, parser_parameters).amr_print()
-
+                generated_amr_str = generated_amr.amr_print()
                 if self.coreference_handling:
                     generated_amr_str = reentrancy_restoring(generated_amr_str)
 
                 smatch_results = smatch_util.SmatchAccumulator()
+                # does this not mean the nodes have the allignment info with them>
                 original_amr = smatch_amr.AMR.parse_AMR_line(amr_str)
                 generated_amr = smatch_amr.AMR.parse_AMR_line(generated_amr_str)
                 smatch_f_score = smatch_results.compute_and_add(generated_amr, original_amr)

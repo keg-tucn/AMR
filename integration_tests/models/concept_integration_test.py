@@ -1,8 +1,3 @@
-# amr_str = """(r / recommend-01~e.1
-#                 :ARG1 (a / advocate-01~e.4
-#                     :ARG1 (i / it~e.0)
-#                     :manner~e.2 (v / vigorous~e.3)))"""
-# sentence = """It should be vigorously advocated ."""
 from models.amr_data import CustomizedAMR
 from models.amr_graph import AMR
 from models.concept import IdentifiedConcepts, Concept
@@ -65,21 +60,67 @@ def test_create_from_custom_amr_example_2():
     amr = AMR.parse_string(amr_str)
     custom_amr = CustomizedAMR()
     custom_amr.create_custom_AMR(amr)
+
     generated_concepts = IdentifiedConcepts()
     generated_concepts.create_from_custom_amr('amr_id_2', custom_amr)
     expected_concepts = IdentifiedConcepts()
     expected_concepts.amr_id = 'amr_id_2'
-    expected_concepts.ordered_concepts = [Concept('a', 'and'), Concept('-', '-'), Concept('a4', 'any'),
-                                          Concept('p2', 'promise-01'), Concept('h', 'he'), Concept('p', 'possible-01'),
-                                          Concept('a2', 'actual-02'), Concept('a3', 'avoid-01'), Concept('c', 'censure-01')]
+    expected_concepts.ordered_concepts = [Concept('a', 'and'),
+                                          Concept('-', '-'),
+                                          Concept('a4', 'any'),
+                                          Concept('p2', 'promise-01'),
+                                          Concept('h', 'he'),
+                                          Concept('p', 'possible-01'),
+                                          Concept('a2', 'actual-02'),
+                                          Concept('a3', 'avoid-01'),
+                                          Concept('c', 'censure-01')
+                                          ]
+    assert_identified_concepts(expected_concepts, generated_concepts)
+
+
+# """(d / difficult~e.5
+#           :domain~e.4 (r / reach-01~e.7
+#                 :ARG1 (c / consensus~e.0
+#                       :topic~e.1 (c2 / country :wiki "India"
+#                             :name (n / name :op1 "India"~e.2)))
+#                 :time~e.8 (m / meet-03~e.11
+#                       :ARG0 (o / organization :wiki "Nuclear_Suppliers_Group"
+#                             :name (n2 / name :op1 "NSG"~e.10))
+#                       :time~e.12 (d2 / date-entity :year 2007~e.14 :month~e.13 11~e.13))))"""
+def test_create_from_custom_amr_example_3():
+    amr_str = """(d / difficult~e.5
+          :domain~e.4 (r / reach-01~e.7
+                :ARG1 (c / consensus~e.0
+                      :topic~e.1 (c2 / country :wiki "India"
+                            :name (n / name :op1 "India"~e.2)))
+                :time~e.8 (m / meet-03~e.11
+                      :ARG0 (o / organization :wiki "Nuclear_Suppliers_Group"
+                            :name (n2 / name :op1 "NSG"~e.10))
+                      :time~e.12 (d2 / date-entity :year 2007~e.14 :month~e.13 11~e.13))))"""
+    amr = AMR.parse_string(amr_str)
+    custom_amr = CustomizedAMR()
+    custom_amr.create_custom_AMR(amr)
+    generated_concepts = IdentifiedConcepts()
+    generated_concepts.create_from_custom_amr('amr_id_3', custom_amr)
+    expected_concepts = IdentifiedConcepts()
+    expected_concepts.amr_id = 'amr_id_3'
+    expected_concepts.ordered_concepts = [Concept('c', 'consensus'),
+                                          Concept('India', 'India'),
+                                          Concept('d', 'difficult'),
+                                          Concept('r', 'reach-01'),
+                                          Concept('NSG', 'NSG'),
+                                          Concept('m', 'meet-03'),
+                                          Concept('11', '11'),
+                                          Concept('2007', '2007')]
     assert_identified_concepts(expected_concepts, generated_concepts)
 
 
 def test_create_from_custom_amr():
     test_create_from_custom_amr_example_1()
     test_create_from_custom_amr_example_2()
+    test_create_from_custom_amr_example_3()
 
 
 if __name__ == "__main__":
     test_create_from_custom_amr()
-    print("Everything in concept_test passed")
+    print("Everything in concept_integration_test passed")
