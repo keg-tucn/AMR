@@ -74,6 +74,24 @@ class AMR(defaultdict):
 
         self.reentrance_triples = []
 
+    def __printing__representation(self):
+        printing_repr = ''
+        printing_repr += 'node_to_concepts: ' + str(self.node_to_concepts) + '\n'
+        printing_repr += 'node_to_tokens: ' + str(self.node_to_tokens) + '\n'
+        printing_repr += 'relation_to_tokens: ' + str(self.relation_to_tokens) + '\n'
+        printing_repr += 'align_to_sentence: ' + str(self.align_to_sentence) + '\n'
+        printing_repr += 'default dict:\n'
+        for parent, children in self.items():
+            printing_repr += 'parent ' + parent + " with children: "
+            printing_repr += str(children)+ '\n'
+        return printing_repr
+
+    def __str__(self):
+        return self.__printing__representation()
+
+    def __repr__(self):
+        return self.__printing__representation()
+
     @classmethod
     def parse_string(cls, amr_string, RENAME_NODE=False):
 
@@ -823,6 +841,7 @@ class AMR(defaultdict):
 
 
 import copy as copy
+
 if __name__ == "__main__":
     opt = OptionParser()
     opt.add_option("-v", action="store_true", dest="verbose")

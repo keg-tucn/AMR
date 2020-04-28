@@ -3,6 +3,7 @@ class Vocab:
         self.w2i = dict(w2i)
         self.i2w = {i: w for w, i in list(w2i.items())}
 
+    # does not work properly if list contains duplicates
     @classmethod
     def from_list(cls, words):
         w2i = {}
