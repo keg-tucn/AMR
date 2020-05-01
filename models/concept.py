@@ -1,3 +1,4 @@
+import re
 from typing import List
 
 from models.amr_data import CustomizedAMR
@@ -23,6 +24,16 @@ class Concept:
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    @staticmethod
+    def strip_concept_sense(concept_name: str):
+        """
+        It strips the concept of the sense number
+        Eg. recommend-01 => recommend
+        Needed for extracting embeddings or pos tags for the concept
+        """
+        splits = re.split("-([0-9])+", concept_name)
+        return splits[0]
 
 
 class IdentifiedConcepts:
