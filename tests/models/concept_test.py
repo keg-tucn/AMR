@@ -44,6 +44,24 @@ def test_create_from_custom_amr():
     test_create_from_custom_amr_example_1()
 
 
+def test_strip_concept_sense():
+    concept_name = 'recommend-01'
+    stripped_concept = Concept.strip_concept_sense(concept_name)
+    expected_concept = 'recommend'
+    assert stripped_concept == expected_concept
+
+    concept_name = 'go'
+    stripped_concept = Concept.strip_concept_sense(concept_name)
+    expected_concept = 'go'
+    assert stripped_concept == expected_concept
+
+    concept_name = '-'
+    stripped_concept = Concept.strip_concept_sense(concept_name)
+    expected_concept = '-'
+    assert stripped_concept == expected_concept
+
+
 if __name__ == "__main__":
     test_create_from_custom_amr()
+    test_strip_concept_sense()
     print("Everything in concept_test passed")

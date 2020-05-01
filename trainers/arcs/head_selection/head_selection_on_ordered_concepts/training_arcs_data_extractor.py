@@ -11,10 +11,16 @@ ROOT_CONCEPT_NAME = 'ROOT'
 
 
 class ArcsTrainingEntry:
-    def __init__(self, identified_concepts, parent_vector, logging_info):
+    def __init__(self,
+                 identified_concepts: IdentifiedConcepts,
+                 parent_vector: List[int],
+                 logging_info:str,
+                 amr_str:str):
         self.identified_concepts = identified_concepts
         self.parent_vector = parent_vector
         self.logging_info = logging_info
+        # needed for smatch
+        self.amr_str = amr_str
 
 
 def generate_parent_vector(custom_amr: CustomizedAMR, identified_concepts: IdentifiedConcepts):
@@ -57,7 +63,7 @@ def generate_dataset_entry(amr_id: str, amr_str: str, sentence: str):
     parent_vector = generate_parent_vector(custom_amr, identified_concepts)
     logging_info = 'AMR with id ' + amr_id + '\n' + sentence + '\n' + amr_str +\
                    str(identified_concepts) + '\n' + str(parent_vector) + '\n\n'
-    return ArcsTrainingEntry(identified_concepts, parent_vector, logging_info)
+    return ArcsTrainingEntry(identified_concepts, parent_vector, logging_info, amr_str)
 
 
 # TODO: cache them to a file (to not always generate them)
