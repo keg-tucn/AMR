@@ -141,5 +141,5 @@ class ArcsAnalysis(DatasetAnalysis):
 
 if __name__ == "__main__":
     arcsAnalysis = ArcsAnalysis()
-    # arcsAnalysis.create_tables()
+    arcsAnalysis.create_tables()
     arcsAnalysis.create_tables_with_ordered_concepts_filter()

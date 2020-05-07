@@ -70,13 +70,14 @@ class ConceptsAnalysis(DatasetAnalysis):
 
         for prep_name, preprocessing_steps in preprocessing_steps_dict.items():
             tablename = 'tables/concepts/all_concepts_' + prep_name + '_training_vs_dev.xlsx'
-            print('Start creating table '+tablename)
+            print('Start creating table ' + tablename)
 
             # preprocess
             amr_training_dataset = map_to_amr_dataset_dict(training_dataset_dict)
             amr_dev_dataset = map_to_amr_dataset_dict(dev_dataset_dict)
-            prep_amr_training_dataset,_ = apply_preprocessing_on_amr_dataset_dict(amr_training_dataset, preprocessing_steps)
-            prep_amr_dev_dataset,_ = apply_preprocessing_on_amr_dataset_dict(amr_dev_dataset, preprocessing_steps)
+            prep_amr_training_dataset, _ = apply_preprocessing_on_amr_dataset_dict(amr_training_dataset,
+                                                                                   preprocessing_steps)
+            prep_amr_dev_dataset, _ = apply_preprocessing_on_amr_dataset_dict(amr_dev_dataset, preprocessing_steps)
 
             custom_amr_training_dataset = map_from_amr_to_custom_amr_dataset_dict(prep_amr_training_dataset)
             custom_amr_dev_dataset_dict = map_from_amr_to_custom_amr_dataset_dict(prep_amr_dev_dataset)
@@ -108,13 +109,14 @@ class ConceptsAnalysis(DatasetAnalysis):
 
         for prep_name, preprocessing_steps in preprocessing_steps_dict.items():
             tablename = 'tables/concepts/can_be_ordered_concepts_' + prep_name + '_training_vs_dev.xlsx'
-            print('Start creating table '+tablename)
+            print('Start creating table ' + tablename)
 
             # preprocess
             amr_training_dataset = map_to_amr_dataset_dict(training_dataset_dict)
             amr_dev_dataset = map_to_amr_dataset_dict(dev_dataset_dict)
-            prep_amr_training_dataset,_ = apply_preprocessing_on_amr_dataset_dict(amr_training_dataset, preprocessing_steps)
-            prep_amr_dev_dataset,_ = apply_preprocessing_on_amr_dataset_dict(amr_dev_dataset, preprocessing_steps)
+            prep_amr_training_dataset, _ = apply_preprocessing_on_amr_dataset_dict(amr_training_dataset,
+                                                                                   preprocessing_steps)
+            prep_amr_dev_dataset, _ = apply_preprocessing_on_amr_dataset_dict(amr_dev_dataset, preprocessing_steps)
 
             custom_amr_training_dataset = map_from_amr_to_custom_amr_dataset_dict(prep_amr_training_dataset)
             custom_amr_dev_dataset_dict = map_from_amr_to_custom_amr_dataset_dict(prep_amr_dev_dataset)
@@ -122,14 +124,14 @@ class ConceptsAnalysis(DatasetAnalysis):
             # filter data (only concepts that can be extracted)
             filterd_training_dataset_dict = filter_dataset_dict(custom_amr_training_dataset,
                                                                 [CanExtractOrderedConceptsFilter()])
-            filterd_dev_dataset_dict = filter_dataset_dict(custom_amr_dev_dataset_dict, [CanExtractOrderedConceptsFilter()])
+            filterd_dev_dataset_dict = filter_dataset_dict(custom_amr_dev_dataset_dict,
+                                                           [CanExtractOrderedConceptsFilter()])
 
             # create concepts <-> training table
             self.create_comparative_analysis(tablename,
                                              'concepts',
                                              filterd_training_dataset_dict, filterd_dev_dataset_dict,
                                              'training', 'dev')
-
 
 
 if __name__ == "__main__":
