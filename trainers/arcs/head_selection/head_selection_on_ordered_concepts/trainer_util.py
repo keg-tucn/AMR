@@ -13,19 +13,6 @@ from trainers.arcs.head_selection.head_selection_on_ordered_concepts.training_ar
     ArcsTrainingEntry
 from trainers.arcs.head_selection.relations_dictionary_extractor import get_relation_between_concepts
 
-
-def get_all_paths(split: str):
-    dir_path = AMR_ALIGNMENTS_SPLIT + "/" + split
-    directory_content = listdir(dir_path)
-    original_corpus = sorted([x for x in directory_content if "dump" not in x])
-    all_paths = []
-    for file_name in original_corpus:
-        original_file_path = dir_path + "/" + file_name
-        print(original_file_path)
-        all_paths.append(original_file_path)
-    return all_paths
-
-
 def get_relation_between_nodes(relations_dict, parent: Node, child: Node):
     if parent.label is None:
         c1 = parent.tag

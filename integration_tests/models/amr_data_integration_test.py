@@ -1,8 +1,5 @@
 from models.amr_data import CustomizedAMR
 from models.amr_graph import AMR
-from preprocessing.preprocessing_steps import apply_preprocessing_steps_on_instance, NamedEntitiesPreprocessingStep, \
-    DateEntitiesPreprocessingStep, TemporalQuantitiesPreprocessingStep, QuantitiesPreprocessingStep, \
-    HaveOrgPreprocessingStep, apply_preprocessing_steps_on_amr_list
 
 
 # ::id wb.eng_0009.86 ::amr-annotator SDL-AMR-09 ::preferred
@@ -10,7 +7,7 @@ from preprocessing.preprocessing_steps import apply_preprocessing_steps_on_insta
 # debt , had paid six figures for a ritual cleansing using sheep blood to another voodoo doctor and a mysterious
 # Egyptian woman named Samia , who came to him with a letter of greeting from a high - ranking Saudi prince ,
 # purportedly Nawaf Bin Abdulaziz Al - Saud , now the chief of intelligence of Saudi Arabia ...
-def test_apply_preprocessing_steps_on_instance_quantity_after_named_entitity():
+def test_create_custom_AMR_example_no_exception():
     amr_str = """(p / pay-01~e.16 
       :ARG0 (p2 / person 
             :mod (s / star~e.2 
@@ -54,38 +51,15 @@ def test_apply_preprocessing_steps_on_instance_quantity_after_named_entitity():
             :ARG0-of (u / use-01~e.23 
                   :ARG1 (b / blood~e.25 
                         :mod (s3 / sheep~e.24)))))"""
-    sentence = """The pop star , who is said to be $ 240 million in debt , had paid six figures for a ritual 
-    cleansing using sheep blood to another voodoo doctor and a mysterious Egyptian woman named Samia , who came to 
-    him with a letter of greeting from a high - ranking Saudi prince , purportedly Nawaf Bin Abdulaziz Al - Saud , 
-    now the chief of intelligence of Saudi Arabia ... """
     amr = AMR.parse_string(amr_str)
-    print("Before preprocessing ")
-    print(sentence)
-    print(amr)
-    new_amr, sentence, _ = apply_preprocessing_steps_on_instance(amr, sentence,
-                                                                 [
-                                                                     NamedEntitiesPreprocessingStep()
-                                                                 ])
-    print("After NE preprocessing ")
-    print(sentence)
-    print(new_amr)
-    # new_amr2, sentence, _ = apply_preprocessing_steps_on_instance(new_amr, sentence,
-    #                                                               [
-    #                                                                   QuantitiesPreprocessingStep()
-    #                                                               ])
-    # print("After Q preprocessing ")
-    # print(sentence)
-    # print(new_amr2)
     custom_amr = CustomizedAMR()
-    # custom_amr.create_custom_AMR(new_amr_list[0][1])
-    custom_amr.create_custom_AMR(new_amr)
-    # TODO: finish test
+    custom_amr.create_custom_AMR(amr)
 
 
-def test_apply_preprocessing_steps_on_instance():
-    test_apply_preprocessing_steps_on_instance_quantity_after_named_entitity()
+def test_create_custom_AMR():
+    test_create_custom_AMR_example_no_exception()
 
 
 if __name__ == "__main__":
-    test_apply_preprocessing_steps_on_instance()
-    print("Everything in preprocessing_steps_integration_test passed")
+    test_create_custom_AMR()
+    print("Everything in amr_data_integration_test passed")

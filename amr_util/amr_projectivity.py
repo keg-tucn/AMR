@@ -1,3 +1,6 @@
+from models.amr_data import CustomizedAMR
+
+
 class AmrNotPerfectlyAlignedTreeException(Exception):
     pass
 
@@ -7,15 +10,23 @@ class ChildrenListRepresentation:
         self.children_dict = {}
         self.root = 0
 
+    def __str__(self):
+        return 'Root' + str(self.root) + ' and children dict ' + str(self.children_dict)
 
-def get_children_list_repr(amr, amr_id):
+    def __repr__(self):
+        return 'Root' + str(self.root) + ' and children dict ' + str(self.children_dict)
+
+    def __eq__(self, other):
+        return self.root == other.root and self.children_dict == other.children_dict
+
+
+def get_children_list_repr(amr: CustomizedAMR, amr_id):
     """
     :param amr: given as a set of dictionaries (instance of CustomAMR)
     :param amr_id
     :return: a children_list representation for the amr
     """
     c = ChildrenListRepresentation()
-
     for key in list(amr.relations_dict.keys()):
         # key is a pair (node_variable, parent_variable)
         node = key[0]
@@ -53,7 +64,8 @@ def get_descendants(node, children_dict):
 
     for c in children_dict[node]:
         descendents.append(c)
-        descendents = descendents + get_descendants(c, children_dict)
+        if node != c:
+            descendents = descendents + get_descendants(c, children_dict)
 
     return descendents
 
@@ -82,12 +94,13 @@ def inorder(node, children_dict, added, traversal):
     if node in list(children_dict.keys()):
 
         for child in children_dict[node]:
-            inorder(child, children_dict, added, traversal)
-            # now that we processed some more of the descendents, try to add the node again
-            # (in case it wasn't already added)
-            if not added[node] and not has_smaller_descendents(node, descendants, added):
-                traversal.append(node)
-                added[node] = True
+            if(node!=child):
+                inorder(child, children_dict, added, traversal)
+                # now that we processed some more of the descendents, try to add the node again
+                # (in case it wasn't already added)
+                if not added[node] and not has_smaller_descendents(node, descendants, added):
+                    traversal.append(node)
+                    added[node] = True
 
 
 def is_tree(amr):

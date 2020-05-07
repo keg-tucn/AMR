@@ -15,3 +15,5 @@ tensorflow
 pydot
 pydot-ng
 graphviz
+pandas
+openpyxl

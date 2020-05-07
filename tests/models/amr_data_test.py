@@ -22,7 +22,7 @@ def assert_custom_amr_dictionaries(expected_amr: CustomizedAMR, parsed_amr: Cust
 #                     :ARG1 (i / it~e.0)
 #                     :manner~e.2 (v / vigorous~e.3)))"""
 # sentence = """It should be vigorously advocated ."""
-def test_parse_example_1():
+def test_create_custom_AMR_example_1():
     amr: AMR = AMR()
     amr.node_to_concepts = {'i': 'it', 'v': 'vigorous', 'a': 'advocate-01', 'r': 'recommend-01'}
     amr.node_to_tokens = {'i': ['0'], 'v': ['3'], 'a': ['4'], 'r': ['1']}
@@ -64,7 +64,7 @@ def test_parse_example_1():
 #             :ARG3 (p / person~e.4
 #                   :ARG0-of~e.4 (w2 / work-01~e.4
 #                         :mod (e / earthquake~e.3)))))
-def test_parse_example_2():
+def test_create_custom_AMR_example_2():
     amr: AMR = AMR()
     amr.node_to_concepts = {'r': 'recommend-01', 'o': 'offer-01', 'w': 'we', 'u': 'understand-01',
                             'f': 'full', 'p': 'person', 'w2': 'work-01', 'e': 'earthquake'}
@@ -119,7 +119,7 @@ def test_parse_example_2():
 #                         :ARG1-of (e / expect-01 :polarity -~e.6))
 #                   :ARG1-of (p / possible-01~e.1)
 #                   :domain~e.2 (d / date-entity :year~e.4 2012~e.0))"""
-def test_parse_example_with_polarity():
+def test_create_custom_AMR_example_with_polarity():
     amr: AMR = AMR()
     amr.node_to_concepts = {'y2': 'year',
                             'r': 'recover-01',
@@ -163,12 +163,12 @@ def test_parse_example_with_polarity():
     assert_custom_amr_dictionaries(expected_custom_amr, generated_custom_amr)
 
 
-def test_parse_string():
-    test_parse_example_1()
-    test_parse_example_2()
-    test_parse_example_with_polarity()
+def test_create_custom_AMR():
+    test_create_custom_AMR_example_1()
+    test_create_custom_AMR_example_2()
+    test_create_custom_AMR_example_with_polarity()
 
 
 if __name__ == "__main__":
-    test_parse_string()
+    test_create_custom_AMR()
     print("Everything in amr_data_test passed")

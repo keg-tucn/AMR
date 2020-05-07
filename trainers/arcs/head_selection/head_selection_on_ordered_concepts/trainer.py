@@ -2,12 +2,13 @@ from typing import List
 
 import dynet as dy
 
+from data_extraction.dataset_reading_util import get_all_paths
 from data_extraction.word_embeddings_reader import read_glove_embeddings_from_file
 from deep_dynet import support as ds
 from deep_dynet.support import Vocab
 from models.concept import IdentifiedConcepts, Concept
 from models.node import Node
-from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_util import get_all_paths, \
+from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_util import \
     generate_amr_node_for_predicted_parents, calculate_smatch, log_test_entry_data, plot_train_test_acc_loss, \
     construct_concept_glove_embeddings_list
 from trainers.arcs.head_selection.head_selection_on_ordered_concepts.training_arcs_data_extractor import \
