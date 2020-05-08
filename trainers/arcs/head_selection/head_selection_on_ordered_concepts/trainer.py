@@ -1,5 +1,6 @@
+import os
 from typing import List
-
+import logging
 import dynet as dy
 
 from data_extraction.dataset_reading_util import get_all_paths
@@ -24,7 +25,7 @@ LSTM_IN_DIM = CONCEPTS_EMBEDDING_SIZE + \
               CONCEPT_TAG_EMBEDDING_SIZE + \
               CONCEPT_LEMMA_EMBEDDING_SIZE
 LSTM_OUT_DIM = 50
-BILSTM_OUT_DIM = 2 * 50
+BILSTM_OUT_DIM = 2 * LSTM_OUT_DIM
 LSTM_NO_LAYERS = 1
 MLP_CONCEPT_INTERNAL_DIM = 32
 
@@ -78,11 +79,6 @@ def get_predicted_parent(potential_heads_list, predicted_index):
 
 
 def get_concept_representation(arcs_graph: ArcsDynetGraph, c: Concept):
-    # TODO: do something in case the concept is not in the dictionary
-    # TODO: treat AMRs with multiple nodes with the same concept
-    #  1) use the variable in the representation? -> might not make sense, variable has no info
-    #  2) use positional information -> maybe the positional information is already given by the bilstm state
-    #  3) use more info from sentence (need alignment at this stage)
     c_index = arcs_graph.concepts_vocab.w2i[c.name]
     concept_trained_embedding = arcs_graph.concept_embeddings[c_index]
     concept_glove_embedding = dy.lookup(arcs_graph.glove_embeddings, c_index, False)
@@ -133,7 +129,6 @@ def train_sentence(arcs_graph: ArcsDynetGraph, identified_concepts: IdentifiedCo
     correct_predictions = 0
     for concept_idx, potential_heads_network_outputs in graph_outputs.items():
         gold_head_index = get_gold_head_index(concept_idx, potential_heads_idx[concept_idx], parent_vector)
-        # TODO: could I still use pickneglogsoftmax? maybe create an expression out of a list of expressions
         concept_loss = dy.pickneglogsoftmax(potential_heads_network_outputs, gold_head_index)
         concept_losses.append(concept_loss)
         count += 1
@@ -185,6 +180,19 @@ detail_logs_file_name = "logs/detailed_logs.txt"
 overview_logs_file_name = "logs/overview_logs.txt"
 
 if __name__ == "__main__":
+
+    # setup logging
+    if not os.path.exists('logs'):
+        os.makedirs('logs')
+
+    overview_logger = logging.getLogger('overview_logs')
+    overview_logger.setLevel(logging.INFO)
+    overview_logger.addHandler(logging.FileHandler('logs/overview_logs.log','w'))
+
+    detail_logger = logging.getLogger('detail_logs')
+    detail_logger.setLevel(logging.INFO)
+    detail_logger.addHandler(logging.FileHandler('logs/detail_logs.log','w'))
+
     (train_entries, no_train_entries, test_entries, no_test_entries) = read_train_test_data()
     relation_dict = extract_relation_dict(get_all_paths('training'))
     train_concepts = [train_entry.identified_concepts for train_entry in train_entries]
@@ -196,9 +204,6 @@ if __name__ == "__main__":
                                                                             CONCEPTS_GLOVE_EMBEDDING_SIZE,
                                                                             all_concepts_vocab)
 
-    # prepare logging file
-    detail_logs = open(detail_logs_file_name, "w")
-    overview_logs = open(overview_logs_file_name, "w")
     # init plotting data
     plotting_data = {}
 
@@ -206,8 +211,7 @@ if __name__ == "__main__":
     no_epochs = 20
     for epoch in range(1, no_epochs + 1):
         print("Epoch " + str(epoch))
-        detail_logs.write("Epoch " + str(epoch) + '\n')
-        overview_logs.write("Epoch " + str(epoch) + '\n')
+        overview_logger.info("Epoch " + str(epoch))
         # train
         sum_loss = 0
         train_entry: ArcsTrainingEntry
@@ -220,8 +224,8 @@ if __name__ == "__main__":
             sum_train_accuracy += train_entry_accuracy
         avg_loss = sum_loss / no_train_entries
         avg_train_accuracy = sum_train_accuracy / no_train_entries
-        overview_logs.write("Loss " + str(avg_loss) + '\n')
-        overview_logs.write("Training accuracy " + str(avg_train_accuracy) + '\n')
+        overview_logger.info("Loss " + str(avg_loss))
+        overview_logger.info("Training accuracy " + str(avg_train_accuracy))
         # test
         sum_accuracy = 0
         sum_smatch = 0
@@ -242,15 +246,13 @@ if __name__ == "__main__":
             else:
                 predicted_amr_str = "INVALID AMR"
             # logging
-            log_test_entry_data(detail_logs, test_entry, entry_accuracy, smatch_f_score, predicted_parents,
+            log_test_entry_data(detail_logger, test_entry, entry_accuracy, smatch_f_score, predicted_parents,
                                 predicted_amr_str)
             sum_smatch += smatch_f_score
         avg_accuracy = sum_accuracy / no_test_entries
         avg_smatch = sum_smatch / no_test_entries
-        overview_logs.write("Test accuracy " + str(avg_accuracy) + '\n')
-        overview_logs.write("Avg smatch " + str(avg_smatch) + '\n\n')
+        overview_logger.info("Test accuracy " + str(avg_accuracy))
+        overview_logger.info("Avg smatch " + str(avg_smatch) + '\n')
         plotting_data[epoch] = (avg_loss, avg_train_accuracy, avg_accuracy)
     print("Done")
-    detail_logs.close()
-    overview_logs.close()
     plot_train_test_acc_loss(plotting_data)

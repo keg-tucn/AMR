@@ -98,16 +98,16 @@ def calculate_smatch(predicted_amr_str: str, gold_amr_str):
     return smatch_f_score
 
 
-def log_test_entry_data(file, test_entry: ArcsTrainingEntry,
+def log_test_entry_data(logger, test_entry: ArcsTrainingEntry,
                         entry_accuracy: float,
                         smatch_f_score: float,
                         predicted_parents: List[int],
                         predicted_amr_str: str):
-    file.write('Entry accuracy: ' + str(entry_accuracy) + '\n')
-    file.write('Smatch: ' + str(smatch_f_score) + '\n')
-    file.write('Predicted parents: ' + str(predicted_parents) + '\n')
-    file.write('Predicted amr:\n' + predicted_amr_str + '\n')
-    file.write(test_entry.logging_info)
+    logger.info('Entry accuracy: ' + str(entry_accuracy))
+    logger.info('Smatch: ' + str(smatch_f_score))
+    logger.info('Predicted parents: ' + str(predicted_parents))
+    logger.info('Predicted amr:\n' + predicted_amr_str)
+    logger.info(test_entry.logging_info)
 
 
 def plot_train_test_acc_loss(plotting_data):
