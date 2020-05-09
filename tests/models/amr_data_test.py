@@ -22,7 +22,7 @@ def assert_custom_amr_dictionaries(expected_amr: CustomizedAMR, parsed_amr: Cust
 #                     :ARG1 (i / it~e.0)
 #                     :manner~e.2 (v / vigorous~e.3)))"""
 # sentence = """It should be vigorously advocated ."""
-def test_parse_example_1():
+def test_create_custom_AMR_example_1():
     amr: AMR = AMR()
     amr.node_to_concepts = {'i': 'it', 'v': 'vigorous', 'a': 'advocate-01', 'r': 'recommend-01'}
     amr.node_to_tokens = {'i': ['0'], 'v': ['3'], 'a': ['4'], 'r': ['1']}
@@ -64,11 +64,12 @@ def test_parse_example_1():
 #             :ARG3 (p / person~e.4
 #                   :ARG0-of~e.4 (w2 / work-01~e.4
 #                         :mod (e / earthquake~e.3)))))
-def test_parse_example_2():
+def test_create_custom_AMR_example_2():
     amr: AMR = AMR()
     amr.node_to_concepts = {'r': 'recommend-01', 'o': 'offer-01', 'w': 'we', 'u': 'understand-01',
                             'f': 'full', 'p': 'person', 'w2': 'work-01', 'e': 'earthquake'}
-    amr.node_to_tokens = {'r': ['1'], 'o': ['2'], 'w': ['5', '0'], 'u':['7'],'f': ['6'], 'p': ['4'], 'w2': ['4'], 'e': ['3']}
+    amr.node_to_tokens = {'r': ['1'], 'o': ['2'], 'w': ['5', '0'], 'u': ['7'], 'f': ['6'], 'p': ['4'], 'w2': ['4'],
+                          'e': ['3']}
     amr.relation_to_tokens = {'ARG0': [('5', 'u')], 'ARG0-of': [('4', 'p')]}
     amr['r'] = {'ARG1': [('o',)]}
     amr['o'] = {'ARG0': [('w',)], 'ARG1': [('u',)], 'ARG3': [('p',)]}
@@ -100,10 +101,10 @@ def test_parse_example_2():
     # (child,parent) : (relation, children of child, token aligned to child)
     expected_custom_amr.relations_dict = {('r', ''): ('', ['o'], ['1']),
                                           ('o', 'r'): ('ARG1', ['w', 'u', 'p'], ['2']),
-                                          ('w', 'o'): ('ARG0', [], ['5','0']),
+                                          ('w', 'o'): ('ARG0', [], ['5', '0']),
                                           ('u', 'o'): ('ARG1', ['w', 'f'], ['7']),
                                           ('p', 'o'): ('ARG3', ['w2'], ['4']),
-                                          ('w', 'u'): ('ARG0', [], ['5','0']),
+                                          ('w', 'u'): ('ARG0', [], ['5', '0']),
                                           ('f', 'u'): ('mod', [], ['6']),
                                           ('w2', 'p'): ('ARG0-of', ['e'], ['4']),
                                           ('e', 'w2'): ('mod', [], ['3'])}
@@ -112,11 +113,62 @@ def test_parse_example_2():
     assert_custom_amr_dictionaries(expected_custom_amr, generated_custom_amr)
 
 
-def test_parse_string():
-    test_parse_example_1()
-    test_parse_example_2()
+# ::id bolt-eng-DF-170-181103-8889109_0043.4 ::amr-annotator UCO-AMR-05 ::preferred
+# amr_str = """(y2 / year~e.4
+#                   :time-of~e.5 (r / recover-01~e.7
+#                         :ARG1-of (e / expect-01 :polarity -~e.6))
+#                   :ARG1-of (p / possible-01~e.1)
+#                   :domain~e.2 (d / date-entity :year~e.4 2012~e.0))"""
+def test_create_custom_AMR_example_with_polarity():
+    amr: AMR = AMR()
+    amr.node_to_concepts = {'y2': 'year',
+                            'r': 'recover-01',
+                            'e': 'expect-01',
+                            'p': 'possible-01',
+                            'd': 'date-entity'}
+    amr.node_to_tokens = {'y2': ['4'], 'r': ['7'], '-': [('6', 'e')], 'p': ['1'], '2012': [('0', 'd')]}
+    amr.relation_to_tokens = {'time-of': [('5', 'y2')], 'domain': [('2', 'y2')], 'year': [('4', 'd')]}
+    amr['y2'] = {'time-of': [('r',)], 'ARG1-of': [('p',)], 'domain': [('d',)]}
+    amr['r'] = {'ARG1-of': [('e',)]}
+    amr['e'] = {'polarity': [('-',)]}
+    amr['-'] = {}
+    amr['p'] = {}
+    amr['d'] = {'year': [('2012',)]}
+    amr['2012'] = {}
+    generated_custom_amr: CustomizedAMR = CustomizedAMR()
+    generated_custom_amr.create_custom_AMR(amr)
+
+    expected_custom_amr: CustomizedAMR = CustomizedAMR()
+    expected_custom_amr.tokens_to_concepts_dict = {
+                                                   0: ('2012', '2012'),
+                                                   1: ('p', 'possible-01'),
+                                                   4: ('y2', 'year'),
+                                                   6: ('-', '-'),
+                                                   7: ('r', 'recover-01')}
+    expected_custom_amr.tokens_to_concept_list_dict = {
+                                                       0: [('2012', '2012')],
+                                                       1: [('p', 'possible-01')],
+                                                       4: [('y2', 'year')],
+                                                       6: [('-', '-')],
+                                                       7: [('r', 'recover-01')]}
+    # (child,parent) : (relation, children of child, token aligned to child)
+    expected_custom_amr.relations_dict = {('y2', ''): ('', ['r', 'p', 'd'], ['4']),
+                                          ('r', 'y2'): ('time-of', ['e'], ['7']),
+                                          ('p', 'y2'): ('ARG1-of', [], ['1']),
+                                          ('d', 'y2'): ('domain', ['2012'], ''), # why not an empty list?
+                                          ('e', 'r'): ('ARG1-of', ['-'], ''),# why not an empty list?
+                                          ('-', 'e'): ('polarity', [], ['6']),
+                                          ('2012', 'd'): ('year', [], ['0'])}
+    expected_custom_amr.parent_dict = {'y2': '', 'r': 'y2', 'p': 'y2', 'd': 'y2', 'e': 'r', '-': 'e', '2012': 'd'}
+    assert_custom_amr_dictionaries(expected_custom_amr, generated_custom_amr)
+
+
+def test_create_custom_AMR():
+    test_create_custom_AMR_example_1()
+    test_create_custom_AMR_example_2()
+    test_create_custom_AMR_example_with_polarity()
 
 
 if __name__ == "__main__":
-    test_parse_string()
+    test_create_custom_AMR()
     print("Everything in amr_data_test passed")
