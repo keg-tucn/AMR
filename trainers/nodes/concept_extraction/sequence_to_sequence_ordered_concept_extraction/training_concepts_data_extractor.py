@@ -56,8 +56,9 @@ def generate_concepts_training_data_per_file(file_path, max_sentence_len=50):
 def generate_concepts_training_data(file_paths: List[str], max_sentence_len=50):
     all_entries = []
     no_all_entries_not_processed = 0
-    for i in range(2):
-        entries, no_entries_not_processed = generate_concepts_training_data_per_file(file_paths[i], max_sentence_len)
+    for file_path in file_paths:
+    # for i in range (4):
+        entries, no_entries_not_processed = generate_concepts_training_data_per_file(file_path, max_sentence_len)
         all_entries = all_entries + entries
         no_all_entries_not_processed += no_entries_not_processed
 
