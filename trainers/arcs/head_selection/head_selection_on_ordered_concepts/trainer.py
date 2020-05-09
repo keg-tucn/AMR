@@ -3,7 +3,6 @@ from typing import List
 import logging
 import dynet as dy
 
-from data_extraction.dataset_reading_util import get_all_paths
 from data_extraction.word_embeddings_reader import read_glove_embeddings_from_file
 from deep_dynet import support as ds
 from deep_dynet.support import Vocab
@@ -11,10 +10,10 @@ from models.concept import IdentifiedConcepts, Concept
 from models.node import Node
 from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_util import \
     generate_amr_node_for_predicted_parents, calculate_smatch, log_test_entry_data, plot_train_test_acc_loss, \
-    construct_concept_glove_embeddings_list
+    construct_concept_glove_embeddings_list, ArcsTrainerHyperparameters, ArcsTrainerResultPerEpoch, \
+    log_results_per_epoch
 from trainers.arcs.head_selection.head_selection_on_ordered_concepts.training_arcs_data_extractor import \
-    generate_arcs_training_data, ArcsTrainingEntry
-from trainers.arcs.head_selection.relations_dictionary_extractor import extract_relation_dict
+    ArcsTrainingEntry
 
 CONCEPTS_EMBEDDING_SIZE = 128
 CONCEPTS_GLOVE_EMBEDDING_SIZE = 100
@@ -31,7 +30,8 @@ MLP_CONCEPT_INTERNAL_DIM = 32
 
 
 class ArcsDynetGraph:
-    def __init__(self, concepts_vocab, concept_glove_embeddings_list):
+    def __init__(self, concepts_vocab, concept_glove_embeddings_list, hyperparams: ArcsTrainerHyperparameters):
+        self.hyperparams = hyperparams
         self.model = dy.Model()
         self.concepts_vocab: Vocab = concepts_vocab
         self.concept_embeddings = self.model.add_lookup_parameters((concepts_vocab.size(), CONCEPTS_EMBEDDING_SIZE))
@@ -103,6 +103,8 @@ def build_graph(arcs_graph: ArcsDynetGraph, sentence_concepts: List[Concept]):
     # biLSTM states
     bi = [dy.concatenate([f, b]) for f, b in zip(fw_exps, reversed(bw_exps))]
 
+    # put dropout here
+
     potential_heads_idx = get_potential_heads(len(sentence_concepts))
     graph_outputs = {}
     for c_index, potential_heads in potential_heads_idx.items():
@@ -115,7 +117,9 @@ def build_graph(arcs_graph: ArcsDynetGraph, sentence_concepts: List[Concept]):
             a_i = bi[c_index]
             # potential head of concept a_i
             a_j = bi[h_index]
-            g = v * dy.tanh(u * a_j + w * a_i)
+            tanh = dy.tanh(u * a_j + w * a_i)
+            tanh = dy.dropout(tanh, arcs_graph.hyperparams.mlp_dropout)
+            g = v * tanh
             outputs_list.append(g)
         graph_outputs[c_index] = dy.concatenate(outputs_list)
     return graph_outputs
@@ -166,35 +170,23 @@ def test_sentence(arcs_graph: ArcsDynetGraph, identified_concepts: IdentifiedCon
     return (predicted_parents, accuracy)
 
 
-def read_train_test_data():
-    train_entries, no_train_failed = generate_arcs_training_data(get_all_paths('training'))
-    no_train_entries = len(train_entries)
-    print(str(no_train_entries) + ' train entries processed ' + str(no_train_failed) + ' train entries failed')
-    test_entries, no_test_failed = generate_arcs_training_data(get_all_paths('dev'))
-    no_test_entries = len(test_entries)
-    print(str(no_test_entries) + ' test entries processed ' + str(no_test_failed) + ' test entries failed')
-    return (train_entries, no_train_entries, test_entries, no_test_entries)
-
-
 detail_logs_file_name = "logs/detailed_logs.txt"
 overview_logs_file_name = "logs/overview_logs.txt"
 
-if __name__ == "__main__":
 
+def train_and_test(train_entries, test_entries, relation_dict, hyperparams: ArcsTrainerHyperparameters):
     # setup logging
     if not os.path.exists('logs'):
         os.makedirs('logs')
 
     overview_logger = logging.getLogger('overview_logs')
     overview_logger.setLevel(logging.INFO)
-    overview_logger.addHandler(logging.FileHandler('logs/overview_logs.log','w'))
+    overview_logger.addHandler(logging.FileHandler('logs/overview_logs.log', 'w'))
 
     detail_logger = logging.getLogger('detail_logs')
     detail_logger.setLevel(logging.INFO)
-    detail_logger.addHandler(logging.FileHandler('logs/detail_logs.log','w'))
+    detail_logger.addHandler(logging.FileHandler('logs/detail_logs.log', 'w'))
 
-    (train_entries, no_train_entries, test_entries, no_test_entries) = read_train_test_data()
-    relation_dict = extract_relation_dict(get_all_paths('training'))
     train_concepts = [train_entry.identified_concepts for train_entry in train_entries]
     dev_concepts = [test_entry.identified_concepts for test_entry in test_entries]
     all_concept_names = get_all_concepts(train_concepts + dev_concepts)
@@ -203,12 +195,14 @@ if __name__ == "__main__":
     concept_glove_embeddings_list = construct_concept_glove_embeddings_list(word_glove_embeddings,
                                                                             CONCEPTS_GLOVE_EMBEDDING_SIZE,
                                                                             all_concepts_vocab)
+    no_train_entries = len(train_entries)
+    no_test_entries = len(test_entries)
 
     # init plotting data
-    plotting_data = {}
+    results_per_epoch = {}
 
-    arcs_graph = ArcsDynetGraph(all_concepts_vocab, concept_glove_embeddings_list)
-    no_epochs = 20
+    arcs_graph = ArcsDynetGraph(all_concepts_vocab, concept_glove_embeddings_list, hyperparams)
+    no_epochs = hyperparams.no_epochs
     for epoch in range(1, no_epochs + 1):
         print("Epoch " + str(epoch))
         overview_logger.info("Epoch " + str(epoch))
@@ -253,6 +247,11 @@ if __name__ == "__main__":
         avg_smatch = sum_smatch / no_test_entries
         overview_logger.info("Test accuracy " + str(avg_accuracy))
         overview_logger.info("Avg smatch " + str(avg_smatch) + '\n')
-        plotting_data[epoch] = (avg_loss, avg_train_accuracy, avg_accuracy)
+        epoch_result = ArcsTrainerResultPerEpoch(avg_loss,
+                                                 avg_train_accuracy,
+                                                 avg_accuracy,
+                                                 avg_smatch)
+        results_per_epoch[epoch] = epoch_result
+        log_results_per_epoch(overview_logger, epoch, epoch_result)
     print("Done")
-    plot_train_test_acc_loss(plotting_data)
+    return results_per_epoch

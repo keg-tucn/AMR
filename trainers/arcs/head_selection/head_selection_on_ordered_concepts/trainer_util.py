@@ -13,6 +13,33 @@ from trainers.arcs.head_selection.head_selection_on_ordered_concepts.training_ar
     ArcsTrainingEntry
 from trainers.arcs.head_selection.relations_dictionary_extractor import get_relation_between_concepts
 
+
+# TODO: find a more suitable place for these classes
+class ArcsTrainerHyperparameters:
+    def __init__(self, no_epochs, mlp_dropout):
+        self.no_epochs = no_epochs
+        self.mlp_dropout = mlp_dropout
+
+    def __str__(self):
+        return 'ep_' + str(self.no_epochs) + '_mdrop_' + str(self.mlp_dropout)
+
+
+class ArcsTrainerResultPerEpoch:
+    def __init__(self, avg_loss, avg_train_accuracy, avg_test_accuracy, avg_smatch):
+        self.avg_loss = avg_loss
+        self.avg_train_accuracy = avg_train_accuracy
+        self.avg_test_accuracy = avg_test_accuracy
+        self.avg_smatch = avg_smatch
+
+
+def log_results_per_epoch(logger, epoch_no, result: ArcsTrainerResultPerEpoch):
+    logger.info("Epoch " + str(epoch_no))
+    logger.info("Loss " + str(result.avg_loss))
+    logger.info("Training accuracy " + str(result.avg_train_accuracy))
+    logger.info("Test accuracy " + str(result.avg_test_accuracy))
+    logger.info("Avg smatch " + str(result.avg_smatch) + '\n')
+
+
 def get_relation_between_nodes(relations_dict, parent: Node, child: Node):
     if parent.label is None:
         c1 = parent.tag
@@ -110,14 +137,14 @@ def log_test_entry_data(logger, test_entry: ArcsTrainingEntry,
     logger.info(test_entry.logging_info)
 
 
-def plot_train_test_acc_loss(plotting_data):
+def plot_train_test_acc_loss(filename:str, plotting_data):
     """
     Plot on the x axis the epoch number
     Plot on the y axis:
         the loss
         the train accuracy
         the test accuracy
-    Takes as input plotting_data, a dictionary of the form epoch_no: (loss, train_acc, test_acc)
+    Takes as input plotting_data, a dictionary of the form epoch_no: ArcsTrainerResultPerEpoch
     """
 
     x = []
@@ -126,9 +153,10 @@ def plot_train_test_acc_loss(plotting_data):
     test_accuracies = []
     for epoch_no, plot_data_entry in plotting_data.items():
         x.append(epoch_no)
-        losses.append(plot_data_entry[0])
-        train_accuracies.append(plot_data_entry[1])
-        test_accuracies.append(plot_data_entry[2])
+        plot_data_entry: ArcsTrainerResultPerEpoch
+        losses.append(plot_data_entry.avg_loss)
+        train_accuracies.append(plot_data_entry.avg_train_accuracy)
+        test_accuracies.append(plot_data_entry.avg_test_accuracy)
 
     fig, ax = plt.subplots()
     ax.plot(x, losses)
@@ -140,7 +168,7 @@ def plot_train_test_acc_loss(plotting_data):
     ax.set(xlabel='epoch',
            title='Loss and accuracies')
 
-    fig.savefig("plots/test.png")
+    fig.savefig(filename)
     plt.show()
 
 

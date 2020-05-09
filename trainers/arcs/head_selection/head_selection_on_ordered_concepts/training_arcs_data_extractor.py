@@ -1,6 +1,7 @@
 from typing import List
 
 from data_extraction import input_file_parser
+from data_extraction.dataset_reading_util import get_all_paths
 from models.amr_data import CustomizedAMR
 from models.amr_graph import AMR
 from models.concept import IdentifiedConcepts, Concept
@@ -92,3 +93,13 @@ def generate_arcs_training_data(file_paths: List[str], max_sentence_len=50):
         all_entries = all_entries + entries
         no_all_entries_not_processed += no_entries_not_processed
     return all_entries, no_all_entries_not_processed
+
+
+def read_train_test_data():
+    train_entries, no_train_failed = generate_arcs_training_data(get_all_paths('training'))
+    no_train_entries = len(train_entries)
+    print(str(no_train_entries) + ' train entries processed ' + str(no_train_failed) + ' train entries failed')
+    test_entries, no_test_failed = generate_arcs_training_data(get_all_paths('dev'))
+    no_test_entries = len(test_entries)
+    print(str(no_test_entries) + ' test entries processed ' + str(no_test_failed) + ' test entries failed')
+    return (train_entries, test_entries)
