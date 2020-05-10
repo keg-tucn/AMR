@@ -1,17 +1,20 @@
 import dynet_config
+
 dynet_config.set(mem=1024)
 
 import dynet as dy
 
 from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extraction.training_concepts_data_extractor \
     import generate_concepts_training_data, ConceptsTrainingEntry
-from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_util import get_all_paths, plot_train_test_acc_loss
+from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_util import get_all_paths, \
+    plot_train_test_acc_loss
 from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer import get_all_concepts
 
 from deep_dynet import support as ds
 from deep_dynet.support import Vocab
 
 from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
+
 bleu_smoothing = SmoothingFunction()
 
 # TODO?:
@@ -21,17 +24,19 @@ bleu_smoothing = SmoothingFunction()
 
 EOS = "<EOS>"
 
+# SMALLER EMBEDDINGS AND STATE
 LSTM_NUM_OF_LAYERS = 2
-WORDS_EMBEDDING_SIZE = 150
-CONCEPTS_EMBEDDING_SIZE = 150
-STATE_SIZE = 150
-ATTENTION_SIZE = 150
+WORDS_EMBEDDING_SIZE = 50
+CONCEPTS_EMBEDDING_SIZE = 50
+STATE_SIZE = 50
+ATTENTION_SIZE = 50
 
 '''
 dyparams = dy.DynetParams()
 dyparams.set_mem(2048)
 dyparams.init()
 '''
+
 
 class ConceptsDynetGraph:
     def __init__(self, words_vocab, concepts_vocab):
@@ -47,7 +52,8 @@ class ConceptsDynetGraph:
         self.enc_fwd_lstm = dy.LSTMBuilder(LSTM_NUM_OF_LAYERS, WORDS_EMBEDDING_SIZE, STATE_SIZE, self.model)
         self.enc_bwd_lstm = dy.LSTMBuilder(LSTM_NUM_OF_LAYERS, WORDS_EMBEDDING_SIZE, STATE_SIZE, self.model)
 
-        self.dec_lstm = dy.LSTMBuilder(LSTM_NUM_OF_LAYERS, STATE_SIZE * 2 + CONCEPTS_EMBEDDING_SIZE, STATE_SIZE, self.model)
+        self.dec_lstm = dy.LSTMBuilder(LSTM_NUM_OF_LAYERS, STATE_SIZE * 2 + CONCEPTS_EMBEDDING_SIZE, STATE_SIZE,
+                                       self.model)
 
         self.attention_w1 = self.model.add_parameters((ATTENTION_SIZE, STATE_SIZE * 2))
         self.attention_w2 = self.model.add_parameters((ATTENTION_SIZE, STATE_SIZE * LSTM_NUM_OF_LAYERS * 2))
@@ -116,7 +122,8 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts):
     w1dt = None
 
     last_concept_embedding = concepts_dynet_graph.output_embeddings[concepts_dynet_graph.concepts_vocab.w2i[EOS]]
-    s = concepts_dynet_graph.dec_lstm.initial_state().add_input(dy.concatenate([dy.vecInput(STATE_SIZE * 2), last_concept_embedding]))
+    s = concepts_dynet_graph.dec_lstm.initial_state().add_input(
+        dy.concatenate([dy.vecInput(STATE_SIZE * 2), last_concept_embedding]))
     loss = []
 
     predicted_concepts = []
@@ -160,7 +167,8 @@ def predict_concepts(concepts_dynet_graph, input_sequence):
     w1dt = None
 
     last_concept_embedding = concepts_dynet_graph.output_embeddings[concepts_dynet_graph.concepts_vocab.w2i[EOS]]
-    s = concepts_dynet_graph.dec_lstm.initial_state().add_input(dy.concatenate([dy.vecInput(STATE_SIZE * 2), last_concept_embedding]))
+    s = concepts_dynet_graph.dec_lstm.initial_state().add_input(
+        dy.concatenate([dy.vecInput(STATE_SIZE * 2), last_concept_embedding]))
 
     predicted_concepts = []
     count_EOS = 0
@@ -184,7 +192,7 @@ def predict_concepts(concepts_dynet_graph, input_sequence):
         predicted_concepts.append(concepts_dynet_graph.concepts_vocab.i2w[next_concept])
     return predicted_concepts
 
-
+# RENAME THIS
 def get_loss(concepts_dynet_graph, input_sequence, golden_concepts):
     dy.renew_cg()
 
@@ -220,7 +228,7 @@ def train_sentence(concepts_dynet_graph, sentence, identified_concepts):
     if total_predictions != 0:
         accuracy = correct_predictions / total_predictions
 
-    #BLEU score
+    # BLEU score
     '''
     What should be the weights for the n-grams?
     See which smoothing method fits best
@@ -263,6 +271,7 @@ def test_sentence(concepts_dynet_graph, sentence, identified_concepts):
 
     correct_predictions = 0
     total_predictions = len(predicted_concepts)
+    total_golden = len(golden_concepts)
 
     for concept_idx in range(min(len(golden_concepts), len(predicted_concepts))):
         if golden_concepts[concept_idx] == predicted_concepts[concept_idx]:
@@ -312,7 +321,6 @@ def read_train_test_data():
 detail_logs_file_name = "logs/concept_extractor_detailed_logs.txt"
 overview_logs_file_name = "logs/concept_extractor_overview_logs.txt"
 
-
 if __name__ == "__main__":
     (train_entries, no_train_entries, test_entries, no_test_entries) = read_train_test_data()
 
@@ -346,7 +354,7 @@ if __name__ == "__main__":
     no_epochs = 20
 
     for epoch in range(1, no_epochs + 1):
-        print("Epoch " + str(epoch))
+        print("Epoch " + str(epoch) + '\n')
         detail_logs.write("Epoch " + str(epoch) + '\n')
         overview_logs.write("Epoch " + str(epoch) + '\n')
 
@@ -372,7 +380,7 @@ if __name__ == "__main__":
         print("Loss: " + str(avg_loss))
         print("Train accuracy: " + str(avg_train_accuracy))
         print("Train bleu: " + str(avg_train_bleu))
-        print("Train F score: " + str(avg_train_f) + '\n')
+        print("Train F-score: " + str(avg_train_f) + '\n')
         overview_logs.write("Loss: " + str(avg_loss) + '\n')
         overview_logs.write("Train accuracy: " + str(avg_train_accuracy) + '\n')
         overview_logs.write("Train bleu: " + str(avg_train_bleu) + '\n')
@@ -397,7 +405,6 @@ if __name__ == "__main__":
             detail_logs.write('Entry F-score: ' + str(entry_f) + '\n')
             detail_logs.write(test_entry.logging_info)
 
-
         avg_accuracy = sum_accuracy / no_test_entries
         avg_bleu = sum_bleu / no_test_entries
         avg_f = sum_f_score / no_test_entries
@@ -408,7 +415,7 @@ if __name__ == "__main__":
         overview_logs.write("Test bleu: " + str(avg_bleu) + '\n')
         overview_logs.write("Test F-score: " + str(avg_f) + '\n')
 
-        plotting_data[epoch] = (avg_loss, avg_train_accuracy, avg_accuracy)      # 0 is avg train accuracy
+        plotting_data[epoch] = (avg_loss, avg_train_accuracy, avg_accuracy)  # 0 is avg train accuracy
 
     print("Done")
     detail_logs.close()
