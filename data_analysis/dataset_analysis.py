@@ -2,7 +2,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 
-class DatasetAnalysis():
+class DatasetAnalysis:
 
     def create_property_set(self, dataset_dictionary):
         """
@@ -16,8 +16,8 @@ class DatasetAnalysis():
         """
         raise NotImplemented()
 
-    def get_counts(self, set1, set2):
-
+    @staticmethod
+    def get_counts(set1, set2):
         count1 = len(set1)
         count2 = len(set2)
         count_inters = len(set1.intersection(set2))
@@ -25,7 +25,6 @@ class DatasetAnalysis():
         count_only_set_2 = len(set2.difference(set1))
         return count1, count2, count_inters, count_only_set_1, count_only_set_2
 
-    # TODO: total row (not enough to add values, must make new set)
     def create_comparative_analysis(self, path, property_name,
                                     dataset_dictionary1, dataset_dictionary2,
                                     set1_name, set2_name):
@@ -48,6 +47,18 @@ class DatasetAnalysis():
         """
         set1_dict = self.create_property_set(dataset_dictionary1)
         set2_dict = self.create_property_set(dataset_dictionary2)
+
+        self.create_comparative_analysis_on_sets(path, property_name, set1_dict, set2_dict, set1_name, set2_name)
+
+    @staticmethod
+    def create_comparative_analysis_on_sets(path, property_name,
+                                            set1_dict, set2_dict,
+                                            set1_name, set2_name):
+        """
+        TODO: documentation
+        (basically, send any sets dicts you want, with keys the rows in the table)
+            {row -> set()}
+        """
         dataframe_data = []
 
         # make sure the sets dicts have the same keys
@@ -62,12 +73,12 @@ class DatasetAnalysis():
         total_set_2 = set()
         for dataset, set1 in set1_dict.items():
             set2 = set2_dict[dataset]
-            count1, count2, count_inters, count_only_set_1, count_only_set_2 = self.get_counts(set1, set2)
+            count1, count2, count_inters, count_only_set_1, count_only_set_2 = DatasetAnalysis.get_counts(set1, set2)
             total_set_1 = total_set_1.union(set1)
             total_set_2 = total_set_2.union(set2)
             dataframe_data.append([dataset, count1, count2, count_inters, count_only_set_1, count_only_set_2])
         # get total counts
-        count1, count2, count_inters, count_only_set_1, count_only_set_2 = self.get_counts(total_set_1,
+        count1, count2, count_inters, count_only_set_1, count_only_set_2 = DatasetAnalysis.get_counts(total_set_1,
                                                                                            total_set_2)
         dataframe_data.append(['total', count1, count2, count_inters, count_only_set_1, count_only_set_2])
 
