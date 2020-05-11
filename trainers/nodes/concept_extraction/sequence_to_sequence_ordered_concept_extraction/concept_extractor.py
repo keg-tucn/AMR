@@ -71,22 +71,14 @@ def embed_sequence(concepts_dynet_graph, sequence):
     return [concepts_dynet_graph.input_embeddings[index] for index in sequence]
 
 
-def run_lstm(init_state, input_vecs):
-    s = init_state
-
-    out_vectors = []
-    for vector in input_vecs:
-        s = s.add_input(vector)
-        out_vector = s.output()
-        out_vectors.append(out_vector)
-    return out_vectors
-
-
-def encode_sequence(concepts_dynet_graph, sequence):
+def encode_input_sequence(concepts_dynet_graph, sequence):
     sequence_rev = list(reversed(sequence))
 
-    fwd_vectors = run_lstm(concepts_dynet_graph.enc_fwd_lstm.initial_state(), sequence)
-    bwd_vectors = run_lstm(concepts_dynet_graph.enc_bwd_lstm.initial_state(), sequence_rev)
+    fwd_init = concepts_dynet_graph.enc_fwd_lstm.initial_state()
+    bwd_init = concepts_dynet_graph.enc_bwd_lstm.initial_state()
+
+    fwd_vectors = fwd_init.transduce(sequence)
+    bwd_vectors = bwd_init.transduce(sequence_rev)
     bwd_vectors = list(reversed(bwd_vectors))
     vectors = [dy.concatenate(list(p)) for p in zip(fwd_vectors, bwd_vectors)]
 
@@ -122,12 +114,11 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts):
     w1dt = None
 
     last_concept_embedding = concepts_dynet_graph.output_embeddings[concepts_dynet_graph.concepts_vocab.w2i[EOS]]
-    s = concepts_dynet_graph.dec_lstm.initial_state().add_input(
-        dy.concatenate([dy.vecInput(STATE_SIZE * 2), last_concept_embedding]))
+    # attention uses this
+    s = concepts_dynet_graph.dec_lstm.initial_state().add_input(dy.concatenate([dy.vecInput(STATE_SIZE * 2), last_concept_embedding]))
     loss = []
 
     predicted_concepts = []
-    count_EOS = 0
 
     for concept in embedded_golden_concepts:
 
@@ -146,10 +137,6 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts):
         probs_vec = probs.vec_value()
         next_concept = probs_vec.index(max(probs_vec))
 
-        if concepts_dynet_graph.concepts_vocab.i2w[next_concept] == EOS:
-            count_EOS += 1
-            continue
-
         predicted_concepts.append(concepts_dynet_graph.concepts_vocab.i2w[next_concept])
 
     loss = dy.esum(loss)
@@ -158,7 +145,7 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts):
 
 def predict_concepts(concepts_dynet_graph, input_sequence):
     embedded_sequence = embed_sequence(concepts_dynet_graph, input_sequence)
-    encoded_sequence = encode_sequence(concepts_dynet_graph, embedded_sequence)
+    encoded_sequence = encode_input_sequence(concepts_dynet_graph, embedded_sequence)
 
     w = dy.parameter(concepts_dynet_graph.decoder_w)
     b = dy.parameter(concepts_dynet_graph.decoder_b)
@@ -167,8 +154,8 @@ def predict_concepts(concepts_dynet_graph, input_sequence):
     w1dt = None
 
     last_concept_embedding = concepts_dynet_graph.output_embeddings[concepts_dynet_graph.concepts_vocab.w2i[EOS]]
-    s = concepts_dynet_graph.dec_lstm.initial_state().add_input(
-        dy.concatenate([dy.vecInput(STATE_SIZE * 2), last_concept_embedding]))
+    # attention uses this
+    s = concepts_dynet_graph.dec_lstm.initial_state().add_input(dy.concatenate([dy.vecInput(STATE_SIZE * 2), last_concept_embedding]))
 
     predicted_concepts = []
     count_EOS = 0
@@ -192,30 +179,22 @@ def predict_concepts(concepts_dynet_graph, input_sequence):
         predicted_concepts.append(concepts_dynet_graph.concepts_vocab.i2w[next_concept])
     return predicted_concepts
 
-# RENAME THIS
-def get_loss(concepts_dynet_graph, input_sequence, golden_concepts):
+
+def train(concepts_dynet_graph, input_sequence, golden_concepts):
     dy.renew_cg()
 
     embedded_sequence = embed_sequence(concepts_dynet_graph, input_sequence)
-    encoded_sequence = encode_sequence(concepts_dynet_graph, embedded_sequence)
+    encoded_sequence = encode_input_sequence(concepts_dynet_graph, embedded_sequence)
     return decode(concepts_dynet_graph, encoded_sequence, golden_concepts)
 
 
-def train_sentence(concepts_dynet_graph, sentence, identified_concepts):
-    input_sequence = sentence.split()
-    golden_concepts = [concept.name for concept in identified_concepts.ordered_concepts]
-
-    (loss, predicted_concepts) = get_loss(concepts_dynet_graph, input_sequence, golden_concepts)
-    loss_value = loss.value()
-    loss.backward()
-    concepts_dynet_graph.trainer.update()
-
-    # Accuracy
-    '''
-    Accuracy computation right now: count the right words on right places
-    Should consider - length (original vs predicted)?
-                    - right words even if not in right position?
-    '''
+# Accuracy
+'''
+Accuracy computation right now: count the right words on right places
+Should consider - length (original vs predicted)?
+                - right words even if not in right position?
+'''
+def compute_accuracy(golden_concepts, predicted_concepts):
     accuracy = 0
 
     correct_predictions = 0
@@ -228,6 +207,40 @@ def train_sentence(concepts_dynet_graph, sentence, identified_concepts):
     if total_predictions != 0:
         accuracy = correct_predictions / total_predictions
 
+    return accuracy
+
+
+# F-score
+'''
+Does not consider if a concept appears multiple times
+'''
+def compute_f_score(golden_concepts, predicted_concepts):
+    true_pos = len(list(set(golden_concepts) & set(predicted_concepts)))
+    false_pos = len(list(set(predicted_concepts).difference(set(golden_concepts))))
+    false_neg = len(list(set(golden_concepts).difference(set(predicted_concepts))))
+    prec = 0
+    recall = 0
+    if len(predicted_concepts) != 0:
+        prec = true_pos / (true_pos + false_pos)
+        recall = true_pos / (true_pos + false_neg)
+    f_score = 0
+    if prec + recall != 0:
+        f_score = 2 * (prec * recall) / (prec + recall)
+
+    return f_score
+
+
+def train_sentence(concepts_dynet_graph, sentence, identified_concepts):
+    input_sequence = sentence.split()
+    golden_concepts = [concept.name for concept in identified_concepts.ordered_concepts]
+
+    (loss, predicted_concepts) = train(concepts_dynet_graph, input_sequence, golden_concepts)
+    loss_value = loss.value()
+    loss.backward()
+    concepts_dynet_graph.trainer.update()
+
+    accuracy = compute_accuracy(golden_concepts, predicted_concepts)
+
     # BLEU score
     '''
     What should be the weights for the n-grams?
@@ -236,21 +249,7 @@ def train_sentence(concepts_dynet_graph, sentence, identified_concepts):
     bleu_score = sentence_bleu(golden_concepts, predicted_concepts,
                                weights=(0.25, 0.25, 0.25, 0.25), smoothing_function=bleu_smoothing.method3)
 
-    # F-score
-    '''
-    Does not consider if a concept appears multiple times
-    '''
-    true_pos = len(list(set(golden_concepts) & set(predicted_concepts)))
-    false_pos = len(list(set(predicted_concepts).difference(set(golden_concepts))))
-    false_neg = len(list(set(golden_concepts).difference(set(predicted_concepts))))
-    prec = 0
-    recall = 0
-    if total_predictions != 0:
-        prec = true_pos / (true_pos + false_pos)
-        recall = true_pos / (true_pos + false_neg)
-    f_score = 0
-    if prec + recall != 0:
-        f_score = 2 * (prec * recall) / (prec + recall)
+    f_score = compute_f_score(golden_concepts, predicted_concepts)
 
     return (loss_value, accuracy, bleu_score, f_score)
 
@@ -261,24 +260,7 @@ def test_sentence(concepts_dynet_graph, sentence, identified_concepts):
 
     predicted_concepts = predict_concepts(concepts_dynet_graph, input_sequence)
 
-    # Accuracy
-    '''
-    Accuracy computation right now: count the right words on right places
-    Should consider - length (original vs predicted)?
-                    - right words even if not in right position?
-    '''
-    accuracy = 0
-
-    correct_predictions = 0
-    total_predictions = len(predicted_concepts)
-    total_golden = len(golden_concepts)
-
-    for concept_idx in range(min(len(golden_concepts), len(predicted_concepts))):
-        if golden_concepts[concept_idx] == predicted_concepts[concept_idx]:
-            correct_predictions += 1
-
-    if total_predictions != 0:
-        accuracy = correct_predictions / total_predictions
+    accuracy = compute_accuracy(golden_concepts, predicted_concepts)
 
     # BLEU score
     ''' 
@@ -292,17 +274,7 @@ def test_sentence(concepts_dynet_graph, sentence, identified_concepts):
     '''
     Does not consider if a concept appears multiple times
     '''
-    true_pos = len(list(set(golden_concepts) & set(predicted_concepts)))
-    false_pos = len(list(set(predicted_concepts).difference(set(golden_concepts))))
-    false_neg = len(list(set(golden_concepts).difference(set(predicted_concepts))))
-    prec = 0
-    recall = 0
-    if total_predictions != 0:
-        prec = true_pos / (true_pos + false_pos)
-        recall = true_pos / (true_pos + false_neg)
-    f_score = 0
-    if prec + recall != 0:
-        f_score = 2 * (prec * recall) / (prec + recall)
+    f_score = compute_f_score(golden_concepts, predicted_concepts)
 
     return (predicted_concepts, accuracy, bleu_score, f_score)
 
