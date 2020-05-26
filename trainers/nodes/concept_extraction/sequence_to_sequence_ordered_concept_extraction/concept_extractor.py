@@ -23,6 +23,7 @@ from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
 # - RL
 # - Split into verbs and non-verbs
 
+
 EOS = "<EOS>"
 
 # TODO: move this when fully parameterized
@@ -45,6 +46,7 @@ class ConceptsDynetGraph:
     def __init__(self, words_vocab, concepts_vocab, words_glove_embeddings_list, lstm_nb_layers,
                  words_embedding_size, concepts_embedding_size, words_glove_embedding_size, state_size, attention_size,
                  test_concepts_vocab):
+
         self.model = dy.Model()
         self.words_vocab: Vocab = words_vocab
         self.concepts_vocab: Vocab = concepts_vocab
@@ -67,6 +69,7 @@ class ConceptsDynetGraph:
         self.attention_w1 = self.model.add_parameters((attention_size, state_size * 2))
         self.attention_w2 = self.model.add_parameters(
             (attention_size, state_size * lstm_nb_layers * 2))  # lstm_nb_layers of decoder lstm
+
         self.attention_v = self.model.add_parameters((1, attention_size))
 
         self.decoder_w = self.model.add_parameters((concepts_vocab.size(), state_size))
@@ -155,6 +158,7 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, use_attentio
     loss = []
     predicted_concepts = []
 
+
     sum_attention_diff = 0
     i = 0
 
@@ -176,6 +180,7 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, use_attentio
         # QUICKFIX FOR NON ATTENTION -------- SHOULD FIGURE OUT A BETTER WAY
         if len(encoded_sequence) >= len(embedded_golden_concepts):
             i += 1
+
 
         # TODO: take last_concept_embedding with a probability from golden vs predicted --- error propagation problem
         last_concept_embedding = concepts_dynet_graph.output_embeddings[concept]
