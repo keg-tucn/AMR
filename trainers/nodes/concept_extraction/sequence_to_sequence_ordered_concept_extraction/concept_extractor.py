@@ -1,8 +1,6 @@
 # For memory problems
-"""
 import dynet_config
-dynet_config.set(mem=1024)
-"""
+# dynet_config.set(mem=1024)
 
 import dynet as dy
 
@@ -33,11 +31,12 @@ WORDS_GLOVE_EMBEDDING_SIZE = 50
 CONCEPTS_EMBEDDING_SIZE = 50
 STATE_SIZE = 40
 ATTENTION_SIZE = 40
+DROPOUT_RATE = 0.8
 
 USE_ATTENTION = True
 USE_GLOVE = False
 
-NB_EPOCHS = 50
+NB_EPOCHS = 100
 
 bleu_smoothing = SmoothingFunction()
 
@@ -45,7 +44,7 @@ bleu_smoothing = SmoothingFunction()
 class ConceptsDynetGraph:
     def __init__(self, words_vocab, concepts_vocab, words_glove_embeddings_list, lstm_nb_layers,
                  words_embedding_size, concepts_embedding_size, words_glove_embedding_size, state_size, attention_size,
-                 test_concepts_vocab):
+                 dropout_rate, test_concepts_vocab):
 
         self.model = dy.Model()
         self.words_vocab: Vocab = words_vocab
@@ -65,6 +64,8 @@ class ConceptsDynetGraph:
         self.enc_bwd_lstm = dy.LSTMBuilder(lstm_nb_layers, words_embedding_size, state_size, self.model)
 
         self.dec_lstm = dy.LSTMBuilder(lstm_nb_layers, state_size * 2 + concepts_embedding_size, state_size, self.model)
+
+        self.dropout_rate = dropout_rate
 
         self.attention_w1 = self.model.add_parameters((attention_size, state_size * 2))
         self.attention_w2 = self.model.add_parameters(
@@ -172,6 +173,9 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, use_attentio
             sum_attention_diff += attention_diff
         else:
             vector = dy.concatenate([input_matrix[i], last_concept_embedding])
+
+        # Dropout
+        vector = dy.dropout(vector, concepts_dynet_graph.dropout_rate)
 
         dec_state = dec_state.add_input(vector)
         out_vector = w * dec_state.output() + b
@@ -461,7 +465,7 @@ if __name__ == "__main__":
     concepts_dynet_graph = ConceptsDynetGraph(all_words_vocab, all_concepts_vocab, words_glove_embeddings_list,
                                               LSTM_NB_LAYERS, WORDS_EMBEDDING_SIZE, CONCEPTS_EMBEDDING_SIZE,
                                               WORDS_GLOVE_EMBEDDING_SIZE, STATE_SIZE, ATTENTION_SIZE,
-                                              all_test_concepts_vocab)
+                                              DROPOUT_RATE, all_test_concepts_vocab)
 
     for epoch in range(1, NB_EPOCHS + 1):
         print("Epoch " + str(epoch) + "\n")
