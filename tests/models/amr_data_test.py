@@ -159,6 +159,7 @@ def test_create_custom_AMR_example_with_polarity():
                                           ('e', 'r'): ('ARG1-of', ['-'], ''),# why not an empty list?
                                           ('-', 'e'): ('polarity', [], ['6']),
                                           ('2012', 'd'): ('year', [], ['0'])}
+    # TODO: what if I have an AMR with 2 negatives? how are they represented in the parent dict
     expected_custom_amr.parent_dict = {'y2': '', 'r': 'y2', 'p': 'y2', 'd': 'y2', 'e': 'r', '-': 'e', '2012': 'd'}
     assert_custom_amr_dictionaries(expected_custom_amr, generated_custom_amr)
 

@@ -1,3 +1,4 @@
+import functools
 import re
 
 import numpy as np
@@ -44,7 +45,7 @@ def get_token_embedding_from_full(token):
 
     return full_embeddings_matrix_dict.get(token)
 
-
+@functools.lru_cache(maxsize=5)
 def read_glove_embeddings_from_file(embedding_dim):
     """
     Read glove embedding from file corresponding to embedding_dim (can be 50, 100, 200, 300)

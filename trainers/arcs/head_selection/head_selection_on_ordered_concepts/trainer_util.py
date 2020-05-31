@@ -1,11 +1,9 @@
-from os import listdir
 from typing import List
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import random
 
 from deep_dynet.support import Vocab
-from definitions import AMR_ALIGNMENTS_SPLIT
 from models.concept import IdentifiedConcepts, Concept
 from models.node import Node
 from smatch import smatch_util, smatch_amr
@@ -14,22 +12,44 @@ from trainers.arcs.head_selection.head_selection_on_ordered_concepts.training_ar
 from trainers.arcs.head_selection.relations_dictionary_extractor import get_relation_between_concepts
 
 
-# TODO: find a more suitable place for these classes
 class ArcsTrainerHyperparameters:
-    def __init__(self, no_epochs, mlp_dropout):
+    def __init__(self, no_epochs, mlp_dropout,
+                 unaligned_tolerance,
+                 compare_gold,
+                 max_sen_len,
+                 max_parents_vectors,
+                 reentrancy_threshold):
         self.no_epochs = no_epochs
         self.mlp_dropout = mlp_dropout
+        # how many concepts with no alignment we allow in the ordered concepts (percentage: 0-none,1-all)
+        self.unaligned_tolerance = unaligned_tolerance
+        # if I should compare with the gold amr or the amr generated from the parent vector
+        self.compare_gold = compare_gold
+        self.max_sen_len = max_sen_len
+        self.max_parents_vectors = max_parents_vectors
+        self.reentrancy_threshold = reentrancy_threshold
 
     def __str__(self):
-        return 'ep_' + str(self.no_epochs) + '_mdrop_' + str(self.mlp_dropout)
+        return 'ep_' + str(self.no_epochs) + \
+               '_mdrop_' + str(self.mlp_dropout) + \
+               '_unaltol_' + str(self.unaligned_tolerance) + \
+               '_cg_' + str(self.compare_gold) + \
+               '_sl_' + str(self.max_sen_len) + \
+               '_pv_' + str(self.max_parents_vectors) + \
+               '_th_' + str(self.reentrancy_threshold)
 
 
 class ArcsTrainerResultPerEpoch:
-    def __init__(self, avg_loss, avg_train_accuracy, avg_test_accuracy, avg_smatch):
+    def __init__(self, avg_loss,
+                 avg_train_accuracy,
+                 avg_test_accuracy,
+                 avg_smatch,
+                 percentage_valid_amrs):
         self.avg_loss = avg_loss
         self.avg_train_accuracy = avg_train_accuracy
         self.avg_test_accuracy = avg_test_accuracy
         self.avg_smatch = avg_smatch
+        self.percentage_valid_amrs = percentage_valid_amrs
 
 
 def log_results_per_epoch(logger, epoch_no, result: ArcsTrainerResultPerEpoch):
@@ -75,15 +95,67 @@ def is_valid_amr(predicted_parents: List[int]):
     return True
 
 
-def generate_amr_node_for_predicted_parents(identified_concepts: IdentifiedConcepts,
-                                            predicted_parents: List[int],
+def generate_amr_node_for_vector_of_parents(identified_concepts: IdentifiedConcepts,
+                                            vector_of_parents: List[List[int]],
                                             relations_dict):
+    """ generate amr (type Node) from identified concepts, parents and relations dict
+        in the vector of parents, a node can have multiple parents
+            If the generated AMR does not have a root, pick a random node as root
+    """
+    # create list of nodes
+    # the parent should not be themselves
+    for i in range(0,len(vector_of_parents)):
+        if i in vector_of_parents[i]:
+            print('happened at index i'+str(i))
+            raise RuntimeError('This should never happen')
+            return None
+
+    nodes: List[Node] = []
+    for i in range(0, len(identified_concepts.ordered_concepts)):
+        concept = identified_concepts.ordered_concepts[i]
+        #TODO: better condition for this
+        if concept.variable == concept.name and concept.variable!='i':
+            # literals, interogative, -
+            # TODO: investigate if there are more exceptions and maybe add a type in concept
+            exceptions = ["-", "interrogative"]
+            if concept.variable in exceptions:
+                node: Node = Node(concept.name)
+            else:
+                node: Node = Node(None, concept.name)
+        else:
+            node: Node = Node(concept.name)
+        nodes.append(node)
+
+    root: Node = None
+    # start from 1 as on 0 there is ROOT
+    for i in range(1, len(vector_of_parents)):
+        for parent in vector_of_parents[i]:
+            if parent == 0:
+                # ROOT
+                root = nodes[i]
+            else:
+                parent = nodes[parent]
+                child = nodes[i]
+                relation = get_relation_between_nodes(relations_dict, parent, child)
+                parent.add_child(child, relation)
+
+    if root is None:
+        # get a random Node to be root (maybe should get a node with most descendents, but fine for now)
+        # start from 1 because of the fake root
+        root_idx = random.randint(1, len(nodes) - 1)
+        return nodes[root_idx]
+    return root
+
+
+def generate_amr_node_for_parents_vector(identified_concepts: IdentifiedConcepts,
+                                         parent_vector: List[int],
+                                         relations_dict):
     """ generate amr (type Node) from identified concepts, parents and relations dict
     If the generated amr is not a valid AMR (no root, cycles), return none
     """
 
     # chek amr validity
-    if not is_valid_amr(predicted_parents):
+    if not is_valid_amr(parent_vector):
         return None
 
     # create list of nodes
@@ -104,12 +176,12 @@ def generate_amr_node_for_predicted_parents(identified_concepts: IdentifiedConce
 
     root: Node = None
     # start from 1 as on 0 there is ROOT
-    for i in range(1, len(predicted_parents)):
-        if predicted_parents[i] == 0:
+    for i in range(1, len(parent_vector)):
+        if parent_vector[i] == 0:
             # ROOT
             root = nodes[i]
         else:
-            parent = nodes[predicted_parents[i]]
+            parent = nodes[parent_vector[i]]
             child = nodes[i]
             relation = get_relation_between_nodes(relations_dict, parent, child)
             parent.add_child(child, relation)
@@ -137,13 +209,15 @@ def log_test_entry_data(logger, test_entry: ArcsTrainingEntry,
     logger.info(test_entry.logging_info)
 
 
-def plot_train_test_acc_loss(filename:str, plotting_data):
+def plot_train_test_acc_loss(filename: str, plotting_data):
     """
     Plot on the x axis the epoch number
     Plot on the y axis:
         the loss
         the train accuracy
         the test accuracy
+        the smatch (test)
+        the percentage of valid amrs (test)
     Takes as input plotting_data, a dictionary of the form epoch_no: ArcsTrainerResultPerEpoch
     """
 
@@ -151,19 +225,25 @@ def plot_train_test_acc_loss(filename:str, plotting_data):
     losses = []
     train_accuracies = []
     test_accuracies = []
+    test_smatches = []
+    test_perc_valid_amr = []
     for epoch_no, plot_data_entry in plotting_data.items():
         x.append(epoch_no)
         plot_data_entry: ArcsTrainerResultPerEpoch
         losses.append(plot_data_entry.avg_loss)
         train_accuracies.append(plot_data_entry.avg_train_accuracy)
         test_accuracies.append(plot_data_entry.avg_test_accuracy)
+        test_smatches.append(plot_data_entry.avg_smatch)
+        test_perc_valid_amr.append(plot_data_entry.percentage_valid_amrs)
 
     fig, ax = plt.subplots()
     ax.plot(x, losses)
     ax.plot(x, train_accuracies)
     ax.plot(x, test_accuracies)
+    ax.plot(x, test_smatches)
+    ax.plot(x, test_perc_valid_amr)
 
-    ax.legend(['loss', 'train_acc', 'test_acc'], loc='upper right')
+    ax.legend(['loss', 'train_acc', 'test_acc', 'test_smatch', 'valid_amrs'], loc='upper right')
 
     ax.set(xlabel='epoch',
            title='Loss and accuracies')

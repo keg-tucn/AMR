@@ -6,16 +6,6 @@ from models.amr_graph import AMR
 
 UNKNOWN_RELATION = 'unk-rel'
 
-
-def __get_concept_for_var(amr: CustomizedAMR, variable):
-    if variable in amr.amr_graph.node_to_concepts.keys():
-        concept = amr.amr_graph.node_to_concepts[variable]
-    else:
-        # string literal (is it the only case? should I treat it differently??)
-        concept = variable
-    return concept
-
-
 def extract_relation_counts_dict(amrs: List[CustomizedAMR]):
     """Go through the dataset consisting of the AMRs given through amrs
     and create a dictionary of the form (c1, c2) -> {rel1: count, rel2: count, rel3:count...}
@@ -31,8 +21,8 @@ def extract_relation_counts_dict(amrs: List[CustomizedAMR]):
                 amr_graph: AMR
                 # todo: find how this will be affected by preprocessing
                 amr_graph = amr.amr_graph
-                child = __get_concept_for_var(amr, child_var)
-                parent = __get_concept_for_var(amr, parent_var)
+                child = amr.get_concept_for_var(child_var)
+                parent = amr.get_concept_for_var(parent_var)
                 if (parent, child) not in relation_counts.keys():
                     relation_counts[(parent, child)] = {}
                 if relation not in relation_counts[(parent, child)].keys():

@@ -1,5 +1,5 @@
 from models.node import Node
-
+from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_util import calculate_smatch
 
 # amr_str = """(r / recommend-01~e.1
 #                 :ARG1 (a / advocate-01~e.4
@@ -85,7 +85,7 @@ def test_amr_print_with_polarity():
 def test_amr_print_with_literal():
     r: Node = Node('realize-01')
     neg: Node = Node('-')
-    i: Node = Node('it')
+    i: Node = Node('i')
     t2: Node = Node('threaten-01')
     c2: Node = Node('country')
     iran1: Node = Node(None, 'Iran')
@@ -93,8 +93,8 @@ def test_amr_print_with_literal():
     iran2: Node = Node(None, 'Iran')
     h: Node = Node('huge')
     s2: Node = Node('such')
-    c: Node = Node('cause')
-    a: Node = Node('amr-unkown')
+    c: Node = Node('cause-01')
+    a: Node = Node('amr-unknown')
     s: Node = Node('simple')
     r.add_child(neg, 'polarity')
     r.add_child(i, 'ARG0')
@@ -109,14 +109,69 @@ def test_amr_print_with_literal():
     h.add_child(s2, 'degree')
     c.add_child(a, 'ARG0')
     generated_amr_str = r.amr_print()
-    print(generated_amr_str)
+    expected_amr_str = """(r / realize-01 :polarity~e.3 -~e.3
+          :ARG0 (i / i~e.0)
+          :ARG1 (t2 / threaten-01~e.11
+                :ARG0 (c2 / country :wiki "Iran"
+                      :name (n / name :op1 "Iran"~e.6))
+                :mod (h / huge~e.10
+                      :degree (s2 / such~e.8))
+                :ARG1-of (c / cause-01~e.5
+                      :ARG0~e.5 (a / amr-unknown~e.5)))
+          :manner (s / simple~e.1))"""
+    smatch = calculate_smatch(generated_amr_str,expected_amr_str)
+    assert smatch == 1
 
 
 # TODO: example with reantrancy
+# ::id bolt12_632_5731.28 ::amr-annotator UCO-AMR-05 ::preferred
+# ::tok We have now already received a payment reminder from the hospital .
+# amr_str = """(r / receive-01~e.4
+#                   :ARG0 (w / we~e.0)
+#                   :ARG1 (t / thing~e.7
+#                         :ARG0-of~e.7 (r2 / remind-01~e.7
+#                               :ARG1 (p / pay-01~e.6
+#                                     :ARG0 w)
+#                               :ARG2 w))
+#                   :ARG2~e.8 (h / hospital~e.10)
+#                   :time (n / now~e.2)
+#                   :time (a / already~e.3))"""
+def test_amr_print_with_reentrancy():
+    r: Node = Node('receive-01')
+    w: Node = Node('we')
+    t: Node = Node('thing')
+    r2: Node = Node('remind-01')
+    p: Node = Node('pay-01')
+    h: Node = Node('hospital')
+    n: Node = Node('now')
+    a: Node = Node('already')
+    r.add_child(w, 'ARG0')
+    r.add_child(t, 'ARG1')
+    r.add_child(h, 'ARG2')
+    r.add_child(n, 'time')
+    r.add_child(a, 'time')
+    t.add_child(r2, 'ARG0-of')
+    r2.add_child(p, 'ARG1')
+    r2.add_child(w, 'ARG2')
+    p.add_child(w, 'ARG0')
+    generated_amr_str = r.amr_print_with_reentrancy()
+    expected_amr_str = """(r / receive-01~e.4
+                      :ARG0 (w / we~e.0)
+                      :ARG1 (t / thing~e.7
+                            :ARG0-of~e.7 (r2 / remind-01~e.7
+                                  :ARG1 (p / pay-01~e.6
+                                        :ARG0 w)
+                                  :ARG2 w))
+                      :ARG2~e.8 (h / hospital~e.10)
+                      :time (n / now~e.2)
+                      :time (a / already~e.3))"""
+    smatch = calculate_smatch(generated_amr_str, expected_amr_str)
+    assert smatch == 1
 
 
 if __name__ == "__main__":
     test_amr_print_simple()
     test_amr_print_with_polarity()
     test_amr_print_with_literal()
+    test_amr_print_with_reentrancy()
     print("Everything in node_test passed")

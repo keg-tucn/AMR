@@ -128,10 +128,10 @@ class CanExtractOrderedConceptsFilter():
         amr_id = filter_params.amr_id
 
         identified_concepts = IdentifiedConcepts()
-        identified_concepts.create_from_custom_amr(amr_id, custom_amr)
+        identified_concepts.create_from_amr(amr_id, custom_amr.amr_graph)
         # if I can't put in order all the concepts:
-        if len(identified_concepts.ordered_concepts) != len(custom_amr.parent_dict.keys()):
-            return False
+        if identified_concepts.ordered_concepts is None:
+            return None
         # empty AMR, don't care about it, should not be many:
         if len(identified_concepts.ordered_concepts) == 0:
             return False
