@@ -1,7 +1,10 @@
 from typing import List
 from models.amr_data import CustomizedAMR
 from models.concept import IdentifiedConcepts, Concept
-from trainers.arcs.head_selection.head_selection_on_ordered_concepts.training_arcs_data_extractor import generate_parent_vector, generate_dataset_entry
+from trainers.arcs.head_selection.head_selection_on_ordered_concepts.parents_vector_extractor import \
+    generate_parent_vectors
+from trainers.arcs.head_selection.head_selection_on_ordered_concepts.training_arcs_data_extractor import \
+    generate_dataset_entry, ArcsTrainingEntry
 
 
 # TODO: more general method for assertions (or use test framework)
@@ -42,8 +45,8 @@ def test_generate_parent_vector():
                                             Concept('r', 'recommend-01'),
                                             Concept('v', 'vigorous'),
                                             Concept('a', 'advocate-01')]
-    generated_parent_vector = generate_parent_vector(custom_amr, identified_concepts)
-    expected_parent_vector = [-1, 4, 0, 4, 2]
+    generated_parent_vector = generate_parent_vectors(custom_amr, identified_concepts)
+    expected_parent_vector = [(-1, 4, 0, 4, 2)]
     assert_parent_vectors(expected_parent_vector, generated_parent_vector)
 
 
@@ -57,7 +60,8 @@ def test_generate_dataset_entry():
                     :ARG1 (a / advocate-01~e.4
                         :ARG1 (i / it~e.0)
                         :manner~e.2 (v / vigorous~e.3)))"""
-    generated_identified_concepts, generated_parent_vector = generate_dataset_entry('amr_id', amr_str)
+    sentence = """It should be vigorously advocated ."""
+    generated_entry: ArcsTrainingEntry = generate_dataset_entry('amr_id', amr_str,sentence,0)
     expected_identified_concepts = IdentifiedConcepts()
     expected_identified_concepts.amr_id = 'amr_id'
     expected_identified_concepts.ordered_concepts = [Concept('', 'ROOT'),
@@ -66,8 +70,8 @@ def test_generate_dataset_entry():
                                                      Concept('v', 'vigorous'),
                                                      Concept('a', 'advocate-01')]
     expected_parent_vector = [-1, 4, 0, 4, 2]
-    assert_identified_concepts(expected_identified_concepts, generated_identified_concepts)
-    assert_parent_vectors(expected_parent_vector, generated_parent_vector)
+    assert_identified_concepts(expected_identified_concepts, generated_entry.identified_concepts)
+    assert_parent_vectors(expected_parent_vector, generated_entry.parent_vector)
 
 
 if __name__ == "__main__":
