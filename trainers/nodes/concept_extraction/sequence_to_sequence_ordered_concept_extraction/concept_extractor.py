@@ -4,11 +4,12 @@ import dynet_config
 
 import dynet as dy
 
+from data_extraction.dataset_reading_util import get_all_paths
 from data_extraction.word_embeddings_reader import read_glove_embeddings_from_file
 from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extraction.training_concepts_data_extractor \
     import generate_concepts_training_data, ConceptsTrainingEntry
-from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_util import get_all_paths, \
-    construct_concept_glove_embeddings_list
+from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_util \
+    import construct_concept_glove_embeddings_list
 from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer import get_all_concepts
 
 from deep_dynet import support as ds
