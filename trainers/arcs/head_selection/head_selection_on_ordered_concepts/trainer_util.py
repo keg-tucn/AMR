@@ -18,7 +18,8 @@ class ArcsTrainerHyperparameters:
                  compare_gold,
                  max_sen_len,
                  max_parents_vectors,
-                 reentrancy_threshold):
+                 reentrancy_threshold,
+                 use_preprocessing: bool):
         self.no_epochs = no_epochs
         self.mlp_dropout = mlp_dropout
         # how many concepts with no alignment we allow in the ordered concepts (percentage: 0-none,1-all)
@@ -28,6 +29,7 @@ class ArcsTrainerHyperparameters:
         self.max_sen_len = max_sen_len
         self.max_parents_vectors = max_parents_vectors
         self.reentrancy_threshold = reentrancy_threshold
+        self.use_preprocessing = use_preprocessing
 
     def __str__(self):
         return 'ep_' + str(self.no_epochs) + \
@@ -36,7 +38,8 @@ class ArcsTrainerHyperparameters:
                '_cg_' + str(self.compare_gold) + \
                '_sl_' + str(self.max_sen_len) + \
                '_pv_' + str(self.max_parents_vectors) + \
-               '_th_' + str(self.reentrancy_threshold)
+               '_th_' + str(self.reentrancy_threshold)+ \
+               '_prep_' + str(self.use_preprocessing)
 
 
 class ArcsTrainerResultPerEpoch:

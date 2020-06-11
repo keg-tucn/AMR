@@ -6,6 +6,7 @@ from data_extraction import input_file_parser
 from data_extraction.dataset_reading_util import get_all_paths
 from models.amr_graph import AMR
 from models.concept import IdentifiedConcepts, Concept
+from pre_post_processing.standford_pre_post_processing import train_pre_processing
 
 from trainers.arcs.head_selection.head_selection_on_ordered_concepts.parents_vector_extractor import \
     generate_parent_vectors
@@ -34,9 +35,14 @@ def add_false_root(identified_concepts: IdentifiedConcepts):
     identified_concepts.ordered_concepts.insert(0, root_concept)
 
 
-def generate_dataset_entry(amr_id: str, amr_str: str, sentence: str, unaligned_tolerance: float, max_no_parent_vectors: int):
-    # TODO: pre processing steps
+def generate_dataset_entry(amr_id: str, amr_str: str, sentence: str,
+                           unaligned_tolerance: float,
+                           max_no_parent_vectors: int,
+                           use_preprocessing: bool):
     amr = AMR.parse_string(amr_str)
+    if use_preprocessing:
+        # cannot use the test flow preprocessing yet (don't test on the sentence, but for now on gold concepts)
+        amr, new_sentence = train_pre_processing(amr, sentence)
     identified_concepts = IdentifiedConcepts()
     identified_concepts.create_from_amr(amr_id, amr, unaligned_tolerance)
     if identified_concepts.ordered_concepts is None:
@@ -57,7 +63,11 @@ def generate_dataset_entry(amr_id: str, amr_str: str, sentence: str, unaligned_t
 
 
 # TODO: cache them to a file (to not always generate them)
-def generate_arcs_training_data_per_file(file_path, unaligned_tolerance, max_sentence_len, max_no_parent_vectors):
+def generate_arcs_training_data_per_file(file_path,
+                                         unaligned_tolerance,
+                                         max_sentence_len,
+                                         max_no_parent_vectors,
+                                         use_preprocessing: bool):
     no_of_parent_vectors_histogram = {}
     sentence_amr_triples = input_file_parser.extract_data_records(file_path)
     entries: List[ArcsTrainingEntry] = []
@@ -71,7 +81,8 @@ def generate_arcs_training_data_per_file(file_path, unaligned_tolerance, max_sen
                                                               amr_str,
                                                               sentence,
                                                               unaligned_tolerance,
-                                                              max_no_parent_vectors)
+                                                              max_no_parent_vectors,
+                                                              use_preprocessing)
             if entry is not None:
                 entries.append(entry)
                 no_of_parent_vectors = len(entry.parent_vectors)
@@ -86,7 +97,8 @@ def generate_arcs_training_data_per_file(file_path, unaligned_tolerance, max_sen
 def generate_arcs_training_data(file_paths: List[str],
                                 unaligned_tolerance: float,
                                 max_sentence_len: int,
-                                max_no_parent_vectors: int):
+                                max_no_parent_vectors: int,
+                                use_preprocessing: bool):
     all_entries = []
     no_all_entries_not_processed = 0
     no_of_parent_vectors_histogram = {}
@@ -96,7 +108,8 @@ def generate_arcs_training_data(file_paths: List[str],
         no_of_parent_vectors_histogram_dataset = generate_arcs_training_data_per_file(
             file_path, unaligned_tolerance,
             max_sentence_len,
-            max_no_parent_vectors)
+            max_no_parent_vectors,
+            use_preprocessing)
         all_entries = all_entries + entries
         no_all_entries_not_processed += no_entries_not_processed
         for key, value in no_of_parent_vectors_histogram_dataset.items():
@@ -119,11 +132,15 @@ class ArcsTraingAndTestData:
 
 
 @functools.lru_cache(maxsize=5)
-def read_train_test_data(unaligned_tolerance: float, max_sentence_len: int, max_no_parent_vectors: int):
+def read_train_test_data(unaligned_tolerance: float,
+                         max_sentence_len: int,
+                         max_no_parent_vectors: int,
+                         use_preprocessing: bool):
     train_entries, no_train_failed, no_pv_hist_train = generate_arcs_training_data(get_all_paths('training'),
                                                                                    unaligned_tolerance,
                                                                                    max_sentence_len,
-                                                                                   max_no_parent_vectors)
+                                                                                   max_no_parent_vectors,
+                                                                                   use_preprocessing)
     no_train_entries = len(train_entries)
     print(str(no_train_entries) + ' train entries (AMRs) processed ' + str(no_train_failed) + ' train entries failed')
     print('train parent vectors histogram')
@@ -133,7 +150,8 @@ def read_train_test_data(unaligned_tolerance: float, max_sentence_len: int, max_
     test_entries, no_test_failed, no_pv_hist_test = generate_arcs_training_data(get_all_paths('dev'),
                                                                                 unaligned_tolerance,
                                                                                 max_sentence_len,
-                                                                                max_no_parent_vectors)
+                                                                                max_no_parent_vectors,
+                                                                                use_preprocessing)
     no_test_entries = len(test_entries)
     print(str(no_test_entries) + ' test entries (AMRs) processed ' + str(no_test_failed) + ' test entries failed')
     print('test parent vectors histogram')

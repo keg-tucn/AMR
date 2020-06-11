@@ -297,7 +297,8 @@ def train_and_test(relation_dict, hyperparams: ArcsTrainerHyperparameters):
 
     train_and_test_data: ArcsTraingAndTestData = read_train_test_data(hyperparams.unaligned_tolerance,
                                                                       hyperparams.max_sen_len,
-                                                                      hyperparams.max_parents_vectors)
+                                                                      hyperparams.max_parents_vectors,
+                                                                      hyperparams.use_preprocessing)
     train_concepts = [train_entry.identified_concepts for train_entry in train_and_test_data.train_entries]
     dev_concepts = [test_entry.identified_concepts for test_entry in train_and_test_data.test_entries]
     all_concept_names = get_all_concepts(train_concepts + dev_concepts)

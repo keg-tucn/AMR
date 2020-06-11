@@ -42,5 +42,6 @@ if __name__ == "__main__":
                                              compare_gold=1,
                                              max_sen_len=300,
                                              max_parents_vectors=6,
-                                             reentrancy_threshold=0.8)
+                                             reentrancy_threshold=0.8,
+                                             use_preprocessing=True)
     run_experiment(relation_dict, hyperparams)
