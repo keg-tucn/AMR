@@ -76,13 +76,15 @@ class AMR(defaultdict):
 
     def __printing__representation(self):
         printing_repr = ''
+        printing_repr += 'roots'+str(self.roots) + '\n'
+        printing_repr += 'reentrance_triples'+str(self.reentrance_triples) + '\n'
         printing_repr += 'node_to_concepts: ' + str(self.node_to_concepts) + '\n'
         printing_repr += 'node_to_tokens: ' + str(self.node_to_tokens) + '\n'
         printing_repr += 'relation_to_tokens: ' + str(self.relation_to_tokens) + '\n'
         printing_repr += 'align_to_sentence: ' + str(self.align_to_sentence) + '\n'
         printing_repr += 'default dict:\n'
         for parent, children in self.items():
-            printing_repr += 'parent ' + parent + " with children: "
+            printing_repr += 'parent ' + str(parent) + " with children: "
             printing_repr += str(children)+ '\n'
         return printing_repr
 

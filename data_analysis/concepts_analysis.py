@@ -9,7 +9,7 @@ from data_extraction.dataset_reading_util import read_dataset_dict
 from models.amr_data import CustomizedAMR
 from preprocessing.preprocessing_steps import PreprocessingStep, HaveOrgPreprocessingStep, \
     NamedEntitiesPreprocessingStep, DateEntitiesPreprocessingStep, TemporalQuantitiesPreprocessingStep, \
-    QuantitiesPreprocessingStep
+    QuantitiesPreprocessingStep, StandfordNerTaggerPreprocessingStep
 
 
 def filter_dataset_dict(dataset_dict, filters):
@@ -58,6 +58,7 @@ class ConceptsAnalysis(DatasetAnalysis):
         # apply processing steps
         preprocessing_steps_dict = {
             'no_prep': [],
+            'stanford-ner-step': [StandfordNerTaggerPreprocessingStep()],
             'ne_prep': [NamedEntitiesPreprocessingStep()],
             'de_prep': [DateEntitiesPreprocessingStep()],
             'tq_prep': [TemporalQuantitiesPreprocessingStep()],
@@ -97,6 +98,7 @@ class ConceptsAnalysis(DatasetAnalysis):
         # apply processing steps
         preprocessing_steps_dict = {
             'no_prep': [],
+            'stanford_prep': [StandfordNerTaggerPreprocessingStep()],
             'ne_prep': [NamedEntitiesPreprocessingStep()],
             'de_prep': [DateEntitiesPreprocessingStep()],
             'tq_prep': [TemporalQuantitiesPreprocessingStep()],

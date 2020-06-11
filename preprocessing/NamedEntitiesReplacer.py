@@ -68,11 +68,6 @@ def process_sentence(sentence):
         for item in new_sentence_list:
             new_sentence = new_sentence + item + ' '
 
-        print(tagged_list)
-        print(new_sentence_list)
-        print(new_sentence)
-        print(named_entities_location)
-
         return new_sentence, named_entities_location
 
     except Exception as e:
@@ -81,3 +76,13 @@ def process_sentence(sentence):
 
 if __name__ == "__main__":
     print(process_sentence('Rami Eid John is studying in San Francisco'))
+    print(process_sentence('Rami Eid John is studying in San Francisco in October 2020'))
+    print(process_sentence('Establish an innovation fund with a maximum amount of 1,000 U.S. dollars .'))
+    print(process_sentence('On Tuesday , Wanke announced that it would make an additional donation of RMB 100 million yuan for the temporary resettlement and post @-@ disaster reconstruction in the next three to five years .'))
+    print(process_sentence('so a lot of rich people donated their money to the Church before they died .'))
+    print(process_sentence('By the 10 th Century AD , 60 % of Britain \'s territory belonged to the Church'))
+    print(process_sentence('I headed straight for the center of activities , but in actual fact traffic was being controlled as early as 4 o\'clock , and they had already started limiting the crowds entering the sports center .'))
+    print(process_sentence('Sometime after 6 I went straight back home to watch it on TV . The spectacle was just as astonishing on TV , except that it was just one angle of the whole thing .'))
+    print(process_sentence('I think it is not those elites , but that some corrupt officials were bribed'))
+    print(process_sentence('On the day of the Tangshan Earthquake , i.e. July 28 th , those on duty at Mao Zedong \'s quarters ' \
+               'were Wang Dongxing , Wang Hongwen , and Mao Zedong \'s confidential secretary , Zhang Yufeng . '))
