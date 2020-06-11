@@ -4,6 +4,7 @@ import dynet_config
 
 import dynet as dy
 
+from data_extraction.dataset_reading_util import get_all_paths
 from data_extraction.word_embeddings_reader import read_glove_embeddings_from_file
 from data_extraction.dataset_reading_util import get_all_paths
 from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extraction.training_concepts_data_extractor \

@@ -1,4 +1,4 @@
-from models.amr_data import CustomizedAMR
+from models.amr_graph import AMR
 from models.concept import IdentifiedConcepts, Concept
 
 
@@ -16,23 +16,16 @@ def assert_identified_concepts(expected_concepts: IdentifiedConcepts, generated_
 #                     :manner~e.2 (v / vigorous~e.3)))"""
 # sentence = """It should be vigorously advocated ."""
 def test_create_from_custom_amr_example_1():
-    custom_amr: CustomizedAMR = CustomizedAMR()
-    custom_amr.tokens_to_concepts_dict = {0: ('i', 'it'),
-                                          1: ('r', 'recommend-01'),
-                                          3: ('v', 'vigorous'),
-                                          4: ('a', 'advocate-01')}
-    custom_amr.tokens_to_concept_list_dict = {0: [('i', 'it')],
-                                              1: [('r', 'recommend-01')],
-                                              3: [('v', 'vigorous')],
-                                              4: [('a', 'advocate-01')]}
-    # (child,parent) : (relation, children of child, token aligned to child)
-    custom_amr.relations_dict = {('i', 'a'): ('ARG1', [], ['0']),
-                                 ('v', 'a'): ('manner', [], ['3']),
-                                 ('r', ''): ('', ['a'], ['1']),
-                                 ('a', 'r'): ('ARG1', ['i', 'v'], ['4'])}
-    custom_amr.parent_dict = {'i': 'a', 'v': 'a', 'a': 'r', 'r': ''}
+    amr: AMR = AMR()
+    amr.node_to_concepts = {'i': 'it', 'v': 'vigorous', 'a': 'advocate-01', 'r': 'recommend-01'}
+    amr.node_to_tokens = {'i': ['0'], 'v': ['3'], 'a': ['4'], 'r': ['1']}
+    amr.relation_to_tokens = {'manner': [('2', 'a')]}
+    amr['i'] = {}
+    amr['v'] = {}
+    amr['a'] = {'ARG1': [('i',)], 'manner': [('v',)]}
+    amr['r'] = {'ARG1': [('a',)]}
     generated_concepts = IdentifiedConcepts()
-    generated_concepts.create_from_custom_amr('amr_id_1', custom_amr)
+    generated_concepts.create_from_amr('amr_id_1', amr)
     expected_concepts = IdentifiedConcepts()
     expected_concepts.amr_id = 'amr_id_1'
     expected_concepts.ordered_concepts = [Concept('i', 'it'), Concept('r', 'recommend-01'), Concept('v', 'vigorous'),

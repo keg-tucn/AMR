@@ -27,9 +27,11 @@ def generate_dataset_entry(amr_id: str, amr_str: str, sentence: str):
     identified_concepts = IdentifiedConcepts()
     identified_concepts.create_from_custom_amr(amr_id, custom_amr)
     # if I can't put in order all the concepts:
-    if len(identified_concepts.ordered_concepts) != len(custom_amr.parent_dict.keys()):
-        return None
+    # if len(identified_concepts.ordered_concepts) != len(custom_amr.parent_dict.keys()):
+    #    return None
     # empty AMR, don't care about it, should not be many:
+    if identified_concepts.ordered_concepts is None:
+        return None
     if len(identified_concepts.ordered_concepts) == 0:
         return None
 

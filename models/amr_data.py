@@ -1,3 +1,6 @@
+from models.amr_graph import AMR
+
+
 class AMRNode:
 
     def __init__(self):
@@ -12,7 +15,7 @@ class AMRNode:
 class CustomizedAMR:
 
     def __init__(self):
-        self.amr_graph = None
+        self.amr_graph: AMR = None
         self.parent_dict = {}
         self.relations_dict = {}
         self.tokens_to_concepts_dict = {}
@@ -21,9 +24,9 @@ class CustomizedAMR:
     def __printing__representation(self):
         printing_repr = ''
         printing_repr += 'parent_dict: ' + str(self.parent_dict) + '\n'
-        printing_repr += 'relations_dict: '+str(self.relations_dict) + '\n'
-        printing_repr += 'tokens_to_concepts_dict: '+str(self.tokens_to_concepts_dict) + '\n'
-        printing_repr += 'tokens_to_concept_list_dict: '+str(self.tokens_to_concept_list_dict) + '\n'
+        printing_repr += 'relations_dict: ' + str(self.relations_dict) + '\n'
+        printing_repr += 'tokens_to_concepts_dict: ' + str(self.tokens_to_concepts_dict) + '\n'
+        printing_repr += 'tokens_to_concept_list_dict: ' + str(self.tokens_to_concept_list_dict) + '\n'
         printing_repr += 'amr_graph:\n' + str(self.amr_graph) + '\n'
         return printing_repr
 
@@ -76,7 +79,6 @@ class CustomizedAMR:
                     if t not in list(self.tokens_to_concept_list_dict.keys()):
                         self.tokens_to_concept_list_dict[t] = []
                     self.tokens_to_concept_list_dict[t].append((node_variable, node_variable))
-
 
     # This implementation supports having more tokens aligned to the same node
     # def create_tokens_to_concept_list_dict(self, amr_graph):
@@ -156,6 +158,9 @@ class CustomizedAMR:
         for key, value in self.relations_dict.items():
             if key[1] == "":
                 self.parent_dict[key[0]] = ""
+        # for AMRs consisting of one node (having no children in amr_graph.items(), add the ROOT as their parent)
+        if len(amr_graph.keys()) == 1:
+            self.parent_dict[list(amr_graph.keys())[0]] = ''
 
         for item in list(self.relations_dict.items()):
             concept = item[0][0]
@@ -170,3 +175,11 @@ class CustomizedAMR:
                     else:
                         t[2] = value
                     self.relations_dict[(key, item[0][1])] = tuple(t)
+
+    def get_concept_for_var(self, variable):
+        if variable in self.amr_graph.node_to_concepts.keys():
+            concept = self.amr_graph.node_to_concepts[variable]
+        else:
+            # string literal (is it the only case? should I treat it differently??)
+            concept = variable
+        return concept
