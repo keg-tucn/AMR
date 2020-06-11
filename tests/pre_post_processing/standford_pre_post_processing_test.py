@@ -657,10 +657,10 @@ def test_train_pre_processing_ex_person_with_polarity():
 
 
 if __name__ == "__main__":
-    # test_train_pre_processing_ex_person()
-    # test_train_pre_processing_ex_organization()
-    # test_train_pre_processing_ex_2_person()
-    # test_train_pre_processing_ex_person_reentrancy()
-    # test_train_pre_processing_ex_3_person()
-    # train_pre_processing_ex_persons_with_common_tokens()
+    test_train_pre_processing_ex_person()
+    test_train_pre_processing_ex_organization()
+    test_train_pre_processing_ex_2_person()
+    test_train_pre_processing_ex_person_reentrancy()
+    test_train_pre_processing_ex_3_person()
+    train_pre_processing_ex_persons_with_common_tokens()
     test_train_pre_processing_ex_person_with_polarity()
