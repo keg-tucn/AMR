@@ -1,3 +1,5 @@
+import functools
+
 import nltk
 from nltk.tag import StanfordNERTagger
 
@@ -38,9 +40,15 @@ def process_language(content_array):
         print(str(e))
 
 
-def process_sentence(sentence):
+@functools.lru_cache(maxsize=5)
+def get_stanford_ner_tagger():
+    return StanfordNERTagger(STANFORD_NER_MODEL, STANFORD_NER_JAR)
+
+
+def process_sentence(sentence,
+                     tags_to_identify=['LOCATION', 'PERSON', 'ORGANIZATION', 'MONEY', 'PERCENT', 'DATE', 'TIME']):
     try:
-        st = StanfordNERTagger(STANFORD_NER_MODEL, STANFORD_NER_JAR)
+        st = get_stanford_ner_tagger()
 
         tagged_list = st.tag(sentence.split())
         new_sentence = ""
@@ -48,7 +56,7 @@ def process_sentence(sentence):
         named_entities_location = []
         location = 0
         for token, tag in tagged_list:
-            if tag == 'O':
+            if tag == 'O' or tag not in tags_to_identify:
                 new_sentence_list.append(token)
             else:
                 if len(new_sentence_list) == 0:

@@ -2,6 +2,7 @@ from copy import deepcopy
 from models.amr_graph import AMR
 from pre_post_processing.stanford_train_preprocessing_util import get_person_or_organization_tokens, \
     modify_sentence_and_alignment_for_person_or_organization, replace_subgraph_for_person_or_organization
+from preprocessing.NamedEntitiesReplacer import process_sentence
 
 
 def train_pre_processing(amr: AMR, sentence: str):
@@ -35,3 +36,13 @@ def train_pre_processing(amr: AMR, sentence: str):
             # remove from graph
             replace_subgraph_for_person_or_organization(amr_copy, node_var)
     return amr_copy, new_sentence
+
+
+def inference_preprocessing(sentence: str):
+    """
+    Takes a sentence and returns
+        the preprocessed sentence (with NE replaced with PERSON or ORGANIZATION)
+        a list with the initial tokens and where they have to be inserted
+    """
+    new_sentence, named_entities_location = process_sentence(sentence, tags_to_identify=['PERSON', 'ORGANIZATION'])
+    return new_sentence, named_entities_location

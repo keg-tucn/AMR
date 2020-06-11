@@ -1,5 +1,5 @@
 from models.amr_graph import AMR
-from pre_post_processing.standford_pre_post_processing import train_pre_processing
+from pre_post_processing.standford_pre_post_processing import train_pre_processing, inference_preprocessing
 
 
 def assert_amr_graph_dictionaries(expected_amr: AMR, parsed_amr: AMR):
@@ -656,6 +656,27 @@ def test_train_pre_processing_ex_person_with_polarity():
     assert_amr_graph_dictionaries(expected_amr, generated_amr)
 
 
+def test_inference_pre_processing_ex1():
+    sentence = 'Rami Eid John is studying in San Francisco'
+    generated_sentence, generated_metadata = inference_preprocessing(sentence)
+    expected_sentence = 'PERSON is studying in San Francisco '
+    expected_metadata = [(0, ['Rami', 'Eid', 'John'])]
+    assert generated_sentence == expected_sentence
+    assert generated_metadata == expected_metadata
+
+
+def test_inference_pre_processing_ex2():
+    sentence = 'On the day of the Tangshan Earthquake , i.e. July 28 th , those on duty at Mao Zedong \'s quarters ' \
+               'were Wang Dongxing , Wang Hongwen , and Mao Zedong \'s confidential secretary , Zhang Yufeng . '
+    generated_sentence, generated_metadata = inference_preprocessing(sentence)
+    # stanford nertagger doesn't do very well on this one
+    expected_sentence = 'On the day of the Tangshan Earthquake , i.e. July 28 th , those on duty at Mao Zedong \'s quarters ' \
+                        'were ORGANIZATION , PERSON , and PERSON \'s confidential secretary , PERSON . '
+    expected_metadata = [(22, ['Wang', 'Dongxing']), (24, ['Wang', 'Hongwen']), (27, ['Mao', 'Zedong']), (32, ['Zhang', 'Yufeng'])]
+    assert generated_sentence == expected_sentence
+    assert generated_metadata == expected_metadata
+
+
 if __name__ == "__main__":
     test_train_pre_processing_ex_person()
     test_train_pre_processing_ex_organization()
@@ -664,3 +685,5 @@ if __name__ == "__main__":
     test_train_pre_processing_ex_3_person()
     train_pre_processing_ex_persons_with_common_tokens()
     test_train_pre_processing_ex_person_with_polarity()
+    test_inference_pre_processing_ex1()
+    test_inference_pre_processing_ex2()
