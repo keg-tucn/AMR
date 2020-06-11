@@ -20,16 +20,9 @@ class ConceptsTrainingEntry:
 
 
 def generate_dataset_entry(amr_id: str, amr_str: str, sentence: str):
-    # TODO: pre processing steps
     amr = AMR.parse_string(amr_str)
-    custom_amr: CustomizedAMR = CustomizedAMR()
-    custom_amr.create_custom_AMR(amr)
     identified_concepts = IdentifiedConcepts()
-    identified_concepts.create_from_custom_amr(amr_id, custom_amr)
-    # if I can't put in order all the concepts:
-    # if len(identified_concepts.ordered_concepts) != len(custom_amr.parent_dict.keys()):
-    #    return None
-    # empty AMR, don't care about it, should not be many:
+    identified_concepts.create_from_amr(amr_id, amr)
     if identified_concepts.ordered_concepts is None:
         return None
     if len(identified_concepts.ordered_concepts) == 0:

@@ -1,6 +1,7 @@
 from typing import List, Tuple
 
 from models.amr_graph import AMR
+from pre_post_processing.standford_pre_post_processing import train_pre_processing
 from preprocessing.TokensReplacer import replace_date_entities, replace_named_entities, replace_temporal_quantities, \
     replace_have_org_role, replace_quantities_default
 from preprocessing.preprocessing_metadata import PreprocessingMetadata
@@ -10,6 +11,7 @@ NAMED_ENTITIES_STEP = 'named-entities-step'
 TEMPORAL_QUANTITIES_STEP = 'temporal-quantities-step'
 QUANTITIES_STEP = 'quantities-step'
 HAVE_ORG_STEP = 'have-org-step'
+STANFORD_NER_STEP = 'stanford-ner-step'
 
 
 class PreprocessingStep:
@@ -81,6 +83,17 @@ class HaveOrgPreprocessingStep(PreprocessingStep):
         new_amr, have_org_role_nodes_arg2 = replace_have_org_role(new_amr, 'ARG2')
         have_org_metadata = {'ARG1': have_org_role_nodes_arg1, 'ARG2': have_org_role_nodes_arg2}
         return new_amr, sentence, have_org_metadata
+
+
+class StandfordNerTaggerPreprocessingStep(PreprocessingStep):
+
+    def get_name(self):
+        return STANFORD_NER_STEP
+
+    def apply_step(self, amr, sentence):
+        new_amr, new_sentence = train_pre_processing(amr, sentence)
+        metadata = None
+        return new_amr, sentence, metadata
 
 
 def apply_preprocessing_steps_on_instance(amr: AMR, sentence: str,

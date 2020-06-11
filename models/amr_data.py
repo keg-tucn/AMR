@@ -165,16 +165,17 @@ class CustomizedAMR:
         for item in list(self.relations_dict.items()):
             concept = item[0][0]
             for key, value in amr_graph.node_to_tokens.items():
-                if key is concept:
-                    t = list(self.relations_dict[item[0]])
-                    if type(value[0]) is tuple:
-                        i = 0
-                        while value[i][1] != item[0][1]:
-                            i += 1
-                        t[2] = [value[i][0]]
-                    else:
-                        t[2] = value
-                    self.relations_dict[(key, item[0][1])] = tuple(t)
+                if len(value)>0:
+                    if key is concept:
+                        t = list(self.relations_dict[item[0]])
+                        if type(value[0]) is tuple:
+                            i = 0
+                            while value[i][1] != item[0][1]:
+                                i += 1
+                            t[2] = [value[i][0]]
+                        else:
+                            t[2] = value
+                        self.relations_dict[(key, item[0][1])] = tuple(t)
 
     def get_concept_for_var(self, variable):
         if variable in self.amr_graph.node_to_concepts.keys():

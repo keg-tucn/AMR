@@ -92,7 +92,6 @@ def replace_named_entities(amr, sentence):
     name_nodes = [(k, amr_copy[k]["name"][0]) for k in amr_copy if amr_copy[k] and "name" in amr_copy[k]]
     if len(name_nodes) == 0:
         return amr, sentence, []
-
     # Find the literals associated with each named entity
     literals_triplets = []
     for name_tuple in name_nodes:
