@@ -17,10 +17,10 @@ class Concept:
         self.no = no
 
     def __repr__(self):
-        return '(' + self.variable + ' , ' + self.name + ' , ' + str(self.no) + ')'
+        return '(' + str(self.variable) + ' , ' + str(self.name) + ' , ' + str(self.no) + ')'
 
     def __str__(self):
-        return '(' + self.variable + ' , ' + self.name + ' , ' + str(self.no) + ')'
+        return '(' + str(self.variable) + ' , ' + str(self.name) + ' , ' + str(self.no) + ')'
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):

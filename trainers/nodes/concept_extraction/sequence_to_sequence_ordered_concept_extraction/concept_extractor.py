@@ -28,12 +28,12 @@ EOS = "<EOS>"
 
 # TODO: move this when fully parameterized
 LSTM_NB_LAYERS = 1
-WORDS_EMBEDDING_SIZE = 25
+WORDS_EMBEDDING_SIZE = 50
 WORDS_GLOVE_EMBEDDING_SIZE = 50
-CONCEPTS_EMBEDDING_SIZE = 25
-STATE_SIZE = 20
-INPUT_STATE_SIZE = 20
-ATTENTION_SIZE = 20
+CONCEPTS_EMBEDDING_SIZE = 50
+STATE_SIZE = 40
+INPUT_STATE_SIZE = 40
+ATTENTION_SIZE = 40
 DROPOUT_RATE = 0.6
 
 USE_ATTENTION = True
@@ -208,12 +208,22 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, use_attentio
 
     # Temporary, just until loss is computed on dev too
     embedded_golden_concepts = []
-    for concept in golden_concepts:
-        if concept in concepts_dynet_graph.concepts_vocab.w2i:
-            embedded_golden_concepts.append(concepts_dynet_graph.concepts_vocab.w2i[concept])
-        else:
-            embedded_golden_concepts.append(concepts_dynet_graph.test_concepts_vocab.w2i[concept]) #### UNKOWN_CONCEPT
-    # embedded_golden_concepts = [concepts_dynet_graph.concepts_vocab.w2i[concept] for concept in golden_concepts]
+    if not SPLIT_VERBS_NON_VERBS:
+        for concept in golden_concepts:
+            if concept in concepts_dynet_graph.concepts_vocab.w2i:
+                embedded_golden_concepts.append(concepts_dynet_graph.concepts_vocab.w2i[concept])
+            else:
+                embedded_golden_concepts.append(concepts_dynet_graph.test_concepts_vocab.w2i[concept]) #### UNKOWN_CONCEPT
+        # embedded_golden_concepts = [concepts_dynet_graph.concepts_vocab.w2i[concept] for concept in golden_concepts]
+    else:
+        for concept in golden_concepts:
+            if concept in concepts_dynet_graph.concepts_vocab.w2i:
+                if is_verb(concept):
+                    embedded_golden_concepts.append(concepts_dynet_graph.concepts_verbs_vocab.w2i[concept])
+                else:
+                    embedded_golden_concepts.append(concepts_dynet_graph.concepts_non_verbs_vocab.w2i[concept])
+            else:
+                embedded_golden_concepts.append(concepts_dynet_graph.test_concepts_vocab.w2i[concept])
 
     w = dy.parameter(concepts_dynet_graph.decoder_w)
     b = dy.parameter(concepts_dynet_graph.decoder_b)
@@ -226,20 +236,28 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, use_attentio
     non_verb_b = dy.parameter(concepts_dynet_graph.non_verb_decoder_b)
 
     w1_input = None
-    last_concept_embedding = concepts_dynet_graph.output_embeddings[concepts_dynet_graph.concepts_vocab.w2i[EOS]]
+    if not SPLIT_VERBS_NON_VERBS:
+        last_concept_embedding = concepts_dynet_graph.output_embeddings[concepts_dynet_graph.concepts_vocab.w2i[EOS]]
+    else:
+        last_concept_embedding = concepts_dynet_graph.non_verb_embeddings[concepts_dynet_graph.concepts_non_verbs_vocab.w2i[EOS]]
 
     if use_attention:
         input_matrix = dy.concatenate_cols(encoded_sequence)
-        dec_state = concepts_dynet_graph.dec_lstm.initial_state().add_input(
-            dy.concatenate([dy.vecInput(INPUT_STATE_SIZE * 2), last_concept_embedding]))
-        # VERB - NON VERB
-        verb_dec_state = concepts_dynet_graph.verb_dec_gru.initial_state().add_input(
-            dy.concatenate([dy.vecInput(INPUT_STATE_SIZE * 2), last_concept_embedding]))
-        non_verb_dec_state = concepts_dynet_graph.non_verb_dec_gru.initial_state().add_input(
-            dy.concatenate([dy.vecInput(INPUT_STATE_SIZE * 2), last_concept_embedding]))
+        if not SPLIT_VERBS_NON_VERBS:
+            dec_state = concepts_dynet_graph.dec_lstm.initial_state().add_input(
+                        dy.concatenate([dy.vecInput(INPUT_STATE_SIZE * 2), last_concept_embedding]))
+        else:
+            verb_dec_state = concepts_dynet_graph.verb_dec_gru.initial_state().add_input(
+                             dy.concatenate([dy.vecInput(INPUT_STATE_SIZE * 2), last_concept_embedding]))
+            non_verb_dec_state = concepts_dynet_graph.non_verb_dec_gru.initial_state().add_input(
+                                dy.concatenate([dy.vecInput(INPUT_STATE_SIZE * 2), last_concept_embedding]))
     else:
         input_matrix = dy.transpose(dy.concatenate_cols(encoded_sequence))
-        dec_state = concepts_dynet_graph.dec_lstm.initial_state()
+        if not SPLIT_VERBS_NON_VERBS:
+            dec_state = concepts_dynet_graph.dec_lstm.initial_state()
+        else:
+            verb_dec_state = concepts_dynet_graph.verb_dec_gru.initial_state()
+            non_verb_dec_state = concepts_dynet_graph.non_verb_dec_gru.initial_state()
 
     loss = []
     classifier_loss = []
@@ -261,8 +279,22 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, use_attentio
             # if not DROPOUT_FLAG:
             #    w1_input = dy.dropout(w1_input, 1 - concepts_dynet_graph.dropout_rate)
             #    input_matrix = dy.dropout(input_matrix, 1 - concepts_dynet_graph.dropout_rate)
-            context_vector, attention_diff = attend(concepts_dynet_graph, input_matrix, dec_state, w1_input,
+            if not SPLIT_VERBS_NON_VERBS:
+                context_vector, attention_diff = attend(concepts_dynet_graph, input_matrix, dec_state, w1_input,
                                                     len(encoded_sequence))
+            else:
+                ####### THIS FEELS WEIRD! ATTENTION GETS DIFFERENT STATES EACH TIME? ----- NOTE TO SELF, WHEN THIS WAS WITHOUT -1, THE CLASSIFIER LOSSES WERE 0.5 and 0.6 instead of 5 or 6
+                if index_in_non_embedded == 0:
+                    context_vector, attention_diff = attend(concepts_dynet_graph, input_matrix, non_verb_dec_state,
+                                                            w1_input,
+                                                            len(encoded_sequence))
+                else:
+                    if is_verb(golden_concepts[index_in_non_embedded - 1]):
+                        context_vector, attention_diff = attend(concepts_dynet_graph, input_matrix, verb_dec_state, w1_input,
+                                                            len(encoded_sequence))
+                    else:
+                        context_vector, attention_diff = attend(concepts_dynet_graph, input_matrix, non_verb_dec_state, w1_input,
+                                                            len(encoded_sequence))
             vector = dy.concatenate([context_vector, last_concept_embedding])
             sum_attention_diff += attention_diff
         else:
@@ -277,34 +309,36 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, use_attentio
         classifier_loss.append(classify_verb_non_verb(concepts_dynet_graph, vector, golden_concepts[index_in_non_embedded]))
 
         # VERB - NON VERB
-        '''
-        if is_verb(golden_concepts[index_in_non_embedded]):
-            verb_dec_state = verb_dec_state.add_input(vector)
-            out_vector = verb_w * verb_dec_state.output() + verb_b
-            last_concept_embedding = concepts_dynet_graph.verb_embeddings[concept]
+        if SPLIT_VERBS_NON_VERBS:
+            if is_verb(golden_concepts[index_in_non_embedded]):
+                verb_dec_state = verb_dec_state.add_input(vector)
+                out_vector = verb_w * verb_dec_state.output() + verb_b
+                last_concept_embedding = concepts_dynet_graph.verb_embeddings[concept]
+            else:
+                non_verb_dec_state = non_verb_dec_state.add_input(vector)
+                out_vector = non_verb_w * non_verb_dec_state.output() + non_verb_b
+                last_concept_embedding = concepts_dynet_graph.non_verb_embeddings[concept]
         else:
-            non_verb_dec_state = non_verb_dec_state.add_input(vector)
-            out_vector = non_verb_w * non_verb_dec_state.output() + non_verb_b
-            last_concept_embedding = concepts_dynet_graph.non_verb_embeddings[concept]
-        '''
+            dec_state = dec_state.add_input(vector)
+            out_vector = w * dec_state.output() + b
+            # TODO: take last_concept_embedding with a probability from golden vs predicted --- error propagation problem
+            last_concept_embedding = concepts_dynet_graph.output_embeddings[concept]
 
+        '''
         # TEST VERB - NON VERB PREDICTIONS
         if not DROPOUT_FLAG:  # if test
             predict_verb = predict_verb_non_verb(concepts_dynet_graph, vector)
             print(golden_concepts[index_in_non_embedded] + " " + str(is_verb(golden_concepts[index_in_non_embedded])) + " " + str(predict_verb))
             if (predict_verb == 1 and is_verb(golden_concepts[index_in_non_embedded])) or (predict_verb == 0 and not is_verb(golden_concepts[index_in_non_embedded])):
                 correct_verb_non_verb_predictions += 1
+        '''
 
-        dec_state = dec_state.add_input(vector)
-        out_vector = w * dec_state.output() + b
         probs = dy.softmax(out_vector)
 
         # QUICKFIX FOR NON ATTENTION -------- SHOULD FIGURE OUT A BETTER WAY
         if len(encoded_sequence) >= len(embedded_golden_concepts):
             i += 1
 
-        # TODO: take last_concept_embedding with a probability from golden vs predicted --- error propagation problem
-        last_concept_embedding = concepts_dynet_graph.output_embeddings[concept]
 
         # DIFF LOSSES FOR THE TWO DECODERS?
         loss.append(-dy.log(dy.pick(probs, concept)))
@@ -314,19 +348,21 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, use_attentio
         next_concept = probs_vector.index(max(probs_vector))
 
         # GET DIFF PREDICTED CONCEPTS IF VERB - NON VERB
-        '''
-        if is_verb(golden_concepts[index_in_non_embedded]):
-            next_concept = concepts_dynet_graph.concepts_verbs_vocab.i2w[next_concept]
+        if SPLIT_VERBS_NON_VERBS:
+            if is_verb(golden_concepts[index_in_non_embedded]):
+                predicted_concepts.append(concepts_dynet_graph.concepts_verbs_vocab.i2w[next_concept])
+            else:
+                predicted_concepts.append(concepts_dynet_graph.concepts_non_verbs_vocab.i2w[next_concept])
         else:
-            next_concept = concepts_dynet_graph.concepts_non_verbs_vocab.i2w[next_concept]
-        '''
-        predicted_concepts.append(concepts_dynet_graph.concepts_vocab.i2w[next_concept])
+            predicted_concepts.append(concepts_dynet_graph.concepts_vocab.i2w[next_concept])
 
         index_in_non_embedded += 1
 
+    '''
     if not DROPOUT_FLAG:
         correct_verb_non_verb_predictions /= len(golden_concepts)
         print("Correct vb non verb prediction percentage: " + str(correct_verb_non_verb_predictions))
+    '''
 
     # see loss w avg?
     loss = dy.esum(loss)
@@ -347,22 +383,29 @@ def predict_concepts(concepts_dynet_graph, encoded_sequence, use_attention):
     non_verb_b = dy.parameter(concepts_dynet_graph.non_verb_decoder_b)
 
     w1_input = None
-    last_concept_embedding = concepts_dynet_graph.output_embeddings[concepts_dynet_graph.concepts_vocab.w2i[EOS]]
+    if not SPLIT_VERBS_NON_VERBS:
+        last_concept_embedding = concepts_dynet_graph.output_embeddings[concepts_dynet_graph.concepts_vocab.w2i[EOS]]
+    else:
+        last_concept_embedding = concepts_dynet_graph.non_verb_embeddings[concepts_dynet_graph.concepts_non_verbs_vocab.w2i[EOS]]
 
     if use_attention:
         input_matrix = dy.concatenate_cols(encoded_sequence)
-        dec_state = concepts_dynet_graph.dec_lstm.initial_state().add_input(
-            dy.concatenate([dy.vecInput(INPUT_STATE_SIZE * 2), last_concept_embedding]))
+        if not SPLIT_VERBS_NON_VERBS:
+            dec_state = concepts_dynet_graph.dec_lstm.initial_state().add_input(
+                        dy.concatenate([dy.vecInput(INPUT_STATE_SIZE * 2), last_concept_embedding]))
         # VERB - NON VERB
-        '''
-        verb_dec_state = concepts_dynet_graph.verb_dec_gru.initial_state().add_input(
-            dy.concatenate([dy.vecInput(INPUT_STATE_SIZE * 2), last_concept_embedding]))
-        non_verb_dec_state = concepts_dynet_graph.non_verb_dec_gru.initial_state().add_input(
-            dy.concatenate([dy.vecInput(INPUT_STATE_SIZE * 2), last_concept_embedding]))
-        '''
+        else:
+            verb_dec_state = concepts_dynet_graph.verb_dec_gru.initial_state().add_input(
+                                dy.concatenate([dy.vecInput(INPUT_STATE_SIZE * 2), last_concept_embedding]))
+            non_verb_dec_state = concepts_dynet_graph.non_verb_dec_gru.initial_state().add_input(
+                                dy.concatenate([dy.vecInput(INPUT_STATE_SIZE * 2), last_concept_embedding]))
     else:
         input_matrix = dy.transpose(dy.concatenate_cols(encoded_sequence))
-        dec_state = concepts_dynet_graph.dec_lstm.initial_state()
+        if not SPLIT_VERBS_NON_VERBS:
+            dec_state = concepts_dynet_graph.dec_lstm.initial_state()
+        else:
+            verb_dec_state = concepts_dynet_graph.verb_dec_gru.initial_state()
+            non_verb_dec_state = concepts_dynet_graph.non_verb_dec_gru.initial_state()
 
     predicted_concepts = []
     count_EOS = 0
@@ -381,8 +424,20 @@ def predict_concepts(concepts_dynet_graph, encoded_sequence, use_attention):
 
         if use_attention:
             w1_input = w1_input or w1 * input_matrix
-            context_vector, attention_diff = attend(concepts_dynet_graph, input_matrix, dec_state, w1_input,
+            if not SPLIT_VERBS_NON_VERBS:
+                context_vector, attention_diff = attend(concepts_dynet_graph, input_matrix, dec_state, w1_input,
                                                     len(encoded_sequence))
+            else: ########## LOOK INTO THIS!!!!
+                if i == 0:
+                    context_vector, attention_diff = attend(concepts_dynet_graph, input_matrix, non_verb_dec_state, w1_input,
+                                                            len(encoded_sequence))
+                else:
+                    if predict_verb == 1:
+                        context_vector, attention_diff = attend(concepts_dynet_graph, input_matrix, verb_dec_state, w1_input,
+                                                                len(encoded_sequence))
+                    else:
+                        context_vector, attention_diff = attend(concepts_dynet_graph, input_matrix, non_verb_dec_state, w1_input,
+                                                                len(encoded_sequence))
             vector = dy.concatenate([context_vector, last_concept_embedding])
             sum_attention_diff += attention_diff
         else:
@@ -393,41 +448,47 @@ def predict_concepts(concepts_dynet_graph, encoded_sequence, use_attention):
             j += 1
 
         # VERB - NON VERB
-        # predict_verb = predict_verb_non_verb(concepts_dynet_graph, vector)
-        '''
-        if predict_verb == 1:
-            verb_dec_state = verb_dec_state.add_input(vector)
-            out_vector = verb_w * verb_dec_state.output() + verb_b
-        elif predict_verb == 0:
-            non_verb_dec_state = non_verb_dec_state.add_input(vector)
-            out_vector = non_verb_w * non_verb_dec_state.output() + non_verb_b
-        '''
+        predict_verb = predict_verb_non_verb(concepts_dynet_graph, vector)
+        if SPLIT_VERBS_NON_VERBS:
+            if predict_verb == 1:
+                verb_dec_state = verb_dec_state.add_input(vector)
+                out_vector = verb_w * verb_dec_state.output() + verb_b
+            elif predict_verb == 0:
+                non_verb_dec_state = non_verb_dec_state.add_input(vector)
+                out_vector = non_verb_w * non_verb_dec_state.output() + non_verb_b
+        else:
+            dec_state = dec_state.add_input(vector)
+            out_vector = w * dec_state.output() + b
 
-        dec_state = dec_state.add_input(vector)
-        out_vector = w * dec_state.output() + b
         probs_vector = dy.softmax(out_vector).vec_value()
         next_concept = probs_vector.index(max(probs_vector))
 
-        '''
-        if predict_verb == 1:
-            last_concept_embedding = concepts_dynet_graph.verb_embeddings[next_concept]
-        elif predict_verb == 0:
-            last_concept_embedding = concepts_dynet_graph.non_verb_embeddings[next_concept]
-        '''
-        last_concept_embedding = concepts_dynet_graph.output_embeddings[next_concept]
+        if SPLIT_VERBS_NON_VERBS:
+            if predict_verb == 1:
+                last_concept_embedding = concepts_dynet_graph.verb_embeddings[next_concept]
+            elif predict_verb == 0:
+                last_concept_embedding = concepts_dynet_graph.non_verb_embeddings[next_concept]
+        else:
+            last_concept_embedding = concepts_dynet_graph.output_embeddings[next_concept]
 
-        if concepts_dynet_graph.concepts_vocab.i2w[next_concept] == EOS:
-            count_EOS += 1
-            j = 0
-            continue
+        if not SPLIT_VERBS_NON_VERBS:
+            if concepts_dynet_graph.concepts_vocab.i2w[next_concept] == EOS:
+                count_EOS += 1
+                j = 0
+                continue
+        else:
+            if concepts_dynet_graph.concepts_non_verbs_vocab.i2w[next_concept] == EOS:
+                count_EOS += 1
+                j = 0
+                continue
 
-        '''
-        if predict_verb == 1:
-            next_concept = concepts_dynet_graph.concepts_verbs_vocab.i2w[next_concept]
-        elif predict_verb == 0:
-            next_concept = concepts_dynet_graph.concepts_non_verbs_vocab.i2w[next_concept]
-        '''
-        predicted_concepts.append(concepts_dynet_graph.concepts_vocab.i2w[next_concept])
+        if SPLIT_VERBS_NON_VERBS:
+            if predict_verb == 1:
+                predicted_concepts.append(concepts_dynet_graph.concepts_verbs_vocab.i2w[next_concept])
+            elif predict_verb == 0:
+                predicted_concepts.append(concepts_dynet_graph.concepts_non_verbs_vocab.i2w[next_concept])
+        else:
+            predicted_concepts.append(concepts_dynet_graph.concepts_vocab.i2w[next_concept])
 
     # entry_attention_diff = sum_attention_diff / len(predicted_concepts)
     entry_attention_diff = 1

@@ -1,3 +1,4 @@
+import re
 from copy import deepcopy
 from typing import List, Dict
 
@@ -112,7 +113,7 @@ def modify_relation_to_tokens_alignment(amr: AMR, alignment_mapping: Dict[int, i
         for token_parent in token_parent_list:
             token, parent = token_parent
             new_token = str(alignment_mapping[int(token)])
-            amr.relation_to_tokens[rel].append((new_token,parent))
+            amr.relation_to_tokens[rel].append((new_token, parent))
 
 
 def construct_alignment_mapping(sen_len: int, no_tokens_removed: int, removal_indexes):
@@ -120,21 +121,40 @@ def construct_alignment_mapping(sen_len: int, no_tokens_removed: int, removal_in
     for i in range(0, sen_len):
         alignment_mapping[i] = i
     for removal_index in removal_indexes:
-        for i in range(0,sen_len):
+        for i in range(0, sen_len):
             if i > removal_index:
                 old_mapping = alignment_mapping[i]
                 alignment_mapping[i] = old_mapping - no_tokens_removed + 1
     return alignment_mapping
 
 
-def modify_sentence_and_alignment_for_person_or_organization(amr: AMR, sentence: str, node_var, to_remove_tokens):
+def get_indices_of_sublist_in_list(main_list: List, sub_list: List):
+    indices = []
+    for i in range(0, len(main_list) - len(sub_list) + 1):
+        temp_array = main_list[i:i + len(sub_list)]
+        if temp_array == sub_list:
+            indices.append(i)
+    return indices
+
+
+def modify_sentence_and_alignment_for_person_or_organization(amr: AMR, sentence: str,
+                                                             node_var,
+                                                             to_remove_tokens,
+                                                             metadata_dict: Dict[int, List[str]]):
     sentence_tokens = sentence.split()
     n = len(sentence_tokens)
     k = len(to_remove_tokens)
-    removal_indexes = [i for i in range(n-k+1) if sentence_tokens[i:i+k] == to_remove_tokens]
+    removal_indexes = [i for i in range(n - k + 1) if sentence_tokens[i:i + k] == to_remove_tokens]
     # create a mapping between old and new alignment
     alignment_mapping = construct_alignment_mapping(len(sentence_tokens), len(to_remove_tokens), removal_indexes)
     # modify alignment
+    # metadata alignment
+    old_metadata_dict = deepcopy(metadata_dict)
+    for old_index, values in old_metadata_dict.items():
+        new_index = alignment_mapping[old_index]
+        if new_index != old_index:
+            del metadata_dict[old_index]
+            metadata_dict[new_index] = values
     # node_to_tokens
     modify_node_to_tokens_alignment(amr, alignment_mapping)
     # make sure the new PERSON/ORGANIZATION node is aligned
@@ -149,5 +169,10 @@ def modify_sentence_and_alignment_for_person_or_organization(amr: AMR, sentence:
     # make sure all occurances of to_remove_token are removed
     new_sentence = ' '.join(sentence_tokens)
     substring_to_replace = ' '.join(to_remove_tokens)
+    replacement_indexes = get_indices_of_sublist_in_list(sentence_tokens, to_remove_tokens)
     new_sentence = new_sentence.replace(substring_to_replace, new_token)
+    # construct metadata
+    for replacement_index in replacement_indexes:
+        # need to use alignment_mapping in case the same token list occurs more then once
+        metadata_dict[alignment_mapping[replacement_index]] = substring_to_replace.split()
     return new_sentence

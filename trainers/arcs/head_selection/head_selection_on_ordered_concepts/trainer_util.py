@@ -117,6 +117,7 @@ def generate_amr_node_for_vector_of_parents(identified_concepts: IdentifiedConce
     for i in range(0, len(identified_concepts.ordered_concepts)):
         concept = identified_concepts.ordered_concepts[i]
         #TODO: better condition for this
+        #I will not have a concept variable at test time :O How do I solve this?
         if concept.variable == concept.name and concept.variable!='i':
             # literals, interogative, -
             # TODO: investigate if there are more exceptions and maybe add a type in concept
