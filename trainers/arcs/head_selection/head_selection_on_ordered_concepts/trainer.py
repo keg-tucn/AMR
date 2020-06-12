@@ -1,4 +1,5 @@
 import os
+from copy import deepcopy
 from typing import List
 import logging
 import dynet as dy
@@ -8,6 +9,7 @@ from deep_dynet import support as ds
 from deep_dynet.support import Vocab
 from models.concept import IdentifiedConcepts, Concept
 from models.node import Node
+from pre_post_processing.standford_pre_post_processing import post_processing_on_parent_vector
 from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_util import \
     calculate_smatch, log_test_entry_data, \
     construct_concept_glove_embeddings_list, ArcsTrainerHyperparameters, ArcsTrainerResultPerEpoch, \
@@ -217,17 +219,27 @@ def test_amr(arcs_graph: ArcsDynetGraph,
              test_entry: ArcsTrainingEntry,
              hyperparams: ArcsTrainerHyperparameters,
              relation_dict, detail_logger):
+
     sum_accuracy = 0
     for parent_vector in test_entry.parent_vectors:
         sum_accuracy += test_for_parent_vector(arcs_graph, test_entry, parent_vector)
     accuracy_per_amr = sum_accuracy / len(test_entry.parent_vectors)
     smatch_f_score = 0
 
+
+    # necessary so that the identidied concepts are not postprocessed for the next iteration
+    identified_concepts_copy = deepcopy(test_entry.identified_concepts)
     # predict vector of parents for amr
     predicted_vector_of_parents = predict_vector_of_parents(arcs_graph, test_entry, hyperparams)
     # for the fake root
     predicted_vector_of_parents.insert(0, [-1])
-    predicted_amr_node: Node = generate_amr_node_for_vector_of_parents(test_entry.identified_concepts,
+    # add postprocessing
+    if hyperparams.use_preprocessing:
+        post_processing_on_parent_vector(identified_concepts_copy,
+                                         predicted_vector_of_parents,
+                                         test_entry.preprocessed_sentence,
+                                         test_entry.preprocessing_metadata)
+    predicted_amr_node: Node = generate_amr_node_for_vector_of_parents(identified_concepts_copy,
                                                                        predicted_vector_of_parents,
                                                                        relation_dict)
     valid_amr = 0
