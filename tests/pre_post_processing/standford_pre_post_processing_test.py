@@ -1,5 +1,7 @@
 from models.amr_graph import AMR
-from pre_post_processing.standford_pre_post_processing import train_pre_processing, inference_preprocessing
+from models.concept import IdentifiedConcepts, Concept
+from pre_post_processing.standford_pre_post_processing import train_pre_processing, inference_preprocessing, \
+    post_processing_on_parent_vector
 
 
 def assert_amr_graph_dictionaries(expected_amr: AMR, parsed_amr: AMR):
@@ -70,9 +72,10 @@ def test_train_pre_processing_ex_person():
     amr['s'] = {'ARG0': [('p',)], 'ARG1': [('a',)], 'time': [('o',)]}
     sentence = 'Comrade Deng Xiaoping once said that the Communist Party will not be overthrown - ' \
                'if it falls , it will be brought down from within the party itself .'
-    generated_amr, generated_sentence = train_pre_processing(amr, sentence)
+    generated_amr, generated_sentence, generated_metadata = train_pre_processing(amr, sentence)
     expected_sentence = 'Comrade PERSON once said that the Communist Party will not be overthrown - ' \
                         'if it falls , it will be brought down from within the party itself .'
+    expected_metadata = {1: ['Deng', 'Xiaoping']}
     expected_amr = AMR()
     expected_amr.roots = ['s']
     expected_amr.reentrance_triples = [('h2', 'ARG1', 'p2'), ('f', 'ARG1', 'p2'), ('b', 'ARG1', 'p2')]
@@ -104,6 +107,7 @@ def test_train_pre_processing_ex_person():
     expected_amr['s'] = {'ARG0': [('p',)], 'ARG1': [('a',)], 'time': [('o',)]}
     assert_amr_graph_dictionaries(expected_amr, generated_amr)
     assert generated_sentence == expected_sentence
+    assert generated_metadata == expected_metadata
 
 
 # TODO: see if it makes sense investing in differentiating negatives and no wiki entries (both literal: - )
@@ -145,9 +149,10 @@ def test_train_pre_processing_ex_organization():
     amr['v'] = {'ARG0': [('p2',)], 'ARG1': [('a',)], 'ARG2': [('t',)]}
     amr['s2'] = {}
     amr['b'] = {'ARG1': [('a',)], 'ARG2': [('v',)], 'time': [('s2',)]}
-    generated_amr, generated_sentence = train_pre_processing(amr, sentence)
+    generated_amr, generated_sentence, generated_metadata = train_pre_processing(amr, sentence)
     # Expected
     expected_sentence = "Some propaganda activities of ORGANIZATION have soon become viewed as jokes by the people ."
+    expected_metadata = {4: ['ZF']}
     expected_amr: AMR = AMR()
     expected_amr.roots = ['b']
     expected_amr.reentrance_triples = [('b', 'ARG1', 'a')]
@@ -171,6 +176,7 @@ def test_train_pre_processing_ex_organization():
     expected_amr['b'] = {'ARG1': [('a',)], 'ARG2': [('v',)], 'time': [('s2',)]}
     assert_amr_graph_dictionaries(expected_amr, generated_amr)
     assert generated_sentence == expected_sentence
+    assert generated_metadata == expected_metadata
 
 
 # ::id bolt12_6454_5051.12 ::amr-annotator SDL-AMR-09 ::preferred
@@ -223,11 +229,13 @@ def test_train_pre_processing_ex_2_person():
     amr['t'] = {'ARG2': [('s',)]}
     amr['e'] = {'ARG1-of': [('t',)]}
     amr['b2'] = {'ARG0': [('s2',)], 'ARG1': [('b',)], 'medium': [('e',)]}
-    generated_amr, generated_sentence = train_pre_processing(amr, sentence)
+    generated_amr, generated_sentence, generated_metadata = train_pre_processing(amr, sentence)
 
     # Expected
-    expected_sentence = 'the essay " Are you studying PERSON or studying PERSON ? ", she blathers that " people who study PERSON ' \
+    expected_sentence = 'the essay " Are you studying PERSON or studying PERSON ? ", she blathers that " people who ' \
+                        'study PERSON ' \
                         'will become terrorists ";'
+    expected_metadata = {6: ['Paul'], 9: ['Bill'], 19: ['Paul']}
     expected_amr: AMR = AMR()
     expected_amr.roots = ['b2']
     expected_amr.reentrance_triples = [('o', 'op1', 'p3')]
@@ -254,6 +262,7 @@ def test_train_pre_processing_ex_2_person():
     expected_amr['b2'] = {'ARG0': [('s2',)], 'ARG1': [('b',)], 'medium': [('e',)]}
     assert_amr_graph_dictionaries(expected_amr, generated_amr)
     assert generated_sentence == expected_sentence
+    assert generated_metadata == expected_metadata
 
 
 # ::id bolt12_10494_3592.5 ::amr-annotator SDL-AMR-09 ::preferred
@@ -288,10 +297,11 @@ def test_train_pre_processing_ex_person_reentrancy():
     amr['e'] = {'ARG0': [('t2',)], 'ARG1': [('p',)]}
     amr['n'] = {}
     amr['s'] = {'ARG0': [('p',)], 'ARG1': [('e',)], 'time': [('n',)]}
-    generated_amr, generated_sentence = train_pre_processing(amr, sentence)
+    generated_amr, generated_sentence, generated_metadata = train_pre_processing(amr, sentence)
 
     # expected
     expected_sentence = 'Now , PERSON said , these responses have had effects on me .'
+    expected_metadata = {2: ['Wang', 'Shi']}
     expected_amr: AMR = AMR()
     expected_amr.roots = ['s']
     expected_amr.reentrance_triples = [('e', 'ARG1', 'p')]
@@ -310,6 +320,7 @@ def test_train_pre_processing_ex_person_reentrancy():
 
     assert_amr_graph_dictionaries(expected_amr, generated_amr)
     assert generated_sentence == expected_sentence
+    assert generated_metadata == expected_metadata
 
 
 # ::id bolt12_10510_9581.4 ::amr-annotator SDL-AMR-09 ::preferred
@@ -399,12 +410,13 @@ def test_train_pre_processing_ex_3_person():
     amr['i2'] = {}
     amr['i'] = {'ARG0': [('t',)], 'ARG1': [('c2',)], 'ARG1-of': [('a4',), ('i2',)]}
     amr['m'] = {'snt1': [('c',)], 'snt2': [('i',)]}
-    generated_amr, generated_sentence = train_pre_processing(amr, sentence)
+    generated_amr, generated_sentence, generated_metadata = train_pre_processing(amr, sentence)
 
     # expected
     expected_sentence = 'But we can see such philanthropists as PERSON , PERSON Ka @-@ shing , PERSON have not affected ' \
                         'the growth of their enterprises in any way . Instead , they have actually increased the ' \
                         'competitiveness of their companies .'
+    expected_metadata = {7: ['Bill', 'Gates'], 9: ['Li'], 14: ['Jackie', 'Chan']}
     expected_amr: AMR = AMR()
     expected_amr.roots = ['m']
     expected_amr.reentrance_triples = [('e', 'poss', 'p2'), ('c3', 'poss', 't')]
@@ -450,6 +462,7 @@ def test_train_pre_processing_ex_3_person():
     expected_amr['m'] = {'snt1': [('c',)], 'snt2': [('i',)]}
     assert generated_sentence == expected_sentence
     assert_amr_graph_dictionaries(expected_amr, generated_amr)
+    assert generated_metadata == expected_metadata
 
 
 # ::id bolt12_10511_2891.4 ::amr-annotator SDL-AMR-09 ::preferred
@@ -531,12 +544,14 @@ def train_pre_processing_ex_persons_with_common_tokens():
     amr['p4'] = {'wiki': [('-',)], 'name': [('n3',)], 'ARG0-of': [('h',)]}
     amr['a'] = {'op1': [('p2',)], 'op2': [('p3',)], 'op3': [('p4',)]}
     amr['p'] = {'prep-on': [('d',)], 'domain': [('a',)]}
-    generated_amr, generated_sentence = train_pre_processing(amr, sentence)
+    generated_amr, generated_sentence, generated_metadata = train_pre_processing(amr, sentence)
     # expected
     # maybe I should replace it with PERSON1, PERSON2 or smth, I am losing a lot of info like this
     expected_sentence = 'On the day of the Tangshan Earthquake , i.e. July 28 th , those on duty at PERSON \'s ' \
                         'quarters ' \
                         'were PERSON , PERSON , and PERSON \'s confidential secretary , PERSON .'
+    expected_metadata = {17: ['Mao', 'Zedong'], 21: ['Wang', 'Dongxing'], 23: ['Wang', 'Hongwen'],
+                         26: ['Mao', 'Zedong'], 31: ['Zhang', 'Yufeng']}
     expected_amr: AMR = AMR()
     expected_amr.roots = ['p']
     expected_amr.reentrance_triples = [('q', 'poss', 'p5')]
@@ -581,6 +596,7 @@ def train_pre_processing_ex_persons_with_common_tokens():
     expected_amr['p'] = {'prep-on': [('d',)], 'domain': [('a',)]}
     assert generated_sentence == expected_sentence
     assert_amr_graph_dictionaries(expected_amr, generated_amr)
+    assert generated_metadata == expected_metadata
 
 
 # ::id DF-170-181103-888_4397.1 ::amr-annotator LDC-AMR-14 ::preferred
@@ -627,9 +643,10 @@ def test_train_pre_processing_ex_person_with_polarity():
     amr['s'] = {'ARG0': [('p4',)]}
     amr['a2'] = {'ARG1': [('s',)]}
     amr['a'] = {'op1': [('c',)], 'op2': [('a2',)]}
-    generated_amr, generated_sentence = train_pre_processing(amr, sentence)
+    generated_amr, generated_sentence, generated_metadata = train_pre_processing(amr, sentence)
     # expected
     expected_sentence = 'It is PERSON that is the by far major nonRomney candidate and PERSON would appear to be the spoiler .'
+    expected_metadata = {2: ['Santorum'], 12: ['Newt']}
     expected_amr: AMR = AMR()
     expected_amr.roots = ['a']
     expected_amr.reentrance_triples = []
@@ -654,13 +671,14 @@ def test_train_pre_processing_ex_person_with_polarity():
     expected_amr['a'] = {'op1': [('c',)], 'op2': [('a2',)]}
     assert expected_sentence == generated_sentence
     assert_amr_graph_dictionaries(expected_amr, generated_amr)
+    assert generated_metadata == expected_metadata
 
 
 def test_inference_pre_processing_ex1():
     sentence = 'Rami Eid John is studying in San Francisco'
     generated_sentence, generated_metadata = inference_preprocessing(sentence)
     expected_sentence = 'PERSON is studying in San Francisco '
-    expected_metadata = [(0, ['Rami', 'Eid', 'John'])]
+    expected_metadata = {0: ['Rami', 'Eid', 'John']}
     assert generated_sentence == expected_sentence
     assert generated_metadata == expected_metadata
 
@@ -670,11 +688,84 @@ def test_inference_pre_processing_ex2():
                'were Wang Dongxing , Wang Hongwen , and Mao Zedong \'s confidential secretary , Zhang Yufeng . '
     generated_sentence, generated_metadata = inference_preprocessing(sentence)
     # stanford nertagger doesn't do very well on this one
-    expected_sentence = 'On the day of the Tangshan Earthquake , i.e. July 28 th , those on duty at Mao Zedong \'s quarters ' \
+    expected_sentence = 'On the day of the Tangshan Earthquake , i.e. July 28 th , those on duty at Mao Zedong \'s ' \
+                        'quarters ' \
                         'were ORGANIZATION , PERSON , and PERSON \'s confidential secretary , PERSON . '
-    expected_metadata = [(22, ['Wang', 'Dongxing']), (24, ['Wang', 'Hongwen']), (27, ['Mao', 'Zedong']), (32, ['Zhang', 'Yufeng'])]
+    expected_metadata = {22: ['Wang', 'Dongxing'], 24: ['Wang', 'Hongwen'],
+                         27: ['Mao', 'Zedong'], 32: ['Zhang', 'Yufeng']}
     assert generated_sentence == expected_sentence
     assert generated_metadata == expected_metadata
+
+
+# sentence = Comrade Deng Xiaoping once said that the Communist Party will not be overthrown - if it falls ,
+# it will be brought down from within the party itself .
+# amr_str = """(s / say-01~e.4
+#   :ARG0 (p / person :wiki "Deng_Xiaoping"
+#         :name~e.1 (n / name :op1 "Deng"~e.1 :op2 "Xiaoping"~e.2)
+#         :ARG0-of (h / have-rel-role-91
+#               :ARG2 (c / comrade~e.0)))
+#   :ARG1~e.5 (a / and
+#         :op1 (o2 / overthrow-01~e.12 :polarity~e.10 -~e.10
+#               :ARG1 (p2 / political-party~e.26 :wiki "Communist_Party_of_China"
+#                     :name (n2 / name :op1 "Communist"~e.7 :op2 "Party"~e.8)))
+#         :op2 (b / bring-down-03~e.21,22
+#               :ARG0 (p3 / person
+#                     :ARG0-of (h2 / have-org-role-91
+#                           :ARG1 p2))
+#               :ARG1 p2~e.18
+#               :condition~e.14 (f / fall-05~e.16
+#                     :ARG1 p2~e.15)))
+#   :time (o / once~e.3))"""
+def test_post_processing_on_parent_vector():
+    sentence = 'Comrade PERSON once said that the Communist Party will not be overthrown - ' \
+               'if it falls , it will be brought down from within the party itself .'
+    metadata = {1: ['Deng', 'Xiaoping']}
+    identified_concepts = IdentifiedConcepts()
+    identified_concepts.ordered_concepts = [Concept('', 'ROOT'), Concept('c', 'comrade'),
+                                            Concept('h', 'have-org-role-91'),
+                                            Concept('p', 'PERSON'), Concept('o', 'once'), Concept('s', 'say-01'),
+                                            Concept('p2', 'political-party'),
+                                            Concept('Communist_Party_of_China', 'Communist_Party_of_China'),
+                                            Concept('n2', 'name'),
+                                            Concept('Communist', 'Communist'), Concept('Party', 'Party'),
+                                            Concept('-', '-'), Concept('o', 'overthrow-01'),
+                                            Concept('a', 'and'), Concept('f', 'fall-05'), Concept('b', 'bring-down'),
+                                            Concept('p3', 'person'), Concept('h2', 'have-org-role-91')
+                                            ]
+    vector_of_parents = [[-1], [2], [3],
+                         [5], [5], [0],
+                         [12, 14, 15, 16, 17],
+                         [6], [6],
+                         [8], [8],
+                         [12], [13],
+                         [5], [15], [13],
+                         [15], [16]]
+    post_processing_on_parent_vector(identified_concepts, vector_of_parents, sentence, metadata)
+    expected_ordered_concepts = [Concept('', 'ROOT'), Concept('c', 'comrade'),
+                                 Concept('h', 'have-org-role-91'),
+                                 Concept('p', 'person'), Concept('o', 'once'), Concept('s', 'say-01'),
+                                 Concept('p2', 'political-party'),
+                                 Concept('Communist_Party_of_China', 'Communist_Party_of_China'),
+                                 Concept('n2', 'name'),
+                                 Concept('Communist', 'Communist'), Concept('Party', 'Party'),
+                                 Concept('-', '-'), Concept('o', 'overthrow-01'),
+                                 Concept('a', 'and'), Concept('f', 'fall-05'), Concept('b', 'bring-down'),
+                                 Concept('p3', 'person'), Concept('h2', 'have-org-role-91'),
+                                 Concept('Deng_Xiaoping', 'Deng_Xiaoping'), Concept('', 'name'),
+                                 Concept('Deng', 'Deng'), Concept('Xiaoping', 'Xiaoping')
+                                 ]
+    expected_vector_of_parents = [[-1], [2], [3],
+                                  [5], [5], [0],
+                                  [12, 14, 15, 16, 17],
+                                  [6], [6],
+                                  [8], [8],
+                                  [12], [13],
+                                  [5], [15], [13],
+                                  [15], [16],
+                                  [3], [3],
+                                  [19], [19]]
+    assert identified_concepts.ordered_concepts == expected_ordered_concepts
+    assert vector_of_parents == expected_vector_of_parents
 
 
 if __name__ == "__main__":
@@ -687,3 +778,4 @@ if __name__ == "__main__":
     test_train_pre_processing_ex_person_with_polarity()
     test_inference_pre_processing_ex1()
     test_inference_pre_processing_ex2()
+    test_post_processing_on_parent_vector()
