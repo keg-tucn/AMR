@@ -17,14 +17,8 @@ from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_uti
 from trainers.arcs.head_selection.head_selection_on_ordered_concepts.training_arcs_data_extractor import \
     ArcsTrainingEntry, read_train_test_data, ArcsTraingAndTestData
 
-CONCEPTS_EMBEDDING_SIZE = 128
-CONCEPTS_GLOVE_EMBEDDING_SIZE = 100
 CONCEPT_TAG_EMBEDDING_SIZE = 0
 CONCEPT_LEMMA_EMBEDDING_SIZE = 0
-LSTM_IN_DIM = CONCEPTS_EMBEDDING_SIZE + \
-              CONCEPTS_GLOVE_EMBEDDING_SIZE + \
-              CONCEPT_TAG_EMBEDDING_SIZE + \
-              CONCEPT_LEMMA_EMBEDDING_SIZE
 LSTM_OUT_DIM = 50
 BILSTM_OUT_DIM = 2 * LSTM_OUT_DIM
 LSTM_NO_LAYERS = 1
@@ -36,13 +30,17 @@ class ArcsDynetGraph:
         self.hyperparams = hyperparams
         self.model = dy.Model()
         self.concepts_vocab: Vocab = concepts_vocab
-        self.concept_embeddings = self.model.add_lookup_parameters((concepts_vocab.size(), CONCEPTS_EMBEDDING_SIZE))
-        self.glove_embeddings = self.model.add_lookup_parameters((concepts_vocab.size(), CONCEPTS_GLOVE_EMBEDDING_SIZE))
-        self.glove_embeddings.init_from_array(dy.np.array(concept_glove_embeddings_list))
+        self.concept_embeddings = self.model.add_lookup_parameters(
+                (concepts_vocab.size(), hyperparams.trainable_embeddings_size))
+        self.glove_embeddings = self.model.add_lookup_parameters(
+                (concepts_vocab.size(), hyperparams.glove_embeddings_size))
+        if hyperparams.glove_embeddings_size!=0:
+            self.glove_embeddings.init_from_array(dy.np.array(concept_glove_embeddings_list))
         self.trainer = dy.SimpleSGDTrainer(self.model)
-
-        self.fwdRNN = dy.LSTMBuilder(LSTM_NO_LAYERS, LSTM_IN_DIM, LSTM_OUT_DIM, self.model)
-        self.bwdRNN = dy.LSTMBuilder(LSTM_NO_LAYERS, LSTM_IN_DIM, LSTM_OUT_DIM, self.model)
+        lstm_in_dim = hyperparams.trainable_embeddings_size + hyperparams.glove_embeddings_size \
+                      + CONCEPT_TAG_EMBEDDING_SIZE + CONCEPT_LEMMA_EMBEDDING_SIZE
+        self.fwdRNN = dy.LSTMBuilder(LSTM_NO_LAYERS, lstm_in_dim, LSTM_OUT_DIM, self.model)
+        self.bwdRNN = dy.LSTMBuilder(LSTM_NO_LAYERS, lstm_in_dim, LSTM_OUT_DIM, self.model)
 
         self.pU = self.model.add_parameters((MLP_CONCEPT_INTERNAL_DIM, BILSTM_OUT_DIM))
         self.pW = self.model.add_parameters((MLP_CONCEPT_INTERNAL_DIM, BILSTM_OUT_DIM))
@@ -86,8 +84,13 @@ def get_concept_representation(arcs_graph: ArcsDynetGraph, c: Concept):
     c_index = arcs_graph.concepts_vocab.w2i[c.name]
     concept_trained_embedding = arcs_graph.concept_embeddings[c_index]
     concept_glove_embedding = dy.lookup(arcs_graph.glove_embeddings, c_index, False)
+    embeddings_list = [concept_trained_embedding, concept_glove_embedding]
+    non_zero_embeddings: List[dy.Expression] = []
+    for embedding in embeddings_list:
+        if embedding.dim()[0][0] !=0:
+            non_zero_embeddings.append(embedding)
     # return dy.noise(ce, 0.1)
-    return dy.concatenate([concept_trained_embedding, concept_glove_embedding])
+    return dy.concatenate(non_zero_embeddings)
 
 
 def build_graph(arcs_graph: ArcsDynetGraph, sentence_concepts: List[Concept]):
@@ -191,7 +194,7 @@ def predict_vector_of_parents(arcs_graph: ArcsDynetGraph,
         normalized_values = []
         maxval = max(output_values)
         for output_value in output_values:
-            normalized_values.append(output_value/maxval)
+            normalized_values.append(output_value / maxval)
         parents_for_concept = []
         for i in range(0, len(normalized_values)):
             if normalized_values[i] >= hyperparams.reentrancy_threshold:
@@ -219,13 +222,11 @@ def test_amr(arcs_graph: ArcsDynetGraph,
              test_entry: ArcsTrainingEntry,
              hyperparams: ArcsTrainerHyperparameters,
              relation_dict, detail_logger):
-
     sum_accuracy = 0
     for parent_vector in test_entry.parent_vectors:
         sum_accuracy += test_for_parent_vector(arcs_graph, test_entry, parent_vector)
     accuracy_per_amr = sum_accuracy / len(test_entry.parent_vectors)
     smatch_f_score = 0
-
 
     # necessary so that the identidied concepts are not postprocessed for the next iteration
     identified_concepts_copy = deepcopy(test_entry.identified_concepts)
@@ -315,10 +316,12 @@ def train_and_test(relation_dict, hyperparams: ArcsTrainerHyperparameters):
     dev_concepts = [test_entry.identified_concepts for test_entry in train_and_test_data.test_entries]
     all_concept_names = get_all_concepts(train_concepts + dev_concepts)
     all_concepts_vocab = ds.Vocab.from_list(all_concept_names)
-    word_glove_embeddings = read_glove_embeddings_from_file(CONCEPTS_GLOVE_EMBEDDING_SIZE)
-    concept_glove_embeddings_list = construct_concept_glove_embeddings_list(word_glove_embeddings,
-                                                                            CONCEPTS_GLOVE_EMBEDDING_SIZE,
-                                                                            all_concepts_vocab)
+    concept_glove_embeddings_list = []
+    if hyperparams.glove_embeddings_size != 0:
+        word_glove_embeddings = read_glove_embeddings_from_file(hyperparams.glove_embeddings_size)
+        concept_glove_embeddings_list = construct_concept_glove_embeddings_list(word_glove_embeddings,
+                                                                                hyperparams.glove_embeddings_size,
+                                                                                all_concepts_vocab)
 
     # init plotting data
     results_per_epoch = {}
