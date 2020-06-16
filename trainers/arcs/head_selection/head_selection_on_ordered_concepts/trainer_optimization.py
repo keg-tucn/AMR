@@ -43,5 +43,7 @@ if __name__ == "__main__":
                                              max_sen_len=300,
                                              max_parents_vectors=6,
                                              reentrancy_threshold=0.8,
-                                             use_preprocessing=True)
+                                             use_preprocessing=True,
+                                             trainable_embeddings_size=128,
+                                             glove_embeddings_size=100)
     run_experiment(relation_dict, hyperparams)

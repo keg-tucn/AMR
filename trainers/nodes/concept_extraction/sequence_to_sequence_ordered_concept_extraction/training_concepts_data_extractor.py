@@ -22,7 +22,7 @@ class ConceptsTrainingEntry:
 
 def generate_dataset_entry(amr_id: str, amr_str: str, sentence: str):
     amr = AMR.parse_string(amr_str)
-    amr, new_sentence = train_pre_processing(amr, sentence)
+    amr, new_sentence, metadata = train_pre_processing(amr, sentence)
     identified_concepts = IdentifiedConcepts()
     identified_concepts.create_from_amr(amr_id, amr)
     if identified_concepts.ordered_concepts is None:
@@ -60,9 +60,9 @@ def generate_concepts_training_data(file_paths: List[str], max_sentence_len=50):
     all_entries = []
 
     nb_all_entries_not_processed = 0
-    for file_path in file_paths:
-    # for i in range (1):
-        entries, nb_entries_not_processed = generate_concepts_training_data_per_file(file_path, max_sentence_len)
+    # for file_path in file_paths:
+    for i in range (1):
+        entries, nb_entries_not_processed = generate_concepts_training_data_per_file(file_paths[i], max_sentence_len)
         all_entries = all_entries + entries
         nb_all_entries_not_processed += nb_entries_not_processed
 
