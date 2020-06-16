@@ -8,15 +8,22 @@ from data_extraction.dataset_reading_util import get_all_paths
 from data_extraction.word_embeddings_reader import read_glove_embeddings_from_file
 from deep_dynet import support as ds
 from deep_dynet.support import Vocab
-from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extraction.training_concepts_data_extractor import generate_concepts_training_data, ConceptsTrainingEntry
-from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_util import construct_concept_glove_embeddings_list
 from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer import get_all_concepts
+from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_util import \
+    construct_concept_glove_embeddings_list
+from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extraction.trainer_util import is_verb, \
+    compute_f_score, compute_metrics, ConceptsTrainerHyperparameters, get_golden_concept_indexes, initialize_decoders, \
+    get_decoder_input
+from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extraction.training_concepts_data_extractor import \
+    generate_concepts_training_data, ConceptsTrainingEntry
 
 from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
+
 
 # TODO:
 # - Save trained model parameters to files
 # - RL
+
 
 START_OF_SEQUENCE = "<SOS>"
 END_OF_SEQUENCE = "<EOS>"
@@ -35,8 +42,9 @@ ATTENTION_SIZE = 30
 DROPOUT_RATE = 0.6
 
 USE_ATTENTION = True
-USE_GLOVE = False
-USE_VERB_NONVERB_CLASSIFICATION = False
+USE_GLOVE = True
+USE_PREPROCESSING = True
+USE_VERB_NONVERB_CLASSIFICATION = True
 
 MAX_SENTENCE_LENGTH = 50
 NB_EPOCHS = 50
@@ -45,87 +53,114 @@ bleu_smoothing = SmoothingFunction()
 
 
 class ConceptsDynetGraph:
-    def __init__(self, words_vocab, concepts_vocab, words_glove_embeddings_list, lstm_nb_layers,
-                 words_embedding_size, concepts_embedding_size, words_glove_embedding_size, state_size, attention_size,
-                 dropout_rate, test_concepts_vocab, concepts_verbs_vocab, concepts_nonverbs_vocab):
+    def __init__(self, words_vocab, concepts_vocab, words_glove_embeddings_list, concepts_verbs_vocab,
+                 concepts_nonverbs_vocab, hyperparams, test_concepts_vocab):
 
         self.model = dy.Model()
+
+        # BASE MODEL PARAMETERS
+        # VOCABS
         self.words_vocab: Vocab = words_vocab
         self.concepts_vocab: Vocab = concepts_vocab
-
         # Temporary, just until loss is computed on dev too
         self.test_concepts_vocab: Vocab = test_concepts_vocab
 
-        self.input_embeddings = self.model.add_lookup_parameters((words_vocab.size(), words_embedding_size))
-        self.output_embeddings = self.model.add_lookup_parameters((concepts_vocab.size(), concepts_embedding_size))
-        self.glove_embeddings = self.model.add_lookup_parameters((words_vocab.size(), words_glove_embedding_size))
-        self.glove_embeddings.init_from_array(dy.np.array(words_glove_embeddings_list))
+        # EMBEDDINGS
+        self.word_embeddings = self.model.add_lookup_parameters((words_vocab.size(), hyperparams.words_embedding_size))
+        self.concept_embeddings = self.model.add_lookup_parameters((concepts_vocab.size(), hyperparams.concepts_embedding_size))
+        self.word_glove_embeddings = self.model.add_lookup_parameters((words_vocab.size(), hyperparams.words_glove_embedding_size))
+        self.word_glove_embeddings.init_from_array(dy.np.array(words_glove_embeddings_list))
 
+        # ENCODER
+        self.encoder_fwd = dy.GRUBuilder(hyperparams.encoder_nb_layers, hyperparams.words_embedding_size, hyperparams.encoder_state_size, self.model)
+        self.encoder_bwd = dy.GRUBuilder(hyperparams.encoder_nb_layers, hyperparams.words_embedding_size, hyperparams.encoder_state_size, self.model)
+
+        # DECODER
+        self.decoder = dy.GRUBuilder(hyperparams.decoder_nb_layers, hyperparams.encoder_state_size * 2 + hyperparams.concepts_embedding_size, hyperparams.decoder_state_size, self.model)
+        self.decoder_w = self.model.add_parameters((concepts_vocab.size(), hyperparams.decoder_state_size))
+        self.decoder_b = self.model.add_parameters((concepts_vocab.size()))
+        self.dropout_rate = hyperparams.dropout_rate
+
+        # ATTENTION
+        self.attention_w1 = self.model.add_parameters((hyperparams.attention_size, hyperparams.encoder_state_size * 2))
+        # for LSTMS w2's second size is (* 2)
+        self.attention_w2 = self.model.add_parameters((hyperparams.attention_size, hyperparams.decoder_state_size * hyperparams.decoder_nb_layers))
+        self.attention_v = self.model.add_parameters((1, hyperparams.attention_size))
+
+        # MODEL PARAMETERS WITH VERB-NONVERB CLASSIFICATION
+        # VOCABS
+        self.concepts_verbs_vocab: Vocab = concepts_verbs_vocab
+        self.concepts_nonverbs_vocab: Vocab = concepts_nonverbs_vocab
+
+        # EMBEDDINGS
+        self.concept_verb_embeddings = self.model.add_lookup_parameters((concepts_verbs_vocab.size(), hyperparams.concepts_embedding_size))
+        self.concept_nonverb_embeddings = self.model.add_lookup_parameters((concepts_nonverbs_vocab.size(), hyperparams.concepts_embedding_size))
+
+        # DECODER
+        self.verb_decoder = dy.GRUBuilder(hyperparams.decoder_nb_layers, hyperparams.encoder_state_size * 2 + hyperparams.concepts_embedding_size, hyperparams.decoder_state_size, self.model)
+        self.verb_decoder_w = self.model.add_parameters((concepts_verbs_vocab.size(), hyperparams.decoder_state_size))
+        self.verb_decoder_b = self.model.add_parameters((concepts_verbs_vocab.size()))
+        self.nonverb_decoder = dy.GRUBuilder(hyperparams.decoder_nb_layers, hyperparams.encoder_state_size * 2 + hyperparams.concepts_embedding_size, hyperparams.decoder_state_size, self.model)
+        self.non_verb_decoder_w = self.model.add_parameters((concepts_nonverbs_vocab.size(), hyperparams.decoder_state_size))
+        self.non_verb_decoder_b = self.model.add_parameters((concepts_nonverbs_vocab.size()))
+
+        # CLASSIFIER
+        self.classifier = dy.GRUBuilder(hyperparams.verb_nonverb_classifier_nb_layers, hyperparams.encoder_state_size * 2 + hyperparams.concepts_embedding_size, hyperparams.verb_nonverb_classifier_state_size, self.model)
+        self.classifier_w = self.model.add_parameters((concepts_vocab.size(), hyperparams.verb_nonverb_classifier_state_size))
+        self.classifier_b = self.model.add_parameters((concepts_vocab.size()))
+
+        # TRAINER
         self.trainer = dy.SimpleSGDTrainer(self.model)
         # self.trainer = dy.AdamTrainer(self.model)
         # self.trainer = dy.AdagradTrainer(self.model)
 
-        # self.enc_fwd_lstm = dy.LSTMBuilder(lstm_nb_layers, words_embedding_size, state_size, self.model)
-        # self.enc_bwd_lstm = dy.LSTMBuilder(lstm_nb_layers, words_embedding_size, state_size, self.model)
-        self.encoder_fwd = dy.GRUBuilder(lstm_nb_layers, words_embedding_size, ENCODER_STATE_SIZE, self.model)
-        self.encoder_bwd = dy.GRUBuilder(lstm_nb_layers, words_embedding_size, ENCODER_STATE_SIZE, self.model)
 
-        # self.dec_lstm = dy.LSTMBuilder(lstm_nb_layers, state_size * 2 + concepts_embedding_size, state_size,
-        # self.model)
-        self.decoder = dy.GRUBuilder(lstm_nb_layers, ENCODER_STATE_SIZE * 2 + concepts_embedding_size, state_size, self.model)
+def classify_verb_nonverb(concepts_dynet_graph, input_vector, concept):
+    w = dy.parameter(concepts_dynet_graph.classifier_w)
+    b = dy.parameter(concepts_dynet_graph.classifier_b)
 
-        self.dropout_rate = dropout_rate
+    out_label = 0
+    if is_verb(concept):
+        out_label = 1
 
-        self.attention_w1 = self.model.add_parameters((attention_size, ENCODER_STATE_SIZE * 2))
-        self.attention_w2 = self.model.add_parameters(
-            (attention_size, DECODER_STATE_SIZE * lstm_nb_layers))  # lstm_nb_layers of decoder, it was state_size * lstm_nb_layers * 2 for lstms
+    classifier_init = concepts_dynet_graph.classifier.initial_state()
+    classifier_init = classifier_init.add_input(input_vector)
 
-        self.attention_v = self.model.add_parameters((1, attention_size))
+    out_vector = w * classifier_init.output() + b
+    probs = dy.softmax(out_vector)
+    loss = -dy.log(dy.pick(probs, out_label))
 
-        self.decoder_w = self.model.add_parameters((concepts_vocab.size(), state_size))
-        self.decoder_b = self.model.add_parameters((concepts_vocab.size()))
-
-        # Verbs and non verbs parameters
-        self.concepts_verbs_vocab: Vocab = concepts_verbs_vocab
-        self.concepts_nonverbs_vocab: Vocab = concepts_nonverbs_vocab
-        self.verb_embeddings = self.model.add_lookup_parameters((concepts_verbs_vocab.size(), concepts_embedding_size))
-        self.nonverb_embeddings = self.model.add_lookup_parameters(
-            (concepts_nonverbs_vocab.size(), concepts_embedding_size))
-
-        self.verb_decoder = dy.GRUBuilder(lstm_nb_layers, ENCODER_STATE_SIZE * 2 + concepts_embedding_size, state_size,
-                                          self.model)
-        self.nonverb_decoder = dy.GRUBuilder(lstm_nb_layers, ENCODER_STATE_SIZE * 2 + concepts_embedding_size, state_size,
-                                              self.model)
-        # Separate state_sizes for classifier?
-        self.classifier_gru = dy.GRUBuilder(lstm_nb_layers, ENCODER_STATE_SIZE * 2 + concepts_embedding_size,
-                                            state_size, self.model)
-
-        self.verb_decoder_w = self.model.add_parameters((concepts_verbs_vocab.size(), state_size))
-        self.verb_decoder_b = self.model.add_parameters((concepts_verbs_vocab.size()))
-
-        self.non_verb_decoder_w = self.model.add_parameters((concepts_nonverbs_vocab.size(), state_size))
-        self.non_verb_decoder_b = self.model.add_parameters((concepts_nonverbs_vocab.size()))
-
-        self.classifier_w = self.model.add_parameters((concepts_vocab.size(), state_size))
-        self.classifier_b = self.model.add_parameters((concepts_vocab.size()))
+    return loss
 
 
-def embed_sequence(concepts_dynet_graph, sequence, use_glove):
+def predict_verb_nonverb(concepts_dynet_graph, input_vector):
+    w = dy.parameter(concepts_dynet_graph.classifier_w)
+    b = dy.parameter(concepts_dynet_graph.classifier_b)
+
+    classifier_init = concepts_dynet_graph.classifier.initial_state()
+    classifier_init = classifier_init.add_input(input_vector)
+
+    out_vector = w * classifier_init.output() + b
+    probs_vector = dy.softmax(out_vector).vec_value()
+    predict_verb = probs_vector.index(max(probs_vector))
+
+    return predict_verb
+
+
+def embed_sequence(concepts_dynet_graph, sequence, hyperparams):
     # Add START and END markers to sequence
     sequence = [START_OF_SEQUENCE] + list(sequence) + [END_OF_SEQUENCE]
-    # print("Sequence len: " + str(len(sequence)))
 
     sequence = [concepts_dynet_graph.words_vocab.w2i[word] for word in sequence]
 
-    if use_glove:
-        return [dy.lookup(concepts_dynet_graph.glove_embeddings, index, False) for index in sequence]
+    if hyperparams.use_glove:
+        return [dy.lookup(concepts_dynet_graph.word_glove_embeddings, index, False) for index in sequence]
 
-    return [dy.lookup(concepts_dynet_graph.input_embeddings, index) for index in sequence]
+    return [dy.lookup(concepts_dynet_graph.word_embeddings, index) for index in sequence]
 
 
 def encode_input_sequence(concepts_dynet_graph, sequence):
     sequence_reversed = list(reversed(sequence))
-    # print("emb Sequence len x emb seq_elem_len: " + str(len(sequence)) + " " + str(len(sequence[0].vec_value())))
 
     fwd_init = concepts_dynet_graph.encoder_fwd.initial_state()
     bwd_init = concepts_dynet_graph.encoder_bwd.initial_state()
@@ -135,217 +170,124 @@ def encode_input_sequence(concepts_dynet_graph, sequence):
     bwd_vectors_reversed = list(reversed(bwd_vectors))
     vectors = [dy.concatenate(list(p)) for p in zip(fwd_vectors, bwd_vectors_reversed)]
 
-    # print("enc Sequence len x enc seq_elem_len: " + str(len(vectors)) + " " + str(len(vectors[0].vec_value())))
-
     return vectors
 
 
-def attend(concepts_dynet_graph, input_matrix, dec_state, w1_input, sequence_len):
+# DIMENSIONS
+'''
+input_matrix: ((encoder_state_size * 2) x sequence_length) - encoded sequence vectors concatenated as columns
+w1_input: (attention_size x sequence_length) - w1 * input_matrix
+w2_state: (attention_size x 1) - w2 * decoder_hidden_states
+att_weights: (sequence_length x 1)
+context: ((encoder_state_size * 2) x 1) - input_matrix * att_weights
+'''
+
+
+def attend(concepts_dynet_graph, input_matrix, decoder_state, w1_input):
     w2 = dy.parameter(concepts_dynet_graph.attention_w2)
     v = dy.parameter(concepts_dynet_graph.attention_v)
 
-    # Dimensions
-    # input_matrix: (enc_state * sequence_len) - input vectors concatenated as columns
-    # w1_input: (attention_dim * sequence_len) - w1 * input_matrix
-    # w2_state: (attention_dim * attention_dim) - w2 * dec_state
-    # att_weights: (sequence_len)
-    # context: (enc_state)
-
-    print("Input matr dim: " + str(len(input_matrix.vec_value())) + " " + str(len(input_matrix[0].vec_value())))
-    print("w1_input matr dim: " + str(len(w1_input.vec_value())) + " " + str(len(w1_input[0].vec_value())))
-    print("dec_state_s dim: " + str(len(dy.concatenate(list(dec_state.s())).vec_value())) + " " + str(len(dy.concatenate(list(dec_state.s()))[0].vec_value())))
-
-    w2_state = w2 * dy.concatenate(list(dec_state.s()))
-
-    print("w2_state dim: " + str(len(w2_state.vec_value())) + " " + str(len(w2_state[0].vec_value())))
+    w2_state = w2 * dy.concatenate(list(decoder_state.s()))
 
     unnormalized = dy.transpose(v * dy.tanh(dy.colwise_add(w1_input, w2_state)))
-    print("unnormalized dim: " + str(len(unnormalized.vec_value())) + " " + str(len(unnormalized[0].vec_value())))
     attention_weights = dy.softmax(unnormalized)
     context = input_matrix * attention_weights
 
-    print("w2_state dim: " + str(len(w2_state)) + " " + str(len(w2_state[0].vec_value())))
-    attention_diff = 1
-    # attention_max = max(dy.transpose(attention_weights).value()[0])
-    # attention_min = min(dy.transpose(attention_weights).value()[0])
-    # attention_diff = attention_max - attention_min
-
-    # if sequence_len % 10 == 0:
-    #    print(str(attention_max) + " " + str(attention_min) + " " + str(attention_diff) + "\n")
-
-    return context, attention_diff
-
-def is_verb(concept):
-    splitted_concept = concept.split('-')
-    if splitted_concept[len(splitted_concept) - 1].isdigit():
-        return True
-    return False
-
-def classify_verb_non_verb(concepts_dynet_graph, input_vector, concept):
-    #dy.renew_cg()
-
-    w = dy.parameter(concepts_dynet_graph.classifier_w)
-    b = dy.parameter(concepts_dynet_graph.classifier_b)
-
-    out_label = 0
-    if is_verb(concept):
-        out_label = 1
-
-    classifier_init = concepts_dynet_graph.classifier_gru.initial_state()
-    classifier_init = classifier_init.add_input(input_vector)
-
-    out_vector = w * classifier_init.output() + b
-    probs = dy.softmax(out_vector)
-    loss = -dy.log(dy.pick(probs, out_label))
-
-    # loss.backward()
-    concepts_dynet_graph.trainer.update()
-
-    return loss
-
-def predict_verb_non_verb(concepts_dynet_graph, input_vector):
-    w = dy.parameter(concepts_dynet_graph.classifier_w)
-    b = dy.parameter(concepts_dynet_graph.classifier_b)
-
-    classifier_init = concepts_dynet_graph.classifier_gru.initial_state()
-    classifier_init = classifier_init.add_input(input_vector)
-
-    out_vector = w * classifier_init.output() + b
-    probs_vector = dy.softmax(out_vector).vec_value()
-    out_label = probs_vector.index(max(probs_vector))
-
-    return out_label
+    return context
 
 
-def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, use_attention):
+def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, hyperparams):
     golden_concepts = [START_OF_SEQUENCE] + list(golden_concepts) + [END_OF_SEQUENCE]
+    golden_concept_indexes = get_golden_concept_indexes(concepts_dynet_graph, golden_concepts, hyperparams)
 
-    global DROPOUT_FLAG
-    # print(DROPOUT_FLAG)
-
-    # Temporary, just until loss is computed on dev too
-    embedded_golden_concepts = []
-    if not USE_VERB_NONVERB_CLASSIFICATION:
-        for concept in golden_concepts:
-            if concept in concepts_dynet_graph.concepts_vocab.w2i:
-                embedded_golden_concepts.append(concepts_dynet_graph.concepts_vocab.w2i[concept])
-            else:
-                embedded_golden_concepts.append(concepts_dynet_graph.test_concepts_vocab.w2i[concept]) #### UNKOWN_CONCEPT
-        # embedded_golden_concepts = [concepts_dynet_graph.concepts_vocab.w2i[concept] for concept in golden_concepts]
-    else:
-        for concept in golden_concepts:
-            if concept in concepts_dynet_graph.concepts_vocab.w2i:
-                if is_verb(concept):
-                    embedded_golden_concepts.append(concepts_dynet_graph.concepts_verbs_vocab.w2i[concept])
-                else:
-                    embedded_golden_concepts.append(concepts_dynet_graph.concepts_non_verbs_vocab.w2i[concept])
-            else:
-                embedded_golden_concepts.append(concepts_dynet_graph.test_concepts_vocab.w2i[concept])
+    global TRAIN_FLAG
 
     w = dy.parameter(concepts_dynet_graph.decoder_w)
     b = dy.parameter(concepts_dynet_graph.decoder_b)
     w1 = dy.parameter(concepts_dynet_graph.attention_w1)
 
-    # VERB - NON VERB
+    # VERB - NONVERB PARAMETERS
     verb_w = dy.parameter(concepts_dynet_graph.verb_decoder_w)
     verb_b = dy.parameter(concepts_dynet_graph.verb_decoder_b)
-    non_verb_w = dy.parameter(concepts_dynet_graph.non_verb_decoder_w)
-    non_verb_b = dy.parameter(concepts_dynet_graph.non_verb_decoder_b)
+    nonverb_w = dy.parameter(concepts_dynet_graph.non_verb_decoder_w)
+    nonverb_b = dy.parameter(concepts_dynet_graph.non_verb_decoder_b)
 
     w1_input = None
-    if not USE_VERB_NONVERB_CLASSIFICATION:
-        last_concept_embedding = concepts_dynet_graph.output_embeddings[concepts_dynet_graph.concepts_vocab.w2i[START_OF_SEQUENCE]]
+    if hyperparams.use_verb_nonverb_classification:
+        last_concept_embedding = concepts_dynet_graph.concept_nonverb_embeddings[
+            concepts_dynet_graph.concepts_nonverbs_vocab.w2i[START_OF_SEQUENCE]]
     else:
-        last_concept_embedding = concepts_dynet_graph.non_verb_embeddings[concepts_dynet_graph.concepts_nonverbs_vocab.w2i[START_OF_SEQUENCE]]
+        last_concept_embedding = concepts_dynet_graph.concept_embeddings[
+            concepts_dynet_graph.concepts_vocab.w2i[START_OF_SEQUENCE]]
 
-    if use_attention:
-        input_matrix = dy.concatenate_cols(encoded_sequence)
-        if not USE_VERB_NONVERB_CLASSIFICATION:
-            dec_state = concepts_dynet_graph.decoder.initial_state().add_input(
-                        dy.concatenate([dy.vecInput(ENCODER_STATE_SIZE * 2), last_concept_embedding]))
-        else:
-            verb_dec_state = concepts_dynet_graph.verb_dec_gru.initial_state().add_input(
-                             dy.concatenate([dy.vecInput(ENCODER_STATE_SIZE * 2), last_concept_embedding]))
-            non_verb_dec_state = concepts_dynet_graph.non_verb_dec_gru.initial_state().add_input(
-                                dy.concatenate([dy.vecInput(ENCODER_STATE_SIZE * 2), last_concept_embedding]))
-    else:
-        input_matrix = dy.transpose(dy.concatenate_cols(encoded_sequence))
-        if not USE_VERB_NONVERB_CLASSIFICATION:
-            dec_state = concepts_dynet_graph.decoder.initial_state()
-        else:
-            verb_dec_state = concepts_dynet_graph.verb_dec_gru.initial_state()
-            non_verb_dec_state = concepts_dynet_graph.non_verb_dec_gru.initial_state()
+    input_matrix = dy.concatenate_cols(encoded_sequence)
+    if not hyperparams.use_attention:
+        input_matrix = dy.transpose(input_matrix)
 
-    loss_ls = []
-    classifier_loss_ls = []
+    decoder_state, verb_decoder_state, nonverb_decoder_state = initialize_decoders(concepts_dynet_graph, last_concept_embedding, hyperparams)
+
+    loss_list = []
+    classifier_loss_list = []
     predicted_concepts = []
 
-    sum_attention_diff = 0
-    i = 0
-
-    if not DROPOUT_FLAG:
-        # input_matrix = dy.dropout(input_matrix, 1 - concepts_dynet_graph.dropout_rate)
+    if not TRAIN_FLAG: # REMOVE WHEN LOSS NOT COMPUTED FOR DEV
         input_matrix = input_matrix * (1 - concepts_dynet_graph.dropout_rate)
 
-    index_in_non_embedded = 0
-    correct_verb_non_verb_predictions = 0
-    for concept in embedded_golden_concepts:
+    i = 0
 
-        if use_attention:
-            w1_input = w1_input or w1 * input_matrix
-            # if not DROPOUT_FLAG:
-            #    w1_input = dy.dropout(w1_input, 1 - concepts_dynet_graph.dropout_rate)
-            #    input_matrix = dy.dropout(input_matrix, 1 - concepts_dynet_graph.dropout_rate)
-            if not USE_VERB_NONVERB_CLASSIFICATION:
-                context_vector, attention_diff = attend(concepts_dynet_graph, input_matrix, dec_state, w1_input,
-                                                    len(encoded_sequence))
-            else:
+    for concept in golden_concept_indexes:
+
+        current_concept = golden_concepts[i]
+        previous_concept = golden_concepts[i]
+        if i != 0:
+            previous_concept = golden_concepts[i - 1]
+
+        w1_input = w1_input or w1 * input_matrix
+        # vector = get_decoder_input(concepts_dynet_graph, input_matrix, w1_input, previous_concept, last_concept_embedding, i,
+        #                           decoder_state, verb_decoder_state, nonverb_decoder_state, hyperparams)
+        if hyperparams.use_attention:
+            if hyperparams.use_verb_nonverb_classification:
                 ####### THIS FEELS WEIRD! ATTENTION GETS DIFFERENT STATES EACH TIME? ----- NOTE TO SELF, WHEN THIS WAS WITHOUT -1, THE CLASSIFIER LOSSES WERE 0.5 and 0.6 instead of 5 or 6
-                if index_in_non_embedded == 0:
-                    context_vector, attention_diff = attend(concepts_dynet_graph, input_matrix, non_verb_dec_state,
-                                                            w1_input,
-                                                            len(encoded_sequence))
+                if i == 0:
+                    context_vector = attend(concepts_dynet_graph, input_matrix, nonverb_decoder_state, w1_input)
                 else:
-                    if is_verb(golden_concepts[index_in_non_embedded - 1]):
-                        context_vector, attention_diff = attend(concepts_dynet_graph, input_matrix, verb_dec_state, w1_input,
-                                                            len(encoded_sequence))
+                    if is_verb(previous_concept):
+                        context_vector = attend(concepts_dynet_graph, input_matrix, verb_decoder_state, w1_input)
                     else:
-                        context_vector, attention_diff = attend(concepts_dynet_graph, input_matrix, non_verb_dec_state, w1_input,
-                                                            len(encoded_sequence))
+                        context_vector = attend(concepts_dynet_graph, input_matrix, nonverb_decoder_state, w1_input)
+            else:
+                context_vector = attend(concepts_dynet_graph, input_matrix, decoder_state, w1_input)
             vector = dy.concatenate([context_vector, last_concept_embedding])
-            sum_attention_diff += attention_diff
         else:
             vector = dy.concatenate([input_matrix[i], last_concept_embedding])
 
-        # Dropout
-        if DROPOUT_FLAG:
+        # Dropout -- WILL BE UNCONDITIONED ONCE LOSS IS NOT COMPUTED FOR DEV
+        if TRAIN_FLAG:
             vector = dy.dropout(vector, concepts_dynet_graph.dropout_rate)
 
         # SHOULD THE ALREADY DROPOUT VECTOR GO INTO THE CLASSIFIER AS WELL?
-        # BACKPROPAG PER CONCEPT, NOT PER SENTENCE?
-        # dy.renew_cg()
-        classifier_loss = classify_verb_non_verb(concepts_dynet_graph, vector, golden_concepts[index_in_non_embedded])
-        classifier_loss_ls.append(classifier_loss)
+        classifier_loss = classify_verb_nonverb(concepts_dynet_graph, vector, golden_concepts[i])
+        classifier_loss_list.append(classifier_loss)
 
         # VERB - NON VERB
         if USE_VERB_NONVERB_CLASSIFICATION:
-            if is_verb(golden_concepts[index_in_non_embedded]):
-                verb_dec_state = verb_dec_state.add_input(vector)
-                out_vector = verb_w * verb_dec_state.output() + verb_b
+            if is_verb(current_concept):
+                verb_decoder_state = verb_decoder_state.add_input(vector)
+                out_vector = verb_w * verb_decoder_state.output() + verb_b
                 # if DROPOUT_FLAG:
-                last_concept_embedding = concepts_dynet_graph.verb_embeddings[concept]
+                last_concept_embedding = concepts_dynet_graph.concept_verb_embeddings[concept]
             else:
-                non_verb_dec_state = non_verb_dec_state.add_input(vector)
-                out_vector = non_verb_w * non_verb_dec_state.output() + non_verb_b
+                nonverb_decoder_state = nonverb_decoder_state.add_input(vector)
+                out_vector = nonverb_w * nonverb_decoder_state.output() + nonverb_b
                 # if DROPOUT_FLAG:
-                last_concept_embedding = concepts_dynet_graph.non_verb_embeddings[concept]
+                last_concept_embedding = concepts_dynet_graph.concept_nonverb_embeddings[concept]
         else:
-            dec_state = dec_state.add_input(vector)
-            out_vector = w * dec_state.output() + b
+            decoder_state = decoder_state.add_input(vector)
+            out_vector = w * decoder_state.output() + b
             # TODO: take last_concept_embedding with a probability from golden vs predicted --- error propagation problem
             # also only temporary, while loss is computed on dev too -- if test, pick as last embedding the predicted one
             # if DROPOUT_FLAG:
-            last_concept_embedding = concepts_dynet_graph.output_embeddings[concept]
+            last_concept_embedding = concepts_dynet_graph.concept_embeddings[concept]
 
         '''
         # TEST VERB - NON VERB PREDICTIONS
@@ -359,13 +301,14 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, use_attentio
         probs = dy.softmax(out_vector)
 
         # QUICKFIX FOR NON ATTENTION -------- SHOULD FIGURE OUT A BETTER WAY
-        if len(encoded_sequence) >= len(embedded_golden_concepts):
-            i += 1
+        if len(encoded_sequence) >= len(golden_concept_indexes):
+            # NOTE SEE THIS VAR AND IF A NEW ONE IS NEEDED
+            i *= 1
 
 
         # DIFF LOSSES FOR THE TWO DECODERS?
         loss = -dy.log(dy.pick(probs, concept))
-        loss_ls.append(loss)
+        loss_list.append(loss)
 
         '''
         if DROPOUT_FLAG:
@@ -392,14 +335,14 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, use_attentio
 
         # GET DIFF PREDICTED CONCEPTS IF VERB - NON VERB
         if USE_VERB_NONVERB_CLASSIFICATION:
-            if is_verb(golden_concepts[index_in_non_embedded]):
+            if is_verb(golden_concepts[i]):
                 predicted_concepts.append(concepts_dynet_graph.concepts_verbs_vocab.i2w[next_concept])
             else:
-                predicted_concepts.append(concepts_dynet_graph.concepts_non_verbs_vocab.i2w[next_concept])
+                predicted_concepts.append(concepts_dynet_graph.concepts_nonverbs_vocab.i2w[next_concept])
         else:
             predicted_concepts.append(concepts_dynet_graph.concepts_vocab.i2w[next_concept])
 
-        index_in_non_embedded += 1
+        i += 1
 
     '''
     if not DROPOUT_FLAG:
@@ -408,10 +351,9 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, use_attentio
     '''
 
     # see loss w avg?
-    loss_ls = dy.esum(loss_ls)
-    classifier_loss_ls = dy.esum(classifier_loss_ls)
-    entry_attention_diff = sum_attention_diff / len(embedded_golden_concepts)
-    return loss_ls, predicted_concepts, entry_attention_diff, classifier_loss_ls
+    loss_ls = dy.esum(loss_list)
+    classifier_loss_ls = dy.esum(classifier_loss_list)
+    return loss_ls, predicted_concepts, classifier_loss_ls
 
 
 def predict_concepts(concepts_dynet_graph, encoded_sequence, use_attention):
@@ -427,9 +369,9 @@ def predict_concepts(concepts_dynet_graph, encoded_sequence, use_attention):
 
     w1_input = None
     if not USE_VERB_NONVERB_CLASSIFICATION:
-        last_concept_embedding = concepts_dynet_graph.output_embeddings[concepts_dynet_graph.concepts_vocab.w2i[START_OF_SEQUENCE]]
+        last_concept_embedding = concepts_dynet_graph.concept_embeddings[concepts_dynet_graph.concepts_vocab.w2i[START_OF_SEQUENCE]]
     else:
-        last_concept_embedding = concepts_dynet_graph.non_verb_embeddings[concepts_dynet_graph.concepts_non_verbs_vocab.w2i[START_OF_SEQUENCE]]
+        last_concept_embedding = concepts_dynet_graph.concept_nonverb_embeddings[concepts_dynet_graph.concepts_nonverbs_vocab.w2i[START_OF_SEQUENCE]]
 
     if use_attention:
         input_matrix = dy.concatenate_cols(encoded_sequence)
@@ -438,28 +380,23 @@ def predict_concepts(concepts_dynet_graph, encoded_sequence, use_attention):
                         dy.concatenate([dy.vecInput(ENCODER_STATE_SIZE * 2), last_concept_embedding]))
         # VERB - NON VERB
         else:
-            verb_dec_state = concepts_dynet_graph.verb_dec_gru.initial_state().add_input(
+            verb_dec_state = concepts_dynet_graph.verb_decoder.initial_state().add_input(
                                 dy.concatenate([dy.vecInput(ENCODER_STATE_SIZE * 2), last_concept_embedding]))
-            non_verb_dec_state = concepts_dynet_graph.non_verb_dec_gru.initial_state().add_input(
+            non_verb_dec_state = concepts_dynet_graph.nonverb_decoder.initial_state().add_input(
                                 dy.concatenate([dy.vecInput(ENCODER_STATE_SIZE * 2), last_concept_embedding]))
     else:
         input_matrix = dy.transpose(dy.concatenate_cols(encoded_sequence))
         if not USE_VERB_NONVERB_CLASSIFICATION:
             dec_state = concepts_dynet_graph.decoder.initial_state()
         else:
-            verb_dec_state = concepts_dynet_graph.verb_dec_gru.initial_state()
-            non_verb_dec_state = concepts_dynet_graph.non_verb_dec_gru.initial_state()
+            verb_dec_state = concepts_dynet_graph.verb_decoder.initial_state()
+            non_verb_dec_state = concepts_dynet_graph.nonverb_decoder.initial_state()
 
     predicted_concepts = []
     count_EOS = 0
-    sum_attention_diff = 0
     j = 0
 
-    global DROPOUT_FLAG
-
-    if not DROPOUT_FLAG:
-        # input_matrix = dy.dropout(input_matrix, 1 - concepts_dynet_graph.dropout_rate)
-        input_matrix = input_matrix * (1 - concepts_dynet_graph.dropout_rate)
+    input_matrix = input_matrix * (1 - concepts_dynet_graph.dropout_rate)
 
 
     for i in range((len(encoded_sequence) - 1) * 2):
@@ -468,21 +405,16 @@ def predict_concepts(concepts_dynet_graph, encoded_sequence, use_attention):
         if use_attention:
             w1_input = w1_input or w1 * input_matrix
             if not USE_VERB_NONVERB_CLASSIFICATION:
-                context_vector, attention_diff = attend(concepts_dynet_graph, input_matrix, dec_state, w1_input,
-                                                    len(encoded_sequence))
+                context_vector = attend(concepts_dynet_graph, input_matrix, dec_state, w1_input)
             else: ########## LOOK INTO THIS!!!!
                 if i == 0:
-                    context_vector, attention_diff = attend(concepts_dynet_graph, input_matrix, non_verb_dec_state, w1_input,
-                                                            len(encoded_sequence))
+                    context_vector = attend(concepts_dynet_graph, input_matrix, non_verb_dec_state, w1_input)
                 else:
                     if predict_verb == 1:
-                        context_vector, attention_diff = attend(concepts_dynet_graph, input_matrix, verb_dec_state, w1_input,
-                                                                len(encoded_sequence))
+                        context_vector = attend(concepts_dynet_graph, input_matrix, verb_dec_state, w1_input)
                     else:
-                        context_vector, attention_diff = attend(concepts_dynet_graph, input_matrix, non_verb_dec_state, w1_input,
-                                                                len(encoded_sequence))
+                        context_vector = attend(concepts_dynet_graph, input_matrix, non_verb_dec_state, w1_input)
             vector = dy.concatenate([context_vector, last_concept_embedding])
-            sum_attention_diff += attention_diff
         else:
             vector = dy.concatenate([input_matrix[j], last_concept_embedding])
 
@@ -491,7 +423,7 @@ def predict_concepts(concepts_dynet_graph, encoded_sequence, use_attention):
             j += 1
 
         # VERB - NON VERB
-        predict_verb = predict_verb_non_verb(concepts_dynet_graph, vector)
+        predict_verb = predict_verb_nonverb(concepts_dynet_graph, vector)
         if USE_VERB_NONVERB_CLASSIFICATION:
             if predict_verb == 1:
                 verb_dec_state = verb_dec_state.add_input(vector)
@@ -508,11 +440,11 @@ def predict_concepts(concepts_dynet_graph, encoded_sequence, use_attention):
 
         if USE_VERB_NONVERB_CLASSIFICATION:
             if predict_verb == 1:
-                last_concept_embedding = concepts_dynet_graph.verb_embeddings[next_concept]
+                last_concept_embedding = concepts_dynet_graph.concept_verb_embeddings[next_concept]
             elif predict_verb == 0:
-                last_concept_embedding = concepts_dynet_graph.non_verb_embeddings[next_concept]
+                last_concept_embedding = concepts_dynet_graph.concept_nonverb_embeddings[next_concept]
         else:
-            last_concept_embedding = concepts_dynet_graph.output_embeddings[next_concept]
+            last_concept_embedding = concepts_dynet_graph.concept_embeddings[next_concept]
 
         if not USE_VERB_NONVERB_CLASSIFICATION:
             if concepts_dynet_graph.concepts_vocab.i2w[next_concept] == END_OF_SEQUENCE:
@@ -520,7 +452,7 @@ def predict_concepts(concepts_dynet_graph, encoded_sequence, use_attention):
                 j = 0
                 continue
         else:
-            if concepts_dynet_graph.concepts_non_verbs_vocab.i2w[next_concept] == END_OF_SEQUENCE:
+            if concepts_dynet_graph.concepts_nonverbs_vocab.i2w[next_concept] == END_OF_SEQUENCE:
                 count_EOS += 1
                 j = 0
                 continue
@@ -529,128 +461,37 @@ def predict_concepts(concepts_dynet_graph, encoded_sequence, use_attention):
             if predict_verb == 1:
                 predicted_concepts.append(concepts_dynet_graph.concepts_verbs_vocab.i2w[next_concept])
             elif predict_verb == 0:
-                predicted_concepts.append(concepts_dynet_graph.concepts_non_verbs_vocab.i2w[next_concept])
+                predicted_concepts.append(concepts_dynet_graph.concepts_nonverbs_vocab.i2w[next_concept])
         else:
             predicted_concepts.append(concepts_dynet_graph.concepts_vocab.i2w[next_concept])
 
-    # entry_attention_diff = sum_attention_diff / len(predicted_concepts)
-    entry_attention_diff = 1
-    return predicted_concepts, entry_attention_diff
+    return predicted_concepts
 
 
-def train(concepts_dynet_graph, input_sequence, golden_concepts, use_glove, use_attention):
+def train(concepts_dynet_graph, input_sequence, golden_concepts, hyperparams):
     dy.renew_cg()
 
-    embedded_sequence = embed_sequence(concepts_dynet_graph, input_sequence, use_glove)
+    embedded_sequence = embed_sequence(concepts_dynet_graph, input_sequence, hyperparams)
     encoded_sequence = encode_input_sequence(concepts_dynet_graph, embedded_sequence)
     # if len(encoded_sequence) % 10 == 0:
     #    print(input_sequence)
-    return decode(concepts_dynet_graph, encoded_sequence, golden_concepts, use_attention)
+    return decode(concepts_dynet_graph, encoded_sequence, golden_concepts, hyperparams)
 
 
-def test(concepts_dynet_graph, input_sequence, use_glove, use_attention):
-    embedded_sequence = embed_sequence(concepts_dynet_graph, input_sequence, use_glove)
+def test(concepts_dynet_graph, input_sequence, use_attention, hyperparams):
+    embedded_sequence = embed_sequence(concepts_dynet_graph, input_sequence, hyperparams)
     encoded_sequence = encode_input_sequence(concepts_dynet_graph, embedded_sequence)
     # if len(encoded_sequence) % 10 == 0:
     #    print(input_sequence)
     return predict_concepts(concepts_dynet_graph, encoded_sequence, use_attention)
 
 
-# F-score
-'''
-Does not consider duplicate concepts in the same sentence.
-'''
-
-
-def compute_f_score(golden_concepts, predicted_concepts):
-    true_positive = len(list(set(golden_concepts) & set(predicted_concepts)))
-    false_positive = len(list(set(predicted_concepts).difference(set(golden_concepts))))
-    false_negative = len(list(set(golden_concepts).difference(set(predicted_concepts))))
-    precision = 0
-    recall = 0
-    if len(predicted_concepts) != 0:
-        precision = true_positive / (true_positive + false_positive)
-        recall = true_positive / (true_positive + false_negative)
-    f_score = 0
-    if precision + recall != 0:
-        f_score = 2 * (precision * recall) / (precision + recall)
-
-    return true_positive, precision, recall, f_score
-
-
-# METRICS
-'''
-They do not consider dupliacte concepts in the same sentence.
-
-ACCURACY
-Count the right concepts on the correct positions / all predicted concepts.
-
-ORDER METRICS
-Check the order in each pair of correctly predicted concepts, count the correct orders in the predicted set.
-Check the distance between the correctly predicted concepts in the predicted set, count instances where it is the same 
-as in the golden set.
-Divide by all checked combinations of correctly predicted concepts.
-'''
-
-
-def compute_metrics(golden_concepts, predicted_concepts):
-    nb_predicted_concepts = len(predicted_concepts)
-
-    correctly_predicted_concepts = list(set(golden_concepts) & set(predicted_concepts))
-    nb_correctly_predicted_concepts = len(correctly_predicted_concepts)
-
-    nb_concepts_on_correct_positions = 0
-    golden_indexes = []
-    predicted_indexes = []
-
-    # Get indexes of correct words both for golden and predicted
-    for concept in correctly_predicted_concepts:
-        if golden_concepts.index(concept) == predicted_concepts.index(concept):
-            nb_concepts_on_correct_positions += 1
-        golden_indexes.append(golden_concepts.index(concept))
-        predicted_indexes.append(predicted_concepts.index(concept))
-
-    # Accuracy
-    accuracy = 0
-    if nb_predicted_concepts != 0:
-        accuracy = nb_concepts_on_correct_positions / nb_predicted_concepts
-
-    correct_order = 0
-    correct_distances = 0
-    total_combinations_checked = 0
-
-    for i in range(len(golden_indexes) - 1):
-        for j in range(i + 1, len(golden_indexes)):
-            # Same as golden[i] - golden[j] == predicted[i] - predicted[j]
-            if golden_indexes[i] - golden_indexes[j] - predicted_indexes[i] + predicted_indexes[j] == 0:
-                correct_distances += 1
-            # Check if order is correct regardless of distances
-            if (golden_indexes[i] <= golden_indexes[j] and predicted_indexes[i] <= predicted_indexes[j]) or \
-                    (golden_indexes[i] >= golden_indexes[j] and predicted_indexes[i] >= predicted_indexes[j]):
-                correct_order += 1
-            total_combinations_checked += 1
-
-    # Order metrics
-    correct_order_percentage = 0
-    correct_distances_percentage = 0
-
-    if total_combinations_checked != 0:
-        correct_order_percentage = correct_order / total_combinations_checked
-        correct_distances_percentage = correct_distances / total_combinations_checked
-
-    if nb_correctly_predicted_concepts == 1:
-        correct_order_percentage = 1
-        correct_distances_percentage = 1
-
-    return accuracy, correct_order_percentage, correct_distances_percentage
-
-
-def train_sentence(concepts_dynet_graph, sentence, identified_concepts, use_glove, use_attention, train_flag):
+def train_sentence(concepts_dynet_graph, sentence, identified_concepts, train_flag, hyperparams):
     input_sequence = sentence.split()
     golden_concepts = [concept.name for concept in identified_concepts.ordered_concepts]
 
-    loss, predicted_concepts, entry_attention_diff, classifier_loss = train(concepts_dynet_graph, input_sequence,
-                                                                            golden_concepts, use_glove, use_attention)
+    loss, predicted_concepts, classifier_loss = train(concepts_dynet_graph, input_sequence,
+                                                                            golden_concepts, hyperparams)
     loss_value = loss.value()
     classifier_loss_value = classifier_loss.value()
     if train_flag:
@@ -674,14 +515,14 @@ def train_sentence(concepts_dynet_graph, sentence, identified_concepts, use_glov
         compute_metrics(golden_concepts, predicted_concepts)
 
     return predicted_concepts, loss_value, bleu_score, nb_correctly_predicted_concepts, precision, recall, f_score, \
-           accuracy, correct_order_percentage, correct_distances_percentage, entry_attention_diff, classifier_loss_value
+           accuracy, correct_order_percentage, correct_distances_percentage, classifier_loss_value
 
 
-def test_sentence(concepts_dynet_graph, sentence, identified_concepts, use_glove, use_attention):
+def test_sentence(concepts_dynet_graph, sentence, identified_concepts, use_attention, hyperparams):
     input_sequence = sentence.split()
     golden_concepts = [concept.name for concept in identified_concepts.ordered_concepts]
 
-    predicted_concepts, entry_attention_diff = test(concepts_dynet_graph, input_sequence, use_glove, use_attention)
+    predicted_concepts = test(concepts_dynet_graph, input_sequence, use_attention, hyperparams)
 
     # BLEU score
     ''' 
@@ -697,7 +538,7 @@ def test_sentence(concepts_dynet_graph, sentence, identified_concepts, use_glove
         compute_metrics(golden_concepts, predicted_concepts)
 
     return predicted_concepts, bleu_score, nb_correctly_predicted_concepts, precision, recall, f_score, \
-           accuracy, correct_order_percentage, correct_distances_percentage, entry_attention_diff
+           accuracy, correct_order_percentage, correct_distances_percentage
 
 
 def read_train_test_data():
@@ -771,11 +612,27 @@ if __name__ == "__main__":
 
     global DROPOUT_FLAG
 
+    hyperparams = ConceptsTrainerHyperparameters(encoder_nb_layers=ENCODER_NB_LAYERS,
+                                                 decoder_nb_layers=DECODER_NB_LAYERS,
+                                                 verb_nonverb_classifier_nb_layers=VERB_NONVERB_CLASSIFIER_NB_LAYERS,
+                                                 words_embedding_size=WORDS_EMBEDDING_SIZE,
+                                                 words_glove_embedding_size=WORDS_GLOVE_EMBEDDING_SIZE,
+                                                 concepts_embedding_size=CONCEPTS_EMBEDDING_SIZE,
+                                                 encoder_state_size=ENCODER_STATE_SIZE,
+                                                 decoder_state_size=DECODER_STATE_SIZE,
+                                                 verb_nonverb_classifier_state_size=VERB_NONVERB_CLASSIFIER_STATE_SIZE,
+                                                 attention_size=ATTENTION_SIZE,
+                                                 dropout_rate=DROPOUT_RATE,
+                                                 use_attention=USE_ATTENTION,
+                                                 use_glove=USE_GLOVE,
+                                                 use_preprocessing=USE_PREPROCESSING,
+                                                 use_verb_nonverb_classification=USE_VERB_NONVERB_CLASSIFICATION,
+                                                 max_sentence_length=MAX_SENTENCE_LENGTH,
+                                                 nb_epochs=NB_EPOCHS)
+
     concepts_dynet_graph = ConceptsDynetGraph(all_words_vocab, all_concepts_vocab, words_glove_embeddings_list,
-                                              ENCODER_NB_LAYERS, WORDS_EMBEDDING_SIZE, CONCEPTS_EMBEDDING_SIZE,
-                                              WORDS_GLOVE_EMBEDDING_SIZE, DECODER_STATE_SIZE, ATTENTION_SIZE,
-                                              DROPOUT_RATE, all_test_concepts_vocab, all_verbs_vocab,
-                                              all_other_concepts_vocab)
+                                              all_verbs_vocab, all_other_concepts_vocab, hyperparams,
+                                              all_test_concepts_vocab)
 
     for epoch in range(1, NB_EPOCHS + 1):
         print("Epoch " + str(epoch) + "\n")
@@ -792,19 +649,17 @@ if __name__ == "__main__":
         sum_train_accuracy = 0
         sum_train_correct_order_percentage = 0
         sum_train_correct_distances_percentage = 0
-        sum_train_attention_difference = 0
         sum_train_classifier_loss = 0
 
         train_entry: ConceptsTrainingEntry
         train_flag = True
-        DROPOUT_FLAG = True
+        TRAIN_FLAG = True
         for train_entry in train_entries:
             (predicted_concepts, train_entry_loss, train_entry_bleu, train_entry_nb_correctly_predicted_concepts,
              train_entry_precision, train_entry_recall, train_entry_f_score, train_entry_accuracy,
-             train_entry_correct_order_percentage, train_entry_correct_distances_percentage,
-             train_entry_attention_diff, train_entry_classifier_loss) = \
+             train_entry_correct_order_percentage, train_entry_correct_distances_percentage, train_entry_classifier_loss) = \
                 train_sentence(concepts_dynet_graph, train_entry.sentence, train_entry.identified_concepts,
-                               USE_GLOVE, USE_ATTENTION, train_flag)
+                                train_flag, hyperparams)
 
             sum_train_loss += train_entry_loss
             sum_train_bleu += train_entry_bleu
@@ -815,7 +670,6 @@ if __name__ == "__main__":
             sum_train_accuracy += train_entry_accuracy
             sum_train_correct_order_percentage += train_entry_correct_order_percentage
             sum_train_correct_distances_percentage += train_entry_correct_distances_percentage
-            sum_train_attention_difference += train_entry_attention_diff
             sum_train_classifier_loss += train_entry_classifier_loss
 
         avg_train_loss = sum_train_loss / nb_train_entries
@@ -827,7 +681,6 @@ if __name__ == "__main__":
         avg_train_accuracy = sum_train_accuracy / nb_train_entries
         avg_train_correct_order_percentage = sum_train_correct_order_percentage / nb_train_entries
         avg_train_correct_distances_percentage = sum_train_correct_distances_percentage / nb_train_entries
-        avg_train_attention_difference = sum_train_attention_difference / nb_train_entries
         avg_train_classifier_loss = sum_train_classifier_loss / nb_train_entries
 
         print("LOSS: " + str(avg_train_loss))
@@ -842,7 +695,6 @@ if __name__ == "__main__":
         #      str(avg_train_correct_order_percentage))
         # print("Percentage of concepts at correct distances (only for correctly predicted concepts): " +
         #      str(avg_train_correct_distances_percentage))
-        # print("Average (max - min) difference in attention: " + str(avg_train_attention_difference) + "\n")
         print("CLASSIFIER LOSS: " + str(avg_train_classifier_loss))
 
         overview_logs.write("Train LOSS: " + str(avg_train_loss) + "\n")
@@ -858,8 +710,6 @@ if __name__ == "__main__":
                             str(avg_train_correct_order_percentage) + "\n")
         overview_logs.write("Percentage of concepts at correct distances (only for correctly predicted concepts) train: " +
                             str(avg_train_correct_distances_percentage) + "\n")
-        overview_logs.write("Average (max - min) difference in attention train: " +
-                            str(avg_train_attention_difference) + "\n")
         overview_logs.write("Train CLASSIFIER LOSS: " + str(avg_train_classifier_loss) + "\n")
         overview_logs.write("\n")
 
@@ -873,7 +723,6 @@ if __name__ == "__main__":
         sum_accuracy = 0
         sum_correct_order_percentage = 0
         sum_correct_distances_percentage = 0
-        sum_attention_difference = 0
         sum_classifier_loss = 0
 
         # test
@@ -885,18 +734,17 @@ if __name__ == "__main__":
         sum_test_accuracy = 0
         sum_test_correct_order_percentage = 0
         sum_test_correct_distances_percentage = 0
-        sum_test_attention_difference = 0
 
         test_entry: ConceptsTrainingEntry
         train_flag = False
-        DROPOUT_FLAG = False
+        TRAIN_FLAG = False
         for test_entry in test_entries:
             # With last_embedding from golden
             (predicted_concepts, entry_loss, entry_bleu, entry_nb_correctly_predicted_concepts, entry_precision,
              entry_recall, entry_f_score, entry_accuracy, entry_correct_order_percentage,
-             entry_correct_distances_percentage, entry_attention_diff, entry_classifier_loss) = \
-                train_sentence(concepts_dynet_graph, test_entry.sentence, test_entry.identified_concepts, USE_GLOVE,
-                               USE_ATTENTION, train_flag)
+             entry_correct_distances_percentage, entry_classifier_loss) = \
+                train_sentence(concepts_dynet_graph, test_entry.sentence, test_entry.identified_concepts,
+                               train_flag, hyperparams)
 
             sum_loss += entry_loss
             sum_bleu += entry_bleu
@@ -907,7 +755,6 @@ if __name__ == "__main__":
             sum_accuracy += entry_accuracy
             sum_correct_order_percentage += entry_correct_order_percentage
             sum_correct_distances_percentage += entry_correct_distances_percentage
-            sum_attention_difference += entry_attention_diff
             sum_classifier_loss += entry_classifier_loss
 
             detail_logs.write(test_entry.logging_info)
@@ -923,15 +770,14 @@ if __name__ == "__main__":
                               str(entry_correct_order_percentage) + "\n")
             detail_logs.write("Percentage of concepts at correct distances (only for correctly predicted concepts): " +
                               str(entry_correct_distances_percentage) + "\n")
-            detail_logs.write("Average (max - min) difference in attention: " + str(entry_attention_diff) + "\n")
             detail_logs.write("\n")
 
             # With last_embedding from predictions
             (test_predicted_concepts, test_entry_bleu, test_entry_nb_correctly_predicted_concepts, test_entry_precision,
              test_entry_recall, test_entry_f_score, test_entry_accuracy, test_entry_correct_order_percentage,
-             test_entry_correct_distances_percentage, test_entry_attention_diff) = \
-                test_sentence(concepts_dynet_graph, test_entry.sentence, test_entry.identified_concepts, USE_GLOVE,
-                              USE_ATTENTION)
+             test_entry_correct_distances_percentage) = \
+                test_sentence(concepts_dynet_graph, test_entry.sentence, test_entry.identified_concepts,
+                              USE_ATTENTION, hyperparams)
 
             sum_test_bleu += test_entry_bleu
             sum_test_nb_correctly_predicted_concepts += test_entry_nb_correctly_predicted_concepts
@@ -941,7 +787,6 @@ if __name__ == "__main__":
             sum_test_accuracy += test_entry_accuracy
             sum_test_correct_order_percentage += test_entry_correct_order_percentage
             sum_test_correct_distances_percentage += test_entry_correct_distances_percentage
-            sum_test_attention_difference += test_entry_attention_diff
 
             detail_test_logs.write(test_entry.logging_info)
             detail_test_logs.write("PREDICTED concepts: " + str(test_predicted_concepts) + "\n")
@@ -958,8 +803,6 @@ if __name__ == "__main__":
             detail_test_logs.write(
                 "Percentage of concepts at correct distances (only for correctly predicted concepts): " +
                 str(test_entry_correct_distances_percentage) + "\n")
-            detail_test_logs.write("Average (max - min) difference in attention: " +
-                                   str(test_entry_attention_diff) + "\n")
             detail_test_logs.write("\n")
 
         # With last_embedding from golden
@@ -972,7 +815,6 @@ if __name__ == "__main__":
         avg_accuracy = sum_accuracy / nb_test_entries
         avg_correct_order_percentage = sum_correct_order_percentage / nb_test_entries
         avg_correct_distances_percentage = sum_correct_distances_percentage / nb_test_entries
-        avg_attention_difference = sum_attention_difference / nb_test_entries
         avg_classifier_loss = sum_classifier_loss / nb_test_entries
 
         print("Golden test LOSS: " + str(avg_loss))
@@ -987,7 +829,6 @@ if __name__ == "__main__":
         #      str(avg_correct_order_percentage))
         # print("Percentage of concepts at correct distances (only for correctly predicted concepts): " +
         #      str(avg_correct_distances_percentage))
-        # print("Average (max - min) difference in attention: " + str(avg_attention_difference) + "\n")
         print("Golden test CLASSIFIER LOSS: " + str(avg_classifier_loss))
 
         overview_logs.write("Golden test LOSS: " + str(avg_loss) + "\n")
@@ -1003,7 +844,6 @@ if __name__ == "__main__":
                             str(avg_correct_order_percentage) + "\n")
         overview_logs.write("Percentage of concepts at correct distances (only for correctly predicted concepts) golden test: " +
                             str(avg_correct_distances_percentage) + "\n")
-        overview_logs.write("Average (max - min) difference in attention golden test: " + str(avg_attention_difference) + "\n")
         overview_logs.write("Golden test CLASSIFIER LOSS: " + str(avg_classifier_loss) + "\n")
         overview_logs.write("\n")
 
@@ -1016,7 +856,6 @@ if __name__ == "__main__":
         avg_test_accuracy = sum_test_accuracy / nb_test_entries
         avg_test_correct_order_percentage = sum_test_correct_order_percentage / nb_test_entries
         avg_test_correct_distances_percentage = sum_test_correct_distances_percentage / nb_test_entries
-        avg_test_attention_difference = sum_test_attention_difference / nb_test_entries
 
         # print("Test BLEU: " + str(avg_test_bleu))
         print("Average number of correctly predicted concepts per sentence: " +
@@ -1029,7 +868,6 @@ if __name__ == "__main__":
         #      str(avg_test_correct_order_percentage))
         # print("Percentage of concepts at correct distances (only for correctly predicted concepts): " +
         #      str(avg_test_correct_distances_percentage))
-        # print("Average (max - min) difference in attention: " + str(avg_test_attention_difference) + "\n")
 
         overview_logs.write("Test BLEU: " + str(avg_test_bleu) + "\n")
         overview_logs.write("Average number of correctly predicted concepts per test sentence: " +
@@ -1043,7 +881,6 @@ if __name__ == "__main__":
                             str(avg_test_correct_order_percentage) + "\n")
         overview_logs.write("Percentage of concepts at correct distances (only for correctly predicted concepts) test: " +
                             str(avg_test_correct_distances_percentage) + "\n")
-        overview_logs.write("Average (max - min) difference in attention test: " + str(avg_test_attention_difference) + "\n")
         overview_logs.write("\n")
 
     print("Done")
