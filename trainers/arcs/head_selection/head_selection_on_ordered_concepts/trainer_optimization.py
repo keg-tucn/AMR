@@ -36,7 +36,7 @@ if __name__ == "__main__":
     #                                          unaligned_tolerance=0)
     # run_experiment(relation_dict, hyperparams)
 
-    hyperparams = ArcsTrainerHyperparameters(no_epochs=20,
+    hyperparams = ArcsTrainerHyperparameters(no_epochs=2,
                                              mlp_dropout=0.5,
                                              unaligned_tolerance=0,
                                              compare_gold=1,
@@ -44,6 +44,7 @@ if __name__ == "__main__":
                                              max_parents_vectors=6,
                                              reentrancy_threshold=0.8,
                                              use_preprocessing=True,
-                                             trainable_embeddings_size=128,
-                                             glove_embeddings_size=100)
+                                             trainable_embeddings_size=0,
+                                             glove_embeddings_size=0,
+                                             use_fasttext=True)
     run_experiment(relation_dict, hyperparams)

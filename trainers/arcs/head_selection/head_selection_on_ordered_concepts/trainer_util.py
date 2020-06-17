@@ -21,7 +21,8 @@ class ArcsTrainerHyperparameters:
                  reentrancy_threshold,
                  use_preprocessing: bool,
                  trainable_embeddings_size: int,
-                 glove_embeddings_size: int):
+                 glove_embeddings_size: int,
+                 use_fasttext: bool):
         self.no_epochs = no_epochs
         self.mlp_dropout = mlp_dropout
         # how many concepts with no alignment we allow in the ordered concepts (percentage: 0-none,1-all)
@@ -34,6 +35,7 @@ class ArcsTrainerHyperparameters:
         self.use_preprocessing = use_preprocessing
         self.trainable_embeddings_size = trainable_embeddings_size
         self.glove_embeddings_size = glove_embeddings_size
+        self.use_fasttext = use_fasttext
 
     def __str__(self):
         return 'ep_' + str(self.no_epochs) + \
@@ -45,7 +47,8 @@ class ArcsTrainerHyperparameters:
                '_th_' + str(self.reentrancy_threshold) + \
                '_prep_' + str(self.use_preprocessing) + \
                '_tEmb_' + str(self.trainable_embeddings_size) + \
-               '_gEmb_' + str(self.glove_embeddings_size)
+               '_gEmb_' + str(self.glove_embeddings_size) + \
+               '_fEmb_' + str(self.use_fasttext)
 
 
 class ArcsTrainerResultPerEpoch:
@@ -262,6 +265,27 @@ def plot_train_test_acc_loss(filename: str, plotting_data):
     plt.show()
 
 
+def construct_ordered_concepts_embeddings_list(magnitude_embeddings, concept_vocab: Vocab):
+    """
+    Create a list of embeddings for the concepts in the input concept vocab
+    The list will be ordered in the order of the concept indexes in the vocab
+    Uses magnitude embeddings (should treat oov)
+    Input:
+        magnitude_embeddings: embeddings vector
+        embedding_dim: embedding dimension
+        concept_vocab: vocab of concepts (concepts associated with indexes)
+    Output:
+        list of glove embeddings in the order of concepts from concept_vocab
+    """
+    embeddings_list = []
+    for concept_idx in sorted(concept_vocab.i2w.keys()):
+        concept_name = concept_vocab.i2w[concept_idx]
+        concept_stripped = Concept.strip_concept_sense(concept_name)
+        concept_embedding = magnitude_embeddings.query(concept_stripped)
+        embeddings_list.append(concept_embedding)
+    return embeddings_list
+
+
 def construct_concept_glove_embeddings_list(glove_embeddings, embedding_dim, concept_vocab: Vocab):
     """
     Create a list of glove embeddings for the concepts in the input concept vocab
@@ -270,6 +294,8 @@ def construct_concept_glove_embeddings_list(glove_embeddings, embedding_dim, con
         glove_embeddings: dictionary of word -> glove_embedding
         embedding_dim: embedding dimension
         concept_vocab: vocab of concepts (concepts associated with indexes)
+    Output:
+        list of glove embeddings in the order of concepts from concept_vocab
     """
     concept_glove_embeddings_list = []
     null_embedding = np.zeros(embedding_dim)
@@ -281,3 +307,5 @@ def construct_concept_glove_embeddings_list(glove_embeddings, embedding_dim, con
             concept_glove_embedding = null_embedding
         concept_glove_embeddings_list.append(concept_glove_embedding)
     return concept_glove_embeddings_list
+
+

@@ -3,16 +3,19 @@ from copy import deepcopy
 from typing import List
 import logging
 import dynet as dy
+from pymagnitude import Magnitude
 
+from data_extraction.magnitude_embedings_reader import get_magnitude_glove_vectors, get_magnitude_fasttext_vectors
 from data_extraction.word_embeddings_reader import read_glove_embeddings_from_file
 from deep_dynet import support as ds
 from deep_dynet.support import Vocab
+from definitions import PROJECT_ROOT_DIR
 from models.concept import IdentifiedConcepts, Concept
 from models.node import Node
 from pre_post_processing.standford_pre_post_processing import post_processing_on_parent_vector
 from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_util import \
     calculate_smatch, log_test_entry_data, \
-    construct_concept_glove_embeddings_list, ArcsTrainerHyperparameters, ArcsTrainerResultPerEpoch, \
+    construct_ordered_concepts_embeddings_list, ArcsTrainerHyperparameters, ArcsTrainerResultPerEpoch, \
     log_results_per_epoch, generate_amr_node_for_vector_of_parents
 from trainers.arcs.head_selection.head_selection_on_ordered_concepts.training_arcs_data_extractor import \
     ArcsTrainingEntry, read_train_test_data, ArcsTraingAndTestData
@@ -23,29 +26,50 @@ LSTM_OUT_DIM = 50
 BILSTM_OUT_DIM = 2 * LSTM_OUT_DIM
 LSTM_NO_LAYERS = 1
 MLP_CONCEPT_INTERNAL_DIM = 32
+FASTTEXT_DIM = 300
 
 
 class ArcsDynetGraph:
-    def __init__(self, concepts_vocab, concept_glove_embeddings_list, hyperparams: ArcsTrainerHyperparameters):
+    def __init__(self, concepts_vocab, hyperparams: ArcsTrainerHyperparameters):
         self.hyperparams = hyperparams
         self.model = dy.Model()
+
+        # embeddings
         self.concepts_vocab: Vocab = concepts_vocab
+        # glove
+        if hyperparams.glove_embeddings_size != 0:
+            self.glove_vectors = get_magnitude_glove_vectors(hyperparams.glove_embeddings_size)
+            self.glove_embeddings = self.model.add_lookup_parameters(
+                (concepts_vocab.size(), hyperparams.glove_embeddings_size))
+            self.glove_embeddings.init_from_array(
+                dy.np.array(construct_ordered_concepts_embeddings_list(self.glove_vectors,
+                                                                       self.concepts_vocab)))
+        # fasttext
+        if hyperparams.use_fasttext:
+            self.fasttext_vectors = get_magnitude_fasttext_vectors()
+            self.fasttext_embeddings = self.model.add_lookup_parameters(
+                (concepts_vocab.size(), FASTTEXT_DIM))
+            self.fasttext_embeddings.init_from_array(
+                dy.np.array(construct_ordered_concepts_embeddings_list(self.fasttext_vectors,
+                                                                       self.concepts_vocab)))
+        # trainable embeddings
         self.concept_embeddings = self.model.add_lookup_parameters(
                 (concepts_vocab.size(), hyperparams.trainable_embeddings_size))
-        self.glove_embeddings = self.model.add_lookup_parameters(
-                (concepts_vocab.size(), hyperparams.glove_embeddings_size))
-        if hyperparams.glove_embeddings_size!=0:
-            self.glove_embeddings.init_from_array(dy.np.array(concept_glove_embeddings_list))
-        self.trainer = dy.SimpleSGDTrainer(self.model)
-        lstm_in_dim = hyperparams.trainable_embeddings_size + hyperparams.glove_embeddings_size \
+
+        # lstms
+        fasttext_dim = FASTTEXT_DIM if hyperparams.use_fasttext else 0
+        lstm_in_dim = hyperparams.glove_embeddings_size + fasttext_dim + hyperparams.trainable_embeddings_size + \
                       + CONCEPT_TAG_EMBEDDING_SIZE + CONCEPT_LEMMA_EMBEDDING_SIZE
         self.fwdRNN = dy.LSTMBuilder(LSTM_NO_LAYERS, lstm_in_dim, LSTM_OUT_DIM, self.model)
         self.bwdRNN = dy.LSTMBuilder(LSTM_NO_LAYERS, lstm_in_dim, LSTM_OUT_DIM, self.model)
 
+        # mlp
         self.pU = self.model.add_parameters((MLP_CONCEPT_INTERNAL_DIM, BILSTM_OUT_DIM))
         self.pW = self.model.add_parameters((MLP_CONCEPT_INTERNAL_DIM, BILSTM_OUT_DIM))
         self.pV = self.model.add_parameters((1, MLP_CONCEPT_INTERNAL_DIM))
 
+        # trainer
+        self.trainer = dy.SimpleSGDTrainer(self.model)
 
 def get_all_concepts(concepts: List[IdentifiedConcepts]):
     concepts_list = []
@@ -81,16 +105,35 @@ def get_predicted_parent(potential_heads_list, predicted_index):
 
 
 def get_concept_representation(arcs_graph: ArcsDynetGraph, c: Concept):
-    c_index = arcs_graph.concepts_vocab.w2i[c.name]
-    concept_trained_embedding = arcs_graph.concept_embeddings[c_index]
-    concept_glove_embedding = dy.lookup(arcs_graph.glove_embeddings, c_index, False)
-    embeddings_list = [concept_trained_embedding, concept_glove_embedding]
-    non_zero_embeddings: List[dy.Expression] = []
-    for embedding in embeddings_list:
-        if embedding.dim()[0][0] !=0:
-            non_zero_embeddings.append(embedding)
+    embeddings = []
+    concept_stripped = Concept.strip_concept_sense(c.name)
+    c_index = -1
+    if c.name in arcs_graph.concepts_vocab.w2i.keys():
+        c_index = arcs_graph.concepts_vocab.w2i[c.name]
+    # glove
+    if arcs_graph.hyperparams.glove_embeddings_size != 0:
+        if c_index != -1:
+            concept_glove_embedding = dy.lookup(arcs_graph.glove_embeddings, c_index, False)
+        else:
+            concept_glove_embedding = dy.inputTensor(arcs_graph.glove_vectors.query(concept_stripped))
+        embeddings.append(concept_glove_embedding)
+    # fasttext
+    if arcs_graph.hyperparams.use_fasttext:
+        if c_index != -1:
+            fasttext_embeddings = dy.lookup(arcs_graph.fasttext_embeddings, c_index, False)
+        else:
+            fasttext_embeddings = dy.inputTensor(arcs_graph.fasttext_vectors.query(concept_stripped))
+        embeddings.append(fasttext_embeddings)
+    # trained with the network
+    if arcs_graph.hyperparams.trainable_embeddings_size != 0:
+        if c_index != -1:
+            concept_trained_embedding = arcs_graph.concept_embeddings[c_index]
+        else:
+            # maybe add an UNK concept instead
+            concept_trained_embedding = dy.zeros(arcs_graph.hyperparams.trainable_embeddings_size, batch_size=1)
+        embeddings.append(concept_trained_embedding)
     # return dy.noise(ce, 0.1)
-    return dy.concatenate(non_zero_embeddings)
+    return dy.concatenate(embeddings)
 
 
 def build_graph(arcs_graph: ArcsDynetGraph, sentence_concepts: List[Concept]):
@@ -295,6 +338,11 @@ def test(arcs_graph: ArcsDynetGraph, train_and_test_data: ArcsTraingAndTestData,
     return avg_accuracy, avg_smatch, percentage_valid_amrs
 
 
+def cleanup(arcs_graph: ArcsDynetGraph):
+    arcs_graph.glove_vectors.close()
+    arcs_graph.fasttext_vectors.close()
+
+
 def train_and_test(relation_dict, hyperparams: ArcsTrainerHyperparameters):
     # setup logging
     if not os.path.exists('logs'):
@@ -314,19 +362,15 @@ def train_and_test(relation_dict, hyperparams: ArcsTrainerHyperparameters):
                                                                       hyperparams.use_preprocessing)
     train_concepts = [train_entry.identified_concepts for train_entry in train_and_test_data.train_entries]
     dev_concepts = [test_entry.identified_concepts for test_entry in train_and_test_data.test_entries]
-    all_concept_names = get_all_concepts(train_concepts + dev_concepts)
+    # get only concepts from train
+    # all_concept_names = get_all_concepts(train_concepts + dev_concepts)
+    all_concept_names = get_all_concepts(train_concepts)
     all_concepts_vocab = ds.Vocab.from_list(all_concept_names)
-    concept_glove_embeddings_list = []
-    if hyperparams.glove_embeddings_size != 0:
-        word_glove_embeddings = read_glove_embeddings_from_file(hyperparams.glove_embeddings_size)
-        concept_glove_embeddings_list = construct_concept_glove_embeddings_list(word_glove_embeddings,
-                                                                                hyperparams.glove_embeddings_size,
-                                                                                all_concepts_vocab)
 
     # init plotting data
     results_per_epoch = {}
 
-    arcs_graph = ArcsDynetGraph(all_concepts_vocab, concept_glove_embeddings_list, hyperparams)
+    arcs_graph = ArcsDynetGraph(all_concepts_vocab, hyperparams)
     for epoch in range(1, hyperparams.no_epochs + 1):
         print("Epoch " + str(epoch))
         overview_logger.info("Epoch " + str(epoch))
@@ -342,5 +386,8 @@ def train_and_test(relation_dict, hyperparams: ArcsTrainerHyperparameters):
                                                  percentage_valid_amrs)
         results_per_epoch[epoch] = epoch_result
         log_results_per_epoch(overview_logger, epoch, epoch_result)
+
+    cleanup(arcs_graph)
+
     print("Done")
     return results_per_epoch
