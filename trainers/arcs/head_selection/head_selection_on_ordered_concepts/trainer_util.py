@@ -54,11 +54,13 @@ class ArcsTrainerHyperparameters:
 class ArcsTrainerResultPerEpoch:
     def __init__(self, avg_loss,
                  avg_train_accuracy,
+                 avg_test_loss,
                  avg_test_accuracy,
                  avg_smatch,
                  percentage_valid_amrs):
         self.avg_loss = avg_loss
         self.avg_train_accuracy = avg_train_accuracy
+        self.avg_test_loss = avg_test_loss
         self.avg_test_accuracy = avg_test_accuracy
         self.avg_smatch = avg_smatch
         self.percentage_valid_amrs = percentage_valid_amrs
@@ -68,6 +70,7 @@ def log_results_per_epoch(logger, epoch_no, result: ArcsTrainerResultPerEpoch):
     logger.info("Epoch " + str(epoch_no))
     logger.info("Loss " + str(result.avg_loss))
     logger.info("Training accuracy " + str(result.avg_train_accuracy))
+    logger.info("Test Loss " + str(result.avg_test_loss))
     logger.info("Test accuracy " + str(result.avg_test_accuracy))
     logger.info("Avg smatch " + str(result.avg_smatch) + '\n')
 
@@ -213,20 +216,52 @@ def calculate_smatch(predicted_amr_str: str, gold_amr_str):
 def log_test_entry_data(logger, test_entry: ArcsTrainingEntry,
                         entry_accuracy: float,
                         smatch_f_score: float,
+                        loss: float,
                         predicted_parents: List[int],
                         predicted_amr_str: str):
     logger.info('Entry accuracy: ' + str(entry_accuracy))
     logger.info('Smatch: ' + str(smatch_f_score))
+    logger.info('Loss: ' + str(loss))
     logger.info('Predicted parents: ' + str(predicted_parents))
     logger.info('Predicted amr:\n' + predicted_amr_str)
     logger.info(test_entry.logging_info)
 
 
-def plot_train_test_acc_loss(filename: str, plotting_data):
+def plot_losses(filename: str, plotting_data):
     """
     Plot on the x axis the epoch number
     Plot on the y axis:
         the loss
+        the test loss
+    Takes as input plotting_data, a dictionary of the form epoch_no: ArcsTrainerResultPerEpoch
+    """
+
+    x = []
+    losses = []
+    test_losses = []
+    for epoch_no, plot_data_entry in plotting_data.items():
+        x.append(epoch_no)
+        plot_data_entry: ArcsTrainerResultPerEpoch
+        losses.append(plot_data_entry.avg_loss)
+        test_losses.append(plot_data_entry.avg_test_loss)
+
+    fig, ax = plt.subplots()
+    ax.plot(x, losses)
+    ax.plot(x, test_losses)
+
+    ax.legend(['train_loss', 'test_loss'], loc='upper right')
+
+    ax.set(xlabel='epoch',
+           title='Losses')
+
+    fig.savefig(filename)
+    plt.show()
+
+
+def plot_acc_and_smatch(filename: str, plotting_data):
+    """
+    Plot on the x axis the epoch number
+    Plot on the y axis:
         the train accuracy
         the test accuracy
         the smatch (test)
@@ -235,7 +270,6 @@ def plot_train_test_acc_loss(filename: str, plotting_data):
     """
 
     x = []
-    losses = []
     train_accuracies = []
     test_accuracies = []
     test_smatches = []
@@ -243,23 +277,21 @@ def plot_train_test_acc_loss(filename: str, plotting_data):
     for epoch_no, plot_data_entry in plotting_data.items():
         x.append(epoch_no)
         plot_data_entry: ArcsTrainerResultPerEpoch
-        losses.append(plot_data_entry.avg_loss)
         train_accuracies.append(plot_data_entry.avg_train_accuracy)
         test_accuracies.append(plot_data_entry.avg_test_accuracy)
         test_smatches.append(plot_data_entry.avg_smatch)
         test_perc_valid_amr.append(plot_data_entry.percentage_valid_amrs)
 
     fig, ax = plt.subplots()
-    ax.plot(x, losses)
     ax.plot(x, train_accuracies)
     ax.plot(x, test_accuracies)
     ax.plot(x, test_smatches)
     ax.plot(x, test_perc_valid_amr)
 
-    ax.legend(['loss', 'train_acc', 'test_acc', 'test_smatch', 'valid_amrs'], loc='upper right')
+    ax.legend(['train_acc', 'test_acc', 'test_smatch', 'valid_amrs'], loc='upper right')
 
     ax.set(xlabel='epoch',
-           title='Loss and accuracies')
+           title='Accuracies and smatch')
 
     fig.savefig(filename)
     plt.show()
