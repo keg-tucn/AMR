@@ -44,12 +44,14 @@ if __name__ == "__main__":
     hyperparams = ArcsTrainerHyperparameters(no_epochs=2,
                                              mlp_dropout=0.5,
                                              unaligned_tolerance=0,
-                                             compare_gold=1,
                                              max_sen_len=300,
                                              max_parents_vectors=6,
                                              reentrancy_threshold=0.8,
                                              use_preprocessing=True,
                                              trainable_embeddings_size=128,
                                              glove_embeddings_size=100,
-                                             use_fasttext=False)
+                                             use_fasttext=False,
+                                             lstm_out_dim=50,
+                                             mlp_dim=32,
+                                             no_lstm_layers=1)
     run_experiment(relation_dict, hyperparams)

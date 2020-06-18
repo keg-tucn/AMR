@@ -22,10 +22,6 @@ from trainers.arcs.head_selection.head_selection_on_ordered_concepts.training_ar
 
 CONCEPT_TAG_EMBEDDING_SIZE = 0
 CONCEPT_LEMMA_EMBEDDING_SIZE = 0
-LSTM_OUT_DIM = 50
-BILSTM_OUT_DIM = 2 * LSTM_OUT_DIM
-LSTM_NO_LAYERS = 1
-MLP_CONCEPT_INTERNAL_DIM = 32
 FASTTEXT_DIM = 300
 
 
@@ -60,13 +56,18 @@ class ArcsDynetGraph:
         fasttext_dim = FASTTEXT_DIM if hyperparams.use_fasttext else 0
         lstm_in_dim = hyperparams.glove_embeddings_size + fasttext_dim + hyperparams.trainable_embeddings_size + \
                       + CONCEPT_TAG_EMBEDDING_SIZE + CONCEPT_LEMMA_EMBEDDING_SIZE
-        self.fwdRNN = dy.LSTMBuilder(LSTM_NO_LAYERS, lstm_in_dim, LSTM_OUT_DIM, self.model)
-        self.bwdRNN = dy.LSTMBuilder(LSTM_NO_LAYERS, lstm_in_dim, LSTM_OUT_DIM, self.model)
+        self.fwdRNN = dy.LSTMBuilder(hyperparams.no_lstm_layers,
+                                     lstm_in_dim, hyperparams.lstm_out_dim,
+                                     self.model)
+        self.bwdRNN = dy.LSTMBuilder(hyperparams.no_lstm_layers,
+                                     lstm_in_dim, hyperparams.lstm_out_dim,
+                                     self.model)
 
         # mlp
-        self.pU = self.model.add_parameters((MLP_CONCEPT_INTERNAL_DIM, BILSTM_OUT_DIM))
-        self.pW = self.model.add_parameters((MLP_CONCEPT_INTERNAL_DIM, BILSTM_OUT_DIM))
-        self.pV = self.model.add_parameters((1, MLP_CONCEPT_INTERNAL_DIM))
+        bilstm_out_dim = 2 * hyperparams.lstm_out_dim
+        self.pU = self.model.add_parameters((hyperparams.mlp_dim, bilstm_out_dim))
+        self.pW = self.model.add_parameters((hyperparams.mlp_dim, bilstm_out_dim))
+        self.pV = self.model.add_parameters((1, hyperparams.mlp_dim))
 
         # trainer
         self.trainer = dy.SimpleSGDTrainer(self.model)

@@ -15,20 +15,20 @@ from trainers.arcs.head_selection.relations_dictionary_extractor import get_rela
 class ArcsTrainerHyperparameters:
     def __init__(self, no_epochs, mlp_dropout,
                  unaligned_tolerance,
-                 compare_gold,
                  max_sen_len,
                  max_parents_vectors,
                  reentrancy_threshold,
                  use_preprocessing: bool,
                  trainable_embeddings_size: int,
                  glove_embeddings_size: int,
-                 use_fasttext: bool):
+                 use_fasttext: bool,
+                 lstm_out_dim: int,
+                 mlp_dim: int,
+                 no_lstm_layers: int):
         self.no_epochs = no_epochs
         self.mlp_dropout = mlp_dropout
         # how many concepts with no alignment we allow in the ordered concepts (percentage: 0-none,1-all)
         self.unaligned_tolerance = unaligned_tolerance
-        # if I should compare with the gold amr or the amr generated from the parent vector
-        self.compare_gold = compare_gold
         self.max_sen_len = max_sen_len
         self.max_parents_vectors = max_parents_vectors
         self.reentrancy_threshold = reentrancy_threshold
@@ -36,19 +36,23 @@ class ArcsTrainerHyperparameters:
         self.trainable_embeddings_size = trainable_embeddings_size
         self.glove_embeddings_size = glove_embeddings_size
         self.use_fasttext = use_fasttext
+        self.lstm_out_dim = lstm_out_dim
+        self.mlp_dim = mlp_dim
+        self.no_lstm_layers = no_lstm_layers
 
     def __str__(self):
         return 'ep_' + str(self.no_epochs) + \
                '_mdrop_' + str(self.mlp_dropout) + \
                '_unaltol_' + str(self.unaligned_tolerance) + \
-               '_cg_' + str(self.compare_gold) + \
                '_sl_' + str(self.max_sen_len) + \
                '_pv_' + str(self.max_parents_vectors) + \
                '_th_' + str(self.reentrancy_threshold) + \
                '_prep_' + str(self.use_preprocessing) + \
                '_tEmb_' + str(self.trainable_embeddings_size) + \
                '_gEmb_' + str(self.glove_embeddings_size) + \
-               '_fEmb_' + str(self.use_fasttext)
+               '_fEmb_' + str(self.use_fasttext) + \
+               '_dims_' + str(self.lstm_out_dim) + '-'+str(self.mlp_dim) + \
+               '_l_' + str(self.no_lstm_layers)
 
 
 class ArcsTrainerResultPerEpoch:
