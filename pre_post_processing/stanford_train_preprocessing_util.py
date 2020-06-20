@@ -94,6 +94,7 @@ def get_person_or_organization_tokens(amr: AMR, sentence_tokens: List[str], node
 
 def modify_node_to_tokens_alignment(amr: AMR, alignment_mapping: Dict[int, int]):
     node_to_tokens_copy = deepcopy(amr.node_to_tokens)
+    # print(str(amr))
     for key, node_tokens_list in node_to_tokens_copy.items():
         amr.node_to_tokens[key] = []
         for node_token in node_tokens_list:
