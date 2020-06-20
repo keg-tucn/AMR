@@ -4,7 +4,7 @@ from data_extraction import input_file_parser
 from models.amr_data import CustomizedAMR
 from models.amr_graph import AMR
 from models.concept import IdentifiedConcepts, Concept
-from pre_post_processing.standford_pre_post_processing import train_pre_processing
+from pre_post_processing.standford_pre_post_processing import train_pre_processing, inference_preprocessing
 
 
 class ConceptsTrainingEntry:
@@ -22,7 +22,22 @@ class ConceptsTrainingEntry:
 
 def generate_dataset_entry(amr_id: str, amr_str: str, sentence: str):
     amr = AMR.parse_string(amr_str)
-    amr, new_sentence, metadata = train_pre_processing(amr, sentence)
+    # Paul's quickfix
+    sentence = sentence.replace("/", " / ")
+    sentence = sentence.replace("?", " ?")
+    sentence = sentence.replace("\ ", " \ ")
+    # if hyperparams.train_flag
+    if "@" not in sentence and "*" not in sentence and "[" not in sentence and ".org" not in sentence and \
+            ".." not in sentence and "$$$" not in sentence and "p.s" not in sentence and "'," not in sentence and \
+            "WW3" not in sentence and "won't" not in sentence and "http" not in sentence and "…" not in sentence and \
+            "--" not in sentence and "\" -" not in sentence and ".”" not in sentence and ".G" not in sentence and \
+            "=" not in sentence and ".M" not in sentence and ".T" not in sentence and ".S" not in sentence and "080104" not in sentence:
+        amr, new_sentence, metadata = train_pre_processing(amr, sentence)
+    else:
+        # DON'T FORGET TO USE THIS AT TEST TIME !!!
+        # if not hyperparams.train_flag
+        # new_sentence, metadata = inference_preprocessing(sentence)
+        new_sentence = sentence
     identified_concepts = IdentifiedConcepts()
     identified_concepts.create_from_amr(amr_id, amr)
     if identified_concepts.ordered_concepts is None:
@@ -37,7 +52,7 @@ def generate_dataset_entry(amr_id: str, amr_str: str, sentence: str):
 
 
 # TODO: cache them to a file (to not always generate them)
-def generate_concepts_training_data_per_file(file_path, max_sentence_len=50):
+def generate_concepts_training_data_per_file(file_path, max_sentence_len=1000):
     sentence_amr_triples = input_file_parser.extract_data_records(file_path)
     entries: List[ConceptsTrainingEntry] = []
 
@@ -56,13 +71,13 @@ def generate_concepts_training_data_per_file(file_path, max_sentence_len=50):
     return entries, nb_entries_not_processed
 
 
-def generate_concepts_training_data(file_paths: List[str], max_sentence_len=50):
+def generate_concepts_training_data(file_paths: List[str], max_sentence_len=1000):
     all_entries = []
 
     nb_all_entries_not_processed = 0
-    # for file_path in file_paths:
-    for i in range (1):
-        entries, nb_entries_not_processed = generate_concepts_training_data_per_file(file_paths[i], max_sentence_len)
+    for file_path in file_paths:
+    # for i in range (1):
+        entries, nb_entries_not_processed = generate_concepts_training_data_per_file(file_path, max_sentence_len)
         all_entries = all_entries + entries
         nb_all_entries_not_processed += nb_entries_not_processed
 

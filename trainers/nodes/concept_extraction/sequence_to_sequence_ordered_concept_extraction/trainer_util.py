@@ -20,7 +20,8 @@ class ConceptsTrainerHyperparameters:
                  use_preprocessing,
                  use_verb_nonverb_classification,
                  max_sentence_length,
-                 nb_epochs):
+                 nb_epochs,
+                 train_flag):
         self.encoder_nb_layers = encoder_nb_layers
         self.decoder_nb_layers = decoder_nb_layers
         self.verb_nonverb_classifier_nb_layers = verb_nonverb_classifier_nb_layers
@@ -38,13 +39,28 @@ class ConceptsTrainerHyperparameters:
         self.use_verb_nonverb_classification = use_verb_nonverb_classification
         self.max_sentence_length = max_sentence_length
         self.nb_epochs = nb_epochs
+        self.train_flag = train_flag
 
 
 def is_verb(concept):
     splitted_concept = concept.split('-')
     if splitted_concept[len(splitted_concept) - 1].isdigit():
-        return True
-    return False
+        return 1
+    return 0
+
+
+def generate_verbs_nonverbs(concepts):
+    verbs = []
+    nonverbs = []
+
+    for concept in concepts:
+        splitted_concept = concept.split('-')
+        if splitted_concept[len(splitted_concept) - 1].isdigit():
+            verbs.append(concept)
+        else:
+            nonverbs.append(concept)
+
+    return verbs, nonverbs
 
 
 def get_golden_concept_indexes(concepts_dynet_graph, golden_concepts, hyperparams):
@@ -53,18 +69,18 @@ def get_golden_concept_indexes(concepts_dynet_graph, golden_concepts, hyperparam
     if hyperparams.use_verb_nonverb_classification:
         for concept in golden_concepts:
             if concept in concepts_dynet_graph.concepts_vocab.w2i:
-                if is_verb(concept):
+                if is_verb(concept) == 1:
                     golden_concept_indexes.append(concepts_dynet_graph.concepts_verbs_vocab.w2i[concept])
                 else:
                     golden_concept_indexes.append(concepts_dynet_graph.concepts_nonverbs_vocab.w2i[concept])
-            # Temporary, just until loss is computed on dev too
+            # REMOVE WHEN LOSS NOT COMPUTED FOR DEV
             else:
                 golden_concept_indexes.append(concepts_dynet_graph.test_concepts_vocab.w2i[concept])
     else:
         for concept in golden_concepts:
             if concept in concepts_dynet_graph.concepts_vocab.w2i:
                 golden_concept_indexes.append(concepts_dynet_graph.concepts_vocab.w2i[concept])
-            # Temporary, just until loss is computed on dev too
+            # REMOVE WHEN LOSS NOT COMPUTED FOR DEV
             else:
                 golden_concept_indexes.append(concepts_dynet_graph.test_concepts_vocab.w2i[concept])
         # embedded_golden_concepts = [concepts_dynet_graph.concepts_vocab.w2i[concept] for concept in golden_concepts]
@@ -88,24 +104,24 @@ def initialize_decoders(concepts_dynet_graph, last_concept_embedding, hyperparam
     return decoder_state, verb_decoder_state, nonverb_decoder_state
 
 
-def get_decoder_input(concepts_dynet_graph, input_matrix, w1_input, previous_concept, last_concept_embedding, i, decoder_state, verb_decoder_state, nonverb_decoder_state, hyperparams):
-    if hyperparams.use_attention:
-        if hyperparams.use_verb_nonverb_classification:
-            ####### THIS FEELS WEIRD! ATTENTION GETS DIFFERENT STATES EACH TIME? ----- NOTE TO SELF, WHEN THIS WAS WITHOUT -1, THE CLASSIFIER LOSSES WERE 0.5 and 0.6 instead of 5 or 6
-            if i == 0:
-                context_vector = attend(concepts_dynet_graph, input_matrix, nonverb_decoder_state, w1_input)
-            else:
-                if is_verb(previous_concept):
-                    context_vector = attend(concepts_dynet_graph, input_matrix, verb_decoder_state, w1_input)
-                else:
-                    context_vector = attend(concepts_dynet_graph, input_matrix, nonverb_decoder_state, w1_input)
+def get_last_concept_embedding(concepts_dynet_graph, concept, is_concept_verb, hyperparams):
+    if hyperparams.use_verb_nonverb_classification:
+        if is_concept_verb == 1:
+            return concepts_dynet_graph.concept_verb_embeddings[concept]
         else:
-            context_vector = attend(concepts_dynet_graph, input_matrix, decoder_state, w1_input)
-        vector = dy.concatenate([context_vector, last_concept_embedding])
+            return concepts_dynet_graph.concept_nonverb_embeddings[concept]
     else:
-        vector = dy.concatenate([input_matrix[i], last_concept_embedding])
+        return concepts_dynet_graph.concept_embeddings[concept]
 
-    return vector
+
+def get_next_concept(concepts_dynet_graph, is_concept_verb, next_concept, hyperparams):
+    if hyperparams.use_verb_nonverb_classification:
+        if is_concept_verb:
+            return concepts_dynet_graph.concepts_verbs_vocab.i2w[next_concept]
+        else:
+            return concepts_dynet_graph.concepts_nonverbs_vocab.i2w[next_concept]
+    else:
+        return concepts_dynet_graph.concepts_vocab.i2w[next_concept]
 
 
 # F-score
