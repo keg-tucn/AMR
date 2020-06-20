@@ -15,47 +15,56 @@ from trainers.arcs.head_selection.relations_dictionary_extractor import get_rela
 class ArcsTrainerHyperparameters:
     def __init__(self, no_epochs, mlp_dropout,
                  unaligned_tolerance,
-                 compare_gold,
                  max_sen_len,
                  max_parents_vectors,
                  reentrancy_threshold,
                  use_preprocessing: bool,
                  trainable_embeddings_size: int,
-                 glove_embeddings_size: int):
+                 glove_embeddings_size: int,
+                 use_fasttext: bool,
+                 lstm_out_dim: int,
+                 mlp_dim: int,
+                 no_lstm_layers: int):
         self.no_epochs = no_epochs
         self.mlp_dropout = mlp_dropout
         # how many concepts with no alignment we allow in the ordered concepts (percentage: 0-none,1-all)
         self.unaligned_tolerance = unaligned_tolerance
-        # if I should compare with the gold amr or the amr generated from the parent vector
-        self.compare_gold = compare_gold
         self.max_sen_len = max_sen_len
         self.max_parents_vectors = max_parents_vectors
         self.reentrancy_threshold = reentrancy_threshold
         self.use_preprocessing = use_preprocessing
         self.trainable_embeddings_size = trainable_embeddings_size
         self.glove_embeddings_size = glove_embeddings_size
+        self.use_fasttext = use_fasttext
+        self.lstm_out_dim = lstm_out_dim
+        self.mlp_dim = mlp_dim
+        self.no_lstm_layers = no_lstm_layers
 
     def __str__(self):
         return 'ep_' + str(self.no_epochs) + \
                '_mdrop_' + str(self.mlp_dropout) + \
                '_unaltol_' + str(self.unaligned_tolerance) + \
-               '_cg_' + str(self.compare_gold) + \
                '_sl_' + str(self.max_sen_len) + \
                '_pv_' + str(self.max_parents_vectors) + \
                '_th_' + str(self.reentrancy_threshold) + \
                '_prep_' + str(self.use_preprocessing) + \
                '_tEmb_' + str(self.trainable_embeddings_size) + \
-               '_gEmb_' + str(self.glove_embeddings_size)
+               '_gEmb_' + str(self.glove_embeddings_size) + \
+               '_fEmb_' + str(self.use_fasttext) + \
+               '_dims_' + str(self.lstm_out_dim) + '-'+str(self.mlp_dim) + \
+               '_l_' + str(self.no_lstm_layers)
 
 
 class ArcsTrainerResultPerEpoch:
     def __init__(self, avg_loss,
                  avg_train_accuracy,
+                 avg_test_loss,
                  avg_test_accuracy,
                  avg_smatch,
                  percentage_valid_amrs):
         self.avg_loss = avg_loss
         self.avg_train_accuracy = avg_train_accuracy
+        self.avg_test_loss = avg_test_loss
         self.avg_test_accuracy = avg_test_accuracy
         self.avg_smatch = avg_smatch
         self.percentage_valid_amrs = percentage_valid_amrs
@@ -65,6 +74,7 @@ def log_results_per_epoch(logger, epoch_no, result: ArcsTrainerResultPerEpoch):
     logger.info("Epoch " + str(epoch_no))
     logger.info("Loss " + str(result.avg_loss))
     logger.info("Training accuracy " + str(result.avg_train_accuracy))
+    logger.info("Test Loss " + str(result.avg_test_loss))
     logger.info("Test accuracy " + str(result.avg_test_accuracy))
     logger.info("Avg smatch " + str(result.avg_smatch) + '\n')
 
@@ -210,20 +220,52 @@ def calculate_smatch(predicted_amr_str: str, gold_amr_str):
 def log_test_entry_data(logger, test_entry: ArcsTrainingEntry,
                         entry_accuracy: float,
                         smatch_f_score: float,
+                        loss: float,
                         predicted_parents: List[int],
                         predicted_amr_str: str):
     logger.info('Entry accuracy: ' + str(entry_accuracy))
     logger.info('Smatch: ' + str(smatch_f_score))
+    logger.info('Loss: ' + str(loss))
     logger.info('Predicted parents: ' + str(predicted_parents))
     logger.info('Predicted amr:\n' + predicted_amr_str)
     logger.info(test_entry.logging_info)
 
 
-def plot_train_test_acc_loss(filename: str, plotting_data):
+def plot_losses(filename: str, plotting_data):
     """
     Plot on the x axis the epoch number
     Plot on the y axis:
         the loss
+        the test loss
+    Takes as input plotting_data, a dictionary of the form epoch_no: ArcsTrainerResultPerEpoch
+    """
+
+    x = []
+    losses = []
+    test_losses = []
+    for epoch_no, plot_data_entry in plotting_data.items():
+        x.append(epoch_no)
+        plot_data_entry: ArcsTrainerResultPerEpoch
+        losses.append(plot_data_entry.avg_loss)
+        test_losses.append(plot_data_entry.avg_test_loss)
+
+    fig, ax = plt.subplots()
+    ax.plot(x, losses)
+    ax.plot(x, test_losses)
+
+    ax.legend(['train_loss', 'test_loss'], loc='upper right')
+
+    ax.set(xlabel='epoch',
+           title='Losses')
+
+    fig.savefig(filename)
+    plt.show()
+
+
+def plot_acc_and_smatch(filename: str, plotting_data):
+    """
+    Plot on the x axis the epoch number
+    Plot on the y axis:
         the train accuracy
         the test accuracy
         the smatch (test)
@@ -232,7 +274,6 @@ def plot_train_test_acc_loss(filename: str, plotting_data):
     """
 
     x = []
-    losses = []
     train_accuracies = []
     test_accuracies = []
     test_smatches = []
@@ -240,26 +281,45 @@ def plot_train_test_acc_loss(filename: str, plotting_data):
     for epoch_no, plot_data_entry in plotting_data.items():
         x.append(epoch_no)
         plot_data_entry: ArcsTrainerResultPerEpoch
-        losses.append(plot_data_entry.avg_loss)
         train_accuracies.append(plot_data_entry.avg_train_accuracy)
         test_accuracies.append(plot_data_entry.avg_test_accuracy)
         test_smatches.append(plot_data_entry.avg_smatch)
         test_perc_valid_amr.append(plot_data_entry.percentage_valid_amrs)
 
     fig, ax = plt.subplots()
-    ax.plot(x, losses)
     ax.plot(x, train_accuracies)
     ax.plot(x, test_accuracies)
     ax.plot(x, test_smatches)
     ax.plot(x, test_perc_valid_amr)
 
-    ax.legend(['loss', 'train_acc', 'test_acc', 'test_smatch', 'valid_amrs'], loc='upper right')
+    ax.legend(['train_acc', 'test_acc', 'test_smatch', 'valid_amrs'], loc='upper right')
 
     ax.set(xlabel='epoch',
-           title='Loss and accuracies')
+           title='Accuracies and smatch')
 
     fig.savefig(filename)
     plt.show()
+
+
+def construct_ordered_concepts_embeddings_list(magnitude_embeddings, concept_vocab: Vocab):
+    """
+    Create a list of embeddings for the concepts in the input concept vocab
+    The list will be ordered in the order of the concept indexes in the vocab
+    Uses magnitude embeddings (should treat oov)
+    Input:
+        magnitude_embeddings: embeddings vector
+        embedding_dim: embedding dimension
+        concept_vocab: vocab of concepts (concepts associated with indexes)
+    Output:
+        list of glove embeddings in the order of concepts from concept_vocab
+    """
+    embeddings_list = []
+    for concept_idx in sorted(concept_vocab.i2w.keys()):
+        concept_name = concept_vocab.i2w[concept_idx]
+        concept_stripped = Concept.strip_concept_sense(concept_name)
+        concept_embedding = magnitude_embeddings.query(concept_stripped)
+        embeddings_list.append(concept_embedding)
+    return embeddings_list
 
 
 def construct_concept_glove_embeddings_list(glove_embeddings, embedding_dim, concept_vocab: Vocab):
@@ -270,6 +330,8 @@ def construct_concept_glove_embeddings_list(glove_embeddings, embedding_dim, con
         glove_embeddings: dictionary of word -> glove_embedding
         embedding_dim: embedding dimension
         concept_vocab: vocab of concepts (concepts associated with indexes)
+    Output:
+        list of glove embeddings in the order of concepts from concept_vocab
     """
     concept_glove_embeddings_list = []
     null_embedding = np.zeros(embedding_dim)
@@ -281,3 +343,5 @@ def construct_concept_glove_embeddings_list(glove_embeddings, embedding_dim, con
             concept_glove_embedding = null_embedding
         concept_glove_embeddings_list.append(concept_glove_embedding)
     return concept_glove_embeddings_list
+
+

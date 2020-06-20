@@ -162,7 +162,7 @@ def modify_sentence_and_alignment_for_person_or_organization(amr: AMR, sentence:
     if node_var not in amr.node_to_tokens.keys():
         amr.node_to_tokens[node_var] = []
         for removal_index in removal_indexes:
-            amr.node_to_tokens[node_var].append(str(removal_indexes[0]))
+            amr.node_to_tokens[node_var].append(str(removal_index))
     # relation_to_tokens
     modify_relation_to_tokens_alignment(amr, alignment_mapping)
     # modify sentence
