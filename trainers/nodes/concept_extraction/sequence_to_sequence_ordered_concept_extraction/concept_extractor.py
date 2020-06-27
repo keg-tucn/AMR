@@ -17,9 +17,10 @@ from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extr
 from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extraction.training_concepts_data_extractor import \
     generate_concepts_training_data, ConceptsTrainingEntry
 
-from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
+from bleu import list_bleu
 
 # TODO:
+# - HYPERPARAM SENTENCE LENGTH AND USE PREPROCESSING IN DATA_EXTRACTOR
 # - MOVE LOGS AND VOCAB CREATIONS FROM MAIN INTO FUNCTIONS
 # - USE ROUGE SCORE
 # - Save trained model parameters to files
@@ -50,8 +51,6 @@ USE_VERB_NONVERB_CLASSIFICATION = True
 
 MAX_SENTENCE_LENGTH = 50
 NB_EPOCHS = 40
-
-bleu_smoothing = SmoothingFunction()
 
 
 class ConceptsDynetGraph:
@@ -318,7 +317,7 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, hyperparams)
     # remove sequence markers from predicted sequence
     if predicted_concepts[0] == START_OF_SEQUENCE:
         del predicted_concepts[0]
-    if predicted_concepts[len(predicted_concepts) - 1] == END_OF_SEQUENCE:
+    if len(predicted_concepts) != 0 and predicted_concepts[len(predicted_concepts) - 1] == END_OF_SEQUENCE:
         del predicted_concepts[-1]
 
     # SEE LOSS WITH AVERAGE?
@@ -416,7 +415,7 @@ def predict_concepts(concepts_dynet_graph, encoded_sequence, hyperparams):
     # Remove sequence markers from predicted sequence
     if predicted_concepts[0] == START_OF_SEQUENCE:
         del predicted_concepts[0]
-    if predicted_concepts[len(predicted_concepts) - 1] == END_OF_SEQUENCE:
+    if len(predicted_concepts) != 0 and predicted_concepts[len(predicted_concepts) - 1] == END_OF_SEQUENCE:
         del predicted_concepts[-1]
 
     return predicted_concepts
@@ -454,12 +453,9 @@ def train_sentence(concepts_dynet_graph, sentence, identified_concepts, hyperpar
         concepts_dynet_graph.trainer.update()
 
     # BLEU score
-    ''' 
-    What should be the weights for the n-grams?
-    See which smoothing method fits best
-    '''
-    bleu_score = sentence_bleu([golden_concepts], predicted_concepts,
-                               weights=(0.25, 0.25, 0.25, 0.25), smoothing_function=bleu_smoothing.method3)
+    refference = [' '.join(golden_concepts)]
+    hypothesis = [' '.join(predicted_concepts)]
+    bleu_score = list_bleu([refference], hypothesis)
 
     nb_correctly_predicted_concepts, precision, recall, f_score = compute_f_score(golden_concepts, predicted_concepts)
 
@@ -477,12 +473,9 @@ def test_sentence(concepts_dynet_graph, sentence, identified_concepts, hyperpara
     predicted_concepts = test(concepts_dynet_graph, input_sequence, hyperparams)
 
     # BLEU score
-    ''' 
-    What should be the weights for the n-grams?
-    See which smoothing method fits best
-    '''
-    bleu_score = sentence_bleu([golden_concepts], predicted_concepts,
-                               weights=(0.25, 0.25, 0.25, 0.25), smoothing_function=bleu_smoothing.method3)
+    refference = [' '.join(golden_concepts)]
+    hypothesis = [' '.join(predicted_concepts)]
+    bleu_score = list_bleu([refference], hypothesis)
 
     nb_correctly_predicted_concepts, precision, recall, f_score = compute_f_score(golden_concepts, predicted_concepts)
 
@@ -625,7 +618,7 @@ if __name__ == "__main__":
         avg_train_classifier_loss = sum_train_classifier_loss / nb_train_entries
 
         print("LOSS: " + str(avg_train_loss))
-        # print("Train BLEU: " + str(avg_train_bleu))
+        print("Train BLEU: " + str(avg_train_bleu))
         print("Average number of correctly predicted concepts per sentence: " +
               str(avg_train_nb_correctly_predicted_concepts))
         # print("Train PRECISION: " + str(avg_train_precision))
@@ -757,7 +750,7 @@ if __name__ == "__main__":
         avg_classifier_loss = sum_classifier_loss / nb_test_entries
 
         print("Golden test LOSS: " + str(avg_loss))
-        # print("Golden test BLEU: " + str(avg_bleu))
+        print("Golden test BLEU: " + str(avg_bleu))
         print("Average number of correctly predicted concepts per sentence: " +
               str(avg_nb_correctly_predicted_concepts))
         # print("Golden test PRECISION: " + str(avg_precision))
@@ -798,7 +791,7 @@ if __name__ == "__main__":
         avg_test_correct_order_percentage = sum_test_correct_order_percentage / nb_test_entries
         avg_test_correct_distances_percentage = sum_test_correct_distances_percentage / nb_test_entries
 
-        # print("Test BLEU: " + str(avg_test_bleu))
+        print("Test BLEU: " + str(avg_test_bleu))
         print("Average number of correctly predicted concepts per sentence: " +
               str(avg_test_nb_correctly_predicted_concepts))
         # print("Test PRECISION: " + str(avg_test_precision))
