@@ -1,6 +1,7 @@
 from typing import List
 
 from data_extraction import input_file_parser
+from data_extraction.dataset_reading_util import get_all_paths
 from models.amr_data import CustomizedAMR
 from models.amr_graph import AMR
 from models.concept import IdentifiedConcepts, Concept
@@ -45,7 +46,7 @@ def generate_dataset_entry(amr_id: str, amr_str: str, sentence: str):
 
 
 # TODO: cache them to a file (to not always generate them)
-def generate_concepts_training_data_per_file(file_path, max_sentence_len=1000):
+def generate_concepts_training_data_per_file(file_path, max_sentence_len=20):
     sentence_amr_triples = input_file_parser.extract_data_records(file_path)
     entries: List[ConceptsTrainingEntry] = []
 
@@ -64,14 +65,24 @@ def generate_concepts_training_data_per_file(file_path, max_sentence_len=1000):
     return entries, nb_entries_not_processed
 
 
-def generate_concepts_training_data(file_paths: List[str], max_sentence_len=1000):
+def generate_concepts_training_data(file_paths: List[str], max_sentence_len=20):
     all_entries = []
 
     nb_all_entries_not_processed = 0
-    for file_path in file_paths:
-    # for i in range(1):
-        entries, nb_entries_not_processed = generate_concepts_training_data_per_file(file_path, max_sentence_len)
+    # for file_path in file_paths:
+    for i in range(1):
+        entries, nb_entries_not_processed = generate_concepts_training_data_per_file(file_paths[i], max_sentence_len)
         all_entries = all_entries + entries
         nb_all_entries_not_processed += nb_entries_not_processed
 
     return all_entries, nb_all_entries_not_processed
+
+
+def read_train_test_data():
+    train_entries, nb_train_failed = generate_concepts_training_data(get_all_paths('training'))
+    nb_train_entries = len(train_entries)
+    print(str(nb_train_entries) + ' train entries processed ' + str(nb_train_failed) + ' train entries failed')
+    test_entries, nb_test_failed = generate_concepts_training_data(get_all_paths('dev'))
+    nb_test_entries = len(test_entries)
+    print(str(nb_test_entries) + ' test entries processed ' + str(nb_test_failed) + ' test entries failed')
+    return train_entries, nb_train_entries, test_entries, nb_test_entries

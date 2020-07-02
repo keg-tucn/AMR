@@ -1,6 +1,11 @@
 import dynet as dy
+import nltk
 
-# from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extraction.concept_extractor import attend
+from deep_dynet import support as ds
+from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer import get_all_concepts
+
+START_OF_SEQUENCE = "<SOS>"
+END_OF_SEQUENCE = "<EOS>"
 
 
 class ConceptsTrainerHyperparameters:
@@ -91,11 +96,11 @@ def get_golden_concept_indexes(concepts_dynet_graph, golden_concepts, hyperparam
 def initialize_decoders(concepts_dynet_graph, last_concept_embedding, hyperparams):
     if hyperparams.use_attention:
         decoder_state = concepts_dynet_graph.decoder.initial_state().add_input(
-                        dy.concatenate([dy.vecInput(hyperparams.encoder_state_size * 2), last_concept_embedding]))
+            dy.concatenate([dy.vecInput(hyperparams.encoder_state_size * 2), last_concept_embedding]))
         verb_decoder_state = concepts_dynet_graph.verb_decoder.initial_state().add_input(
-                             dy.concatenate([dy.vecInput(hyperparams.encoder_state_size * 2), last_concept_embedding]))
+            dy.concatenate([dy.vecInput(hyperparams.encoder_state_size * 2), last_concept_embedding]))
         nonverb_decoder_state = concepts_dynet_graph.nonverb_decoder.initial_state().add_input(
-                                dy.concatenate([dy.vecInput(hyperparams.encoder_state_size * 2), last_concept_embedding]))
+            dy.concatenate([dy.vecInput(hyperparams.encoder_state_size * 2), last_concept_embedding]))
     else:
         decoder_state = concepts_dynet_graph.decoder.initial_state()
         verb_decoder_state = concepts_dynet_graph.verb_decoder.initial_state()
@@ -144,6 +149,28 @@ def compute_f_score(golden_concepts, predicted_concepts):
         f_score = 2 * (precision * recall) / (precision + recall)
 
     return true_positive, precision, recall, f_score
+
+
+# BLEU-SCORE
+
+
+def construct_bleu_weights(predicted_sequence_length, golden_sequence_length):
+    min_len = min(predicted_sequence_length, golden_sequence_length)
+    if min_len >= 4:
+        return (0.25, 0.25, 0.25, 0.25)
+
+    weight_value = 1.0 / min_len
+    weight_list = [weight_value for i in range(0, min_len)]
+    return tuple(weight_list)
+
+
+def compute_bleu_score(golden_concepts, predicted_concepts):
+    bleu_score = 0
+    if len(predicted_concepts) != 0:
+        bleu_score = nltk.translate.bleu_score.sentence_bleu([golden_concepts], predicted_concepts,
+                                                             weights=construct_bleu_weights(len(predicted_concepts),
+                                                                                            len(golden_concepts)))
+    return bleu_score
 
 
 # METRICS
@@ -211,3 +238,36 @@ def compute_metrics(golden_concepts, predicted_concepts):
         correct_distances_percentage = 1
 
     return accuracy, correct_order_percentage, correct_distances_percentage
+
+
+def create_vocabs(train_entries, test_entries):
+    train_concepts = [train_entry.identified_concepts for train_entry in train_entries]
+    all_concepts = get_all_concepts(train_concepts)
+    all_concepts.append(START_OF_SEQUENCE)
+    all_concepts.append(END_OF_SEQUENCE)
+    all_verbs, all_nonverbs = generate_verbs_nonverbs(all_concepts)
+    all_concepts_vocab = ds.Vocab.from_list(all_concepts)
+    all_verbs_vocab = ds.Vocab.from_list(all_verbs)
+    all_nonverbs_vocab = ds.Vocab.from_list(all_nonverbs)
+
+    # REMOVE WHEN LOSS NOT COMPUTED FOR DEV
+    test_concepts = [test_entry.identified_concepts for test_entry in test_entries]
+    all_test_concepts = get_all_concepts(test_concepts)
+    all_test_concepts.append(START_OF_SEQUENCE)
+    all_test_concepts.append(END_OF_SEQUENCE)
+    all_test_concepts_vocab = ds.Vocab.from_list(all_test_concepts)
+
+    train_words = []
+    for train_entry in train_entries:
+        for word in train_entry.sentence.split():
+            train_words.append(word)
+    dev_words = []
+    for test_entry in test_entries:
+        for word in test_entry.sentence.split():
+            dev_words.append(word)
+    all_words = list(set(train_words + dev_words))
+    all_words.append(START_OF_SEQUENCE)
+    all_words.append(END_OF_SEQUENCE)
+    all_words_vocab = ds.Vocab.from_list(all_words)
+
+    return all_concepts_vocab, all_verbs_vocab, all_nonverbs_vocab, all_test_concepts_vocab, all_words_vocab
