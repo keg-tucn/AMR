@@ -21,17 +21,16 @@ class ConceptsTrainingEntry:
         self.amr_str = amr_str
 
 
-def generate_dataset_entry(amr_id: str, amr_str: str, sentence: str):
+def generate_dataset_entry(amr_id: str, amr_str: str, sentence: str, hyperparams):
     amr = AMR.parse_string(amr_str)
     # Paul's quickfix
-    # if hyperparams.train_flag
-    if "080104" not in sentence and "030714" not in sentence and "North Korean media denies involvement" not in sentence:
-        amr, new_sentence, metadata = train_pre_processing(amr, sentence)
-    else:
-        # DON'T FORGET TO USE THIS AT TEST TIME !!!
-        # if not hyperparams.train_flag
-        # new_sentence, metadata = inference_preprocessing(sentence)
-        new_sentence = sentence
+    if hyperparams.experimental_run or hyperparams.train:
+        if "080104" not in sentence and "030714" not in sentence and "North Korean media denies involvement" not in sentence:
+            amr, new_sentence, metadata = train_pre_processing(amr, sentence)
+        else:
+            new_sentence = sentence
+    elif not hyperparams.experimental_run and not hyperparams.train:
+        new_sentence, metadata = inference_preprocessing(sentence)
     identified_concepts = IdentifiedConcepts()
     identified_concepts.create_from_amr(amr_id, amr)
     if identified_concepts.ordered_concepts is None:
@@ -45,7 +44,7 @@ def generate_dataset_entry(amr_id: str, amr_str: str, sentence: str):
     return ConceptsTrainingEntry(identified_concepts, new_sentence, logging_info, amr_str)
 
 
-def generate_concepts_training_data_per_file(file_path, max_sentence_len=20):
+def generate_concepts_training_data_per_file(file_path, hyperparams, max_sentence_len):
     sentence_amr_triples = input_file_parser.extract_data_records(file_path)
     entries: List[ConceptsTrainingEntry] = []
 
@@ -56,7 +55,7 @@ def generate_concepts_training_data_per_file(file_path, max_sentence_len=20):
         # TODO: extract tokens better
         sentence_len = len(sentence.split(" "))
         if sentence_len <= max_sentence_len:
-            entry = generate_dataset_entry(amr_id, amr_str, sentence)
+            entry = generate_dataset_entry(amr_id, amr_str, sentence, hyperparams)
             if entry is not None:
                 entries.append(entry)
             else:
@@ -64,31 +63,31 @@ def generate_concepts_training_data_per_file(file_path, max_sentence_len=20):
     return entries, nb_entries_not_processed
 
 
-def generate_concepts_training_data(file_paths: List[str], max_sentence_len=20):
+def generate_concepts_training_data(file_paths: List[str],  hyperparams, max_sentence_len=20):
     all_entries = []
 
     nb_all_entries_not_processed = 0
-    # for file_path in file_paths:
-    for i in range(1):
-        entries, nb_entries_not_processed = generate_concepts_training_data_per_file(file_paths[i], max_sentence_len)
+    for file_path in file_paths:
+    # for i in range(1):
+        entries, nb_entries_not_processed = generate_concepts_training_data_per_file(file_path, hyperparams, max_sentence_len)
         all_entries = all_entries + entries
         nb_all_entries_not_processed += nb_entries_not_processed
 
     return all_entries, nb_all_entries_not_processed
 
 
-def read_train_dev_data(alignment):
-    train_entries, nb_train_failed = generate_concepts_training_data(get_all_paths_for_alignment('training', alignment))
+def read_train_dev_data(alignment, hyperparams):
+    train_entries, nb_train_failed = generate_concepts_training_data(get_all_paths_for_alignment('training', alignment), hyperparams)
     nb_train_entries = len(train_entries)
     print(str(nb_train_entries) + ' train entries processed ' + str(nb_train_failed) + ' train entries failed')
-    dev_entries, nb_dev_failed = generate_concepts_training_data(get_all_paths_for_alignment('dev', alignment))
+    dev_entries, nb_dev_failed = generate_concepts_training_data(get_all_paths_for_alignment('dev', alignment), hyperparams)
     nb_dev_entries = len(dev_entries)
     print(str(nb_dev_entries) + ' dev entries processed ' + str(nb_dev_failed) + ' dev entries failed')
     return train_entries, nb_train_entries, dev_entries, nb_dev_entries
 
 
-def read_test_data(alignment):
-    test_entries, nb_test_failed = generate_concepts_training_data(get_all_paths_for_alignment('test', alignment))
+def read_test_data(alignment, hyperparams):
+    test_entries, nb_test_failed = generate_concepts_training_data(get_all_paths_for_alignment('test', alignment), hyperparams)
     nb_test_entries = len(test_entries)
     print(str(nb_test_entries) + ' test entries processed ' + str(nb_test_failed) + ' test entries failed')
-    test_entries, nb_test_entries
+    return test_entries, nb_test_entries

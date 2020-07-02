@@ -18,8 +18,6 @@ from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extr
 # dynet_config.set(mem=1024)
 
 # TODO:
-# - HYPERPARAM TYPE OF preprocessing in data_extractor
-# - Include Hyperparam option for choosing alignment type
 # - RL
 
 
@@ -41,13 +39,14 @@ DROPOUT_RATE = 0.6
 
 USE_ATTENTION = True
 USE_GLOVE = False
-USE_VERB_NONVERB_CLASSIFICATION = False
-ALIGNMENT = "jamr"
+USE_VERB_NONVERB_DECODERS = False
+USE_VERB_NONVERB_EMBEDDINGS_CLASSIFIER = True
+ALIGNMENT = "isi"
 
-NB_EPOCHS = 5
+NB_EPOCHS = 40
 
 EXPERIMENTAL_RUN = True
-TRAIN = True
+TRAIN = False
 
 
 class ConceptsDynetGraph:
@@ -135,13 +134,13 @@ class ConceptsDynetGraph:
         # self.trainer = dy.AdagradTrainer(self.model)
 
 
-def classify_verb_nonverb(concepts_dynet_graph, input_vector, concept):
+def classify_verb_nonverb(concepts_dynet_graph, input_vector, concept, classifier_init):
     w = dy.parameter(concepts_dynet_graph.classifier_w)
     b = dy.parameter(concepts_dynet_graph.classifier_b)
 
     out_label = is_verb(concept)
 
-    classifier_init = concepts_dynet_graph.classifier.initial_state()
+    # classifier_init = concepts_dynet_graph.classifier.initial_state()
     classifier_init = classifier_init.add_input(input_vector)
 
     out_vector = w * classifier_init.output() + b
@@ -151,11 +150,11 @@ def classify_verb_nonverb(concepts_dynet_graph, input_vector, concept):
     return loss
 
 
-def predict_verb_nonverb(concepts_dynet_graph, input_vector):
+def predict_verb_nonverb(concepts_dynet_graph, input_vector, classifier_init):
     w = dy.parameter(concepts_dynet_graph.classifier_w)
     b = dy.parameter(concepts_dynet_graph.classifier_b)
 
-    classifier_init = concepts_dynet_graph.classifier.initial_state()
+    # classifier_init = concepts_dynet_graph.classifier.initial_state()
     classifier_init = classifier_init.add_input(input_vector)
 
     out_vector = w * classifier_init.output() + b
@@ -232,7 +231,7 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, hyperparams)
 
     # initialize last embedding with START_OF_SEQUENCE
     w1_input = None
-    if hyperparams.use_verb_nonverb_classification:
+    if hyperparams.use_verb_nonverb_decoders or hyperparams.use_verb_nonverb_embeddings_classifier:
         last_concept_embedding = concepts_dynet_graph.concept_nonverb_embeddings[
             concepts_dynet_graph.concepts_nonverbs_vocab.w2i[START_OF_SEQUENCE]]
     else:
@@ -245,6 +244,7 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, hyperparams)
 
     decoder_state, verb_decoder_state, nonverb_decoder_state = initialize_decoders(concepts_dynet_graph,
                                                                                    last_concept_embedding, hyperparams)
+    classifier_init = concepts_dynet_graph.classifier.initial_state()
 
     loss_list = []
     classifier_loss_list = []
@@ -265,7 +265,7 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, hyperparams)
 
         if hyperparams.use_attention:
             w1_input = w1_input or w1 * input_matrix
-            if hyperparams.use_verb_nonverb_classification:
+            if hyperparams.use_verb_nonverb_decoders or hyperparams.use_verb_nonverb_embeddings_classifier:
                 # first prediction is START_OF_SEQUENCE => nonverb
                 if i == 0:
                     context_vector = attend(concepts_dynet_graph, input_matrix, nonverb_decoder_state, w1_input)
@@ -284,11 +284,11 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, hyperparams)
         if not hyperparams.validation_flag:
             vector = dy.dropout(vector, concepts_dynet_graph.dropout_rate)
 
-        classifier_loss = classify_verb_nonverb(concepts_dynet_graph, vector, golden_concepts[i])
+        classifier_loss = classify_verb_nonverb(concepts_dynet_graph, vector, golden_concepts[i], classifier_init)
         classifier_loss_list.append(classifier_loss)
 
         # TODO: take last_concept_embedding with a probability from golden vs predicted --- error propagation problem
-        if hyperparams.use_verb_nonverb_classification:
+        if hyperparams.use_verb_nonverb_decoders:
             if is_verb(current_concept) == 1:
                 verb_decoder_state = verb_decoder_state.add_input(vector)
                 out_vector = verb_w * verb_decoder_state.output() + verb_b
@@ -297,7 +297,13 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, hyperparams)
                 out_vector = nonverb_w * nonverb_decoder_state.output() + nonverb_b
         else:
             decoder_state = decoder_state.add_input(vector)
-            out_vector = w * decoder_state.output() + b
+            if hyperparams.use_verb_nonverb_embeddings_classifier:
+                if is_verb(golden_concepts[i]) == 1:
+                    out_vector = verb_w * decoder_state.output() + verb_b
+                else:
+                    out_vector = nonverb_w * decoder_state.output() + nonverb_b
+            else:
+                out_vector = w * decoder_state.output() + b
 
         probs = dy.softmax(out_vector)
         last_concept_embedding = get_last_concept_embedding(concepts_dynet_graph, concept, is_verb(current_concept), hyperparams)
@@ -335,12 +341,12 @@ def predict_concepts(concepts_dynet_graph, encoded_sequence, hyperparams):
     # verb - nonverb parameters
     verb_w = dy.parameter(concepts_dynet_graph.verb_embeddings_classifier_w)
     verb_b = dy.parameter(concepts_dynet_graph.verb_embeddings_classifier_b)
-    non_verb_w = dy.parameter(concepts_dynet_graph.nonverb_embeddings_classifier_w)
-    non_verb_b = dy.parameter(concepts_dynet_graph.nonverb_embeddings_classifier_b)
+    nonverb_w = dy.parameter(concepts_dynet_graph.nonverb_embeddings_classifier_w)
+    nonverb_b = dy.parameter(concepts_dynet_graph.nonverb_embeddings_classifier_b)
 
     # initialize last embedding with START_OF_SEQUENCE
     w1_input = None
-    if not hyperparams.use_verb_nonverb_classification:
+    if not hyperparams.use_verb_nonverb_decoders and not hyperparams.use_verb_nonverb_embeddings_classifier:
         last_concept_embedding = concepts_dynet_graph.concept_embeddings[
             concepts_dynet_graph.concepts_vocab.w2i[START_OF_SEQUENCE]]
     else:
@@ -353,6 +359,7 @@ def predict_concepts(concepts_dynet_graph, encoded_sequence, hyperparams):
 
     decoder_state, verb_decoder_state, nonverb_decoder_state = initialize_decoders(concepts_dynet_graph,
                                                                                    last_concept_embedding, hyperparams)
+    classifier_init = concepts_dynet_graph.classifier.initial_state()
 
     predicted_concepts = []
     count_END_OF_SEQUENCE = 0
@@ -366,7 +373,7 @@ def predict_concepts(concepts_dynet_graph, encoded_sequence, hyperparams):
 
         if hyperparams.use_attention:
             w1_input = w1_input or w1 * input_matrix
-            if hyperparams.use_verb_nonverb_classification:
+            if hyperparams.use_verb_nonverb_decoders or hyperparams.use_verb_nonverb_embeddings_classifier:
                 if i == 0:
                     context_vector = attend(concepts_dynet_graph, input_matrix, nonverb_decoder_state, w1_input)
                 else:
@@ -384,23 +391,29 @@ def predict_concepts(concepts_dynet_graph, encoded_sequence, hyperparams):
         if j < len(encoded_sequence) - 1:
             j += 1
 
-        predict_verb = predict_verb_nonverb(concepts_dynet_graph, vector)
-        if hyperparams.use_verb_nonverb_classification:
+        predict_verb = predict_verb_nonverb(concepts_dynet_graph, vector, classifier_init)
+        if hyperparams.use_verb_nonverb_decoders:
             if predict_verb == 1:
                 verb_decoder_state = verb_decoder_state.add_input(vector)
                 out_vector = verb_w * verb_decoder_state.output() + verb_b
-            elif predict_verb == 0:
+            else:
                 nonverb_decoder_state = nonverb_decoder_state.add_input(vector)
-                out_vector = non_verb_w * nonverb_decoder_state.output() + non_verb_b
+                out_vector = nonverb_w * nonverb_decoder_state.output() + nonverb_b
         else:
             decoder_state = decoder_state.add_input(vector)
-            out_vector = w * decoder_state.output() + b
+            if hyperparams.use_verb_nonverb_embeddings_classifier:
+                if predict_verb == 1:
+                    out_vector = verb_w * decoder_state.output() + verb_b
+                else:
+                    out_vector = nonverb_w * decoder_state.output() + nonverb_b
+            else:
+                out_vector = w * decoder_state.output() + b
 
         probs_vector = dy.softmax(out_vector).vec_value()
         next_concept = probs_vector.index(max(probs_vector))
         last_concept_embedding = get_last_concept_embedding(concepts_dynet_graph, next_concept, predict_verb, hyperparams)
 
-        if hyperparams.use_verb_nonverb_classification:
+        if hyperparams.use_verb_nonverb_decoders or hyperparams.use_verb_nonverb_embeddings_classifier:
             if concepts_dynet_graph.concepts_nonverbs_vocab.i2w[next_concept] == END_OF_SEQUENCE:
                 count_END_OF_SEQUENCE += 1
                 j = 0
@@ -449,7 +462,7 @@ def train_sentence(concepts_dynet_graph, sentence, identified_concepts, hyperpar
 
     if not hyperparams.validation_flag:
         loss.backward()
-        if hyperparams.use_verb_nonverb_classification:
+        if hyperparams.use_verb_nonverb_decoders or hyperparams.use_verb_nonverb_embeddings_classifier:
             classifier_loss.backward()
         concepts_dynet_graph.trainer.update()
 
@@ -565,6 +578,7 @@ def run_testing(concepts_dynet_graph, hyperparams, test_entries, nb_test_entries
     sum_test_correct_order_percentage = 0
     sum_test_correct_distances_percentage = 0
 
+    test_entry: ConceptsTrainingEntry
     for test_entry in test_entries:
         (test_predicted_concepts, test_entry_bleu, test_entry_nb_correctly_predicted_concepts, test_entry_precision,
          test_entry_recall, test_entry_f_score, test_entry_accuracy, test_entry_correct_order_percentage,
@@ -723,7 +737,7 @@ def run_validation(concepts_dynet_graph, hyperparams, dev_entries, nb_dev_entrie
 
 
 def run_experiments(hyperparams):
-    train_entries, nb_train_entries, dev_entries, nb_dev_entries = read_train_dev_data(hyperparams.alignment)
+    train_entries, nb_train_entries, dev_entries, nb_dev_entries = read_train_dev_data(hyperparams.alignment, hyperparams)
 
     all_concepts_vocab, all_verbs_vocab, all_nonverbs_vocab, all_dev_concepts_vocab, all_words_vocab = \
         create_vocabs(train_entries, dev_entries)
@@ -796,7 +810,7 @@ def run_experiments(hyperparams):
 
 
 def training(hyperparams):
-    train_entries, nb_train_entries, dev_entries, nb_dev_entries = read_train_dev_data(hyperparams.alignment)
+    train_entries, nb_train_entries, dev_entries, nb_dev_entries = read_train_dev_data(hyperparams.alignment, hyperparams)
 
     train_entries += dev_entries
     nb_train_entries += nb_dev_entries
@@ -880,9 +894,9 @@ def testing(hyperparams):
             all_verbs_vocab = pickle.load(f)
         with open(models_path + "/nonverbs_vocab", "rb") as f:
             all_nonverbs_vocab = pickle.load(f)
-        with open(models_path + "/dev_concepts_vocab", "wb") as f:
+        with open(models_path + "/dev_concepts_vocab", "rb") as f:
             all_dev_concepts_vocab = pickle.load(f)
-        with open(models_path + "/glove_embeddings_list", "wb") as f:
+        with open(models_path + "/glove_embeddings_list", "rb") as f:
             words_glove_embeddings_list = pickle.load(f)
 
         # create graph
@@ -893,8 +907,9 @@ def testing(hyperparams):
         # get model
         concepts_dynet_graph.model.populate(models_path + "/graph")
 
-        # test
-        test_entries, nb_test_entries = read_test_data(hyperparams.alignment)
+        test_entries: [ConceptsTrainingEntry]
+        test_entries, nb_test_entries = read_test_data(hyperparams.alignment, hyperparams)
+
         logs_path = "concept_extractor_logs/test/" + model_name
 
         if not os.path.exists(logs_path):
@@ -909,6 +924,8 @@ def testing(hyperparams):
         overview_logs = open(overview_logs_file_name, "w")
 
         run_testing(concepts_dynet_graph, hyperparams, test_entries, nb_test_entries, overview_logs, detail_logs)
+
+    print("Done")
 
 
 if __name__ == "__main__":
@@ -926,7 +943,8 @@ if __name__ == "__main__":
                                                  dropout_rate=DROPOUT_RATE,
                                                  use_attention=USE_ATTENTION,
                                                  use_glove=USE_GLOVE,
-                                                 use_verb_nonverb_classification=USE_VERB_NONVERB_CLASSIFICATION,
+                                                 use_verb_nonverb_decoders=USE_VERB_NONVERB_DECODERS,
+                                                 use_verb_nonverb_embeddings_classifier=USE_VERB_NONVERB_EMBEDDINGS_CLASSIFIER,
                                                  nb_epochs=NB_EPOCHS,
                                                  alignment=ALIGNMENT,
                                                  validation_flag=False,

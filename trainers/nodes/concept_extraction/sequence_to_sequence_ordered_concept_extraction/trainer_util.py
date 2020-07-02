@@ -22,7 +22,8 @@ class ConceptsTrainerHyperparameters:
                  dropout_rate,
                  use_attention,
                  use_glove,
-                 use_verb_nonverb_classification,
+                 use_verb_nonverb_decoders,
+                 use_verb_nonverb_embeddings_classifier,
                  nb_epochs,
                  alignment,
                  validation_flag,
@@ -41,7 +42,8 @@ class ConceptsTrainerHyperparameters:
         self.dropout_rate = dropout_rate
         self.use_attention = use_attention
         self.use_glove = use_glove
-        self.use_verb_nonverb_classification = use_verb_nonverb_classification
+        self.use_verb_nonverb_decoders = use_verb_nonverb_decoders
+        self.use_verb_nonverb_embeddings_classifier = use_verb_nonverb_embeddings_classifier
         self.nb_epochs = nb_epochs
         self.alignment = alignment
         self.validation_flag = validation_flag
@@ -53,8 +55,10 @@ def get_model_name(hyperparams):
     model_name = "model_"
 
     model_type = "base_"
-    if hyperparams.use_verb_nonverb_classification:
+    if hyperparams.use_verb_nonverb_decoders:
         model_type = "vb-nonvb-dec_"
+    elif hyperparams.use_verb_nonverb_embeddings_classifier:
+        model_type = "vb-nonvb-emb-class_"
 
     model_name += model_type
     model_name += (hyperparams.alignment + "_")
@@ -68,7 +72,7 @@ def get_model_name(hyperparams):
     model_name += ("enclay-" + str(hyperparams.encoder_nb_layers) + "-encsize-" + str(hyperparams.encoder_state_size) + "_")
     model_name += ("declay-" + str(hyperparams.decoder_nb_layers) + "-decsize-" + str(hyperparams.decoder_state_size) + "_")
 
-    if hyperparams.use_verb_nonverb_classification:
+    if hyperparams.use_verb_nonverb_decoders:
         model_name += ("classiflay-" + str(hyperparams.verb_nonverb_classifier_nb_layers) + "-classifsize-" +
                        str(hyperparams.verb_nonverb_classifier_state_size) + "_")
 
@@ -86,7 +90,7 @@ def get_word_index(concepts_dynet_graph, word):
     if word in concepts_dynet_graph.words_vocab.w2i.keys():
         index = concepts_dynet_graph.words_vocab.w2i[word]
     else:
-        index = concepts_dynet_graph.words_vocab.w2i['UNKOWN']
+        index = concepts_dynet_graph.words_vocab.w2i['UNKNOWN']
     return index
 
 
@@ -114,7 +118,7 @@ def generate_verbs_nonverbs(concepts):
 def get_golden_concept_indexes(concepts_dynet_graph, golden_concepts, hyperparams):
     golden_concept_indexes = []
 
-    if hyperparams.use_verb_nonverb_classification:
+    if hyperparams.use_verb_nonverb_decoders or hyperparams.use_verb_nonverb_embeddings_classifier:
         for concept in golden_concepts:
             if concept in concepts_dynet_graph.concepts_vocab.w2i:
                 if is_verb(concept) == 1:
@@ -153,7 +157,7 @@ def initialize_decoders(concepts_dynet_graph, last_concept_embedding, hyperparam
 
 
 def get_last_concept_embedding(concepts_dynet_graph, concept, is_concept_verb, hyperparams):
-    if hyperparams.use_verb_nonverb_classification:
+    if hyperparams.use_verb_nonverb_decoders or hyperparams.use_verb_nonverb_embeddings_classifier:
         if is_concept_verb == 1:
             return concepts_dynet_graph.concept_verb_embeddings[concept]
         else:
@@ -163,8 +167,8 @@ def get_last_concept_embedding(concepts_dynet_graph, concept, is_concept_verb, h
 
 
 def get_next_concept(concepts_dynet_graph, is_concept_verb, next_concept, hyperparams):
-    if hyperparams.use_verb_nonverb_classification:
-        if is_concept_verb:
+    if hyperparams.use_verb_nonverb_decoders or hyperparams.use_verb_nonverb_embeddings_classifier:
+        if is_concept_verb and next_concept in concepts_dynet_graph.concepts_verbs_vocab.i2w:
             return concepts_dynet_graph.concepts_verbs_vocab.i2w[next_concept]
         else:
             return concepts_dynet_graph.concepts_nonverbs_vocab.i2w[next_concept]
