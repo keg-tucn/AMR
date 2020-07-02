@@ -48,11 +48,31 @@ class ConceptsTrainerHyperparameters:
 
 
 def get_model_name(hyperparams):
+    model_name = "model_"
+
     model_type = "base_"
     if hyperparams.use_verb_nonverb_classification:
         model_type = "vb-nonvb-dec_"
 
-    model_name = "model_" + model_type
+    model_name += model_type
+
+    if hyperparams.use_glove:
+        model_name += ("glove-" + str(hyperparams.words_glove_embedding_size) + "_")
+    else:
+        model_name += ("trainable-" + str(hyperparams.words_embedding_size) + "_")
+
+    model_name += ("concept-" + str(hyperparams.concepts_embedding_size) + "_")
+    model_name += ("enclay-" + str(hyperparams.encoder_nb_layers) + "-encsize-" + str(hyperparams.encoder_state_size) + "_")
+    model_name += ("declay-" + str(hyperparams.decoder_nb_layers) + "-decsize-" + str(hyperparams.decoder_state_size) + "_")
+
+    if hyperparams.use_verb_nonverb_classification:
+        model_name += ("classiflay-" + str(hyperparams.verb_nonverb_classifier_nb_layers) + "-classifsize-" +
+                       str(hyperparams.verb_nonverb_classifier_state_size) + "_")
+
+    model_name += ("attsize-" + str(hyperparams.attention_size) + "_")
+    model_name += ("dropout-" + str(hyperparams.dropout_rate) + "_")
+    model_name += ("epochs-" + str(hyperparams.nb_epochs))
+
     return model_name
 
 

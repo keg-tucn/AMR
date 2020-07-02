@@ -490,6 +490,7 @@ def testing(hyperparams):
     models_path = "concept_extractor_models/" + model_name
 
     if not os.path.exists(models_path):
+        # IMPLEMENT LOAD DEFAULT MODEL
         print("No such trained model.")
     else:
         # get vocabs
@@ -501,7 +502,6 @@ def testing(hyperparams):
             all_verbs_vocab = pickle.load(f)
         with open(models_path + "/nonverbs_vocab", "rb") as f:
             all_nonverbs_vocab = pickle.load(f)
-        # see about these LATER
         with open(models_path + "/dev_concepts_vocab", "wb") as f:
             all_dev_concepts_vocab = pickle.load(f)
         with open(models_path + "/glove_embeddings_list", "wb") as f:
@@ -517,7 +517,160 @@ def testing(hyperparams):
 
         # test
         test_entries, nb_test_entries = read_test_data()
-        print("Running testing")
+        run_testing(concepts_dynet_graph, hyperparams, test_entries, nb_test_entries)
+
+
+def run_training(concepts_dynet_graph, hyperparams, train_entries, nb_train_entries, overview_logs, detail_logs):
+    sum_train_loss = 0
+    sum_train_bleu = 0
+    sum_train_nb_correctly_predicted_concepts = 0
+    sum_train_precision = 0
+    sum_train_recall = 0
+    sum_train_f_score = 0
+    sum_train_accuracy = 0
+    sum_train_correct_order_percentage = 0
+    sum_train_correct_distances_percentage = 0
+    sum_train_classifier_loss = 0
+
+    train_entry: ConceptsTrainingEntry
+    for train_entry in train_entries:
+        (predicted_concepts, train_entry_loss, train_entry_bleu, train_entry_nb_correctly_predicted_concepts,
+         train_entry_precision, train_entry_recall, train_entry_f_score, train_entry_accuracy,
+         train_entry_correct_order_percentage, train_entry_correct_distances_percentage,
+         train_entry_classifier_loss) = \
+            train_sentence(concepts_dynet_graph, train_entry.sentence, train_entry.identified_concepts, hyperparams)
+
+        sum_train_loss += train_entry_loss
+        sum_train_bleu += train_entry_bleu
+        sum_train_nb_correctly_predicted_concepts += train_entry_nb_correctly_predicted_concepts
+        sum_train_precision += train_entry_precision
+        sum_train_recall += train_entry_recall
+        sum_train_f_score += train_entry_f_score
+        sum_train_accuracy += train_entry_accuracy
+        sum_train_correct_order_percentage += train_entry_correct_order_percentage
+        sum_train_correct_distances_percentage += train_entry_correct_distances_percentage
+        sum_train_classifier_loss += train_entry_classifier_loss
+
+    avg_train_loss = sum_train_loss / nb_train_entries
+    avg_train_bleu = sum_train_bleu / nb_train_entries
+    avg_train_nb_correctly_predicted_concepts = sum_train_nb_correctly_predicted_concepts / nb_train_entries
+    avg_train_precision = sum_train_precision / nb_train_entries
+    avg_train_recall = sum_train_recall / nb_train_entries
+    avg_train_f_score = sum_train_f_score / nb_train_entries
+    avg_train_accuracy = sum_train_accuracy / nb_train_entries
+    avg_train_correct_order_percentage = sum_train_correct_order_percentage / nb_train_entries
+    avg_train_correct_distances_percentage = sum_train_correct_distances_percentage / nb_train_entries
+    avg_train_classifier_loss = sum_train_classifier_loss / nb_train_entries
+
+    print("LOSS: " + str(avg_train_loss))
+    print("Train BLEU: " + str(avg_train_bleu))
+    print("Average number of correctly predicted concepts per sentence: " +
+          str(avg_train_nb_correctly_predicted_concepts))
+    print("Train PRECISION: " + str(avg_train_precision))
+    print("Train RECALL: " + str(avg_train_recall))
+    print("Train F-SCORE: " + str(avg_train_f_score))
+    print("Train ACCURACY (correctly predicted concepts on correct positions): " + str(avg_train_accuracy))
+    print("Percentage of concepts in correct order (only for correctly predicted concepts): " +
+          str(avg_train_correct_order_percentage))
+    print("Percentage of concepts at correct distances (only for correctly predicted concepts): " +
+          str(avg_train_correct_distances_percentage))
+    print("CLASSIFIER LOSS: " + str(avg_train_classifier_loss))
+
+    overview_logs.write("Train LOSS: " + str(avg_train_loss) + "\n")
+    overview_logs.write("Train BLEU: " + str(avg_train_bleu) + "\n")
+    overview_logs.write("Average number of correctly predicted concepts per train sentence: " +
+                        str(avg_train_nb_correctly_predicted_concepts) + "\n")
+    overview_logs.write("Train PRECISION: " + str(avg_train_precision) + "\n")
+    overview_logs.write("Train RECALL: " + str(avg_train_recall) + "\n")
+    overview_logs.write("Train F-SCORE: " + str(avg_train_f_score) + "\n")
+    overview_logs.write("Train ACCURACY (correctly predicted concepts on correct positions): " +
+                        str(avg_train_accuracy) + "\n")
+    overview_logs.write("Percentage of concepts in correct order (only for correctly predicted concepts) train: " +
+                        str(avg_train_correct_order_percentage) + "\n")
+    overview_logs.write(
+        "Percentage of concepts at correct distances (only for correctly predicted concepts) train: " +
+        str(avg_train_correct_distances_percentage) + "\n")
+    overview_logs.write("Train CLASSIFIER LOSS: " + str(avg_train_classifier_loss) + "\n")
+    overview_logs.write("\n")
+
+
+def run_testing(concepts_dynet_graph, hyperparams, test_entries, nb_test_entries, overview_logs, detail_logs):
+    sum_test_bleu = 0
+    sum_test_nb_correctly_predicted_concepts = 0
+    sum_test_precision = 0
+    sum_test_recall = 0
+    sum_test_f_score = 0
+    sum_test_accuracy = 0
+    sum_test_correct_order_percentage = 0
+    sum_test_correct_distances_percentage = 0
+
+    for test_entry in test_entries:
+        (test_predicted_concepts, test_entry_bleu, test_entry_nb_correctly_predicted_concepts, test_entry_precision,
+         test_entry_recall, test_entry_f_score, test_entry_accuracy, test_entry_correct_order_percentage,
+         test_entry_correct_distances_percentage) = \
+            test_sentence(concepts_dynet_graph, test_entry.sentence, test_entry.identified_concepts, hyperparams)
+
+        sum_test_bleu += test_entry_bleu
+        sum_test_nb_correctly_predicted_concepts += test_entry_nb_correctly_predicted_concepts
+        sum_test_precision += test_entry_precision
+        sum_test_recall += test_entry_recall
+        sum_test_f_score += test_entry_f_score
+        sum_test_accuracy += test_entry_accuracy
+        sum_test_correct_order_percentage += test_entry_correct_order_percentage
+        sum_test_correct_distances_percentage += test_entry_correct_distances_percentage
+
+        detail_logs.write(test_entry.logging_info)
+        detail_logs.write("PREDICTED concepts: " + str(test_predicted_concepts) + "\n")
+        detail_logs.write("BLEU: " + str(test_entry_bleu) + "\n")
+        detail_logs.write("Correctly predicted concepts: " +
+                              str(test_entry_nb_correctly_predicted_concepts) + "\n")
+        detail_logs.write("PRECISION: " + str(test_entry_precision) + "\n")
+        detail_logs.write("RECALL: " + str(test_entry_recall) + "\n")
+        detail_logs.write("F-SCORE: " + str(test_entry_f_score) + "\n")
+        detail_logs.write("ACCURACY (correctly predicted concepts on correct positions): " +
+                              str(test_entry_accuracy) + "\n")
+        detail_logs.write("Percentage of concepts in correct order (only for correctly predicted concepts): " +
+                              str(test_entry_correct_order_percentage) + "\n")
+        detail_logs.write(
+            "Percentage of concepts at correct distances (only for correctly predicted concepts): " +
+            str(test_entry_correct_distances_percentage) + "\n")
+        detail_logs.write("\n")
+
+    avg_test_bleu = sum_test_bleu / nb_test_entries
+    avg_test_nb_correctly_predicted_concepts = sum_test_nb_correctly_predicted_concepts / nb_test_entries
+    avg_test_precision = sum_test_precision / nb_test_entries
+    avg_test_recall = sum_test_recall / nb_test_entries
+    avg_test_f_score = sum_test_f_score / nb_test_entries
+    avg_test_accuracy = sum_test_accuracy / nb_test_entries
+    avg_test_correct_order_percentage = sum_test_correct_order_percentage / nb_test_entries
+    avg_test_correct_distances_percentage = sum_test_correct_distances_percentage / nb_test_entries
+
+    print("Test BLEU: " + str(avg_test_bleu))
+    print("Average number of correctly predicted concepts per sentence: " +
+          str(avg_test_nb_correctly_predicted_concepts))
+    print("Test PRECISION: " + str(avg_test_precision))
+    print("Test RECALL: " + str(avg_test_recall))
+    print("Test F-SCORE: " + str(avg_test_f_score))
+    print("Test ACCURACY (correctly predicted concepts on correct positions): " + str(avg_test_accuracy))
+    print("Percentage of concepts in correct order (only for correctly predicted concepts): " +
+          str(avg_test_correct_order_percentage))
+    print("Percentage of concepts at correct distances (only for correctly predicted concepts): " +
+          str(avg_test_correct_distances_percentage))
+
+    overview_logs.write("Test BLEU: " + str(avg_test_bleu) + "\n")
+    overview_logs.write("Average number of correctly predicted concepts per test sentence: " +
+                        str(avg_test_nb_correctly_predicted_concepts) + "\n")
+    overview_logs.write("Test PRECISION: " + str(avg_test_precision) + "\n")
+    overview_logs.write("Test RECALL: " + str(avg_test_recall) + "\n")
+    overview_logs.write("Test F-SCORE: " + str(avg_test_f_score) + "\n")
+    overview_logs.write("Test ACCURACY (correctly predicted concepts on correct positions): " +
+                        str(avg_test_accuracy) + "\n")
+    overview_logs.write("Percentage of concepts in correct order (only for correctly predicted concepts) test: " +
+                        str(avg_test_correct_order_percentage) + "\n")
+    overview_logs.write(
+        "Percentage of concepts at correct distances (only for correctly predicted concepts) test: " +
+        str(avg_test_correct_distances_percentage) + "\n")
+    overview_logs.write("\n")
 
 
 if __name__ == "__main__":
@@ -565,12 +718,12 @@ if __name__ == "__main__":
 
     # log files
     detail_logs_file_name = logs_path + "/concept_extractor_detailed_logs.txt"
-    detail_test_logs_file_name = logs_path +  "/concept_extractor_detailed_test_logs.txt"
+    detail_dev_logs_file_name = logs_path + "/concept_extractor_detailed_test_logs.txt"
     overview_logs_file_name = logs_path + "/concept_extractor_overview_logs.txt"
 
     # open log files
     detail_logs = open(detail_logs_file_name, "w")
-    detail_test_logs = open(detail_test_logs_file_name, "w")
+    detail_dev_logs = open(detail_dev_logs_file_name, "w")
     overview_logs = open(overview_logs_file_name, "w")
 
     for epoch in range(1, NB_EPOCHS + 1):
@@ -578,79 +731,8 @@ if __name__ == "__main__":
         detail_logs.write("Epoch " + str(epoch) + "\n\n")
         overview_logs.write("Epoch " + str(epoch) + "\n\n")
 
-        # train
-        sum_train_loss = 0
-        sum_train_bleu = 0
-        sum_train_nb_correctly_predicted_concepts = 0
-        sum_train_precision = 0
-        sum_train_recall = 0
-        sum_train_f_score = 0
-        sum_train_accuracy = 0
-        sum_train_correct_order_percentage = 0
-        sum_train_correct_distances_percentage = 0
-        sum_train_classifier_loss = 0
-
-        train_entry: ConceptsTrainingEntry
         hyperparams.train_flag = True
-        for train_entry in train_entries:
-            (predicted_concepts, train_entry_loss, train_entry_bleu, train_entry_nb_correctly_predicted_concepts,
-             train_entry_precision, train_entry_recall, train_entry_f_score, train_entry_accuracy,
-             train_entry_correct_order_percentage, train_entry_correct_distances_percentage,
-             train_entry_classifier_loss) = \
-                train_sentence(concepts_dynet_graph, train_entry.sentence, train_entry.identified_concepts, hyperparams)
-
-            sum_train_loss += train_entry_loss
-            sum_train_bleu += train_entry_bleu
-            sum_train_nb_correctly_predicted_concepts += train_entry_nb_correctly_predicted_concepts
-            sum_train_precision += train_entry_precision
-            sum_train_recall += train_entry_recall
-            sum_train_f_score += train_entry_f_score
-            sum_train_accuracy += train_entry_accuracy
-            sum_train_correct_order_percentage += train_entry_correct_order_percentage
-            sum_train_correct_distances_percentage += train_entry_correct_distances_percentage
-            sum_train_classifier_loss += train_entry_classifier_loss
-
-        avg_train_loss = sum_train_loss / nb_train_entries
-        avg_train_bleu = sum_train_bleu / nb_train_entries
-        avg_train_nb_correctly_predicted_concepts = sum_train_nb_correctly_predicted_concepts / nb_train_entries
-        avg_train_precision = sum_train_precision / nb_train_entries
-        avg_train_recall = sum_train_recall / nb_train_entries
-        avg_train_f_score = sum_train_f_score / nb_train_entries
-        avg_train_accuracy = sum_train_accuracy / nb_train_entries
-        avg_train_correct_order_percentage = sum_train_correct_order_percentage / nb_train_entries
-        avg_train_correct_distances_percentage = sum_train_correct_distances_percentage / nb_train_entries
-        avg_train_classifier_loss = sum_train_classifier_loss / nb_train_entries
-
-        print("LOSS: " + str(avg_train_loss))
-        print("Train BLEU: " + str(avg_train_bleu))
-        print("Average number of correctly predicted concepts per sentence: " +
-              str(avg_train_nb_correctly_predicted_concepts))
-        # print("Train PRECISION: " + str(avg_train_precision))
-        # print("Train RECALL: " + str(avg_train_recall))
-        print("Train F-SCORE: " + str(avg_train_f_score))
-        print("Train ACCURACY (correctly predicted concepts on correct positions): " + str(avg_train_accuracy))
-        # print("Percentage of concepts in correct order (only for correctly predicted concepts): " +
-        #      str(avg_train_correct_order_percentage))
-        # print("Percentage of concepts at correct distances (only for correctly predicted concepts): " +
-        #      str(avg_train_correct_distances_percentage))
-        print("CLASSIFIER LOSS: " + str(avg_train_classifier_loss))
-
-        overview_logs.write("Train LOSS: " + str(avg_train_loss) + "\n")
-        overview_logs.write("Train BLEU: " + str(avg_train_bleu) + "\n")
-        overview_logs.write("Average number of correctly predicted concepts per train sentence: " +
-                            str(avg_train_nb_correctly_predicted_concepts) + "\n")
-        overview_logs.write("Train PRECISION: " + str(avg_train_precision) + "\n")
-        overview_logs.write("Train RECALL: " + str(avg_train_recall) + "\n")
-        overview_logs.write("Train F-SCORE: " + str(avg_train_f_score) + "\n")
-        overview_logs.write("Train ACCURACY (correctly predicted concepts on correct positions): " +
-                            str(avg_train_accuracy) + "\n")
-        overview_logs.write("Percentage of concepts in correct order (only for correctly predicted concepts) train: " +
-                            str(avg_train_correct_order_percentage) + "\n")
-        overview_logs.write(
-            "Percentage of concepts at correct distances (only for correctly predicted concepts) train: " +
-            str(avg_train_correct_distances_percentage) + "\n")
-        overview_logs.write("Train CLASSIFIER LOSS: " + str(avg_train_classifier_loss) + "\n")
-        overview_logs.write("\n")
+        run_training(concepts_dynet_graph, hyperparams, train_entries, nb_train_entries, overview_logs, detail_logs)
 
         # golden
         sum_loss = 0
@@ -709,38 +791,6 @@ if __name__ == "__main__":
                               str(entry_correct_distances_percentage) + "\n")
             detail_logs.write("\n")
 
-            # With last_embedding from predictions
-            (test_predicted_concepts, test_entry_bleu, test_entry_nb_correctly_predicted_concepts, test_entry_precision,
-             test_entry_recall, test_entry_f_score, test_entry_accuracy, test_entry_correct_order_percentage,
-             test_entry_correct_distances_percentage) = \
-                test_sentence(concepts_dynet_graph, test_entry.sentence, test_entry.identified_concepts, hyperparams)
-
-            sum_test_bleu += test_entry_bleu
-            sum_test_nb_correctly_predicted_concepts += test_entry_nb_correctly_predicted_concepts
-            sum_test_precision += test_entry_precision
-            sum_test_recall += test_entry_recall
-            sum_test_f_score += test_entry_f_score
-            sum_test_accuracy += test_entry_accuracy
-            sum_test_correct_order_percentage += test_entry_correct_order_percentage
-            sum_test_correct_distances_percentage += test_entry_correct_distances_percentage
-
-            detail_test_logs.write(test_entry.logging_info)
-            detail_test_logs.write("PREDICTED concepts: " + str(test_predicted_concepts) + "\n")
-            detail_test_logs.write("BLEU: " + str(test_entry_bleu) + "\n")
-            detail_test_logs.write("Correctly predicted concepts: " +
-                                   str(test_entry_nb_correctly_predicted_concepts) + "\n")
-            detail_test_logs.write("PRECISION: " + str(test_entry_precision) + "\n")
-            detail_test_logs.write("RECALL: " + str(test_entry_recall) + "\n")
-            detail_test_logs.write("F-SCORE: " + str(test_entry_f_score) + "\n")
-            detail_test_logs.write("ACCURACY (correctly predicted concepts on correct positions): " +
-                                   str(test_entry_accuracy) + "\n")
-            detail_test_logs.write("Percentage of concepts in correct order (only for correctly predicted concepts): " +
-                                   str(test_entry_correct_order_percentage) + "\n")
-            detail_test_logs.write(
-                "Percentage of concepts at correct distances (only for correctly predicted concepts): " +
-                str(test_entry_correct_distances_percentage) + "\n")
-            detail_test_logs.write("\n")
-
         # With last_embedding from golden
         avg_loss = sum_loss / nb_dev_entries
         avg_bleu = sum_bleu / nb_dev_entries
@@ -785,42 +835,7 @@ if __name__ == "__main__":
         overview_logs.write("Golden test CLASSIFIER LOSS: " + str(avg_classifier_loss) + "\n")
         overview_logs.write("\n")
 
-        # With last_embedding from predictions
-        avg_test_bleu = sum_test_bleu / nb_dev_entries
-        avg_test_nb_correctly_predicted_concepts = sum_test_nb_correctly_predicted_concepts / nb_dev_entries
-        avg_test_precision = sum_test_precision / nb_dev_entries
-        avg_test_recall = sum_test_recall / nb_dev_entries
-        avg_test_f_score = sum_test_f_score / nb_dev_entries
-        avg_test_accuracy = sum_test_accuracy / nb_dev_entries
-        avg_test_correct_order_percentage = sum_test_correct_order_percentage / nb_dev_entries
-        avg_test_correct_distances_percentage = sum_test_correct_distances_percentage / nb_dev_entries
-
-        print("Test BLEU: " + str(avg_test_bleu))
-        print("Average number of correctly predicted concepts per sentence: " +
-              str(avg_test_nb_correctly_predicted_concepts))
-        # print("Test PRECISION: " + str(avg_test_precision))
-        # print("Test RECALL: " + str(avg_test_recall))
-        print("Test F-SCORE: " + str(avg_test_f_score))
-        print("Test ACCURACY (correctly predicted concepts on correct positions): " + str(avg_test_accuracy))
-        # print("Percentage of concepts in correct order (only for correctly predicted concepts): " +
-        #      str(avg_test_correct_order_percentage))
-        # print("Percentage of concepts at correct distances (only for correctly predicted concepts): " +
-        #      str(avg_test_correct_distances_percentage))
-
-        overview_logs.write("Test BLEU: " + str(avg_test_bleu) + "\n")
-        overview_logs.write("Average number of correctly predicted concepts per test sentence: " +
-                            str(avg_test_nb_correctly_predicted_concepts) + "\n")
-        overview_logs.write("Test PRECISION: " + str(avg_test_precision) + "\n")
-        overview_logs.write("Test RECALL: " + str(avg_test_recall) + "\n")
-        overview_logs.write("Test F-SCORE: " + str(avg_test_f_score) + "\n")
-        overview_logs.write("Test ACCURACY (correctly predicted concepts on correct positions): " +
-                            str(avg_test_accuracy) + "\n")
-        overview_logs.write("Percentage of concepts in correct order (only for correctly predicted concepts) test: " +
-                            str(avg_test_correct_order_percentage) + "\n")
-        overview_logs.write(
-            "Percentage of concepts at correct distances (only for correctly predicted concepts) test: " +
-            str(avg_test_correct_distances_percentage) + "\n")
-        overview_logs.write("\n")
+        run_testing(concepts_dynet_graph, hyperparams, dev_entries, nb_dev_entries, overview_logs, detail_dev_logs)
 
     models_path = "concept_extractor_models/" + model_name
     if not os.path.exists(models_path):
@@ -835,7 +850,6 @@ if __name__ == "__main__":
         pickle.dump(all_verbs_vocab, f)
     with open(models_path + "/nonverbs_vocab", "wb") as f:
         pickle.dump(all_nonverbs_vocab, f)
-    # see about these LATER
     with open(models_path + "/dev_concepts_vocab", "wb") as f:
         pickle.dump(all_dev_concepts_vocab, f)
     with open(models_path + "/glove_embeddings_list", "wb") as f:
@@ -846,4 +860,5 @@ if __name__ == "__main__":
 
     print("Done")
     detail_logs.close()
+    detail_dev_logs.close()
     overview_logs.close()
