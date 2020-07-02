@@ -44,9 +44,10 @@ USE_GLOVE = False
 USE_VERB_NONVERB_CLASSIFICATION = False
 ALIGNMENT = "jamr"
 
-
-MAX_SENTENCE_LENGTH = 50
 NB_EPOCHS = 5
+
+EXPERIMENTAL_RUN = True
+TRAIN = True
 
 
 class ConceptsDynetGraph:
@@ -721,72 +722,16 @@ def run_validation(concepts_dynet_graph, hyperparams, dev_entries, nb_dev_entrie
     overview_logs.write("\n")
 
 
-def testing(hyperparams):
-
-    model_name = get_model_name(hyperparams)
-    models_path = "concept_extractor_models/" + model_name
-
-    if not os.path.exists(models_path):
-        # IMPLEMENT LOAD DEFAULT MODEL
-        print("No such trained model.")
-    else:
-        # get vocabs
-        with open(models_path + "/words_vocab", "rb") as f:
-            all_words_vocab = pickle.load(f)
-        with open(models_path + "/concepts_vocab", "rb") as f:
-            all_concepts_vocab = pickle.load(f)
-        with open(models_path + "/verbs_vocab", "rb") as f:
-            all_verbs_vocab = pickle.load(f)
-        with open(models_path + "/nonverbs_vocab", "rb") as f:
-            all_nonverbs_vocab = pickle.load(f)
-        with open(models_path + "/dev_concepts_vocab", "wb") as f:
-            all_dev_concepts_vocab = pickle.load(f)
-        with open(models_path + "/glove_embeddings_list", "wb") as f:
-            words_glove_embeddings_list = pickle.load(f)
-
-        # create graph
-        concepts_dynet_graph = ConceptsDynetGraph(all_words_vocab, all_concepts_vocab, words_glove_embeddings_list,
-                                                  all_verbs_vocab, all_nonverbs_vocab, hyperparams,
-                                                  all_dev_concepts_vocab)
-
-        # get model
-        concepts_dynet_graph.model.populate(models_path + "/graph")
-
-        # test
-        test_entries, nb_test_entries = read_test_data(ALIGNMENT)
-        run_testing(concepts_dynet_graph, hyperparams, test_entries, nb_test_entries)
-
-
-if __name__ == "__main__":
-    train_entries, nb_train_entries, dev_entries, nb_dev_entries = read_train_dev_data(ALIGNMENT)
+def run_experiments(hyperparams):
+    train_entries, nb_train_entries, dev_entries, nb_dev_entries = read_train_dev_data(hyperparams.alignment)
 
     all_concepts_vocab, all_verbs_vocab, all_nonverbs_vocab, all_dev_concepts_vocab, all_words_vocab = \
         create_vocabs(train_entries, dev_entries)
 
-    word_glove_embeddings = read_glove_embeddings_from_file(WORDS_GLOVE_EMBEDDING_SIZE)
+    word_glove_embeddings = read_glove_embeddings_from_file(hyperparams.words_glove_embedding_size)
     words_glove_embeddings_list = construct_concept_glove_embeddings_list(word_glove_embeddings,
-                                                                          WORDS_GLOVE_EMBEDDING_SIZE,
+                                                                          hyperparams.words_glove_embedding_size,
                                                                           all_words_vocab)
-
-    validation_flag = False
-
-    hyperparams = ConceptsTrainerHyperparameters(encoder_nb_layers=ENCODER_NB_LAYERS,
-                                                 decoder_nb_layers=DECODER_NB_LAYERS,
-                                                 verb_nonverb_classifier_nb_layers=VERB_NONVERB_CLASSIFIER_NB_LAYERS,
-                                                 words_embedding_size=WORDS_EMBEDDING_SIZE,
-                                                 words_glove_embedding_size=WORDS_GLOVE_EMBEDDING_SIZE,
-                                                 concepts_embedding_size=CONCEPTS_EMBEDDING_SIZE,
-                                                 encoder_state_size=ENCODER_STATE_SIZE,
-                                                 decoder_state_size=DECODER_STATE_SIZE,
-                                                 verb_nonverb_classifier_state_size=VERB_NONVERB_CLASSIFIER_STATE_SIZE,
-                                                 attention_size=ATTENTION_SIZE,
-                                                 dropout_rate=DROPOUT_RATE,
-                                                 use_attention=USE_ATTENTION,
-                                                 use_glove=USE_GLOVE,
-                                                 use_verb_nonverb_classification=USE_VERB_NONVERB_CLASSIFICATION,
-                                                 max_sentence_length=MAX_SENTENCE_LENGTH,
-                                                 nb_epochs=NB_EPOCHS,
-                                                 validation_flag=validation_flag)
 
     concepts_dynet_graph = ConceptsDynetGraph(all_words_vocab, all_concepts_vocab, words_glove_embeddings_list,
                                               all_verbs_vocab, all_nonverbs_vocab, hyperparams,
@@ -809,7 +754,7 @@ if __name__ == "__main__":
     detail_test_logs = open(detail_test_logs_file_name, "w")
     overview_logs = open(overview_logs_file_name, "w")
 
-    for epoch in range(1, NB_EPOCHS + 1):
+    for epoch in range(1, hyperparams.nb_epochs + 1):
         print("Epoch " + str(epoch) + "\n")
         detail_logs.write("Epoch " + str(epoch) + "\n\n")
         detail_test_logs.write("Epoch " + str(epoch) + "\n\n")
@@ -848,3 +793,150 @@ if __name__ == "__main__":
     detail_logs.close()
     detail_test_logs.close()
     overview_logs.close()
+
+
+def training(hyperparams):
+    train_entries, nb_train_entries, dev_entries, nb_dev_entries = read_train_dev_data(hyperparams.alignment)
+
+    train_entries += dev_entries
+    nb_train_entries += nb_dev_entries
+
+    all_concepts_vocab, all_verbs_vocab, all_nonverbs_vocab, all_dev_concepts_vocab, all_words_vocab = \
+        create_vocabs(train_entries, dev_entries)
+
+    word_glove_embeddings = read_glove_embeddings_from_file(hyperparams.words_glove_embedding_size)
+    words_glove_embeddings_list = construct_concept_glove_embeddings_list(word_glove_embeddings,
+                                                                          hyperparams.words_glove_embedding_size,
+                                                                          all_words_vocab)
+
+    concepts_dynet_graph = ConceptsDynetGraph(all_words_vocab, all_concepts_vocab, words_glove_embeddings_list,
+                                              all_verbs_vocab, all_nonverbs_vocab, hyperparams,
+                                              all_dev_concepts_vocab)
+
+    model_name = get_model_name(hyperparams)
+
+    logs_path = "concept_extractor_logs/" + model_name
+
+    if not os.path.exists(logs_path):
+        os.makedirs(logs_path)
+
+    # log files
+    detail_logs_file_name = logs_path + "/concept_extractor_detailed_logs.txt"
+    overview_logs_file_name = logs_path + "/concept_extractor_overview_logs.txt"
+
+    # open log files
+    detail_logs = open(detail_logs_file_name, "w")
+    overview_logs = open(overview_logs_file_name, "w")
+
+    for epoch in range(1, hyperparams.nb_epochs + 1):
+        print("Epoch " + str(epoch) + "\n")
+        detail_logs.write("Epoch " + str(epoch) + "\n\n")
+        overview_logs.write("Epoch " + str(epoch) + "\n\n")
+
+        hyperparams.validation_flag = False
+        run_training(concepts_dynet_graph, hyperparams, train_entries, nb_train_entries, overview_logs, detail_logs)
+
+    models_path = "concept_extractor_models/" + model_name
+    if not os.path.exists(models_path):
+        os.makedirs(models_path)
+
+    # save vocabs
+    with open(models_path + "/words_vocab", "wb") as f:
+        pickle.dump(all_words_vocab, f)
+    with open(models_path + "/concepts_vocab", "wb") as f:
+        pickle.dump(all_concepts_vocab, f)
+    with open(models_path + "/verbs_vocab", "wb") as f:
+        pickle.dump(all_verbs_vocab, f)
+    with open(models_path + "/nonverbs_vocab", "wb") as f:
+        pickle.dump(all_nonverbs_vocab, f)
+    with open(models_path + "/dev_concepts_vocab", "wb") as f:
+        pickle.dump(all_dev_concepts_vocab, f)
+    with open(models_path + "/glove_embeddings_list", "wb") as f:
+        pickle.dump(words_glove_embeddings_list, f)
+
+    # save model
+    concepts_dynet_graph.model.save(models_path + "/graph")
+
+    print("Done")
+    detail_logs.close()
+    overview_logs.close()
+
+
+def testing(hyperparams):
+
+    model_name = get_model_name(hyperparams)
+    default_model_name = "WRITE SOME NAME HERE"
+    models_path = "concept_extractor_models/" + model_name
+
+    if not os.path.exists(models_path):
+        print("No such trained model. Loading default model: " + default_model_name)
+    else:
+        # get vocabs
+        with open(models_path + "/words_vocab", "rb") as f:
+            all_words_vocab = pickle.load(f)
+        with open(models_path + "/concepts_vocab", "rb") as f:
+            all_concepts_vocab = pickle.load(f)
+        with open(models_path + "/verbs_vocab", "rb") as f:
+            all_verbs_vocab = pickle.load(f)
+        with open(models_path + "/nonverbs_vocab", "rb") as f:
+            all_nonverbs_vocab = pickle.load(f)
+        with open(models_path + "/dev_concepts_vocab", "wb") as f:
+            all_dev_concepts_vocab = pickle.load(f)
+        with open(models_path + "/glove_embeddings_list", "wb") as f:
+            words_glove_embeddings_list = pickle.load(f)
+
+        # create graph
+        concepts_dynet_graph = ConceptsDynetGraph(all_words_vocab, all_concepts_vocab, words_glove_embeddings_list,
+                                                  all_verbs_vocab, all_nonverbs_vocab, hyperparams,
+                                                  all_dev_concepts_vocab)
+
+        # get model
+        concepts_dynet_graph.model.populate(models_path + "/graph")
+
+        # test
+        test_entries, nb_test_entries = read_test_data(hyperparams.alignment)
+        logs_path = "concept_extractor_logs/test/" + model_name
+
+        if not os.path.exists(logs_path):
+            os.makedirs(logs_path)
+
+        # log files
+        detail_logs_file_name = logs_path + "/concept_extractor_detailed_logs.txt"
+        overview_logs_file_name = logs_path + "/concept_extractor_overview_logs.txt"
+
+        # open log files
+        detail_logs = open(detail_logs_file_name, "w")
+        overview_logs = open(overview_logs_file_name, "w")
+
+        run_testing(concepts_dynet_graph, hyperparams, test_entries, nb_test_entries, overview_logs, detail_logs)
+
+
+if __name__ == "__main__":
+
+    hyperparams = ConceptsTrainerHyperparameters(encoder_nb_layers=ENCODER_NB_LAYERS,
+                                                 decoder_nb_layers=DECODER_NB_LAYERS,
+                                                 verb_nonverb_classifier_nb_layers=VERB_NONVERB_CLASSIFIER_NB_LAYERS,
+                                                 words_embedding_size=WORDS_EMBEDDING_SIZE,
+                                                 words_glove_embedding_size=WORDS_GLOVE_EMBEDDING_SIZE,
+                                                 concepts_embedding_size=CONCEPTS_EMBEDDING_SIZE,
+                                                 encoder_state_size=ENCODER_STATE_SIZE,
+                                                 decoder_state_size=DECODER_STATE_SIZE,
+                                                 verb_nonverb_classifier_state_size=VERB_NONVERB_CLASSIFIER_STATE_SIZE,
+                                                 attention_size=ATTENTION_SIZE,
+                                                 dropout_rate=DROPOUT_RATE,
+                                                 use_attention=USE_ATTENTION,
+                                                 use_glove=USE_GLOVE,
+                                                 use_verb_nonverb_classification=USE_VERB_NONVERB_CLASSIFICATION,
+                                                 nb_epochs=NB_EPOCHS,
+                                                 alignment=ALIGNMENT,
+                                                 validation_flag=False,
+                                                 experimental_run=EXPERIMENTAL_RUN,
+                                                 train=TRAIN)
+    if EXPERIMENTAL_RUN:
+        run_experiments(hyperparams)
+    elif TRAIN:
+        training(hyperparams)
+    else:
+        testing(hyperparams)
+
+

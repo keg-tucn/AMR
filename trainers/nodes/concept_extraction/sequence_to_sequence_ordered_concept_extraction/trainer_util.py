@@ -23,9 +23,11 @@ class ConceptsTrainerHyperparameters:
                  use_attention,
                  use_glove,
                  use_verb_nonverb_classification,
-                 max_sentence_length,
                  nb_epochs,
-                 validation_flag):
+                 alignment,
+                 validation_flag,
+                 experimental_run,
+                 train):
         self.encoder_nb_layers = encoder_nb_layers
         self.decoder_nb_layers = decoder_nb_layers
         self.verb_nonverb_classifier_nb_layers = verb_nonverb_classifier_nb_layers
@@ -40,9 +42,11 @@ class ConceptsTrainerHyperparameters:
         self.use_attention = use_attention
         self.use_glove = use_glove
         self.use_verb_nonverb_classification = use_verb_nonverb_classification
-        self.max_sentence_length = max_sentence_length
         self.nb_epochs = nb_epochs
+        self.alignment = alignment
         self.validation_flag = validation_flag
+        self.experimental_run = experimental_run
+        self.train = train
 
 
 def get_model_name(hyperparams):
@@ -53,6 +57,7 @@ def get_model_name(hyperparams):
         model_type = "vb-nonvb-dec_"
 
     model_name += model_type
+    model_name += (hyperparams.alignment + "_")
 
     if hyperparams.use_glove:
         model_name += ("glove-" + str(hyperparams.words_glove_embedding_size) + "_")
@@ -70,6 +75,9 @@ def get_model_name(hyperparams):
     model_name += ("attsize-" + str(hyperparams.attention_size) + "_")
     model_name += ("dropout-" + str(hyperparams.dropout_rate) + "_")
     model_name += ("epochs-" + str(hyperparams.nb_epochs))
+
+    if hyperparams.experimental_run:
+        model_name += "_noDev"
 
     return model_name
 
