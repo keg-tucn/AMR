@@ -76,7 +76,9 @@ def get_model_name(hyperparams):
         model_name += ("classiflay-" + str(hyperparams.verb_nonverb_classifier_nb_layers) + "-classifsize-" +
                        str(hyperparams.verb_nonverb_classifier_state_size) + "_")
 
-    model_name += ("attsize-" + str(hyperparams.attention_size) + "_")
+    if hyperparams.use_attention:
+        model_name += ("attsize-" + str(hyperparams.attention_size) + "_")
+
     model_name += ("dropout-" + str(hyperparams.dropout_rate) + "_")
     model_name += ("epochs-" + str(hyperparams.nb_epochs))
 
