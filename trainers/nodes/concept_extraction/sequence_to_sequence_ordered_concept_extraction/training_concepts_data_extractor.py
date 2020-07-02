@@ -45,7 +45,6 @@ def generate_dataset_entry(amr_id: str, amr_str: str, sentence: str):
     return ConceptsTrainingEntry(identified_concepts, new_sentence, logging_info, amr_str)
 
 
-# TODO: cache them to a file (to not always generate them)
 def generate_concepts_training_data_per_file(file_path, max_sentence_len=20):
     sentence_amr_triples = input_file_parser.extract_data_records(file_path)
     entries: List[ConceptsTrainingEntry] = []
@@ -78,11 +77,18 @@ def generate_concepts_training_data(file_paths: List[str], max_sentence_len=20):
     return all_entries, nb_all_entries_not_processed
 
 
-def read_train_test_data():
+def read_train_dev_data():
     train_entries, nb_train_failed = generate_concepts_training_data(get_all_paths('training'))
     nb_train_entries = len(train_entries)
     print(str(nb_train_entries) + ' train entries processed ' + str(nb_train_failed) + ' train entries failed')
-    test_entries, nb_test_failed = generate_concepts_training_data(get_all_paths('dev'))
+    dev_entries, nb_dev_failed = generate_concepts_training_data(get_all_paths('dev'))
+    nb_dev_entries = len(dev_entries)
+    print(str(nb_dev_entries) + ' dev entries processed ' + str(nb_dev_failed) + ' dev entries failed')
+    return train_entries, nb_train_entries, dev_entries, nb_dev_entries
+
+
+def read_test_data():
+    test_entries, nb_test_failed = generate_concepts_training_data(get_all_paths('test'))
     nb_test_entries = len(test_entries)
     print(str(nb_test_entries) + ' test entries processed ' + str(nb_test_failed) + ' test entries failed')
-    return train_entries, nb_train_entries, test_entries, nb_test_entries
+    test_entries, nb_test_entries

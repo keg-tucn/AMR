@@ -1,4 +1,7 @@
 # For memory problems
+import os
+import pickle
+
 import dynet_config
 # dynet_config.set(mem=1024)
 
@@ -11,9 +14,10 @@ from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_uti
     construct_concept_glove_embeddings_list
 from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extraction.trainer_util import is_verb, \
     compute_f_score, compute_metrics, ConceptsTrainerHyperparameters, get_golden_concept_indexes, initialize_decoders, \
-    generate_verbs_nonverbs, get_next_concept, get_last_concept_embedding, compute_bleu_score, create_vocabs
+    generate_verbs_nonverbs, get_next_concept, get_last_concept_embedding, compute_bleu_score, create_vocabs, \
+    get_word_index, get_model_name
 from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extraction.training_concepts_data_extractor import \
-    generate_concepts_training_data, ConceptsTrainingEntry, read_train_test_data
+    generate_concepts_training_data, ConceptsTrainingEntry, read_train_dev_data, read_test_data
 
 # TODO:
 # - HYPERPARAM SENTENCE LENGTH AND USE PREPROCESSING IN DATA_EXTRACTOR
@@ -45,21 +49,21 @@ USE_PREPROCESSING = True
 USE_VERB_NONVERB_CLASSIFICATION = False
 
 MAX_SENTENCE_LENGTH = 50
-NB_EPOCHS = 40
+NB_EPOCHS = 5
 
 
 class ConceptsDynetGraph:
-    def __init__(self, model, words_vocab, concepts_vocab, words_glove_embeddings_list, concepts_verbs_vocab,
-                 concepts_nonverbs_vocab, hyperparams, test_concepts_vocab):
+    def __init__(self, words_vocab, concepts_vocab, words_glove_embeddings_list, concepts_verbs_vocab,
+                 concepts_nonverbs_vocab, hyperparams, dev_concepts_vocab):
 
-        self.model = model
+        self.model = dy.Model()
 
         # BASE MODEL PARAMETERS
         # VOCABS
         self.words_vocab: Vocab = words_vocab
         self.concepts_vocab: Vocab = concepts_vocab
         # REMOVE WHEN LOSS NOT COMPUTED FOR DEV
-        self.test_concepts_vocab: Vocab = test_concepts_vocab
+        self.dev_concepts_vocab: Vocab = dev_concepts_vocab
 
         # EMBEDDINGS
         self.word_embeddings = self.model.add_lookup_parameters((words_vocab.size(), hyperparams.words_embedding_size))
@@ -168,12 +172,14 @@ def embed_sequence(concepts_dynet_graph, sequence, hyperparams):
     # Add START and END markers to sequence
     sequence = [START_OF_SEQUENCE] + list(sequence) + [END_OF_SEQUENCE]
 
-    sequence = [concepts_dynet_graph.words_vocab.w2i[word] for word in sequence]
+    index_sequence = []
+    for word in sequence:
+        index_sequence.append(get_word_index(concepts_dynet_graph, word))
 
     if hyperparams.use_glove:
-        return [dy.lookup(concepts_dynet_graph.word_glove_embeddings, index, False) for index in sequence]
+        return [dy.lookup(concepts_dynet_graph.word_glove_embeddings, index, False) for index in index_sequence]
 
-    return [dy.lookup(concepts_dynet_graph.word_embeddings, index) for index in sequence]
+    return [dy.lookup(concepts_dynet_graph.word_embeddings, index) for index in index_sequence]
 
 
 def encode_input_sequence(concepts_dynet_graph, sequence):
@@ -478,26 +484,52 @@ def test_sentence(concepts_dynet_graph, sentence, identified_concepts, hyperpara
            accuracy, correct_order_percentage, correct_distances_percentage
 
 
-# log files
-detail_logs_file_name = "logs/concept_extractor_detailed_logs.txt"
-detail_test_logs_file_name = "logs/concept_extractor_detailed_test_logs.txt"
-overview_logs_file_name = "logs/concept_extractor_overview_logs.txt"
+def testing(hyperparams):
+
+    model_name = get_model_name(hyperparams)
+    models_path = "concept_extractor_models/" + model_name
+
+    if not os.path.exists(models_path):
+        print("No such trained model.")
+    else:
+        # get vocabs
+        with open(models_path + "/words_vocab", "rb") as f:
+            all_words_vocab = pickle.load(f)
+        with open(models_path + "/concepts_vocab", "rb") as f:
+            all_concepts_vocab = pickle.load(f)
+        with open(models_path + "/verbs_vocab", "rb") as f:
+            all_verbs_vocab = pickle.load(f)
+        with open(models_path + "/nonverbs_vocab", "rb") as f:
+            all_nonverbs_vocab = pickle.load(f)
+        # see about these LATER
+        with open(models_path + "/dev_concepts_vocab", "wb") as f:
+            all_dev_concepts_vocab = pickle.load(f)
+        with open(models_path + "/glove_embeddings_list", "wb") as f:
+            words_glove_embeddings_list = pickle.load(f)
+
+        # create graph
+        concepts_dynet_graph = ConceptsDynetGraph(all_words_vocab, all_concepts_vocab, words_glove_embeddings_list,
+                                                  all_verbs_vocab, all_nonverbs_vocab, hyperparams,
+                                                  all_dev_concepts_vocab)
+
+        # get model
+        concepts_dynet_graph.model.populate(models_path + "/graph")
+
+        # test
+        test_entries, nb_test_entries = read_test_data()
+        print("Running testing")
+
 
 if __name__ == "__main__":
-    train_entries, nb_train_entries, test_entries, nb_test_entries = read_train_test_data()
+    train_entries, nb_train_entries, dev_entries, nb_dev_entries = read_train_dev_data()
 
-    all_concepts_vocab, all_verbs_vocab, all_nonverbs_vocab, all_test_concepts_vocab, all_words_vocab = \
-        create_vocabs(train_entries, test_entries)
+    all_concepts_vocab, all_verbs_vocab, all_nonverbs_vocab, all_dev_concepts_vocab, all_words_vocab = \
+        create_vocabs(train_entries, dev_entries)
 
     word_glove_embeddings = read_glove_embeddings_from_file(WORDS_GLOVE_EMBEDDING_SIZE)
     words_glove_embeddings_list = construct_concept_glove_embeddings_list(word_glove_embeddings,
                                                                           WORDS_GLOVE_EMBEDDING_SIZE,
                                                                           all_words_vocab)
-
-    # open log files
-    detail_logs = open(detail_logs_file_name, "w")
-    detail_test_logs = open(detail_test_logs_file_name, "w")
-    overview_logs = open(overview_logs_file_name, "w")
 
     train_flag = False
 
@@ -520,10 +552,26 @@ if __name__ == "__main__":
                                                  nb_epochs=NB_EPOCHS,
                                                  train_flag=train_flag)
 
-    model = dy.Model()
-    concepts_dynet_graph = ConceptsDynetGraph(model, all_words_vocab, all_concepts_vocab, words_glove_embeddings_list,
+    concepts_dynet_graph = ConceptsDynetGraph(all_words_vocab, all_concepts_vocab, words_glove_embeddings_list,
                                               all_verbs_vocab, all_nonverbs_vocab, hyperparams,
-                                              all_test_concepts_vocab)
+                                              all_dev_concepts_vocab)
+
+    model_name = get_model_name(hyperparams)
+
+    logs_path = "concept_extractor_logs/" + model_name
+
+    if not os.path.exists(logs_path):
+        os.makedirs(logs_path)
+
+    # log files
+    detail_logs_file_name = logs_path + "/concept_extractor_detailed_logs.txt"
+    detail_test_logs_file_name = logs_path +  "/concept_extractor_detailed_test_logs.txt"
+    overview_logs_file_name = logs_path + "/concept_extractor_overview_logs.txt"
+
+    # open log files
+    detail_logs = open(detail_logs_file_name, "w")
+    detail_test_logs = open(detail_test_logs_file_name, "w")
+    overview_logs = open(overview_logs_file_name, "w")
 
     for epoch in range(1, NB_EPOCHS + 1):
         print("Epoch " + str(epoch) + "\n")
@@ -628,7 +676,7 @@ if __name__ == "__main__":
 
         test_entry: ConceptsTrainingEntry
         hyperparams.train_flag = False
-        for test_entry in test_entries:
+        for test_entry in dev_entries:
             # With last_embedding from golden
             (predicted_concepts, entry_loss, entry_bleu, entry_nb_correctly_predicted_concepts, entry_precision,
              entry_recall, entry_f_score, entry_accuracy, entry_correct_order_percentage,
@@ -694,16 +742,16 @@ if __name__ == "__main__":
             detail_test_logs.write("\n")
 
         # With last_embedding from golden
-        avg_loss = sum_loss / nb_test_entries
-        avg_bleu = sum_bleu / nb_test_entries
-        avg_nb_correctly_predicted_concepts = sum_nb_correctly_predicted_concepts / nb_test_entries
-        avg_precision = sum_precision / nb_test_entries
-        avg_recall = sum_recall / nb_test_entries
-        avg_f_score = sum_f_score / nb_test_entries
-        avg_accuracy = sum_accuracy / nb_test_entries
-        avg_correct_order_percentage = sum_correct_order_percentage / nb_test_entries
-        avg_correct_distances_percentage = sum_correct_distances_percentage / nb_test_entries
-        avg_classifier_loss = sum_classifier_loss / nb_test_entries
+        avg_loss = sum_loss / nb_dev_entries
+        avg_bleu = sum_bleu / nb_dev_entries
+        avg_nb_correctly_predicted_concepts = sum_nb_correctly_predicted_concepts / nb_dev_entries
+        avg_precision = sum_precision / nb_dev_entries
+        avg_recall = sum_recall / nb_dev_entries
+        avg_f_score = sum_f_score / nb_dev_entries
+        avg_accuracy = sum_accuracy / nb_dev_entries
+        avg_correct_order_percentage = sum_correct_order_percentage / nb_dev_entries
+        avg_correct_distances_percentage = sum_correct_distances_percentage / nb_dev_entries
+        avg_classifier_loss = sum_classifier_loss / nb_dev_entries
 
         print("Golden test LOSS: " + str(avg_loss))
         print("Golden test BLEU: " + str(avg_bleu))
@@ -738,14 +786,14 @@ if __name__ == "__main__":
         overview_logs.write("\n")
 
         # With last_embedding from predictions
-        avg_test_bleu = sum_test_bleu / nb_test_entries
-        avg_test_nb_correctly_predicted_concepts = sum_test_nb_correctly_predicted_concepts / nb_test_entries
-        avg_test_precision = sum_test_precision / nb_test_entries
-        avg_test_recall = sum_test_recall / nb_test_entries
-        avg_test_f_score = sum_test_f_score / nb_test_entries
-        avg_test_accuracy = sum_test_accuracy / nb_test_entries
-        avg_test_correct_order_percentage = sum_test_correct_order_percentage / nb_test_entries
-        avg_test_correct_distances_percentage = sum_test_correct_distances_percentage / nb_test_entries
+        avg_test_bleu = sum_test_bleu / nb_dev_entries
+        avg_test_nb_correctly_predicted_concepts = sum_test_nb_correctly_predicted_concepts / nb_dev_entries
+        avg_test_precision = sum_test_precision / nb_dev_entries
+        avg_test_recall = sum_test_recall / nb_dev_entries
+        avg_test_f_score = sum_test_f_score / nb_dev_entries
+        avg_test_accuracy = sum_test_accuracy / nb_dev_entries
+        avg_test_correct_order_percentage = sum_test_correct_order_percentage / nb_dev_entries
+        avg_test_correct_distances_percentage = sum_test_correct_distances_percentage / nb_dev_entries
 
         print("Test BLEU: " + str(avg_test_bleu))
         print("Average number of correctly predicted concepts per sentence: " +
@@ -773,6 +821,28 @@ if __name__ == "__main__":
             "Percentage of concepts at correct distances (only for correctly predicted concepts) test: " +
             str(avg_test_correct_distances_percentage) + "\n")
         overview_logs.write("\n")
+
+    models_path = "concept_extractor_models/" + model_name
+    if not os.path.exists(models_path):
+        os.makedirs(models_path)
+
+    # save vocabs
+    with open(models_path + "/words_vocab", "wb") as f:
+        pickle.dump(all_words_vocab, f)
+    with open(models_path + "/concepts_vocab", "wb") as f:
+        pickle.dump(all_concepts_vocab, f)
+    with open(models_path + "/verbs_vocab", "wb") as f:
+        pickle.dump(all_verbs_vocab, f)
+    with open(models_path + "/nonverbs_vocab", "wb") as f:
+        pickle.dump(all_nonverbs_vocab, f)
+    # see about these LATER
+    with open(models_path + "/dev_concepts_vocab", "wb") as f:
+        pickle.dump(all_dev_concepts_vocab, f)
+    with open(models_path + "/glove_embeddings_list", "wb") as f:
+        pickle.dump(words_glove_embeddings_list, f)
+
+    # save model
+    concepts_dynet_graph.model.save(models_path + "/graph")
 
     print("Done")
     detail_logs.close()

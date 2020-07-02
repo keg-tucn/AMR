@@ -47,6 +47,23 @@ class ConceptsTrainerHyperparameters:
         self.train_flag = train_flag
 
 
+def get_model_name(hyperparams):
+    model_type = "base_"
+    if hyperparams.use_verb_nonverb_classification:
+        model_type = "vb-nonvb-dec_"
+
+    model_name = "model_" + model_type
+    return model_name
+
+
+def get_word_index(concepts_dynet_graph, word):
+    if word in concepts_dynet_graph.words_vocab.w2i.keys():
+        index = concepts_dynet_graph.words_vocab.w2i[word]
+    else:
+        index = concepts_dynet_graph.words_vocab.w2i['UNKOWN']
+    return index
+
+
 def is_verb(concept):
     splitted_concept = concept.split('-')
     if splitted_concept[len(splitted_concept) - 1].isdigit():
@@ -80,14 +97,14 @@ def get_golden_concept_indexes(concepts_dynet_graph, golden_concepts, hyperparam
                     golden_concept_indexes.append(concepts_dynet_graph.concepts_nonverbs_vocab.w2i[concept])
             # REMOVE WHEN LOSS NOT COMPUTED FOR DEV
             else:
-                golden_concept_indexes.append(concepts_dynet_graph.test_concepts_vocab.w2i[concept])
+                golden_concept_indexes.append(concepts_dynet_graph.dev_concepts_vocab.w2i[concept])
     else:
         for concept in golden_concepts:
             if concept in concepts_dynet_graph.concepts_vocab.w2i:
                 golden_concept_indexes.append(concepts_dynet_graph.concepts_vocab.w2i[concept])
             # REMOVE WHEN LOSS NOT COMPUTED FOR DEV
             else:
-                golden_concept_indexes.append(concepts_dynet_graph.test_concepts_vocab.w2i[concept])
+                golden_concept_indexes.append(concepts_dynet_graph.dev_concepts_vocab.w2i[concept])
         # embedded_golden_concepts = [concepts_dynet_graph.concepts_vocab.w2i[concept] for concept in golden_concepts]
 
     return golden_concept_indexes
@@ -240,7 +257,7 @@ def compute_metrics(golden_concepts, predicted_concepts):
     return accuracy, correct_order_percentage, correct_distances_percentage
 
 
-def create_vocabs(train_entries, test_entries):
+def create_vocabs(train_entries, dev_entries):
     train_concepts = [train_entry.identified_concepts for train_entry in train_entries]
     all_concepts = get_all_concepts(train_concepts)
     all_concepts.append(START_OF_SEQUENCE)
@@ -251,23 +268,24 @@ def create_vocabs(train_entries, test_entries):
     all_nonverbs_vocab = ds.Vocab.from_list(all_nonverbs)
 
     # REMOVE WHEN LOSS NOT COMPUTED FOR DEV
-    test_concepts = [test_entry.identified_concepts for test_entry in test_entries]
-    all_test_concepts = get_all_concepts(test_concepts)
-    all_test_concepts.append(START_OF_SEQUENCE)
-    all_test_concepts.append(END_OF_SEQUENCE)
-    all_test_concepts_vocab = ds.Vocab.from_list(all_test_concepts)
+    dev_concepts = [dev_entry.identified_concepts for dev_entry in dev_entries]
+    all_dev_concepts = get_all_concepts(dev_concepts)
+    all_dev_concepts.append(START_OF_SEQUENCE)
+    all_dev_concepts.append(END_OF_SEQUENCE)
+    all_dev_concepts_vocab = ds.Vocab.from_list(all_dev_concepts)
 
     train_words = []
     for train_entry in train_entries:
         for word in train_entry.sentence.split():
             train_words.append(word)
     dev_words = []
-    for test_entry in test_entries:
+    for test_entry in dev_entries:
         for word in test_entry.sentence.split():
             dev_words.append(word)
     all_words = list(set(train_words + dev_words))
     all_words.append(START_OF_SEQUENCE)
     all_words.append(END_OF_SEQUENCE)
+    all_words.append('UNKNOWN')
     all_words_vocab = ds.Vocab.from_list(all_words)
 
-    return all_concepts_vocab, all_verbs_vocab, all_nonverbs_vocab, all_test_concepts_vocab, all_words_vocab
+    return all_concepts_vocab, all_verbs_vocab, all_nonverbs_vocab, all_dev_concepts_vocab, all_words_vocab
