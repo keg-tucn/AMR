@@ -18,9 +18,7 @@ from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extr
 # dynet_config.set(mem=1024)
 
 # TODO:
-# - HYPERPARAM SENTENCE LENGTH AND USE PREPROCESSING IN DATA_EXTRACTOR
-# - MOVE LOGS AND VOCAB CREATIONS FROM MAIN INTO FUNCTIONS
-# - Save trained model parameters to files
+# - HYPERPARAM TYPE OF preprocessing in data_extractor
 # - Include Hyperparam option for choosing alignment type
 # - RL
 
@@ -44,6 +42,8 @@ DROPOUT_RATE = 0.6
 USE_ATTENTION = True
 USE_GLOVE = False
 USE_VERB_NONVERB_CLASSIFICATION = False
+ALIGNMENT = "jamr"
+
 
 MAX_SENTENCE_LENGTH = 50
 NB_EPOCHS = 5
@@ -753,12 +753,12 @@ def testing(hyperparams):
         concepts_dynet_graph.model.populate(models_path + "/graph")
 
         # test
-        test_entries, nb_test_entries = read_test_data()
+        test_entries, nb_test_entries = read_test_data(ALIGNMENT)
         run_testing(concepts_dynet_graph, hyperparams, test_entries, nb_test_entries)
 
 
 if __name__ == "__main__":
-    train_entries, nb_train_entries, dev_entries, nb_dev_entries = read_train_dev_data()
+    train_entries, nb_train_entries, dev_entries, nb_dev_entries = read_train_dev_data(ALIGNMENT)
 
     all_concepts_vocab, all_verbs_vocab, all_nonverbs_vocab, all_dev_concepts_vocab, all_words_vocab = \
         create_vocabs(train_entries, dev_entries)

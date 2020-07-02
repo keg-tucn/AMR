@@ -1,7 +1,7 @@
 from typing import List
 
 from data_extraction import input_file_parser
-from data_extraction.dataset_reading_util import get_all_paths
+from data_extraction.dataset_reading_util import get_all_paths, get_all_paths_for_alignment
 from models.amr_data import CustomizedAMR
 from models.amr_graph import AMR
 from models.concept import IdentifiedConcepts, Concept
@@ -77,18 +77,18 @@ def generate_concepts_training_data(file_paths: List[str], max_sentence_len=20):
     return all_entries, nb_all_entries_not_processed
 
 
-def read_train_dev_data():
-    train_entries, nb_train_failed = generate_concepts_training_data(get_all_paths('training'))
+def read_train_dev_data(alignment):
+    train_entries, nb_train_failed = generate_concepts_training_data(get_all_paths_for_alignment('training', alignment))
     nb_train_entries = len(train_entries)
     print(str(nb_train_entries) + ' train entries processed ' + str(nb_train_failed) + ' train entries failed')
-    dev_entries, nb_dev_failed = generate_concepts_training_data(get_all_paths('dev'))
+    dev_entries, nb_dev_failed = generate_concepts_training_data(get_all_paths_for_alignment('dev', alignment))
     nb_dev_entries = len(dev_entries)
     print(str(nb_dev_entries) + ' dev entries processed ' + str(nb_dev_failed) + ' dev entries failed')
     return train_entries, nb_train_entries, dev_entries, nb_dev_entries
 
 
-def read_test_data():
-    test_entries, nb_test_failed = generate_concepts_training_data(get_all_paths('test'))
+def read_test_data(alignment):
+    test_entries, nb_test_failed = generate_concepts_training_data(get_all_paths_for_alignment('test', alignment))
     nb_test_entries = len(test_entries)
     print(str(nb_test_entries) + ' test entries processed ' + str(nb_test_failed) + ' test entries failed')
     test_entries, nb_test_entries
