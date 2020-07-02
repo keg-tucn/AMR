@@ -22,11 +22,10 @@ class ConceptsTrainerHyperparameters:
                  dropout_rate,
                  use_attention,
                  use_glove,
-                 use_preprocessing,
                  use_verb_nonverb_classification,
                  max_sentence_length,
                  nb_epochs,
-                 train_flag):
+                 validation_flag):
         self.encoder_nb_layers = encoder_nb_layers
         self.decoder_nb_layers = decoder_nb_layers
         self.verb_nonverb_classifier_nb_layers = verb_nonverb_classifier_nb_layers
@@ -40,11 +39,10 @@ class ConceptsTrainerHyperparameters:
         self.dropout_rate = dropout_rate
         self.use_attention = use_attention
         self.use_glove = use_glove
-        self.use_preprocessing = use_preprocessing
         self.use_verb_nonverb_classification = use_verb_nonverb_classification
         self.max_sentence_length = max_sentence_length
         self.nb_epochs = nb_epochs
-        self.train_flag = train_flag
+        self.validation_flag = validation_flag
 
 
 def get_model_name(hyperparams):

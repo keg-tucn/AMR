@@ -2,22 +2,20 @@
 import os
 import pickle
 
-import dynet_config
-# dynet_config.set(mem=1024)
-
 import dynet as dy
 
 from data_extraction.word_embeddings_reader import read_glove_embeddings_from_file
 from deep_dynet.support import Vocab
-from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer import get_all_concepts
 from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_util import \
     construct_concept_glove_embeddings_list
 from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extraction.trainer_util import is_verb, \
     compute_f_score, compute_metrics, ConceptsTrainerHyperparameters, get_golden_concept_indexes, initialize_decoders, \
-    generate_verbs_nonverbs, get_next_concept, get_last_concept_embedding, compute_bleu_score, create_vocabs, \
+    get_next_concept, get_last_concept_embedding, compute_bleu_score, create_vocabs, \
     get_word_index, get_model_name
 from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extraction.training_concepts_data_extractor import \
-    generate_concepts_training_data, ConceptsTrainingEntry, read_train_dev_data, read_test_data
+    ConceptsTrainingEntry, read_train_dev_data, read_test_data
+
+# dynet_config.set(mem=1024)
 
 # TODO:
 # - HYPERPARAM SENTENCE LENGTH AND USE PREPROCESSING IN DATA_EXTRACTOR
@@ -45,7 +43,6 @@ DROPOUT_RATE = 0.6
 
 USE_ATTENTION = True
 USE_GLOVE = False
-USE_PREPROCESSING = True
 USE_VERB_NONVERB_CLASSIFICATION = False
 
 MAX_SENTENCE_LENGTH = 50
@@ -62,7 +59,6 @@ class ConceptsDynetGraph:
         # VOCABS
         self.words_vocab: Vocab = words_vocab
         self.concepts_vocab: Vocab = concepts_vocab
-        # REMOVE WHEN LOSS NOT COMPUTED FOR DEV
         self.dev_concepts_vocab: Vocab = dev_concepts_vocab
 
         # EMBEDDINGS
@@ -253,8 +249,8 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, hyperparams)
     classifier_loss_list = []
     predicted_concepts = []
 
-    # REMOVE WHEN LOSS NOT COMPUTED FOR DEV
-    if not hyperparams.train_flag:
+    # for the cases when loss is computed on dev
+    if hyperparams.validation_flag:
         input_matrix = input_matrix * (1 - concepts_dynet_graph.dropout_rate)
 
     i = 0
@@ -283,8 +279,8 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, hyperparams)
         else:
             vector = dy.concatenate([input_matrix[non_attention_i], last_concept_embedding])
 
-        # dropout -- REMOVE CONDITION WHEN LOSS NOT COMPUTED FOR DEV
-        if hyperparams.train_flag:
+        # dropout when training, but not at validation
+        if not hyperparams.validation_flag:
             vector = dy.dropout(vector, concepts_dynet_graph.dropout_rate)
 
         classifier_loss = classify_verb_nonverb(concepts_dynet_graph, vector, golden_concepts[i])
@@ -450,7 +446,7 @@ def train_sentence(concepts_dynet_graph, sentence, identified_concepts, hyperpar
     loss_value = loss.value()
     classifier_loss_value = classifier_loss.value()
 
-    if hyperparams.train_flag:
+    if not hyperparams.validation_flag:
         loss.backward()
         if hyperparams.use_verb_nonverb_classification:
             classifier_loss.backward()
@@ -482,42 +478,6 @@ def test_sentence(concepts_dynet_graph, sentence, identified_concepts, hyperpara
 
     return predicted_concepts, bleu_score, nb_correctly_predicted_concepts, precision, recall, f_score, \
            accuracy, correct_order_percentage, correct_distances_percentage
-
-
-def testing(hyperparams):
-
-    model_name = get_model_name(hyperparams)
-    models_path = "concept_extractor_models/" + model_name
-
-    if not os.path.exists(models_path):
-        # IMPLEMENT LOAD DEFAULT MODEL
-        print("No such trained model.")
-    else:
-        # get vocabs
-        with open(models_path + "/words_vocab", "rb") as f:
-            all_words_vocab = pickle.load(f)
-        with open(models_path + "/concepts_vocab", "rb") as f:
-            all_concepts_vocab = pickle.load(f)
-        with open(models_path + "/verbs_vocab", "rb") as f:
-            all_verbs_vocab = pickle.load(f)
-        with open(models_path + "/nonverbs_vocab", "rb") as f:
-            all_nonverbs_vocab = pickle.load(f)
-        with open(models_path + "/dev_concepts_vocab", "wb") as f:
-            all_dev_concepts_vocab = pickle.load(f)
-        with open(models_path + "/glove_embeddings_list", "wb") as f:
-            words_glove_embeddings_list = pickle.load(f)
-
-        # create graph
-        concepts_dynet_graph = ConceptsDynetGraph(all_words_vocab, all_concepts_vocab, words_glove_embeddings_list,
-                                                  all_verbs_vocab, all_nonverbs_vocab, hyperparams,
-                                                  all_dev_concepts_vocab)
-
-        # get model
-        concepts_dynet_graph.model.populate(models_path + "/graph")
-
-        # test
-        test_entries, nb_test_entries = read_test_data()
-        run_testing(concepts_dynet_graph, hyperparams, test_entries, nb_test_entries)
 
 
 def run_training(concepts_dynet_graph, hyperparams, train_entries, nb_train_entries, overview_logs, detail_logs):
@@ -622,8 +582,7 @@ def run_testing(concepts_dynet_graph, hyperparams, test_entries, nb_test_entries
         detail_logs.write(test_entry.logging_info)
         detail_logs.write("PREDICTED concepts: " + str(test_predicted_concepts) + "\n")
         detail_logs.write("BLEU: " + str(test_entry_bleu) + "\n")
-        detail_logs.write("Correctly predicted concepts: " +
-                              str(test_entry_nb_correctly_predicted_concepts) + "\n")
+        detail_logs.write("Correctly predicted concepts: " + str(test_entry_nb_correctly_predicted_concepts) + "\n")
         detail_logs.write("PRECISION: " + str(test_entry_precision) + "\n")
         detail_logs.write("RECALL: " + str(test_entry_recall) + "\n")
         detail_logs.write("F-SCORE: " + str(test_entry_f_score) + "\n")
@@ -673,6 +632,131 @@ def run_testing(concepts_dynet_graph, hyperparams, test_entries, nb_test_entries
     overview_logs.write("\n")
 
 
+def run_validation(concepts_dynet_graph, hyperparams, dev_entries, nb_dev_entries, overview_logs, detail_logs):
+    sum_loss = 0
+    sum_bleu = 0
+    sum_nb_correctly_predicted_concepts = 0
+    sum_precision = 0
+    sum_recall = 0
+    sum_f_score = 0
+    sum_accuracy = 0
+    sum_correct_order_percentage = 0
+    sum_correct_distances_percentage = 0
+    sum_classifier_loss = 0
+
+    dev_entry: ConceptsTrainingEntry
+    for dev_entry in dev_entries:
+        (predicted_concepts, entry_loss, entry_bleu, entry_nb_correctly_predicted_concepts, entry_precision,
+         entry_recall, entry_f_score, entry_accuracy, entry_correct_order_percentage,
+         entry_correct_distances_percentage, entry_classifier_loss) = \
+            train_sentence(concepts_dynet_graph, dev_entry.sentence, dev_entry.identified_concepts, hyperparams)
+
+        sum_loss += entry_loss
+        sum_bleu += entry_bleu
+        sum_nb_correctly_predicted_concepts += entry_nb_correctly_predicted_concepts
+        sum_precision += entry_precision
+        sum_recall += entry_recall
+        sum_f_score += entry_f_score
+        sum_accuracy += entry_accuracy
+        sum_correct_order_percentage += entry_correct_order_percentage
+        sum_correct_distances_percentage += entry_correct_distances_percentage
+        sum_classifier_loss += entry_classifier_loss
+
+        detail_logs.write(dev_entry.logging_info)
+        detail_logs.write("PREDICTED concepts: " + str(predicted_concepts) + "\n")
+        detail_logs.write("BLEU: " + str(entry_bleu) + "\n")
+        detail_logs.write("Correctly predicted concepts: " + str(entry_nb_correctly_predicted_concepts) + "\n")
+        detail_logs.write("PRECISION: " + str(entry_precision) + "\n")
+        detail_logs.write("RECALL: " + str(entry_recall) + "\n")
+        detail_logs.write("F-SCORE: " + str(entry_f_score) + "\n")
+        detail_logs.write("ACCURACY (correctly predicted concepts on correct positions): " +
+                          str(entry_accuracy) + "\n")
+        detail_logs.write("Percentage of concepts in correct order (only for correctly predicted concepts): " +
+                          str(entry_correct_order_percentage) + "\n")
+        detail_logs.write("Percentage of concepts at correct distances (only for correctly predicted concepts): " +
+                          str(entry_correct_distances_percentage) + "\n")
+        detail_logs.write("\n")
+
+    avg_loss = sum_loss / nb_dev_entries
+    avg_bleu = sum_bleu / nb_dev_entries
+    avg_nb_correctly_predicted_concepts = sum_nb_correctly_predicted_concepts / nb_dev_entries
+    avg_precision = sum_precision / nb_dev_entries
+    avg_recall = sum_recall / nb_dev_entries
+    avg_f_score = sum_f_score / nb_dev_entries
+    avg_accuracy = sum_accuracy / nb_dev_entries
+    avg_correct_order_percentage = sum_correct_order_percentage / nb_dev_entries
+    avg_correct_distances_percentage = sum_correct_distances_percentage / nb_dev_entries
+    avg_classifier_loss = sum_classifier_loss / nb_dev_entries
+
+    print("Golden test LOSS: " + str(avg_loss))
+    print("Golden test BLEU: " + str(avg_bleu))
+    print("Average number of correctly predicted concepts per sentence: " +
+          str(avg_nb_correctly_predicted_concepts))
+    print("Golden test PRECISION: " + str(avg_precision))
+    print("Golden test RECALL: " + str(avg_recall))
+    print("Golden test F-SCORE: " + str(avg_f_score))
+    print("Golden test ACCURACY (correctly predicted concepts on correct positions): " + str(avg_accuracy))
+    print("Percentage of concepts in correct order (only for correctly predicted concepts): " +
+          str(avg_correct_order_percentage))
+    print("Percentage of concepts at correct distances (only for correctly predicted concepts): " +
+          str(avg_correct_distances_percentage))
+    print("Golden test CLASSIFIER LOSS: " + str(avg_classifier_loss))
+
+    overview_logs.write("Golden test LOSS: " + str(avg_loss) + "\n")
+    overview_logs.write("Golden test BLEU: " + str(avg_bleu) + "\n")
+    overview_logs.write("Average number of correctly predicted concepts per golden test sentence: " +
+                        str(avg_nb_correctly_predicted_concepts) + "\n")
+    overview_logs.write("Golden test PRECISION: " + str(avg_precision) + "\n")
+    overview_logs.write("Golden test RECALL: " + str(avg_recall) + "\n")
+    overview_logs.write("Golden test F-SCORE: " + str(avg_f_score) + "\n")
+    overview_logs.write("Golden test ACCURACY (correctly predicted concepts on correct positions): " +
+                        str(avg_accuracy) + "\n")
+    overview_logs.write(
+        "Percentage of concepts in correct order (only for correctly predicted concepts) golden test: " +
+        str(avg_correct_order_percentage) + "\n")
+    overview_logs.write(
+        "Percentage of concepts at correct distances (only for correctly predicted concepts) golden test: " +
+        str(avg_correct_distances_percentage) + "\n")
+    overview_logs.write("Golden test CLASSIFIER LOSS: " + str(avg_classifier_loss) + "\n")
+    overview_logs.write("\n")
+
+
+def testing(hyperparams):
+
+    model_name = get_model_name(hyperparams)
+    models_path = "concept_extractor_models/" + model_name
+
+    if not os.path.exists(models_path):
+        # IMPLEMENT LOAD DEFAULT MODEL
+        print("No such trained model.")
+    else:
+        # get vocabs
+        with open(models_path + "/words_vocab", "rb") as f:
+            all_words_vocab = pickle.load(f)
+        with open(models_path + "/concepts_vocab", "rb") as f:
+            all_concepts_vocab = pickle.load(f)
+        with open(models_path + "/verbs_vocab", "rb") as f:
+            all_verbs_vocab = pickle.load(f)
+        with open(models_path + "/nonverbs_vocab", "rb") as f:
+            all_nonverbs_vocab = pickle.load(f)
+        with open(models_path + "/dev_concepts_vocab", "wb") as f:
+            all_dev_concepts_vocab = pickle.load(f)
+        with open(models_path + "/glove_embeddings_list", "wb") as f:
+            words_glove_embeddings_list = pickle.load(f)
+
+        # create graph
+        concepts_dynet_graph = ConceptsDynetGraph(all_words_vocab, all_concepts_vocab, words_glove_embeddings_list,
+                                                  all_verbs_vocab, all_nonverbs_vocab, hyperparams,
+                                                  all_dev_concepts_vocab)
+
+        # get model
+        concepts_dynet_graph.model.populate(models_path + "/graph")
+
+        # test
+        test_entries, nb_test_entries = read_test_data()
+        run_testing(concepts_dynet_graph, hyperparams, test_entries, nb_test_entries)
+
+
 if __name__ == "__main__":
     train_entries, nb_train_entries, dev_entries, nb_dev_entries = read_train_dev_data()
 
@@ -684,7 +768,7 @@ if __name__ == "__main__":
                                                                           WORDS_GLOVE_EMBEDDING_SIZE,
                                                                           all_words_vocab)
 
-    train_flag = False
+    validation_flag = False
 
     hyperparams = ConceptsTrainerHyperparameters(encoder_nb_layers=ENCODER_NB_LAYERS,
                                                  decoder_nb_layers=DECODER_NB_LAYERS,
@@ -699,11 +783,10 @@ if __name__ == "__main__":
                                                  dropout_rate=DROPOUT_RATE,
                                                  use_attention=USE_ATTENTION,
                                                  use_glove=USE_GLOVE,
-                                                 use_preprocessing=USE_PREPROCESSING,
                                                  use_verb_nonverb_classification=USE_VERB_NONVERB_CLASSIFICATION,
                                                  max_sentence_length=MAX_SENTENCE_LENGTH,
                                                  nb_epochs=NB_EPOCHS,
-                                                 train_flag=train_flag)
+                                                 validation_flag=validation_flag)
 
     concepts_dynet_graph = ConceptsDynetGraph(all_words_vocab, all_concepts_vocab, words_glove_embeddings_list,
                                               all_verbs_vocab, all_nonverbs_vocab, hyperparams,
@@ -718,124 +801,27 @@ if __name__ == "__main__":
 
     # log files
     detail_logs_file_name = logs_path + "/concept_extractor_detailed_logs.txt"
-    detail_dev_logs_file_name = logs_path + "/concept_extractor_detailed_test_logs.txt"
+    detail_test_logs_file_name = logs_path + "/concept_extractor_detailed_test_logs.txt"
     overview_logs_file_name = logs_path + "/concept_extractor_overview_logs.txt"
 
     # open log files
     detail_logs = open(detail_logs_file_name, "w")
-    detail_dev_logs = open(detail_dev_logs_file_name, "w")
+    detail_test_logs = open(detail_test_logs_file_name, "w")
     overview_logs = open(overview_logs_file_name, "w")
 
     for epoch in range(1, NB_EPOCHS + 1):
         print("Epoch " + str(epoch) + "\n")
         detail_logs.write("Epoch " + str(epoch) + "\n\n")
+        detail_test_logs.write("Epoch " + str(epoch) + "\n\n")
         overview_logs.write("Epoch " + str(epoch) + "\n\n")
 
-        hyperparams.train_flag = True
+        hyperparams.validation_flag = False
         run_training(concepts_dynet_graph, hyperparams, train_entries, nb_train_entries, overview_logs, detail_logs)
 
-        # golden
-        sum_loss = 0
-        sum_bleu = 0
-        sum_nb_correctly_predicted_concepts = 0
-        sum_precision = 0
-        sum_recall = 0
-        sum_f_score = 0
-        sum_accuracy = 0
-        sum_correct_order_percentage = 0
-        sum_correct_distances_percentage = 0
-        sum_classifier_loss = 0
+        hyperparams.validation_flag = True
+        run_validation(concepts_dynet_graph, hyperparams, dev_entries, nb_dev_entries, overview_logs, detail_logs)
 
-        # test
-        sum_test_bleu = 0
-        sum_test_nb_correctly_predicted_concepts = 0
-        sum_test_precision = 0
-        sum_test_recall = 0
-        sum_test_f_score = 0
-        sum_test_accuracy = 0
-        sum_test_correct_order_percentage = 0
-        sum_test_correct_distances_percentage = 0
-
-        test_entry: ConceptsTrainingEntry
-        hyperparams.train_flag = False
-        for test_entry in dev_entries:
-            # With last_embedding from golden
-            (predicted_concepts, entry_loss, entry_bleu, entry_nb_correctly_predicted_concepts, entry_precision,
-             entry_recall, entry_f_score, entry_accuracy, entry_correct_order_percentage,
-             entry_correct_distances_percentage, entry_classifier_loss) = \
-                train_sentence(concepts_dynet_graph, test_entry.sentence, test_entry.identified_concepts, hyperparams)
-
-            sum_loss += entry_loss
-            sum_bleu += entry_bleu
-            sum_nb_correctly_predicted_concepts += entry_nb_correctly_predicted_concepts
-            sum_precision += entry_precision
-            sum_recall += entry_recall
-            sum_f_score += entry_f_score
-            sum_accuracy += entry_accuracy
-            sum_correct_order_percentage += entry_correct_order_percentage
-            sum_correct_distances_percentage += entry_correct_distances_percentage
-            sum_classifier_loss += entry_classifier_loss
-
-            detail_logs.write(test_entry.logging_info)
-            detail_logs.write("PREDICTED concepts: " + str(predicted_concepts) + "\n")
-            detail_logs.write("BLEU: " + str(entry_bleu) + "\n")
-            detail_logs.write("Correctly predicted concepts: " + str(entry_nb_correctly_predicted_concepts) + "\n")
-            detail_logs.write("PRECISION: " + str(entry_precision) + "\n")
-            detail_logs.write("RECALL: " + str(entry_recall) + "\n")
-            detail_logs.write("F-SCORE: " + str(entry_f_score) + "\n")
-            detail_logs.write("ACCURACY (correctly predicted concepts on correct positions): " +
-                              str(entry_accuracy) + "\n")
-            detail_logs.write("Percentage of concepts in correct order (only for correctly predicted concepts): " +
-                              str(entry_correct_order_percentage) + "\n")
-            detail_logs.write("Percentage of concepts at correct distances (only for correctly predicted concepts): " +
-                              str(entry_correct_distances_percentage) + "\n")
-            detail_logs.write("\n")
-
-        # With last_embedding from golden
-        avg_loss = sum_loss / nb_dev_entries
-        avg_bleu = sum_bleu / nb_dev_entries
-        avg_nb_correctly_predicted_concepts = sum_nb_correctly_predicted_concepts / nb_dev_entries
-        avg_precision = sum_precision / nb_dev_entries
-        avg_recall = sum_recall / nb_dev_entries
-        avg_f_score = sum_f_score / nb_dev_entries
-        avg_accuracy = sum_accuracy / nb_dev_entries
-        avg_correct_order_percentage = sum_correct_order_percentage / nb_dev_entries
-        avg_correct_distances_percentage = sum_correct_distances_percentage / nb_dev_entries
-        avg_classifier_loss = sum_classifier_loss / nb_dev_entries
-
-        print("Golden test LOSS: " + str(avg_loss))
-        print("Golden test BLEU: " + str(avg_bleu))
-        print("Average number of correctly predicted concepts per sentence: " +
-              str(avg_nb_correctly_predicted_concepts))
-        # print("Golden test PRECISION: " + str(avg_precision))
-        # print("Golden test RECALL: " + str(avg_recall))
-        print("Golden test F-SCORE: " + str(avg_f_score))
-        print("Golden test ACCURACY (correctly predicted concepts on correct positions): " + str(avg_accuracy))
-        # print("Percentage of concepts in correct order (only for correctly predicted concepts): " +
-        #      str(avg_correct_order_percentage))
-        # print("Percentage of concepts at correct distances (only for correctly predicted concepts): " +
-        #      str(avg_correct_distances_percentage))
-        print("Golden test CLASSIFIER LOSS: " + str(avg_classifier_loss))
-
-        overview_logs.write("Golden test LOSS: " + str(avg_loss) + "\n")
-        overview_logs.write("Golden test BLEU: " + str(avg_bleu) + "\n")
-        overview_logs.write("Average number of correctly predicted concepts per golden test sentence: " +
-                            str(avg_nb_correctly_predicted_concepts) + "\n")
-        overview_logs.write("Golden test PRECISION: " + str(avg_precision) + "\n")
-        overview_logs.write("Golden test RECALL: " + str(avg_recall) + "\n")
-        overview_logs.write("Golden test F-SCORE: " + str(avg_f_score) + "\n")
-        overview_logs.write("Golden test ACCURACY (correctly predicted concepts on correct positions): " +
-                            str(avg_accuracy) + "\n")
-        overview_logs.write(
-            "Percentage of concepts in correct order (only for correctly predicted concepts) golden test: " +
-            str(avg_correct_order_percentage) + "\n")
-        overview_logs.write(
-            "Percentage of concepts at correct distances (only for correctly predicted concepts) golden test: " +
-            str(avg_correct_distances_percentage) + "\n")
-        overview_logs.write("Golden test CLASSIFIER LOSS: " + str(avg_classifier_loss) + "\n")
-        overview_logs.write("\n")
-
-        run_testing(concepts_dynet_graph, hyperparams, dev_entries, nb_dev_entries, overview_logs, detail_dev_logs)
+        run_testing(concepts_dynet_graph, hyperparams, dev_entries, nb_dev_entries, overview_logs, detail_test_logs)
 
     models_path = "concept_extractor_models/" + model_name
     if not os.path.exists(models_path):
@@ -860,5 +846,5 @@ if __name__ == "__main__":
 
     print("Done")
     detail_logs.close()
-    detail_dev_logs.close()
+    detail_test_logs.close()
     overview_logs.close()
