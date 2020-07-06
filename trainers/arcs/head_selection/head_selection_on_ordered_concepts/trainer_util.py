@@ -21,7 +21,6 @@ class ArcsTrainerHyperparameters:
                  use_preprocessing: bool,
                  trainable_embeddings_size: int,
                  glove_embeddings_size: int,
-                 use_fasttext: bool,
                  lstm_out_dim: int,
                  mlp_dim: int,
                  no_lstm_layers: int):
@@ -35,7 +34,6 @@ class ArcsTrainerHyperparameters:
         self.use_preprocessing = use_preprocessing
         self.trainable_embeddings_size = trainable_embeddings_size
         self.glove_embeddings_size = glove_embeddings_size
-        self.use_fasttext = use_fasttext
         self.lstm_out_dim = lstm_out_dim
         self.mlp_dim = mlp_dim
         self.no_lstm_layers = no_lstm_layers
@@ -50,7 +48,6 @@ class ArcsTrainerHyperparameters:
                '_prep_' + str(self.use_preprocessing) + \
                '_tEmb_' + str(self.trainable_embeddings_size) + \
                '_gEmb_' + str(self.glove_embeddings_size) + \
-               '_fEmb_' + str(self.use_fasttext) + \
                '_dims_' + str(self.lstm_out_dim) + '-'+str(self.mlp_dim) + \
                '_l_' + str(self.no_lstm_layers)
 
