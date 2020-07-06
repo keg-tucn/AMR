@@ -3,7 +3,7 @@ from copy import deepcopy
 from typing import List
 import logging
 import dynet as dy
-from pymagnitude import Magnitude
+# from pymagnitude import Magnitude
 
 from data_extraction.magnitude_embedings_reader import get_magnitude_glove_vectors, get_magnitude_fasttext_vectors
 from data_extraction.word_embeddings_reader import read_glove_embeddings_from_file
