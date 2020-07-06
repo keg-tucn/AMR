@@ -57,14 +57,12 @@ class ArcsTrainerResultPerEpoch:
                  avg_train_accuracy,
                  avg_test_loss,
                  avg_test_accuracy,
-                 avg_smatch,
-                 percentage_valid_amrs):
+                 avg_smatch):
         self.avg_loss = avg_loss
         self.avg_train_accuracy = avg_train_accuracy
         self.avg_test_loss = avg_test_loss
         self.avg_test_accuracy = avg_test_accuracy
         self.avg_smatch = avg_smatch
-        self.percentage_valid_amrs = percentage_valid_amrs
 
 
 def log_results_per_epoch(logger, epoch_no, result: ArcsTrainerResultPerEpoch):
@@ -274,22 +272,19 @@ def plot_acc_and_smatch(filename: str, plotting_data):
     train_accuracies = []
     test_accuracies = []
     test_smatches = []
-    test_perc_valid_amr = []
     for epoch_no, plot_data_entry in plotting_data.items():
         x.append(epoch_no)
         plot_data_entry: ArcsTrainerResultPerEpoch
         train_accuracies.append(plot_data_entry.avg_train_accuracy)
         test_accuracies.append(plot_data_entry.avg_test_accuracy)
         test_smatches.append(plot_data_entry.avg_smatch)
-        test_perc_valid_amr.append(plot_data_entry.percentage_valid_amrs)
 
     fig, ax = plt.subplots()
     ax.plot(x, train_accuracies)
     ax.plot(x, test_accuracies)
     ax.plot(x, test_smatches)
-    ax.plot(x, test_perc_valid_amr)
 
-    ax.legend(['train_acc', 'test_acc', 'test_smatch', 'valid_amrs'], loc='upper right')
+    ax.legend(['train_acc', 'test_acc', 'test_smatch'], loc='upper right')
 
     ax.set(xlabel='epoch',
            title='Accuracies and smatch')

@@ -261,7 +261,6 @@ def test_amr(arcs_graph: ArcsDynetGraph,
     predicted_amr_node: Node = generate_amr_node_for_vector_of_parents(identified_concepts_copy,
                                                                        predicted_vector_of_parents,
                                                                        relation_dict)
-    valid_amr = 0
     if predicted_amr_node is not None:
         predicted_amr_str = predicted_amr_node.amr_print_with_reentrancy()
         gold_amr_str = test_entry.amr_str
@@ -274,7 +273,7 @@ def test_amr(arcs_graph: ArcsDynetGraph,
                         test_entry, accuracy_per_amr, smatch_f_score, loss_per_amr,
                         predicted_vector_of_parents,
                         predicted_amr_str)
-    return loss_per_amr, accuracy_per_amr, smatch_f_score, valid_amr
+    return loss_per_amr, accuracy_per_amr, smatch_f_score
 
 
 def train(arcs_graph: ArcsDynetGraph, train_and_test_data: ArcsTraingAndTestData, overview_logger):
@@ -303,22 +302,20 @@ def test(arcs_graph: ArcsDynetGraph, train_and_test_data: ArcsTraingAndTestData,
     test_entry: ArcsTrainingEntry
     valid_amrs = 0
     for test_entry in train_and_test_data.test_entries:
-        loss_per_amr, accuracy, smatch_f_score, valid_amr = test_amr(arcs_graph,
-                                                                     test_entry,
-                                                                     hyperparams,
-                                                                     relation_dict,
-                                                                     detail_logger)
+        loss_per_amr, accuracy, smatch_f_score = test_amr(arcs_graph,
+                                                          test_entry,
+                                                          hyperparams,
+                                                          relation_dict,
+                                                          detail_logger)
         sum_accuracy += accuracy
         sum_smatch += smatch_f_score
-        valid_amrs += valid_amr
         sum_loss += loss_per_amr
     avg_accuracy = sum_accuracy / train_and_test_data.no_test_amrs
     avg_smatch = sum_smatch / train_and_test_data.no_test_amrs
     avg_test_loss = sum_loss / train_and_test_data.no_test_amrs
-    percentage_valid_amrs = valid_amrs / train_and_test_data.no_test_amrs
     overview_logger.info("Test accuracy " + str(avg_accuracy))
     overview_logger.info("Avg smatch " + str(avg_smatch) + '\n')
-    return avg_test_loss, avg_accuracy, avg_smatch, percentage_valid_amrs
+    return avg_test_loss, avg_accuracy, avg_smatch
 
 
 def train_and_test(relation_dict, hyperparams: ArcsTrainerHyperparameters):
@@ -355,16 +352,15 @@ def train_and_test(relation_dict, hyperparams: ArcsTrainerHyperparameters):
         # train
         avg_loss, avg_train_accuracy = train(arcs_graph, train_and_test_data, overview_logger)
         # test
-        avg_test_loss, avg_accuracy, avg_smatch, percentage_valid_amrs = test(arcs_graph, train_and_test_data,
-                                                                              hyperparams,
-                                                                              relation_dict, overview_logger,
-                                                                              detail_logger)
+        avg_test_loss, avg_accuracy, avg_smatch = test(arcs_graph, train_and_test_data,
+                                                       hyperparams,
+                                                       relation_dict, overview_logger,
+                                                       detail_logger)
         epoch_result = ArcsTrainerResultPerEpoch(avg_loss,
                                                  avg_train_accuracy,
                                                  avg_test_loss,
                                                  avg_accuracy,
-                                                 avg_smatch,
-                                                 percentage_valid_amrs)
+                                                 avg_smatch)
         results_per_epoch[epoch] = epoch_result
         log_results_per_epoch(overview_logger, epoch, epoch_result)
 
