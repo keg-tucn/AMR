@@ -125,8 +125,8 @@ class ConceptsDynetGraph:
                                         hyperparams.encoder_state_size * 2 + hyperparams.concepts_embedding_size,
                                         hyperparams.verb_nonverb_classifier_state_size, self.model)
         self.classifier_w = self.model.add_parameters(
-            (concepts_vocab.size(), hyperparams.verb_nonverb_classifier_state_size))
-        self.classifier_b = self.model.add_parameters((concepts_vocab.size()))
+            (2, hyperparams.verb_nonverb_classifier_state_size))
+        self.classifier_b = self.model.add_parameters((2))
 
         # TRAINER
         self.trainer = dy.SimpleSGDTrainer(self.model)
@@ -265,7 +265,7 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, hyperparams)
 
         if hyperparams.use_attention:
             w1_input = w1_input or w1 * input_matrix
-            if hyperparams.use_verb_nonverb_decoders or hyperparams.use_verb_nonverb_embeddings_classifier:
+            if hyperparams.use_verb_nonverb_decoders:
                 # first prediction is START_OF_SEQUENCE => nonverb
                 if i == 0:
                     context_vector = attend(concepts_dynet_graph, input_matrix, nonverb_decoder_state, w1_input)
@@ -414,7 +414,7 @@ def predict_concepts(concepts_dynet_graph, encoded_sequence, hyperparams):
         last_concept_embedding = get_last_concept_embedding(concepts_dynet_graph, next_concept, predict_verb, hyperparams)
 
         if hyperparams.use_verb_nonverb_decoders or hyperparams.use_verb_nonverb_embeddings_classifier:
-            if concepts_dynet_graph.concepts_nonverbs_vocab.i2w[next_concept] == END_OF_SEQUENCE:
+            if predict_verb == 0 and concepts_dynet_graph.concepts_nonverbs_vocab.i2w[next_concept] == END_OF_SEQUENCE:
                 count_END_OF_SEQUENCE += 1
                 j = 0
                 continue
