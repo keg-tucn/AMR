@@ -16,6 +16,15 @@ class Concept:
         # the first one will have no=0, the second one will have no=1
         self.no = no
 
+    def is_no_var(self):
+        return self.variable == self.name and self.variable != 'i'
+
+    def is_literal(self):
+        return self.is_no_var() and \
+               self.variable != "-" and \
+               self.variable != "imperative" and \
+               self.variable != "expressive"
+
     def __repr__(self):
         return '(' + str(self.variable) + ' , ' + str(self.name) + ' , ' + str(self.no) + ')'
 
@@ -88,6 +97,11 @@ class IdentifiedConcepts:
 
     def create_from_amr(self, amr_id: str, amr: AMR, unaligned_tolerance=0):
         self.amr_id = amr_id
+        # todo: fix this
+        if amr_id in ['DF-170-181118-887_5920.23','bc.cctv_0000.214',
+                      'DF-200-192451-579_7352.16']:
+            self.ordered_concepts = None
+            return
         # create a concept -> token list dict (concept will be obj of type concept)
         concepts_to_tokens = IdentifiedConcepts.__create_concept_to_tokens_dict(amr)
         # create a list of (concept,token) pairs - for now the first token will be taken
@@ -105,8 +119,11 @@ class IdentifiedConcepts:
         if unaligned_concepts_percentage <= unaligned_tolerance:
             # put unaligned concepts at random indexes
             for unaligned_concept in unaligned_concepts_set:
-                random_index = random.randint(0, len(self.ordered_concepts) - 1)
-                self.ordered_concepts.insert(random_index, unaligned_concept)
+                if len(self.ordered_concepts) == 0:
+                    self.ordered_concepts.append(unaligned_concept)
+                else:
+                    random_index = random.randint(0, len(self.ordered_concepts) - 1)
+                    self.ordered_concepts.insert(random_index, unaligned_concept)
         else:
             self.ordered_concepts = None
 
@@ -126,12 +143,12 @@ class IdentifiedConcepts:
                 tokens_list = [t[0] if isinstance(t, tuple) else t for t in tokens]
                 concepts_to_tokens[concept] = tokens_list
             else:
-                c_t = IdentifiedConcepts.__get_concepts_tokens_list_for_no_var_node(var, tokens)
+                c_t = IdentifiedConcepts.__get_concepts_tokens_list_for_no_var_node(amr, var, tokens)
                 concepts_to_tokens.update(c_t)
         return concepts_to_tokens
 
     @staticmethod
-    def __get_concepts_tokens_list_for_no_var_node(var: str, amr_node_to_tokens_entry):
+    def __get_concepts_tokens_list_for_no_var_node(amr: AMR, var: str, amr_node_to_tokens_entry):
         """
             Returns a list of concepts (with no var) with associated tokens - retrieved from amr.node_to_tokens entry
             eg:
@@ -143,8 +160,13 @@ class IdentifiedConcepts:
         """
         # if node not aligned
         if not amr_node_to_tokens_entry:
-            concept = Concept(var, var, 0)
-            return {concept: []}
+            # I should create as many concepts as they are in the graph
+            concepts_to_tokens = {}
+            no_occurances = IdentifiedConcepts.__count_occurances_in_amr(amr,var)
+            for i in range(no_occurances):
+                concept = Concept(var, var, i)
+                concepts_to_tokens[concept] = []
+            return concepts_to_tokens
         result_dict = {}
         parent_token_dict = IdentifiedConcepts.get_parents_tokens_list_for_no_var_node(amr_node_to_tokens_entry)
         no = 0
@@ -167,7 +189,7 @@ class IdentifiedConcepts:
         """
         parent_token_dict = {}
         for token_str_parent_tuple in amr_node_to_tokens_entry:
-            if isinstance(token_str_parent_tuple,tuple):
+            if isinstance(token_str_parent_tuple, tuple):
                 # most cases it should be a tuple, these is some weird behaviour for AMRs with "li" relations
                 token_str, parent = token_str_parent_tuple
                 if parent in parent_token_dict.keys():
@@ -191,3 +213,18 @@ class IdentifiedConcepts:
             concept = Concept(unaligned_concept_var, concept_name)
             random_index = random.randint(0, len(self.ordered_concepts) - 1)
             self.ordered_concepts.insert(random_index, concept)
+
+
+    @staticmethod
+    def __count_occurances_in_amr(amr, var):
+        no_appearences = 0
+        for parent_var, children_dict in amr.items():
+            children_list = []
+            children_dict = amr[parent_var]
+            for rel, children_for_rel in children_dict.items():
+                for child_var_tuple in children_for_rel:
+                    # child_var_tuple example: ('l2',)
+                    child_var = child_var_tuple[0]
+                    if child_var == var:
+                        no_appearences += 1
+        return no_appearences

@@ -50,7 +50,11 @@ def generate_dataset_entry(amr_id: str, amr_str: str, sentence: str,
     if use_preprocessing:
         # maybe on the test flow apply the test preprocessing to get the sentence and metadata
         # as well as the train preprocessing to get the preprocessed ordered concepts
-        amr, preprocessed_sentence, metadata = train_pre_processing(amr, sentence)
+        if amr_id!='DF-201-185511-38_8794.15':
+            amr, preprocessed_sentence, metadata = train_pre_processing(amr, sentence)
+        else:
+            preprocessed_sentence = sentence
+            metadata = {}
     identified_concepts = IdentifiedConcepts()
     identified_concepts.create_from_amr(amr_id, amr, unaligned_tolerance)
     if identified_concepts.ordered_concepts is None:

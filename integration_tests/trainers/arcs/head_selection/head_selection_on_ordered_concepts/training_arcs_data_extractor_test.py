@@ -107,6 +107,7 @@ def test_generate_parent_vector_example_2():
                               (-1, 2, 0, 4, 2, 4, 7, 9, 7, 4, 13, 10, 15, 9, 15, 13, 15, 16)]
     assert_parent_vectors(expected_parent_vector, generated_parent_vector)
 
+# TODO: test for bolt12_07_4800.2
 
 if __name__ == "__main__":
     test_generate_parent_vector_example_1()

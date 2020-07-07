@@ -41,7 +41,7 @@ if __name__ == "__main__":
     #                                          unaligned_tolerance=0)
     # run_experiment(relation_dict, hyperparams)
 
-    hyperparams = ArcsTrainerHyperparameters(no_epochs=2,
+    hyperparams = ArcsTrainerHyperparameters(no_epochs=20,
                                              mlp_dropout=0.5,
                                              unaligned_tolerance=0,
                                              max_sen_len=300,

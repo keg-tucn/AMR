@@ -13,7 +13,6 @@ def generate_parent_list_vector(amr: AMR, identified_concepts: IdentifiedConcept
     """
     if len(amr.roots) != 1:
         raise Exception('Multiple roots not handled')
-
     # Assume that constants and negatives/interrogatives can't be parents (the nodes with no vars)
 
     # create two dictionaries for concept var -> concept and concept name -> concept list (for nodes with/no var)
@@ -33,7 +32,8 @@ def generate_parent_list_vector(amr: AMR, identified_concepts: IdentifiedConcept
     # create two dictionaries for concept -> parent list, one for concepts with variables, and one for concepts without vars
     concept_to_parentlist_var_dict = create_concept_to_parentlist_var_dict(children_list_per_parent,
                                                                            var_to_concepts_dict)
-    concept_to_parentlist_no_var_dict = create_concept_to_parentlist_no_var_dict(amr,
+    concept_to_parentlist_no_var_dict = create_concept_to_parentlist_no_var_dict(identified_concepts.amr_id,
+                                                                                 amr,
                                                                                  children_list_per_parent,
                                                                                  concept_name_to_concept_list_dict,
                                                                                  var_to_concepts_dict)
@@ -140,13 +140,16 @@ def create_concept_to_parentlist_var_dict(children_list_per_parent, var_to_conce
     return concept_to_parentlist_var_dict
 
 
-def create_concept_to_parentlist_no_var_dict(amr: AMR,
+def create_concept_to_parentlist_no_var_dict(amr_id: str,
+                                             amr: AMR,
                                              children_list_per_parent,
                                              concept_name_to_concept_list_dict,
                                              var_to_concepts_dict):
     concept_to_parentlist_no_var_dict = {}
     # create the concept_to_parentlist_var_dict from amr.node_to_tokens() where possible
     # -- because there might be multiple such nodes and can't differentiate between them in amr.items()
+    # first construct a var -> (concepts,parents) dictionary
+    var_to_concepts_parents = {}
     for var, amr_node_to_tokens_entry in amr.node_to_tokens.items():
         if var in concept_name_to_concept_list_dict.keys():
             # token list could have the form  [('10', 's2'), ('21', 's3')] or
@@ -163,9 +166,27 @@ def create_concept_to_parentlist_no_var_dict(amr: AMR,
             if len(parents) > len(concepts):
                 raise Exception('Constants should not be part of reentrancy ')
             # now parens and concepts should have the same length => associate them
-            concepts_parents = zip(concepts, parents)
-            for concept, parent_var in concepts_parents:
-                concept_to_parentlist_no_var_dict[concept] = [var_to_concepts_dict[parent_var]]
+            # concepts_parents = zip(concepts, parents)
+            var_to_concepts_parents[var] = (concepts, parents)
+            # for concept, parent_var in concepts_parents:
+            #     concept_to_parentlist_no_var_dict[concept] = [var_to_concepts_dict[parent_var]]
+    # make sure all the non vars are in the dict
+    for var in concept_name_to_concept_list_dict.keys():
+        if var!='ROOT' and var not in var_to_concepts_parents.keys():
+            concepts = concept_name_to_concept_list_dict[var]
+            parents = []
+            var_to_concepts_parents[var] = (concepts, parents)
+    for var, concepts_parents in var_to_concepts_parents.items():
+        concepts = concepts_parents[0]
+        parents = concepts_parents[1]
+        if len(parents) < len(concepts):
+            # take the parents
+            parents = augment_with_parents_from_amr_items(parents, var, children_list_per_parent)
+        if len(parents) > len(concepts):
+            raise Exception('Constants should not be part of reentrancy ')
+        concepts_parents_zipped = zip(concepts,parents)
+        for concept, parent_var in concepts_parents_zipped:
+            concept_to_parentlist_no_var_dict[concept] = [var_to_concepts_dict[parent_var]]
     return concept_to_parentlist_no_var_dict
 
 
@@ -210,6 +231,11 @@ def augment_with_parents_from_amr_items(parents, var, children_list_per_parent):
                 all_parents.add(parent)
     parents_to_add = all_parents.difference(parents_set)
     for parent_to_add in parents_to_add:
-        # add it randomly in the parents list
-        random_index = random.randint(0, len(parents) - 1)
-        parents.insert(random_index, parent_to_add)
+        if len(parents) == 0:
+            # simply add it
+            parents.append(parent_to_add)
+        else:
+            # add it randomly in the parents list
+            random_index = random.randint(0, len(parents) - 1)
+            parents.insert(random_index, parent_to_add)
+    return parents

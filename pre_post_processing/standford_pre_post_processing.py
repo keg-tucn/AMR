@@ -17,7 +17,7 @@ def train_pre_processing(amr: AMR, sentence: str):
         Returns a preprocessed (sentence,amr) pair
         Replaces the person/organization rooted subgraph in the AMR with the node PERSON/ORGANIZATION
         Replaces the Person/Organization NE in the sentence with the token PERSON/ORGANIZATION
-        Creates no metadata (has no associated train post processing)
+        Creates a metadata dict (todo explain further)
     """
     # get variables of person and organization nodes
     amr_copy = deepcopy(amr)
