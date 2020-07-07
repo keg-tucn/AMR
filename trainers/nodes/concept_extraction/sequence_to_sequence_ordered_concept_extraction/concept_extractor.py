@@ -373,7 +373,7 @@ def predict_concepts(concepts_dynet_graph, encoded_sequence, hyperparams):
 
         if hyperparams.use_attention:
             w1_input = w1_input or w1 * input_matrix
-            if hyperparams.use_verb_nonverb_decoders or hyperparams.use_verb_nonverb_embeddings_classifier:
+            if hyperparams.use_verb_nonverb_decoders:
                 if i == 0:
                     context_vector = attend(concepts_dynet_graph, input_matrix, nonverb_decoder_state, w1_input)
                 else:
