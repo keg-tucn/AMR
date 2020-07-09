@@ -35,6 +35,12 @@ class Vocab:
         else:
             return self.w2i[word]
 
+    def __str__(self):
+        return 'Word to index: '+str(self.w2i)+'\nIndex to word: '+str(self.i2w)
+
+    def __repr__(self):
+        return 'Word to index: '+str(self.w2i)+'\nIndex to word: '+str(self.i2w)
+
 
 def word_sentence_to_vocab_index(sentence_words, word_vocab):
     return [word_vocab.get_index_or_add(x) for x in sentence_words]

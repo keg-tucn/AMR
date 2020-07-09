@@ -23,7 +23,9 @@ class ArcsTrainerHyperparameters:
                  glove_embeddings_size: int,
                  lstm_out_dim: int,
                  mlp_dim: int,
-                 no_lstm_layers: int):
+                 no_lstm_layers: int,
+                 alignment: str,
+                 experimental_run: bool):
         self.no_epochs = no_epochs
         self.mlp_dropout = mlp_dropout
         # how many concepts with no alignment we allow in the ordered concepts (percentage: 0-none,1-all)
@@ -37,9 +39,12 @@ class ArcsTrainerHyperparameters:
         self.lstm_out_dim = lstm_out_dim
         self.mlp_dim = mlp_dim
         self.no_lstm_layers = no_lstm_layers
+        self.alignment = alignment
+        self.experimental_run = experimental_run
 
     def __str__(self):
-        return 'ep_' + str(self.no_epochs) + \
+        return self.alignment +\
+               'ep_' + str(self.no_epochs) + \
                '_mdrop_' + str(self.mlp_dropout) + \
                '_unaltol_' + str(self.unaligned_tolerance) + \
                '_sl_' + str(self.max_sen_len) + \
@@ -49,7 +54,8 @@ class ArcsTrainerHyperparameters:
                '_tEmb_' + str(self.trainable_embeddings_size) + \
                '_gEmb_' + str(self.glove_embeddings_size) + \
                '_dims_' + str(self.lstm_out_dim) + '-'+str(self.mlp_dim) + \
-               '_l_' + str(self.no_lstm_layers)
+               '_l_' + str(self.no_lstm_layers) + \
+               '_exp_'+str(self.experimental_run)
 
 
 class ArcsTrainerResultPerEpoch:

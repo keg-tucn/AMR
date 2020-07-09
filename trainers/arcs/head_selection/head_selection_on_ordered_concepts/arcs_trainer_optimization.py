@@ -1,8 +1,8 @@
 import os
 import logging
 from data_extraction.dataset_reading_util import get_all_paths
-from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer import train_and_test
-from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_util import ArcsTrainerHyperparameters, \
+from trainers.arcs.head_selection.head_selection_on_ordered_concepts.arcs_trainer import train_and_test
+from trainers.arcs.head_selection.head_selection_on_ordered_concepts.arcs_trainer_util import ArcsTrainerHyperparameters, \
     plot_losses, plot_acc_and_smatch, log_results_per_epoch
 
 from trainers.arcs.head_selection.relations_dictionary_extractor import extract_relation_dict
@@ -41,10 +41,10 @@ if __name__ == "__main__":
     #                                          unaligned_tolerance=0)
     # run_experiment(relation_dict, hyperparams)
 
-    hyperparams = ArcsTrainerHyperparameters(no_epochs=20,
+    hyperparams = ArcsTrainerHyperparameters(no_epochs=1,
                                              mlp_dropout=0.5,
                                              unaligned_tolerance=0,
-                                             max_sen_len=300,
+                                             max_sen_len=20,
                                              max_parents_vectors=6,
                                              reentrancy_threshold=0.8,
                                              use_preprocessing=True,
@@ -52,5 +52,7 @@ if __name__ == "__main__":
                                              glove_embeddings_size=100,
                                              lstm_out_dim=50,
                                              mlp_dim=32,
-                                             no_lstm_layers=1)
+                                             no_lstm_layers=1,
+                                             alignment='isi',
+                                             experimental_run=True)
     run_experiment(relation_dict, hyperparams)

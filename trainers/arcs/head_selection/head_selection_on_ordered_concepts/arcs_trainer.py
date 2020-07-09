@@ -1,4 +1,5 @@
 import os
+import pickle
 from copy import deepcopy
 from typing import List
 import logging
@@ -12,7 +13,7 @@ from definitions import PROJECT_ROOT_DIR
 from models.concept import IdentifiedConcepts, Concept
 from models.node import Node
 from pre_post_processing.standford_pre_post_processing import post_processing_on_parent_vector
-from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_util import \
+from trainers.arcs.head_selection.head_selection_on_ordered_concepts.arcs_trainer_util import \
     calculate_smatch, log_test_entry_data, \
     construct_ordered_concepts_embeddings_list, ArcsTrainerHyperparameters, ArcsTrainerResultPerEpoch, \
     log_results_per_epoch, generate_amr_node_for_vector_of_parents, construct_concept_glove_embeddings_list
@@ -25,9 +26,13 @@ FASTTEXT_DIM = 300
 
 
 class ArcsDynetGraph:
-    def __init__(self, concepts_vocab, hyperparams: ArcsTrainerHyperparameters):
+    def __init__(self, concepts_vocab, hyperparams: ArcsTrainerHyperparameters, model=None):
         self.hyperparams = hyperparams
-        self.model = dy.Model()
+        if model is None:
+            global_model = dy.Model()
+        else:
+            global_model = model
+        self.model = global_model.add_subcollection("arcs")
 
         # embeddings
         self.concepts_vocab: Vocab = concepts_vocab
@@ -194,10 +199,10 @@ def train_or_test_for_parent_vector(arcs_graph: ArcsDynetGraph, identified_conce
 
 
 def predict_vector_of_parents(arcs_graph: ArcsDynetGraph,
-                              test_entry: ArcsTrainingEntry,
+                              ordered_concepts: List[Concept],
                               hyperparams: ArcsTrainerHyperparameters):
-    no_sentence_concepts = len(test_entry.identified_concepts.ordered_concepts)
-    graph_outputs = build_graph(arcs_graph, test_entry.identified_concepts.ordered_concepts)
+    no_sentence_concepts = len(ordered_concepts)
+    graph_outputs = build_graph(arcs_graph, ordered_concepts)
     potential_heads_idx = get_potential_heads(no_sentence_concepts)
     predicted_vector_of_parents = []
     for concept_idx, potential_heads_network_outputs in graph_outputs.items():
@@ -249,7 +254,9 @@ def test_amr(arcs_graph: ArcsDynetGraph,
     # necessary so that the identidied concepts are not postprocessed for the next iteration
     identified_concepts_copy = deepcopy(test_entry.identified_concepts)
     # predict vector of parents for amr
-    predicted_vector_of_parents = predict_vector_of_parents(arcs_graph, test_entry, hyperparams)
+    predicted_vector_of_parents = predict_vector_of_parents(arcs_graph,
+                                                            test_entry.identified_concepts.ordered_concepts,
+                                                            hyperparams)
     # for the fake root
     predicted_vector_of_parents.insert(0, [-1])
     # add postprocessing
@@ -269,10 +276,11 @@ def test_amr(arcs_graph: ArcsDynetGraph,
     else:
         predicted_amr_str = "INVALID AMR"
     # logging
-    log_test_entry_data(detail_logger,
-                        test_entry, accuracy_per_amr, smatch_f_score, loss_per_amr,
-                        predicted_vector_of_parents,
-                        predicted_amr_str)
+    if detail_logger is not None:
+        log_test_entry_data(detail_logger,
+                            test_entry, accuracy_per_amr, smatch_f_score, loss_per_amr,
+                            predicted_vector_of_parents,
+                            predicted_amr_str)
     return loss_per_amr, accuracy_per_amr, smatch_f_score
 
 
@@ -300,7 +308,6 @@ def test(arcs_graph: ArcsDynetGraph, train_and_test_data: ArcsTraingAndTestData,
     sum_smatch = 0
     sum_loss = 0
     test_entry: ArcsTrainingEntry
-    valid_amrs = 0
     for test_entry in train_and_test_data.test_entries:
         loss_per_amr, accuracy, smatch_f_score = test_amr(arcs_graph,
                                                           test_entry,
@@ -334,7 +341,8 @@ def train_and_test(relation_dict, hyperparams: ArcsTrainerHyperparameters):
     train_and_test_data: ArcsTraingAndTestData = read_train_test_data(hyperparams.unaligned_tolerance,
                                                                       hyperparams.max_sen_len,
                                                                       hyperparams.max_parents_vectors,
-                                                                      hyperparams.use_preprocessing)
+                                                                      hyperparams.use_preprocessing,
+                                                                      hyperparams.alignment)
     train_concepts = [train_entry.identified_concepts for train_entry in train_and_test_data.train_entries]
     dev_concepts = [test_entry.identified_concepts for test_entry in train_and_test_data.test_entries]
     # get only concepts from train
@@ -364,5 +372,45 @@ def train_and_test(relation_dict, hyperparams: ArcsTrainerHyperparameters):
         results_per_epoch[epoch] = epoch_result
         log_results_per_epoch(overview_logger, epoch, epoch_result)
 
+    # save model
+    model_dir = 'arcs_models/' + str(hyperparams)
+    if not os.path.exists(model_dir):
+        os.makedirs(model_dir)
+    with open(model_dir + "/all_concepts_vocab", "wb") as f:
+        pickle.dump(all_concepts_vocab, f)
+
+    # save model
+    arcs_graph.model.save(model_dir + "/graph")
     print("Done")
     return results_per_epoch
+
+
+ARC_MODELS_PATH = PROJECT_ROOT_DIR + \
+                  '/trainers/arcs/head_selection/head_selection_on_ordered_concepts/arcs_models/'
+
+
+def save_arcs_model(arcs_graph: ArcsDynetGraph):
+    # save model
+    model_dir = 'arcs_models/' + str(arcs_graph.hyperparams)
+    if not os.path.exists(model_dir):
+        os.makedirs(model_dir)
+    with open(model_dir + "/all_concepts_vocab", "wb") as f:
+        pickle.dump(arcs_graph.concepts_vocab, f)
+    # save model
+    arcs_graph.model.save(model_dir + "/graph")
+
+
+def load_arcs_model(hyperparams, model=None):
+    model_dir = ARC_MODELS_PATH + str(hyperparams)
+    if not os.path.exists(model_dir):
+        print("No such trained model" + model_dir)
+        return None
+    else:
+        # get vocabs
+        with open(model_dir + "/all_concepts_vocab", "rb") as f:
+            all_concepts_vocab = pickle.load(f)
+        # create graph
+        arcs_graph = ArcsDynetGraph(all_concepts_vocab, hyperparams, model)
+        # populate
+        arcs_graph.model.populate(model_dir + "/graph")
+        return arcs_graph
