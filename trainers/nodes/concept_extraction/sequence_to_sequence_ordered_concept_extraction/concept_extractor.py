@@ -249,6 +249,7 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, hyperparams)
 
     decoder_state, verb_decoder_state, nonverb_decoder_state = initialize_decoders(concepts_dynet_graph,
                                                                                    last_concept_embedding, hyperparams)
+
     classifier_init = concepts_dynet_graph.classifier.initial_state()
 
     loss_list = []
@@ -369,9 +370,6 @@ def predict_concepts(concepts_dynet_graph, encoded_sequence, hyperparams):
     predicted_concepts = []
     count_END_OF_SEQUENCE = 0
     j = 0
-
-    # dropout
-    input_matrix = input_matrix * (1 - concepts_dynet_graph.dropout_rate)
 
     for i in range((len(encoded_sequence) - 1) * 2):
         if count_END_OF_SEQUENCE == 1: break

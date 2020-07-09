@@ -274,8 +274,9 @@ class PointerGeneratorConceptExtractorGraph:
             we = dy.parameter(self.weights_encoder)
             prod_encoder = we * encoded_input
             predicted_sequence = []
-            #TODO: try with this in fct
-            classifier_init = self.classifier.initial_state()
+            classifier_init = None
+            if self.hyperparams.two_classifiers:
+                classifier_init = self.classifier.initial_state()
             losses_verbs = []
             for output_word in output_sequence:
                 context_vector = self.calculate_context_vector(decoder_state, encoded_input, prod_encoder)
@@ -343,12 +344,16 @@ class PointerGeneratorConceptExtractorGraph:
             # size n x Tx
             we = dy.parameter(self.weights_encoder)
             prod_encoder = we * encoded_input
-            classifier_init = self.classifier.initial_state()
+            classifier_init = True
+            if self.hyperparams.two_classifiers:
+                classifier_init = self.classifier.initial_state()
             while predicted_word != EOS and \
                     no_predictions < 2 * len(input_sequence):
                 context_vector = self.calculate_context_vector(decoder_state, encoded_input, prod_encoder)
                 decoder_state, concatenated_vector = self.decode_word(decoder_state, last_output_embedding, context_vector)
-                is_verb = self.predict_verb_nonverb(concatenated_vector, classifier_init)
+                is_verb = False
+                if self.hyperparams.two_classifiers:
+                    is_verb = self.predict_verb_nonverb(concatenated_vector, classifier_init)
                 last_output_embedding, predicted_word = self.classify_test(decoder_state.output(), is_verb)
                 # print predicted embedding
                 no_predictions += 1
