@@ -258,8 +258,7 @@ class PointerGeneratorConceptExtractorGraph:
             output_sequence.insert(0, SOS)
             output_sequence.append(EOS)
             # build new graph
-            # dy.renew_cg()
-            dy.renew_cg(immediate_compute=True, check_validity=True)
+            dy.renew_cg()
 
             # encoder
             input_embeddings = self.embed_input_sentence(input_sequence)
@@ -329,8 +328,7 @@ class PointerGeneratorConceptExtractorGraph:
             output_sequence.insert(0, SOS)
             output_sequence.append(EOS)
             # build new graph
-            # dy.renew_cg()
-            dy.renew_cg(immediate_compute=True, check_validity=True)
+            dy.renew_cg()
             # encoder
             input_embeddings = self.embed_input_sentence(input_sequence)
             encoded_input, fr = self.encode_sentence(input_embeddings)
@@ -344,7 +342,6 @@ class PointerGeneratorConceptExtractorGraph:
             no_predictions = 0
             # size n x Tx
             we = dy.parameter(self.weights_encoder)
-            encoded_input = encoded_input * (1 - DROPOUT_RATE)
             prod_encoder = we * encoded_input
             classifier_init = self.classifier.initial_state()
             while predicted_word != EOS and \
@@ -547,9 +544,9 @@ def run_testing_test(hyperparams: PointerGeneratorConceptExtractorGraphHyperpara
 
 if __name__ == "__main__":
 
-    EXP_RUN = False
+    EXP_RUN = True
     TRAIN = False
-    hyperparams = PointerGeneratorConceptExtractorGraphHyperparams(no_epochs=3,
+    hyperparams = PointerGeneratorConceptExtractorGraphHyperparams(no_epochs=40,
                                                                    max_sentence_len=20,
                                                                    use_preprocessing=True,
                                                                    alignment='isi',
