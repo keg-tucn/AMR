@@ -40,7 +40,7 @@ class PointerGeneratorConceptExtractorGraphHyperparams:
                '_twoclass_' + str(self.two_classifiers) + \
                '_drop_'+str(self.dropout)
         if self.trainer != SGD_trainer:
-            repr = self.trainer + repr
+            repr = self.trainer +'_'+ repr
         return repr
 
 def create_vocabs_for_pointer_generator_network(train_entries):
