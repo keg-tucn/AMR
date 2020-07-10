@@ -257,6 +257,7 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, hyperparams)
     predicted_concepts = []
 
     # for the cases when loss is computed on dev
+    # should this still be here??
     if hyperparams.validation_flag:
         input_matrix = input_matrix * (1 - concepts_dynet_graph.dropout_rate)
 
