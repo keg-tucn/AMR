@@ -559,8 +559,8 @@ if __name__ == "__main__":
 
     EXP_RUN = False
     TRAIN = True
-    TRAIN_ON_20 = False
-    if TRAIN_ON_20:
+    RUN_ON_20 = False
+    if RUN_ON_20:
         max_sen_len = 20
         no_epochs = 30
     else:
