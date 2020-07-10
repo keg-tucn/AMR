@@ -171,7 +171,7 @@ def read_train_test_data(unaligned_tolerance: float,
     print(OrderedDict(sorted(no_pv_hist_train.items())))
     plt.bar(list(no_pv_hist_train.keys()), no_pv_hist_train.values(), color='g')
     plt.show()
-    test_entries, no_test_failed, no_pv_hist_test = generate_arcs_training_data(get_all_paths('dev'),
+    test_entries, no_test_failed, no_pv_hist_test = generate_arcs_training_data(get_all_paths_for_alignment('dev',alignment),
                                                                                 unaligned_tolerance,
                                                                                 max_sentence_len,
                                                                                 max_no_parent_vectors,
