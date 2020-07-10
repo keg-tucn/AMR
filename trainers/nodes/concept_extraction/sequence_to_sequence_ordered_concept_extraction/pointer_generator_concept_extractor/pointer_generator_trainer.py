@@ -558,7 +558,7 @@ def run_testing_test(hyperparams: PointerGeneratorConceptExtractorGraphHyperpara
 if __name__ == "__main__":
 
     EXP_RUN = False
-    TRAIN = True
+    TRAIN = False
     RUN_ON_20 = False
     if RUN_ON_20:
         max_sen_len = 20
