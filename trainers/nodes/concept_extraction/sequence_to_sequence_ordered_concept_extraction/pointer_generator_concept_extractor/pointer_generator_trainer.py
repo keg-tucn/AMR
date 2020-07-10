@@ -559,7 +559,7 @@ if __name__ == "__main__":
 
     EXP_RUN = False
     TRAIN = False
-    RUN_ON_20 = False
+    RUN_ON_20 = True
     if RUN_ON_20:
         max_sen_len = 20
         no_epochs = 30
@@ -569,7 +569,7 @@ if __name__ == "__main__":
     hyperparams = PointerGeneratorConceptExtractorGraphHyperparams(no_epochs=no_epochs,
                                                                    max_sentence_len=max_sen_len,
                                                                    use_preprocessing=True,
-                                                                   alignment='isi',
+                                                                   alignment='jamr',
                                                                    experimental_run=EXP_RUN,
                                                                    two_classifiers=True,
                                                                    dropout=DROPOUT_RATE,
