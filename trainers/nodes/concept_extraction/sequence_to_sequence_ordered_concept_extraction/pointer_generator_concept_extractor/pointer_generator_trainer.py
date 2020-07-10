@@ -16,7 +16,7 @@ from trainers.arcs.head_selection.head_selection_on_ordered_concepts.training_ar
     read_train_test_data, ArcsTraingAndTestData, ArcsTrainingEntry, generate_arcs_training_data
 from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extraction.pointer_generator_concept_extractor.pointer_generator_trainer_util import \
     create_vocabs_for_pointer_generator_network, EOS, SOS, PointerGeneratorConceptExtractorGraphHyperparams, \
-    SGD_trainer, ADAM_trainer
+    SGD_trainer, ADAM_trainer, Momentum_trainer, Cyclical_trainer
 from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extraction.trainer_util import \
     compute_f_score, is_verb, compute_metrics
 
@@ -89,6 +89,10 @@ class PointerGeneratorConceptExtractorGraph:
             self.trainer = dy.SimpleSGDTrainer(self.model)
         elif self.hyperparams.trainer == ADAM_trainer:
             self.trainer = dy.AdamTrainer(self.model)
+        elif self.hyperparams.trainer == Momentum_trainer:
+            self.trainer = dy.MomentumSGDTrainer(self.model)
+        elif self.hyperparams.trainer == Cyclical_trainer:
+            self.trainer = dy.CyclicalSGDTrainer(self.model)
 
     # functions
     def get_word_index(self, is_token, token, is_verb = None):
@@ -562,7 +566,7 @@ if __name__ == "__main__":
                                                                    experimental_run=EXP_RUN,
                                                                    two_classifiers=True,
                                                                    dropout=DROPOUT_RATE,
-                                                                   trainer=SGD_trainer)
+                                                                   trainer=Cyclical_trainer)
     if EXP_RUN:
         run_experiment(hyperparams)
     elif TRAIN:

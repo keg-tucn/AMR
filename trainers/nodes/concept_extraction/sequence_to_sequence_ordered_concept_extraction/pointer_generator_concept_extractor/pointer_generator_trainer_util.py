@@ -9,6 +9,9 @@ UNK = 'UNK'
 
 SGD_trainer = 'SGD'
 ADAM_trainer = 'Adam'
+Momentum_trainer = 'Momentum'
+Cyclical_trainer = 'Cyclical'
+
 class PointerGeneratorConceptExtractorGraphHyperparams:
     def __init__(self,
                  no_epochs,
@@ -37,7 +40,7 @@ class PointerGeneratorConceptExtractorGraphHyperparams:
                '_twoclass_' + str(self.two_classifiers) + \
                '_drop_'+str(self.dropout)
         if self.trainer != SGD_trainer:
-            repr = repr + self.trainer
+            repr = self.trainer + repr
         return repr
 
 def create_vocabs_for_pointer_generator_network(train_entries):
