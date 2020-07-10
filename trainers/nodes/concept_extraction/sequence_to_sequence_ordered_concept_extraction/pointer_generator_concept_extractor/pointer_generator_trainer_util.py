@@ -7,6 +7,8 @@ EOS = 'EOS'
 SOS = 'SOS'
 UNK = 'UNK'
 
+SGD_trainer = 'SGD'
+ADAM_trainer = 'Adam'
 class PointerGeneratorConceptExtractorGraphHyperparams:
     def __init__(self,
                  no_epochs,
@@ -15,7 +17,8 @@ class PointerGeneratorConceptExtractorGraphHyperparams:
                  alignment,
                  experimental_run,
                  two_classifiers: bool,
-                 dropout):
+                 dropout,
+                 trainer = SGD_trainer):
         self.max_sentence_len = max_sentence_len
         self.no_epochs = no_epochs
         self.use_preprocessing = use_preprocessing
@@ -23,15 +26,19 @@ class PointerGeneratorConceptExtractorGraphHyperparams:
         self.experimental_run = experimental_run
         self.two_classifiers = two_classifiers
         self.dropout = dropout
+        self.trainer = trainer
 
     def __str__(self):
-        return self.alignment +\
+        repr = self.alignment +\
                '_ep_'+str(self.no_epochs)+\
                '_senlen_'+str(self.max_sentence_len)+\
                '_prep_'+str(self.use_preprocessing) + \
                '_exprun_' + str(self.experimental_run) + \
                '_twoclass_' + str(self.two_classifiers) + \
                '_drop_'+str(self.dropout)
+        if self.trainer != SGD_trainer:
+            repr = repr + self.trainer
+        return repr
 
 def create_vocabs_for_pointer_generator_network(train_entries):
     train_concepts = [train_entry.identified_concepts for train_entry in train_entries]

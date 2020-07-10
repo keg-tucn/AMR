@@ -15,14 +15,15 @@ from definitions import PROJECT_ROOT_DIR
 from trainers.arcs.head_selection.head_selection_on_ordered_concepts.training_arcs_data_extractor import \
     read_train_test_data, ArcsTraingAndTestData, ArcsTrainingEntry, generate_arcs_training_data
 from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extraction.pointer_generator_concept_extractor.pointer_generator_trainer_util import \
-    create_vocabs_for_pointer_generator_network, EOS, SOS, PointerGeneratorConceptExtractorGraphHyperparams
+    create_vocabs_for_pointer_generator_network, EOS, SOS, PointerGeneratorConceptExtractorGraphHyperparams, \
+    SGD_trainer, ADAM_trainer
 from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extraction.trainer_util import \
     compute_f_score, is_verb, compute_metrics
 
 INPUT_EMBEDDINGS_SIZE = 50
 OUTPUT_EMBEDDINGS_SIZE = 50
 RNN_HIDDEN_STATES = 40
-DROPOUT_RATE = 0.6
+DROPOUT_RATE = 0.4
 VERB_NON_VERB_STATE_SIZE = 40
 
 class PointerGeneratorConceptExtractorGraph:
@@ -84,7 +85,10 @@ class PointerGeneratorConceptExtractorGraph:
                 (self.nonverbs_vocab.size(), RNN_HIDDEN_STATES))
             self.nonverb_embeddings_classifier_b = self.model.add_parameters((self.nonverbs_vocab.size()))
 
-        self.trainer = dy.SimpleSGDTrainer(self.model)
+        if self.hyperparams.trainer == SGD_trainer:
+            self.trainer = dy.SimpleSGDTrainer(self.model)
+        elif self.hyperparams.trainer == ADAM_trainer:
+            self.trainer = dy.AdamTrainer(self.model)
 
     # functions
     def get_word_index(self, is_token, token, is_verb = None):
@@ -557,7 +561,8 @@ if __name__ == "__main__":
                                                                    alignment='isi',
                                                                    experimental_run=EXP_RUN,
                                                                    two_classifiers=True,
-                                                                   dropout=DROPOUT_RATE)
+                                                                   dropout=DROPOUT_RATE,
+                                                                   trainer=SGD_trainer)
     if EXP_RUN:
         run_experiment(hyperparams)
     elif TRAIN:
