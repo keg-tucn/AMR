@@ -558,10 +558,16 @@ def run_testing_test(hyperparams: PointerGeneratorConceptExtractorGraphHyperpara
 if __name__ == "__main__":
 
     EXP_RUN = False
-    TRAIN = False
-    UNCONSTRAINED_LENGTH = 300
-    hyperparams = PointerGeneratorConceptExtractorGraphHyperparams(no_epochs=30,
-                                                                   max_sentence_len=UNCONSTRAINED_LENGTH,
+    TRAIN = True
+    TRAIN_ON_20 = False
+    if TRAIN_ON_20:
+        max_sen_len = 20
+        no_epochs = 30
+    else:
+        max_sen_len = 300
+        no_epochs = 45
+    hyperparams = PointerGeneratorConceptExtractorGraphHyperparams(no_epochs=no_epochs,
+                                                                   max_sentence_len=max_sen_len,
                                                                    use_preprocessing=True,
                                                                    alignment='isi',
                                                                    experimental_run=EXP_RUN,
