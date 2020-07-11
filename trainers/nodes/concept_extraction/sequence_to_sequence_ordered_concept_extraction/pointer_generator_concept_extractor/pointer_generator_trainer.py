@@ -221,6 +221,16 @@ class PointerGeneratorConceptExtractorGraph:
         if predicted_concepts[-1] == EOS:
             del predicted_concepts[-1]
 
+    def remove_SOS_EOS_predicted(self, input_sentence, predicted_concepts):
+        # remove SOS and EOS from input sentence
+        del input_sentence[0]
+        del input_sentence[-1]
+        # remove SOS and EOS from predicted concepts (if the case)
+        if predicted_concepts[0] == SOS:
+            del predicted_concepts[0]
+        if predicted_concepts[-1] == EOS:
+            del predicted_concepts[-1]
+
     def get_initial_last_embedding(self):
         if self.hyperparams.two_classifiers:
             return self.nonverb_lookup_param[self.nonverbs_vocab.w2i[SOS]]
@@ -321,7 +331,44 @@ class PointerGeneratorConceptExtractorGraph:
         avg_fscore = avg_fscore / len(train_data)
         return avg_loss, avg_fscore
 
-    # test_data: pairs of tokenized english, german sentences
+    def predict_sequence(self, input_sequence):
+        input_sequence.insert(0, SOS)
+        input_sequence.append(EOS)
+        # build new graph
+        dy.renew_cg()
+        # encoder
+        input_embeddings = self.embed_input_sentence(input_sequence)
+        encoded_input, fr = self.encode_sentence(input_embeddings)
+
+        last_output_embedding = self.get_initial_last_embedding()
+        decoder_state = self.decoderGru.initial_state().add_input(
+            dy.concatenate([dy.vecInput(RNN_HIDDEN_STATES * 2), last_output_embedding]))
+
+        predicted_sequence = []
+        predicted_word = None
+        no_predictions = 0
+        # size n x Tx
+        we = dy.parameter(self.weights_encoder)
+        prod_encoder = we * encoded_input
+        classifier_init = True
+        if self.hyperparams.two_classifiers:
+            classifier_init = self.classifier.initial_state()
+        while predicted_word != EOS and \
+                no_predictions < 2 * len(input_sequence):
+            context_vector = self.calculate_context_vector(decoder_state, encoded_input, prod_encoder)
+            decoder_state, concatenated_vector = self.decode_word(decoder_state, last_output_embedding, context_vector)
+            is_verb = False
+            if self.hyperparams.two_classifiers:
+                is_verb = self.predict_verb_nonverb(concatenated_vector, classifier_init)
+            last_output_embedding, predicted_word = self.classify_test(decoder_state.output(), is_verb)
+            # print predicted embedding
+            no_predictions += 1
+            predicted_sequence.append(predicted_word)
+
+        self.remove_SOS_EOS_predicted(input_sequence, predicted_sequence)
+        return predicted_sequence
+
+
     def test_model(self, test_data: List[ArcsTrainingEntry]):
         gold_sentences = []
         predicted_sentences = []
@@ -331,43 +378,12 @@ class PointerGeneratorConceptExtractorGraph:
         avg_cdp = 0
         for train_entry in test_data:
             input_sequence = train_entry.sentence_tokens
-            input_sequence.insert(0, SOS)
-            input_sequence.append(EOS)
+            predicted_sequence = self.predict_sequence(input_sequence)
             output_sequence = train_entry.gold_concept_names
-            output_sequence.insert(0, SOS)
-            output_sequence.append(EOS)
-            # build new graph
-            dy.renew_cg()
-            # encoder
-            input_embeddings = self.embed_input_sentence(input_sequence)
-            encoded_input, fr = self.encode_sentence(input_embeddings)
-
-            last_output_embedding = self.get_initial_last_embedding()
-            decoder_state = self.decoderGru.initial_state().add_input(
-                dy.concatenate([dy.vecInput(RNN_HIDDEN_STATES * 2), last_output_embedding]))
-
-            predicted_sequence = []
-            predicted_word = None
-            no_predictions = 0
-            # size n x Tx
-            we = dy.parameter(self.weights_encoder)
-            prod_encoder = we * encoded_input
-            classifier_init = True
-            if self.hyperparams.two_classifiers:
-                classifier_init = self.classifier.initial_state()
-            while predicted_word != EOS and \
-                    no_predictions < 2 * len(input_sequence):
-                context_vector = self.calculate_context_vector(decoder_state, encoded_input, prod_encoder)
-                decoder_state, concatenated_vector = self.decode_word(decoder_state, last_output_embedding, context_vector)
-                is_verb = False
-                if self.hyperparams.two_classifiers:
-                    is_verb = self.predict_verb_nonverb(concatenated_vector, classifier_init)
-                last_output_embedding, predicted_word = self.classify_test(decoder_state.output(), is_verb)
-                # print predicted embedding
-                no_predictions += 1
-                predicted_sequence.append(predicted_word)
-
-            self.remove_SOS_EOS(input_sequence, output_sequence, predicted_sequence)
+            if predicted_sequence[0] == 'ROOT':
+                del predicted_sequence[0]
+            if output_sequence[0] == 'ROOT':
+                del output_sequence[0]
             true_positive, precision, recall, f_score = compute_f_score(output_sequence, predicted_sequence)
             accuracy, correct_order_percentage, correct_distances_percentage = \
                 compute_metrics(output_sequence, predicted_sequence)
@@ -559,7 +575,7 @@ if __name__ == "__main__":
 
     EXP_RUN = False
     TRAIN = False
-    RUN_ON_20 = False
+    RUN_ON_20 = True
     if RUN_ON_20:
         max_sen_len = 20
         no_epochs = 30
@@ -569,7 +585,7 @@ if __name__ == "__main__":
     hyperparams = PointerGeneratorConceptExtractorGraphHyperparams(no_epochs=no_epochs,
                                                                    max_sentence_len=max_sen_len,
                                                                    use_preprocessing=True,
-                                                                   alignment='jamr',
+                                                                   alignment='isi',
                                                                    experimental_run=EXP_RUN,
                                                                    two_classifiers=True,
                                                                    dropout=DROPOUT_RATE,
