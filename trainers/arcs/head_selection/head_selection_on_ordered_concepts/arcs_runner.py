@@ -55,7 +55,7 @@ def test_model(hyperparams: ArcsTrainerHyperparameters):
     relation_dict = extract_relation_dict(train_dev_paths)
 
     # read test data
-    test_entries, no_test_failed, no_pv_hist_test = generate_arcs_training_data(get_all_paths('dev'),
+    test_entries, no_test_failed, no_pv_hist_test = generate_arcs_training_data(get_all_paths('test'),
                                                                                 hyperparams.unaligned_tolerance,
                                                                                 hyperparams.max_sen_len,
                                                                                 hyperparams.max_parents_vectors,
@@ -103,7 +103,7 @@ if __name__ == "__main__":
                                              no_lstm_layers=1,
                                              alignment='isi',
                                              experimental_run=False)
-    should_train = True
+    should_train = False
     if should_train:
         train_model(hyperparams)
     else:

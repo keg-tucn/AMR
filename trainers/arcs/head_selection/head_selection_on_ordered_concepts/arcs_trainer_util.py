@@ -1,3 +1,4 @@
+import string
 from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,7 +12,9 @@ from trainers.arcs.head_selection.head_selection_on_ordered_concepts.training_ar
     ArcsTrainingEntry
 from trainers.arcs.head_selection.relations_dictionary_extractor import get_relation_between_concepts
 
-
+Adam_Trainer = 'Adam'
+SGD_Trainer = 'SGD'
+UNKNOWN_CHAR = '<unk-char>'
 class ArcsTrainerHyperparameters:
     def __init__(self, no_epochs, mlp_dropout,
                  unaligned_tolerance,
@@ -25,7 +28,12 @@ class ArcsTrainerHyperparameters:
                  mlp_dim: int,
                  no_lstm_layers: int,
                  alignment: str,
-                 experimental_run: bool):
+                 experimental_run: bool,
+                 two_char_rnns: bool,
+                 glove0: bool,
+                 char_cnn_cutoff: int,
+                 use_verb_flag: bool,
+                 trainer):
         self.no_epochs = no_epochs
         self.mlp_dropout = mlp_dropout
         # how many concepts with no alignment we allow in the ordered concepts (percentage: 0-none,1-all)
@@ -41,10 +49,15 @@ class ArcsTrainerHyperparameters:
         self.no_lstm_layers = no_lstm_layers
         self.alignment = alignment
         self.experimental_run = experimental_run
+        self.two_char_rnns = two_char_rnns
+        self.glove0 = glove0
+        self.char_cnn_cutoff = char_cnn_cutoff
+        self.use_verb_flag = use_verb_flag
+        self.trainer = trainer
 
     def __str__(self):
-        return self.alignment +\
-               'ep_' + str(self.no_epochs) + \
+        name = self.alignment + \
+               '_ep_' + str(self.no_epochs) + \
                '_mdrop_' + str(self.mlp_dropout) + \
                '_unaltol_' + str(self.unaligned_tolerance) + \
                '_sl_' + str(self.max_sen_len) + \
@@ -53,9 +66,17 @@ class ArcsTrainerHyperparameters:
                '_prep_' + str(self.use_preprocessing) + \
                '_tEmb_' + str(self.trainable_embeddings_size) + \
                '_gEmb_' + str(self.glove_embeddings_size) + \
-               '_dims_' + str(self.lstm_out_dim) + '-'+str(self.mlp_dim) + \
+               '_dims_' + str(self.lstm_out_dim) + '-' + str(self.mlp_dim) + \
                '_l_' + str(self.no_lstm_layers) + \
-               '_exp_'+str(self.experimental_run)
+               '_exp_' + str(self.experimental_run) + \
+               '_2cnn_'+str(self.two_char_rnns) +\
+               '_glv0_'+str(self.glove0) +\
+               '_cnnth_' + str(self.char_cnn_cutoff) \
+               +'_vb_'+str(self.use_verb_flag)
+        if self.trainer!=SGD_Trainer:
+            name = name +'_'+self.trainer
+        return name
+
 
 
 class ArcsTrainerResultPerEpoch:
@@ -69,6 +90,30 @@ class ArcsTrainerResultPerEpoch:
         self.avg_test_loss = avg_test_loss
         self.avg_test_accuracy = avg_test_accuracy
         self.avg_smatch = avg_smatch
+
+
+def is_verb(concept):
+    splitted_concept = concept.split('-')
+    if splitted_concept[len(splitted_concept) - 1].isdigit():
+        return 1
+    return 0
+
+def construct_word_freq_dict(word_list: List[str]):
+    freq_table = {}
+    for word in word_list:
+        if word not in freq_table.keys():
+            freq_table[word] = 0
+        freq_table[word] += 1
+    return freq_table
+
+
+def write_results_per_epoch(file, epoch_no, result: ArcsTrainerResultPerEpoch):
+    file.write("Epoch " + str(epoch_no)+'\n')
+    file.write("Loss " + str(result.avg_loss)+'\n')
+    file.write("Training accuracy " + str(result.avg_train_accuracy)+'\n')
+    file.write("Test Loss " + str(result.avg_test_loss)+'\n')
+    file.write("Test accuracy " + str(result.avg_test_accuracy)+'\n')
+    file.write("Avg smatch " + str(result.avg_smatch) + '\n\n')
 
 
 def log_results_per_epoch(logger, epoch_no, result: ArcsTrainerResultPerEpoch):
@@ -124,18 +169,18 @@ def generate_amr_node_for_vector_of_parents(identified_concepts: IdentifiedConce
     """
     # create list of nodes
     # the parent should not be themselves
-    for i in range(0,len(vector_of_parents)):
+    for i in range(0, len(vector_of_parents)):
         if i in vector_of_parents[i]:
-            print('happened at index i'+str(i))
+            print('happened at index i' + str(i))
             raise RuntimeError('This should never happen')
             return None
 
     nodes: List[Node] = []
     for i in range(0, len(identified_concepts.ordered_concepts)):
         concept = identified_concepts.ordered_concepts[i]
-        #TODO: better condition for this
-        #I will not have a concept variable at test time :O How do I solve this?
-        if concept.variable == concept.name and concept.variable!='i':
+        # TODO: better condition for this
+        # I will not have a concept variable at test time :O How do I solve this?
+        if concept.variable == concept.name and concept.variable != 'i':
             # literals, interogative, -
             # TODO: investigate if there are more exceptions and maybe add a type in concept
             exceptions = ["-", "interrogative"]
@@ -299,6 +344,16 @@ def plot_acc_and_smatch(filename: str, plotting_data):
     plt.show()
 
 
+
+
+def construct_chars_vocab():
+    # add letters (lowercase and upper case) + dash + digits
+    lower = list(string.ascii_lowercase)
+    caps = list(string.ascii_uppercase)
+    digits = [str(i) for i in range(0, 10)]
+    return lower + caps + digits + ['-'] + [UNKNOWN_CHAR]
+
+
 def construct_ordered_concepts_embeddings_list(magnitude_embeddings, concept_vocab: Vocab):
     """
     Create a list of embeddings for the concepts in the input concept vocab
@@ -341,5 +396,3 @@ def construct_concept_glove_embeddings_list(glove_embeddings, embedding_dim, con
             concept_glove_embedding = null_embedding
         concept_glove_embeddings_list.append(concept_glove_embedding)
     return concept_glove_embeddings_list
-
-
