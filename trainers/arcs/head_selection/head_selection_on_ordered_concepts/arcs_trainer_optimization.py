@@ -47,7 +47,7 @@ if __name__ == "__main__":
     hyperparams = ArcsTrainerHyperparameters(no_epochs=20,
                                              mlp_dropout=MLP_DROPOUT,
                                              unaligned_tolerance=0,
-                                             max_sen_len=300,
+                                             max_sen_len=20,
                                              max_parents_vectors=MAX_PARENT_VECTORS,
                                              reentrancy_threshold=REENTRANCY_THRESHOLD,
                                              use_preprocessing=PREPROCESSING,
@@ -58,15 +58,20 @@ if __name__ == "__main__":
                                              no_lstm_layers=NO_LSTM_LAYERS,
                                              alignment='jamr',
                                              experimental_run=True,
-                                             two_char_rnns=None,
-                                             glove0=None,
+                                             two_char_rnns=False,
+                                             glove0=True,
                                              char_cnn_cutoff=CHAR_CNN_CUTOFF,
                                              use_verb_flag = USE_VERB_FLAG,
                                              trainer=TRAINER)
     # try 3 experiments, 1 char RNN, 2 char RNN with glove0 false, 2 char RNN with glove0 True
     # so basically 1 big char RNN, 1 char RNN for each emb, 1 char RNN for trained and 0 for glove
-    concept_representations = [(False,None),(True,False),(True,True)]
+    concept_representations = [(False,None)]
+    # concept_representations = [(False,None),(True,False),(True,True)]
     for two_rnns, glove0 in concept_representations:
         hyperparams.two_char_rnns = two_rnns
         hyperparams.glove0 = glove0
-        run_experiment(relation_dict, hyperparams)
+        for i in [9,10]:
+            reen_th = i * 0.1
+            hyperparams.reentrancy_threshold = reen_th
+            print('Reentrancy threshold '+str(reen_th))
+            run_experiment(relation_dict, hyperparams)

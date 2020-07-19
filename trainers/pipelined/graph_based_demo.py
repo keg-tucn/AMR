@@ -9,7 +9,7 @@ from data_extraction.dataset_reading_util import get_all_paths, get_all_paths_fo
 from models.amr_graph import AMR
 from models.concept import Concept, IdentifiedConcepts
 from models.node import Node
-from pre_post_processing.standford_pre_post_processing import post_processing_on_parent_vector
+from pre_post_processing.standford_pre_post_processing import post_processing_on_parent_vector, inference_preprocessing
 from trainers.arcs.head_selection.head_selection_on_ordered_concepts.arcs_trainer import test, ArcsDynetGraph, \
     load_arcs_model, predict_vector_of_parents, test_amr
 from trainers.arcs.head_selection.head_selection_on_ordered_concepts.arcs_trainer_util import \
@@ -31,43 +31,6 @@ from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extr
     import test as predict_concepts_from_sentence
 
 
-def setup_loggers():
-    if not os.path.exists('logs'):
-        os.makedirs('logs')
-    overview_logger = logging.getLogger('overview_logs')
-    overview_logger.setLevel(logging.INFO)
-    overview_logger.addHandler(logging.FileHandler('logs/overview_logs.log', 'w'))
-
-    detail_logger = logging.getLogger('detail_logs')
-    detail_logger.setLevel(logging.INFO)
-    detail_logger.addHandler(logging.FileHandler('logs/detail_logs.log', 'w'))
-    return overview_logger, detail_logger
-
-
-def setup_concept_log_files():
-    if not os.path.exists('concept_logs'):
-        os.makedirs('concept_logs')
-    overview_logs = open('concept_logs/overview.txt', "w")
-    detail_logs = open('concept_logs/detail', "w")
-    return overview_logs, detail_logs
-
-
-def close_concept_log_files(overview_logs, detail_logs):
-    overview_logs.close()
-    detail_logs.close()
-
-
-def transform_arcs_to_concept_test_data(arcs_data: ArcsTraingAndTestData):
-    new_entries = []
-    for arcs_entry in arcs_data.test_entries:
-        concept_entry = ConceptsTrainingEntry(arcs_entry.identified_concepts,
-                                              arcs_entry.preprocessed_sentence,
-                                              arcs_entry.logging_info,
-                                              arcs_entry.amr_str)
-        new_entries.append(concept_entry)
-    return new_entries
-
-
 def construct_ordered_concepts(concept_names):
     ordered_concepts = [Concept('', 'ROOT')]
     for i in range(0, len(concept_names)):
@@ -83,7 +46,7 @@ def construct_ordered_concepts(concept_names):
     return ordered_concepts
 
 
-def get_amr_str(arcs_graph, arcs_hyperparams, ordered_concepts, relation_dict):
+def get_amr_str(arcs_graph, arcs_hyperparams, ordered_concepts, relation_dict, sentence, metadata):
     predicted_vector_of_parents = predict_vector_of_parents(arcs_graph,
                                                             ordered_concepts,
                                                             arcs_hyperparams)
@@ -98,38 +61,14 @@ def get_amr_str(arcs_graph, arcs_hyperparams, ordered_concepts, relation_dict):
             post_processing_on_parent_vector(identified_concepts,
                                              predicted_vector_of_parents,
                                              sentence,
-                                             arcs_test_entry.preprocessing_metadata)
+                                             metadata)
         predicted_amr_node: Node = generate_amr_node_for_vector_of_parents(identified_concepts,
                                                                            predicted_vector_of_parents,
                                                                            relation_dict)
         return predicted_amr_node.amr_print_with_reentrancy()
 
 
-def generate_test_data(test_path, alignment, test_unatol, gold_prep):
-    if not os.path.exists('saved_test'):
-        os.makedirs('saved_test')
-    save_path = 'saved_test/' + test_path + '_' + \
-                alignment + '_' + str(max_sen_len) + '_' + str(test_unatol) + '_' + str(gold_prep)
-    if os.path.exists(save_path):
-        with open(save_path, 'rb') as f:
-            test_entries = pickle.load(f)
-            return test_entries
-    print('Generating test data...')
-    test_entries, _, _ = generate_arcs_training_data(
-        get_all_paths_for_alignment(test_path, alignment),
-        test_unatol,
-        arcs_hyperparams.max_sen_len,
-        arcs_hyperparams.max_parents_vectors,
-        arcs_hyperparams.use_preprocessing,
-        False,
-        gold_prep)
-    with open(save_path, "wb") as f:
-        print('Saving test data...')
-        pickle.dump(test_entries, f)
-    return test_entries
-
-
-def get_relation_dict(exp_run):
+def get_relation_dict(exp_run, alignment):
     if not os.path.exists('saved_rel_dir'):
         os.makedirs('saved_rel_dir')
     save_path = 'saved_rel_dir/rel_for_run_exp' + str(exp_run)
@@ -137,7 +76,7 @@ def get_relation_dict(exp_run):
         with open(save_path, 'rb') as f:
             relation_dict = pickle.load(f)
             return relation_dict
-    if EXPERIMENTAL_RUN:
+    if exp_run:
         relation_dict = extract_relation_dict(list(get_all_paths_for_alignment('training', alignment)))
     else:
         train_dev_paths = list(get_all_paths_for_alignment('training', alignment)) + \
@@ -150,16 +89,24 @@ def get_relation_dict(exp_run):
 
     return relation_dict
 
+def predict_amr_for_sentence(sentence, prep = True):
+    sentence_tokens = sentence.split()
+    predicted_concepts_names = concepts_graph.predict_sequence(sentence_tokens)
+    if predicted_concepts_names[0] == 'ROOT':
+        del predicted_concepts_names[0]
+    ordered_concepts = construct_ordered_concepts(predicted_concepts_names)
+    if prep:
+        preprocessed_sentence, metadata = inference_preprocessing(sentence)
+    else:
+        preprocessed_sentence = sentence
+        metadata = []
+    predicted_amr_str = get_amr_str(arcs_graph, arcs_hyperparams, ordered_concepts, relation_dict,
+                                    preprocessed_sentence, metadata)
+    return predicted_concepts_names, predicted_amr_str
 
-def remove_amr_relations(amr_str):
-    no_rel = 'unk-rel'
-    amr = AMR.parse_string(amr_str)
-    unlablled_amr_str = amr.to_amr_string_unlabelled()
-    return unlablled_amr_str
 
-if __name__ == "__main__":
-
-    LABELLED = False
+def setup():
+    LABELLED = True
     EXPERIMENTAL_RUN = False
     model = dy.Model()
     RUN_ON_20 = False
@@ -215,72 +162,25 @@ if __name__ == "__main__":
 
     if LABELLED:
 
-        relation_dict = get_relation_dict(EXPERIMENTAL_RUN)
+        relation_dict = get_relation_dict(EXPERIMENTAL_RUN, alignment)
 
     else:
         relation_dict = {}
+    return concepts_graph, arcs_graph, arcs_hyperparams, relation_dict
 
-    # read test data
-    if EXPERIMENTAL_RUN:
-        test_path = 'dev'
-    else:
-        test_path = 'test'
-    # test_entries, _, _ = generate_arcs_training_data(
-    #     get_all_paths_for_alignment(test_path, alignment),
-    #     test_unatol,
-    #     arcs_hyperparams.max_sen_len,
-    #     arcs_hyperparams.max_parents_vectors,
-    #     arcs_hyperparams.use_preprocessing,
-    #     False)
-    test_entries = generate_test_data(test_path, alignment, test_unatol, GOLD_PREP)
-    train_test_data: ArcsTraingAndTestData = ArcsTraingAndTestData(train_entries=None,
-                                                                   test_entries=test_entries,
-                                                                   no_train_amrs=None,
-                                                                   no_test_amrs=len(test_entries))
 
-    i = 0
-    avg_smatch = 0
-    for arcs_test_entry in test_entries:
-        sentence = arcs_test_entry.preprocessed_sentence
-        sentence_tokens = sentence.split()
-        predicted_concepts_names = concepts_graph.predict_sequence(sentence_tokens)
-        if predicted_concepts_names[0] == 'ROOT':
-            del predicted_concepts_names[0]
-        gold_concept_names = [gold_concept.name for gold_concept in
-                              arcs_test_entry.identified_concepts.ordered_concepts if gold_concept.name != 'ROOT']
-        ordered_concepts = construct_ordered_concepts(gold_concept_names)
-        # print('Ordered concepts with gold names'+str(ordered_concepts))
-        ordered_concepts = arcs_test_entry.identified_concepts.ordered_concepts
-        # print('Gold ordered concepts '+str(ordered_concepts))
-        # print()
-        # ordered_concepts = construct_ordered_concepts(predicted_concepts_names)
+if __name__ == "__main__":
+    concepts_graph, arcs_graph, arcs_hyperparams, relation_dict = setup()
+    print('John likes cats')
+    _,predicted_amr = predict_amr_for_sentence('John likes cats')
+    print('Predicted amr: ')
+    print(predicted_amr)
+    print('John Smith likes cats')
+    _,predicted_amr = predict_amr_for_sentence('John Smith likes cats')
+    print('Predicted amr: ')
+    print(predicted_amr)
+    print('John Smith is the president')
+    _,predicted_amr = predict_amr_for_sentence('John Smith is the president')
+    print('Predicted amr: ')
+    print(predicted_amr)
 
-        predicted_amr_str = get_amr_str(arcs_graph, arcs_hyperparams, ordered_concepts, relation_dict)
-        if predicted_amr_str != None and arcs_test_entry.amr_str != None:
-            # calculate smatch
-            try:
-                if LABELLED:
-                    gold_amr_str = arcs_test_entry.amr_str
-                else:
-                    gold_amr_str = remove_amr_relations(arcs_test_entry.amr_str)
-                smatch_f_score = calculate_smatch(predicted_amr_str, gold_amr_str)
-            except Exception:
-                smatch_f_score = 0
-            avg_smatch += smatch_f_score
-
-        # if i % 100 == 0:
-        #     print()
-        #     print('sentence: ' + str(sentence_tokens))
-        #     print('gold concepts: ' + str(arcs_test_entry.identified_concepts.ordered_concepts))
-        #     print('gold concept names ' + str(gold_concept_names))
-        #     print('predicted concepts: ' + str(predicted_concepts_names))
-        #     if predicted_amr_str is not None:
-        #         print('Predicted AMR:')
-        #         print(predicted_amr_str)
-        #         print('Gold amr')
-        #         print(gold_amr_str)
-
-    no_test_entries = len(test_entries)
-    avg_smatch = avg_smatch / no_test_entries
-    print('Avg smatch is: ' + str(avg_smatch))
-    print('Done')

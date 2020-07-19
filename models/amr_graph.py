@@ -11,7 +11,9 @@ from util import *
 import sys
 import re
 from optparse import OptionParser
-from .dependency_graph import *
+
+
+# from .dependency_graph import *
 
 
 # Error definitions
@@ -76,8 +78,8 @@ class AMR(defaultdict):
 
     def __printing__representation(self):
         printing_repr = ''
-        printing_repr += 'roots'+str(self.roots) + '\n'
-        printing_repr += 'reentrance_triples'+str(self.reentrance_triples) + '\n'
+        printing_repr += 'roots' + str(self.roots) + '\n'
+        printing_repr += 'reentrance_triples' + str(self.reentrance_triples) + '\n'
         printing_repr += 'node_to_concepts: ' + str(self.node_to_concepts) + '\n'
         printing_repr += 'node_to_tokens: ' + str(self.node_to_tokens) + '\n'
         printing_repr += 'relation_to_tokens: ' + str(self.relation_to_tokens) + '\n'
@@ -85,7 +87,7 @@ class AMR(defaultdict):
         printing_repr += 'default dict:\n'
         for parent, children in self.items():
             printing_repr += 'parent ' + str(parent) + " with children: "
-            printing_repr += str(children)+ '\n'
+            printing_repr += str(children) + '\n'
         return printing_repr
 
     def __str__(self):
@@ -388,6 +390,7 @@ class AMR(defaultdict):
                     raise ParserError("Unexpected token %s" % (token))
 
         if state != 0 and stack:
+            print(amr_string)
             raise ParserError("mismatched parenthesis")
 
         return amr
@@ -672,45 +675,71 @@ class AMR(defaultdict):
 
             # all_nodes = []
             while stack:
+                # print("\n\nProcessing node: " + str(AMR.peekFromStack(stack)))
                 next, rel, parent, depth, seqID = AMR.popFromStack(stack)
-                for n in next:
-                    if self.reentrance_triples:
-                        firsthit = (parent, rel, n) not in self.reentrance_triples
-                    else:
-                        firsthit = n not in visited_nodes
-                    leaf = False if self[n] else True
+                if len(next) > 1:
+                    n = next.pop(0)
+                    stack.append((next, rel, parent, depth, seqID))
+                else:
+                    n = next[0]
 
-                    node = Node(parent, rel, n, firsthit, leaf, depth, seqID)
+                nn = n
+                if isinstance(nn, ListMap):
+                    nn = nn[0]
+                if not isinstance(nn, str):
+                    nn = nn[0]
 
-                    # print self.node_to_concepts
-                    sequence.append(node)
+                if self.reentrance_triples:
+                    firsthit = (parent, rel, n) not in self.reentrance_triples and nn not in visited_nodes
+                else:
+                    firsthit = nn not in visited_nodes
 
-                    # same StrLiteral/Quantity/Polarity should not be revisited
-                    if self.reentrance_triples:  # for being the same with the amr string readed in
-                        if n in visited_nodes or (parent, rel, n) in self.reentrance_triples:
-                            continue
-                    else:
-                        if n in visited_nodes:
-                            continue
+                # print(self.keys(), nn in self.keys(), not visited_nodes.__contains__(nn), visited_nodes)
+                leaf = True if not self[nn] or (self[nn] and visited_nodes.__contains__(nn)) else False
 
+                node = Node(parent, rel, n, firsthit, leaf, depth, seqID)
+
+                # print(self.node_to_concepts)
+                # print("Current node is: ", node, "leaf", leaf)
+                sequence.append(node)
+
+                # same StrLiteral/Quantity/Polarity should not be revisited
+                if self.reentrance_triples:  # for being the same with the amr string readed in
+                    if nn in visited_nodes or (parent, rel, n) in self.reentrance_triples:
+                        continue
+                else:
+                    if nn in visited_nodes:
+                        continue
+
+                n = nn
+                # print ("N is:", n)
+                # print("Visited nodes are:")
+                # print(visited_nodes)
+                if isinstance(n, str) and n.startswith("\""):
+                    visited_nodes.add(n.upper())
+                else:
                     visited_nodes.add(n)
-                    p = len([child for rel, child in list(self[n].items()) if
-                             (n, rel, child[0]) not in self.reentrance_triples]) - 1
-                    for rel, child in reversed(list(self[n].items())):
-                        # print rel,child
-                        if not (rel, n, child[0]) in visited_edges:
-                            # if child[0] not in visited_nodes or isinstance(child[0],(StrLiteral,Quantity)):
-                            visited_edges.append((rel, n, child[0]))
-                            if (n, rel, child[0]) not in self.reentrance_triples:
-                                stack.append((child, rel, n, depth + 1, seqID + '.' + str(p)))
-                                p -= 1
-                            else:
-                                stack.append((child, rel, n, depth + 1, None))
-                        elif isinstance(child[0], (StrLiteral, Quantity)):
+
+                p = len([child for rel, child in list(self[n].items()) if
+                         (n, rel, child[0]) not in self.reentrance_triples]) - 1
+                # print("P is: " + str(p))
+                for rel, child in reversed(list(self[n].items())):
+                    # print("Rel is: " + str(rel) + " child is: " + str(child))
+                    if not (rel, n, child[0]) in visited_edges:
+                        # if child[0] not in visited_nodes or isinstance(child[0],(StrLiteral,Quantity)):
+                        visited_edges.append((rel, n, child[0]))
+                        # print("Visited edges are: " + str(visited_edges))
+                        if (n, rel, child[0]) not in self.reentrance_triples:
                             stack.append((child, rel, n, depth + 1, seqID + '.' + str(p)))
+                            # print("Stack is: " + str(stack))
                             p -= 1
                         else:
-                            pass
+                            stack.append((child, rel, n, depth + 1, None))
+                    elif isinstance(child[0], (StrLiteral, Quantity)):
+                        stack.append((child, rel, n, depth + 1, seqID + '.' + str(p)))
+                        p -= 1
+                    else:
+                        pass
 
             return (sequence, visited_edges)
 
@@ -791,21 +820,35 @@ class AMR(defaultdict):
 
     '''
 
+    def print_representation(self):
+        print("Roots")
+        print(self.roots)
+        print("Node to concepts:")
+        print(self.node_to_concepts)
+        print("Node to tokens:")
+        print(self.node_to_tokens)
+        print("Relation to tokens: ")
+        print(self.relation_to_tokens)
+
+        for concept, children in self.items():
+            print("amr[{}]={}".format(concept, self[concept]))
+
     def to_amr_string(self):
 
         amr_string = ""
-
         seq = self.dfs()[0]
 
         # always begin with root
-        assert seq[0].trace == None
+        assert seq[0].trace is None
         dep_rec = 0
         for node in seq:
-            if node.trace == None:
+            if not isinstance(node.node_label, str):
+                node.node_label = node.node_label[0]
+            if node.trace is None:
                 if node.firsthit and node.node_label in self.node_to_concepts:
                     amr_string += "(%s / %s" % (node.node_label, self.node_to_concepts[node.node_label])
                 else:
-                    amr_string += "(%s" % (node.node_label)
+                    amr_string += "(%s" % node.node_label
             else:
                 if node.depth >= dep_rec:
                     dep_rec = node.depth
@@ -814,6 +857,7 @@ class AMR(defaultdict):
                     dep_rec = node.depth
 
                 if not node.leaf:
+                    # print("Not a leaf: " + str(node))
                     if node.firsthit and node.node_label in self.node_to_concepts:
                         amr_string += "\n%s:%s (%s / %s" % (
                             node.depth * "\t", node.trace, node.node_label, self.node_to_concepts[node.node_label])
@@ -821,12 +865,13 @@ class AMR(defaultdict):
                         amr_string += "\n%s:%s %s" % (node.depth * "\t", node.trace, node.node_label)
 
                 else:
+                    # print("Leaf: " + str(node))
                     if node.firsthit and node.node_label in self.node_to_concepts:
                         amr_string += "\n%s:%s (%s / %s)" % (
                             node.depth * "\t", node.trace, node.node_label, self.node_to_concepts[node.node_label])
                     else:
-                        if isinstance(node.node_label, StrLiteral):
-                            amr_string += '\n%s:%s "%s"' % (node.depth * "\t", node.trace, node.node_label)
+                        if isinstance(node.node_label, str):
+                            amr_string += '\n%s:%s %s' % (node.depth * "\t", node.trace, node.node_label)
                         else:
                             amr_string += "\n%s:%s %s" % (node.depth * "\t", node.trace, node.node_label)
 
@@ -834,7 +879,53 @@ class AMR(defaultdict):
             amr_string += "%s" % ((dep_rec) * ')')
         else:
             amr_string += ')'
+        return amr_string
 
+    def to_amr_string_unlabelled(self, rel='unk-rel'):
+
+        amr_string = ""
+        seq = self.dfs()[0]
+        # always begin with root
+        assert seq[0].trace is None
+        dep_rec = 0
+        for node in seq:
+            if not isinstance(node.node_label, str):
+                node.node_label = node.node_label[0]
+            if node.trace is None:
+                if node.firsthit and node.node_label in self.node_to_concepts:
+                    amr_string += "(%s / %s" % (node.node_label, self.node_to_concepts[node.node_label])
+                else:
+                    amr_string += "(%s" % node.node_label
+            else:
+                if node.depth >= dep_rec:
+                    dep_rec = node.depth
+                else:
+                    amr_string += "%s" % ((dep_rec - node.depth) * ')')
+                    dep_rec = node.depth
+
+                if not node.leaf:
+                    # print("Not a leaf: " + str(node))
+                    if node.firsthit and node.node_label in self.node_to_concepts:
+                        amr_string += "\n%s:%s (%s / %s" % (
+                            node.depth * "\t", rel, node.node_label, self.node_to_concepts[node.node_label])
+                    else:
+                        amr_string += "\n%s:%s %s" % (node.depth * "\t", rel, node.node_label)
+
+                else:
+                    # print("Leaf: " + str(node))
+                    if node.firsthit and node.node_label in self.node_to_concepts:
+                        amr_string += "\n%s:%s (%s / %s)" % (
+                            node.depth * "\t", rel, node.node_label, self.node_to_concepts[node.node_label])
+                    else:
+                        if isinstance(node.node_label, str):
+                            amr_string += '\n%s:%s %s' % (node.depth * "\t", rel, node.node_label)
+                        else:
+                            amr_string += "\n%s:%s %s" % (node.depth * "\t", rel, node.node_label)
+
+        if dep_rec != 0:
+            amr_string += "%s" % ((dep_rec) * ')')
+        else:
+            amr_string += ')'
         return amr_string
 
     def __reduce__(self):
@@ -842,27 +933,97 @@ class AMR(defaultdict):
         return (t[0], ()) + (self.__dict__,) + t[3:]
 
 
-import copy as copy
+def test_to_amr_str():
+    amr_str1 = """
+   (a2 / attack-01~e.9 :quant 3~e.7 
+      :ARG1 (a4 / and~e.14 
+            :op1 (s / station~e.13 :quant 2~e.11 
+                  :mod (p2 / police~e.12)) 
+            :op2 (b / barrack~e.17 
+                  :mod (a3 / army~e.16) 
+                  :location (s2 / state~e.21 :wiki "Guerrero"~e.21 
+                        :name (n / name~e.23 :op1 "Guerrero"~e.21) 
+                        :location (s3 / south~e.20)))) 
+      :instrument (g2 / grenade~e.8) 
+      :time (d / date-entity~e.1 :day 7~e.1 :month 6~e.1 :year 2007~e.1))
+"""
+    amr_str2 = """
+   (p2 / person~e.3 
+      :domain (p / person~e.1 :quant 5~e.1) 
+      :ARG0-of (h / have-org-role-91~e.3 
+            :ARG1 (f / family~e.6 
+                  :ARG1-of (r / return-01~e.7 
+                        :ARG3 (w / wake~e.10))) 
+            :ARG2 (m / member~e.3)))"""
+
+    amr_str3 = """
+    (s3 / say-01~e.20 
+      :ARG0 (f / figure~e.23 
+            :source (g2 / government-organization~e.22 
+                  :ARG0-of (g / govern-01~e.22)) 
+            :ARG1-of (r3 / release-01~e.24 
+                  :ARG0 g2 
+                  :time (d3 / date-entity~e.11 
+                        :weekday (w / wednesday~e.25)))) 
+      :ARG1 (r / register-02~e.2 
+            :ARG0 (c / country~e.15 :wiki "South_Korea"~e.15 
+                  :name (s / name~e.0 :op1 "South"~e.0 :op2 "Korea"~e.0)) 
+            :ARG1 (d4 / deficit~e.5 
+                  :mod (t / trade-01~e.4) 
+                  :quant (m / monetary-quantity :quant 101000000 
+                        :unit (d / dollar)) 
+                  :ARG1-of (r2 / reflect-01~e.13 
+                        :ARG2 (s2 / sluggish~e.18 
+                              :domain (e / economy~e.17 
+                                    :poss c)))) 
+            :time (d2 / date-entity :month 10~e.11)))
+"""
+    amr1 = AMR.parse_string(amr_str1)
+    amr1.print_representation()
+    amr2 = AMR.parse_string(amr_str2)
+
+    print(amr1.to_amr_string())
+    # print(amr2.to_amr_string())
+
+
+def remove_amr_relations(amr_str):
+    no_rel = 'unk-rel'
+    amr: AMR = AMR.parse_string(amr_str)
+    new_amr_str = amr.to_amr_string_unlabelled()
+    print(new_amr_str)
+
 
 if __name__ == "__main__":
-    opt = OptionParser()
-    opt.add_option("-v", action="store_true", dest="verbose")
+    amr_1 = """(a2 / attack-01~e.9 :quant 3~e.7 
+      :ARG1 (a4 / and~e.14 
+            :op1 (s / station~e.13 :quant 2~e.11 
+                  :mod (p2 / police~e.12)) 
+            :op2 (b / barrack~e.17 
+                  :mod (a3 / army~e.16) 
+                  :location (s2 / state~e.21 :wiki "Guerrero"~e.21 
+                        :name (n / name~e.23 :op1 "Guerrero"~e.21) 
+                        :location (s3 / south~e.20)))) 
+      :instrument (g2 / grenade~e.8) 
+      :time (d / date-entity~e.1 :day 7~e.1 :month 6~e.1 :year 2007~e.1))"""
+    remove_amr_relations(amr_1)
 
-    (options, args) = opt.parse_args()
+    # test_to_amr_str()
 
-    s = '''(a / and :op1(恶化 :ARG0(它) :ARG1(模式 :mod(开发)) :time (已经)) :op2(t / 堵塞 :ARG0(它) :ARG1(交通 :mod(局部)) :location(a / around :op1(出口))))'''
-    s1 = '''(a  /  and :op1 (c  /  change-01 :ARG0 (i  /  it) :ARG1 (p  /  pattern :mod (d  /  develop-02)) :ARG2 (b  / bad :degree (m  /  more))) :op2 (c2  /  cause-01 :ARG0 i :ARG1 (c3  /  congest-01 :ARG1 (a2  /  around :op1 (e  /  exit :poss i)) :ARG2 (t  /  traffic) :ARG1-of (l2  /  localize-01))) :time (a3  /  already))'''
-    # s = s.decode('utf8')
-    # amr_ch = AMR.parse_string(s)
-    amr_en = AMR.parse_string(s1)
-    print(str(amr_en))
-    c2 = copy.deepcopy(amr_en)
-    print(str(c2))
-    if amr_en != c2:
-        print("Issue with deep copy")
-    c3 = copy.deepcopy(c2)
-    print(str(c3))
+# import copy as copy
+# if __name__ == "__main__":
+#
+#    s = '''(a / and :op1(恶化 :ARG0(它) :ARG1(模式 :mod(开发)) :time (已经)) :op2(t / 堵塞 :ARG0(它) :ARG1(交通 :mod(局部)) :location(a / around :op1(出口))))'''
+#    s1 = '''(a  /  and :op1 (c  /  change-01 :ARG0 (i  /  it) :ARG1 (p  /  pattern :mod (d  /  develop-02)) :ARG2 (b  / bad :degree (m  /  more))) :op2 (c2  /  cause-01 :ARG0 i :ARG1 (c3  /  congest-01 :ARG1 (a2  /  around :op1 (e  /  exit :poss i)) :ARG2 (t  /  traffic) :ARG1-of (l2  /  localize-01))) :time (a3  /  already))'''
+#    # s = s.decode('utf8')
+#    # amr_ch = AMR.parse_string(s)
+#    amr_en = AMR.parse_string(s1)
+#    print(str(amr_en))
+#    c2 = copy.deepcopy(amr_en)
+#    print(str(c2))
+#    if amr_en != c2:
+#        print("Issue with deep copy")
+#    c3 = copy.deepcopy(c2)
+#    print(str(c3))
 
-    # print amr_ch
-    # print amr_ch.dfs()
-    # print amr_ch.to_amr_string()
+#    print(s1)
+#    print(amr_en.to_amr_string())

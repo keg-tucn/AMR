@@ -77,6 +77,28 @@ class ArcsTrainerHyperparameters:
             name = name +'_'+self.trainer
         return name
 
+    def __repr__(self):
+        name = self.alignment + \
+               '_ep_' + str(self.no_epochs) + \
+               '_mdrop_' + str(self.mlp_dropout) + \
+               '_unaltol_' + str(self.unaligned_tolerance) + \
+               '_sl_' + str(self.max_sen_len) + \
+               '_pv_' + str(self.max_parents_vectors) + \
+               '_th_' + str(self.reentrancy_threshold) + \
+               '_prep_' + str(self.use_preprocessing) + \
+               '_tEmb_' + str(self.trainable_embeddings_size) + \
+               '_gEmb_' + str(self.glove_embeddings_size) + \
+               '_dims_' + str(self.lstm_out_dim) + '-' + str(self.mlp_dim) + \
+               '_l_' + str(self.no_lstm_layers) + \
+               '_exp_' + str(self.experimental_run) + \
+               '_2cnn_'+str(self.two_char_rnns) +\
+               '_glv0_'+str(self.glove0) +\
+               '_cnnth_' + str(self.char_cnn_cutoff) \
+               +'_vb_'+str(self.use_verb_flag)
+        if self.trainer!=SGD_Trainer:
+            name = name +'_'+self.trainer
+        return name
+
 
 
 class ArcsTrainerResultPerEpoch:

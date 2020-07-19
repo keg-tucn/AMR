@@ -83,6 +83,7 @@ def process_sentence(sentence,
 
 
 if __name__ == "__main__":
+    print(process_sentence('John Smith likes cats'))
     print(process_sentence('Rami Eid John is studying in San Francisco'))
     print(process_sentence('Rami Eid John is studying in San Francisco in October 2020'))
     print(process_sentence('Establish an innovation fund with a maximum amount of 1,000 U.S. dollars .'))

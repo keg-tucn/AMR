@@ -484,6 +484,7 @@ def train_and_test(relation_dict, hyperparams: ArcsTrainerHyperparameters):
         results_per_epoch[epoch] = epoch_result
         print('Train acc' + str(epoch_result.avg_train_accuracy))
         print('Test acc' + str(epoch_result.avg_test_accuracy))
+        print('Test smatch' + str(epoch_result.avg_smatch))
         log_results_per_epoch(overview_logger, epoch, epoch_result)
 
     # save model
@@ -492,6 +493,8 @@ def train_and_test(relation_dict, hyperparams: ArcsTrainerHyperparameters):
         os.makedirs(model_dir)
     with open(model_dir + "/all_concepts_vocab", "wb") as f:
         pickle.dump(all_concepts_vocab, f)
+    with open(model_dir + "/concepts_counts_table", "wb") as f:
+        pickle.dump(concepts_counts_table, f)
 
     # save model
     arcs_graph.model.save(model_dir + "/graph")
@@ -510,6 +513,8 @@ def save_arcs_model(arcs_graph: ArcsDynetGraph):
         os.makedirs(model_dir)
     with open(model_dir + "/all_concepts_vocab", "wb") as f:
         pickle.dump(arcs_graph.concepts_vocab, f)
+    with open(model_dir + "/concepts_counts_table", "wb") as f:
+        pickle.dump(arcs_graph.concepts_counts_table, f)
     # save model
     arcs_graph.model.save(model_dir + "/graph")
 
@@ -523,8 +528,11 @@ def load_arcs_model(hyperparams, model=None):
         # get vocabs
         with open(model_dir + "/all_concepts_vocab", "rb") as f:
             all_concepts_vocab = pickle.load(f)
+        # get concept counts
+        with open(model_dir + "/concepts_counts_table", "rb") as f:
+            concepts_counts_table = pickle.load(f)
         # create graph
-        arcs_graph = ArcsDynetGraph(all_concepts_vocab, hyperparams, model)
+        arcs_graph = ArcsDynetGraph(all_concepts_vocab, concepts_counts_table, hyperparams, model)
         # populate
         arcs_graph.model.populate(model_dir + "/graph")
         return arcs_graph

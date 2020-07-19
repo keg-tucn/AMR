@@ -46,7 +46,11 @@ def generate_dataset_entry(amr_id: str, amr_str: str, sentence: str,
                            unaligned_tolerance: float,
                            max_no_parent_vectors: int,
                            use_preprocessing: bool,
-                           is_train: bool):
+                           is_train: bool,
+                           gold_prep = True):
+    #TODO: proper fix
+    if unaligned_tolerance!=0 and amr_id in ['PROXY_AFP_ENG_20021221_0466.18']:
+        return None
     amr = AMR.parse_string(amr_str)
     metadata = None
     preprocessed_sentence = sentence
@@ -54,7 +58,10 @@ def generate_dataset_entry(amr_id: str, amr_str: str, sentence: str,
         # maybe on the test flow apply the test preprocessing to get the sentence and metadata
         # as well as the train preprocessing to get the preprocessed ordered concepts
         if amr_id!='DF-201-185511-38_8794.15':
-            amr, preprocessed_sentence, metadata = train_pre_processing(amr, sentence)
+            if gold_prep or is_train:
+                amr, preprocessed_sentence, metadata = train_pre_processing(amr, sentence)
+            else:
+                preprocessed_sentence, metadata = inference_preprocessing(sentence)
         else:
             preprocessed_sentence = sentence
             metadata = {}
@@ -86,7 +93,8 @@ def generate_arcs_training_data_per_file(file_path,
                                          max_sentence_len,
                                          max_no_parent_vectors,
                                          use_preprocessing: bool,
-                                         is_train: bool):
+                                         is_train: bool,
+                                         gold_prep = True):
     no_of_parent_vectors_histogram = {}
     sentence_amr_triples = input_file_parser.extract_data_records(file_path)
     entries: List[ArcsTrainingEntry] = []
@@ -102,7 +110,8 @@ def generate_arcs_training_data_per_file(file_path,
                                                               unaligned_tolerance,
                                                               max_no_parent_vectors,
                                                               use_preprocessing,
-                                                              is_train)
+                                                              is_train,
+                                                              gold_prep)
             if entry is not None:
                 entries.append(entry)
                 no_of_parent_vectors = len(entry.parent_vectors)
@@ -119,7 +128,8 @@ def generate_arcs_training_data(file_paths: List[str],
                                 max_sentence_len: int,
                                 max_no_parent_vectors: int,
                                 use_preprocessing: bool,
-                                is_train: bool):
+                                is_train: bool,
+                                gold_prep = True):
     all_entries = []
     no_all_entries_not_processed = 0
     no_of_parent_vectors_histogram = {}
@@ -131,7 +141,7 @@ def generate_arcs_training_data(file_paths: List[str],
             max_sentence_len,
             max_no_parent_vectors,
             use_preprocessing,
-            is_train)
+            is_train, gold_prep)
         all_entries = all_entries + entries
         no_all_entries_not_processed += no_entries_not_processed
         for key, value in no_of_parent_vectors_histogram_dataset.items():

@@ -9,7 +9,7 @@ from data_extraction.dataset_reading_util import read_dataset_dict
 from models.amr_data import CustomizedAMR
 from models.amr_graph import AMR
 from preprocessing.preprocessing_steps import NamedEntitiesPreprocessingStep, DateEntitiesPreprocessingStep, \
-    TemporalQuantitiesPreprocessingStep, QuantitiesPreprocessingStep
+    TemporalQuantitiesPreprocessingStep, QuantitiesPreprocessingStep, StandfordNerTaggerPreprocessingStep
 
 
 class ArcsAnalysis(DatasetAnalysis):
@@ -63,10 +63,11 @@ class ArcsAnalysis(DatasetAnalysis):
         # apply processing steps
         preprocessing_steps_dict = {
             'no_prep': [],
-            'ne_prep': [NamedEntitiesPreprocessingStep()],
-            'de_prep': [DateEntitiesPreprocessingStep()],
-            'tq_prep': [TemporalQuantitiesPreprocessingStep()],
-            'q_prep': [QuantitiesPreprocessingStep()]
+            'stanford-ner-step': [StandfordNerTaggerPreprocessingStep()],
+            # 'ne_prep': [NamedEntitiesPreprocessingStep()],
+            # 'de_prep': [DateEntitiesPreprocessingStep()],
+            # 'tq_prep': [TemporalQuantitiesPreprocessingStep()],
+            # 'q_prep': [QuantitiesPreprocessingStep()]
             # 'all_prep': [NamedEntitiesPreprocessingStep(),
             #              DateEntitiesPreprocessingStep(),
             #              TemporalQuantitiesPreprocessingStep(),
@@ -102,10 +103,11 @@ class ArcsAnalysis(DatasetAnalysis):
         # apply processing steps
         preprocessing_steps_dict = {
             'no_prep': [],
-            'ne_prep': [NamedEntitiesPreprocessingStep()],
-            'de_prep': [DateEntitiesPreprocessingStep()],
-            'tq_prep': [TemporalQuantitiesPreprocessingStep()],
-            'q_prep': [QuantitiesPreprocessingStep()]
+            'stanford-ner-step': [StandfordNerTaggerPreprocessingStep()],
+            # 'ne_prep': [NamedEntitiesPreprocessingStep()],
+            # 'de_prep': [DateEntitiesPreprocessingStep()],
+            # 'tq_prep': [TemporalQuantitiesPreprocessingStep()],
+            # 'q_prep': [QuantitiesPreprocessingStep()]
             # 'all_prep': [NamedEntitiesPreprocessingStep(),
             #              DateEntitiesPreprocessingStep(),
             #              TemporalQuantitiesPreprocessingStep(),

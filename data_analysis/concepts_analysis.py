@@ -59,10 +59,10 @@ class ConceptsAnalysis(DatasetAnalysis):
         preprocessing_steps_dict = {
             'no_prep': [],
             'stanford-ner-step': [StandfordNerTaggerPreprocessingStep()],
-            'ne_prep': [NamedEntitiesPreprocessingStep()],
-            'de_prep': [DateEntitiesPreprocessingStep()],
-            'tq_prep': [TemporalQuantitiesPreprocessingStep()],
-            'q_prep': [QuantitiesPreprocessingStep()]
+            # 'ne_prep': [NamedEntitiesPreprocessingStep()],
+            # 'de_prep': [DateEntitiesPreprocessingStep()],
+            # 'tq_prep': [TemporalQuantitiesPreprocessingStep()],
+            # 'q_prep': [QuantitiesPreprocessingStep()]
             # 'all_prep': [NamedEntitiesPreprocessingStep(),
             #              DateEntitiesPreprocessingStep(),
             #              TemporalQuantitiesPreprocessingStep(),
@@ -99,10 +99,10 @@ class ConceptsAnalysis(DatasetAnalysis):
         preprocessing_steps_dict = {
             'no_prep': [],
             'stanford_prep': [StandfordNerTaggerPreprocessingStep()],
-            'ne_prep': [NamedEntitiesPreprocessingStep()],
-            'de_prep': [DateEntitiesPreprocessingStep()],
-            'tq_prep': [TemporalQuantitiesPreprocessingStep()],
-            'q_prep': [QuantitiesPreprocessingStep()]
+            # 'ne_prep': [NamedEntitiesPreprocessingStep()],
+            # 'de_prep': [DateEntitiesPreprocessingStep()],
+            # 'tq_prep': [TemporalQuantitiesPreprocessingStep()],
+            # 'q_prep': [QuantitiesPreprocessingStep()]
             # 'all_prep': [NamedEntitiesPreprocessingStep(),
             #              DateEntitiesPreprocessingStep(),
             #              TemporalQuantitiesPreprocessingStep(),

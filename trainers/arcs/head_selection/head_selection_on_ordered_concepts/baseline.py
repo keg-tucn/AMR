@@ -3,7 +3,7 @@ from trainers.arcs.head_selection.head_selection_on_ordered_concepts.arcs_traine
 NO_EPOCHS = 20
 MLP_DROPOUT = 0.5
 MAX_PARENT_VECTORS = 6
-REENTRANCY_THRESHOLD = 0.8
+REENTRANCY_THRESHOLD = 0.6
 PREPROCESSING = True
 TRAINABLE_EMB_SIZE = 50
 GLOVE_EMB_SIZE = 100

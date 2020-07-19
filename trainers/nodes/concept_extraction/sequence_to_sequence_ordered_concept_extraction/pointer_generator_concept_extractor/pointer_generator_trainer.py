@@ -573,7 +573,7 @@ def run_testing_test(hyperparams: PointerGeneratorConceptExtractorGraphHyperpara
 
 if __name__ == "__main__":
 
-    EXP_RUN = False
+    EXP_RUN = True
     TRAIN = False
     RUN_ON_20 = True
     if RUN_ON_20:
@@ -585,7 +585,7 @@ if __name__ == "__main__":
     hyperparams = PointerGeneratorConceptExtractorGraphHyperparams(no_epochs=no_epochs,
                                                                    max_sentence_len=max_sen_len,
                                                                    use_preprocessing=True,
-                                                                   alignment='isi',
+                                                                   alignment='jamr',
                                                                    experimental_run=EXP_RUN,
                                                                    two_classifiers=True,
                                                                    dropout=DROPOUT_RATE,
