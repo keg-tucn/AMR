@@ -1,6 +1,6 @@
 from models.concept import IdentifiedConcepts, Concept
 from models.node import Node
-from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_util import \
+from trainers.arcs.head_selection.head_selection_on_ordered_concepts.arcs_trainer_util import \
     generate_amr_node_for_parents_vector, calculate_smatch, generate_amr_node_for_vector_of_parents
 
 

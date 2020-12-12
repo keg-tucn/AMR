@@ -2,7 +2,7 @@ import dynet as dy
 import nltk
 
 from deep_dynet import support as ds
-from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer import get_all_concepts
+from trainers.arcs.head_selection.head_selection_on_ordered_concepts.arcs_trainer import get_all_concepts
 
 START_OF_SEQUENCE = "<SOS>"
 END_OF_SEQUENCE = "<EOS>"
@@ -120,24 +120,18 @@ def generate_verbs_nonverbs(concepts):
 def get_golden_concept_indexes(concepts_dynet_graph, golden_concepts, hyperparams):
     golden_concept_indexes = []
 
-    if hyperparams.use_verb_nonverb_decoders or hyperparams.use_verb_nonverb_embeddings_classifier:
-        for concept in golden_concepts:
-            if concept in concepts_dynet_graph.concepts_vocab.w2i:
+    for concept in golden_concepts:
+        if concept in concepts_dynet_graph.concepts_vocab.w2i:
+            if hyperparams.use_verb_nonverb_decoders or hyperparams.use_verb_nonverb_embeddings_classifier:
                 if is_verb(concept) == 1:
                     golden_concept_indexes.append(concepts_dynet_graph.concepts_verbs_vocab.w2i[concept])
                 else:
                     golden_concept_indexes.append(concepts_dynet_graph.concepts_nonverbs_vocab.w2i[concept])
-            # REMOVE WHEN LOSS NOT COMPUTED FOR DEV
             else:
-                golden_concept_indexes.append(concepts_dynet_graph.dev_concepts_vocab.w2i[concept])
-    else:
-        for concept in golden_concepts:
-            if concept in concepts_dynet_graph.concepts_vocab.w2i:
                 golden_concept_indexes.append(concepts_dynet_graph.concepts_vocab.w2i[concept])
-            # REMOVE WHEN LOSS NOT COMPUTED FOR DEV
-            else:
-                golden_concept_indexes.append(concepts_dynet_graph.dev_concepts_vocab.w2i[concept])
-        # embedded_golden_concepts = [concepts_dynet_graph.concepts_vocab.w2i[concept] for concept in golden_concepts]
+        # REMOVE WHEN LOSS NOT COMPUTED FOR DEV
+        else:
+            golden_concept_indexes.append(concepts_dynet_graph.dev_concepts_vocab.w2i[concept])
 
     return golden_concept_indexes
 

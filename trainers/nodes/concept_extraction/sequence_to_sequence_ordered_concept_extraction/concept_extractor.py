@@ -6,7 +6,8 @@ import dynet as dy
 
 from data_extraction.word_embeddings_reader import read_glove_embeddings_from_file
 from deep_dynet.support import Vocab
-from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_util import \
+from definitions import PROJECT_ROOT_DIR
+from trainers.arcs.head_selection.head_selection_on_ordered_concepts.arcs_trainer_util import \
     construct_concept_glove_embeddings_list
 from trainers.nodes.concept_extraction.sequence_to_sequence_ordered_concept_extraction.trainer_util import is_verb, \
     compute_f_score, compute_metrics, ConceptsTrainerHyperparameters, get_golden_concept_indexes, initialize_decoders, \
@@ -40,20 +41,23 @@ DROPOUT_RATE = 0.6
 USE_ATTENTION = True
 USE_GLOVE = False
 USE_VERB_NONVERB_DECODERS = False
-USE_VERB_NONVERB_EMBEDDINGS_CLASSIFIER = True
+USE_VERB_NONVERB_EMBEDDINGS_CLASSIFIER = False
 ALIGNMENT = "isi"
 
-NB_EPOCHS = 40
+NB_EPOCHS = 1
 
-EXPERIMENTAL_RUN = True
+EXPERIMENTAL_RUN = False
 TRAIN = False
 
 
 class ConceptsDynetGraph:
     def __init__(self, words_vocab, concepts_vocab, words_glove_embeddings_list, concepts_verbs_vocab,
-                 concepts_nonverbs_vocab, hyperparams, dev_concepts_vocab):
-
-        self.model = dy.Model()
+                 concepts_nonverbs_vocab, hyperparams, dev_concepts_vocab, model = None):
+        if model is None:
+            global_model = dy.Model()
+        else:
+            global_model = model
+        self.model = global_model.add_subcollection("concepts")
 
         # BASE MODEL PARAMETERS
         # VOCABS
@@ -81,7 +85,8 @@ class ConceptsDynetGraph:
                                      hyperparams.decoder_state_size, self.model)
 
         # EMBEDDINGS CLASSIFIER
-        self.embeddings_classifier_w = self.model.add_parameters((concepts_vocab.size(), hyperparams.decoder_state_size))
+        self.embeddings_classifier_w = self.model.add_parameters(
+            (concepts_vocab.size(), hyperparams.decoder_state_size))
         self.embeddings_classifier_b = self.model.add_parameters((concepts_vocab.size()))
 
         self.dropout_rate = hyperparams.dropout_rate
@@ -244,6 +249,7 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, hyperparams)
 
     decoder_state, verb_decoder_state, nonverb_decoder_state = initialize_decoders(concepts_dynet_graph,
                                                                                    last_concept_embedding, hyperparams)
+
     classifier_init = concepts_dynet_graph.classifier.initial_state()
 
     loss_list = []
@@ -251,6 +257,7 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, hyperparams)
     predicted_concepts = []
 
     # for the cases when loss is computed on dev
+    # should this still be here??
     if hyperparams.validation_flag:
         input_matrix = input_matrix * (1 - concepts_dynet_graph.dropout_rate)
 
@@ -316,8 +323,8 @@ def decode(concepts_dynet_graph, encoded_sequence, golden_concepts, hyperparams)
         loss_list.append(loss)
 
         # predict
-        probs_vector = probs.vec_value()
-        next_concept = probs_vector.index(max(probs_vector))
+        probs_vector = probs.npvalue()
+        next_concept = dy.np.argmax(probs_vector)
         predicted_concepts.append(get_next_concept(concepts_dynet_graph, is_verb(current_concept), next_concept, hyperparams))
 
         i += 1
@@ -365,9 +372,6 @@ def predict_concepts(concepts_dynet_graph, encoded_sequence, hyperparams):
     count_END_OF_SEQUENCE = 0
     j = 0
 
-    # dropout
-    input_matrix = input_matrix * (1 - concepts_dynet_graph.dropout_rate)
-
     for i in range((len(encoded_sequence) - 1) * 2):
         if count_END_OF_SEQUENCE == 1: break
 
@@ -409,8 +413,8 @@ def predict_concepts(concepts_dynet_graph, encoded_sequence, hyperparams):
             else:
                 out_vector = w * decoder_state.output() + b
 
-        probs_vector = dy.softmax(out_vector).vec_value()
-        next_concept = probs_vector.index(max(probs_vector))
+        probs_vector = dy.softmax(out_vector).npvalue()
+        next_concept = dy.np.argmax(probs_vector)
         last_concept_embedding = get_last_concept_embedding(concepts_dynet_graph, next_concept, predict_verb, hyperparams)
 
         if hyperparams.use_verb_nonverb_decoders or hyperparams.use_verb_nonverb_embeddings_classifier:
@@ -735,6 +739,9 @@ def run_validation(concepts_dynet_graph, hyperparams, dev_entries, nb_dev_entrie
     overview_logs.write("Golden test CLASSIFIER LOSS: " + str(avg_classifier_loss) + "\n")
     overview_logs.write("\n")
 
+CONCEPTS_MODELS_PATH = PROJECT_ROOT_DIR + \
+                  '/trainers/nodes/concept_extraction/sequence_to_sequence_ordered_concept_extraction/concept_extractor_models/'
+
 
 def run_experiments(hyperparams):
     train_entries, nb_train_entries, dev_entries, nb_dev_entries = read_train_dev_data(hyperparams.alignment, hyperparams)
@@ -782,7 +789,7 @@ def run_experiments(hyperparams):
 
         run_testing(concepts_dynet_graph, hyperparams, dev_entries, nb_dev_entries, overview_logs, detail_test_logs)
 
-    models_path = "concept_extractor_models/" + model_name
+    models_path = CONCEPTS_MODELS_PATH + model_name
     if not os.path.exists(models_path):
         os.makedirs(models_path)
 
@@ -850,7 +857,7 @@ def training(hyperparams):
         hyperparams.validation_flag = False
         run_training(concepts_dynet_graph, hyperparams, train_entries, nb_train_entries, overview_logs, detail_logs)
 
-    models_path = "concept_extractor_models/" + model_name
+    models_path = CONCEPTS_MODELS_PATH + model_name
     if not os.path.exists(models_path):
         os.makedirs(models_path)
 
@@ -876,14 +883,13 @@ def training(hyperparams):
     overview_logs.close()
 
 
-def testing(hyperparams):
-
+def load_concepts_model(hyperparams, model = None):
     model_name = get_model_name(hyperparams)
+    models_path = CONCEPTS_MODELS_PATH + model_name
     default_model_name = "WRITE SOME NAME HERE"
-    models_path = "concept_extractor_models/" + model_name
-
     if not os.path.exists(models_path):
-        print("No such trained model. Loading default model: " + default_model_name)
+        print("No such trained model ("+models_path+"). Loading default model: " + default_model_name)
+        return None
     else:
         # get vocabs
         with open(models_path + "/words_vocab", "rb") as f:
@@ -902,14 +908,24 @@ def testing(hyperparams):
         # create graph
         concepts_dynet_graph = ConceptsDynetGraph(all_words_vocab, all_concepts_vocab, words_glove_embeddings_list,
                                                   all_verbs_vocab, all_nonverbs_vocab, hyperparams,
-                                                  all_dev_concepts_vocab)
+                                                  all_dev_concepts_vocab, model)
 
         # get model
         concepts_dynet_graph.model.populate(models_path + "/graph")
 
+        return concepts_dynet_graph
+
+
+def testing(hyperparams):
+
+    concepts_dynet_graph = load_concepts_model(hyperparams)
+
+    if concepts_dynet_graph is not None:
+
         test_entries: [ConceptsTrainingEntry]
         test_entries, nb_test_entries = read_test_data(hyperparams.alignment, hyperparams)
 
+        model_name = get_model_name(hyperparams)
         logs_path = "concept_extractor_logs/test/" + model_name
 
         if not os.path.exists(logs_path):

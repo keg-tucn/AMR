@@ -58,6 +58,7 @@ def generate_parent_list_vector(amr: AMR, identified_concepts: IdentifiedConcept
                     # root
                     parents_vector[i] = [0]
                 else:
+                    print(identified_concepts.amr_id)
                     raise Exception('non root concept has no parent')
             else:
                 if concept.variable == amr.roots[0]:

@@ -4,7 +4,7 @@ from models.node import Node
 from trainers.arcs.head_selection.head_selection_on_ordered_concepts.parents_vector_extractor import \
     generate_parent_list_vector
 
-from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_util import \
+from trainers.arcs.head_selection.head_selection_on_ordered_concepts.arcs_trainer_util import \
     generate_amr_node_for_vector_of_parents, calculate_smatch
 from trainers.arcs.head_selection.head_selection_on_ordered_concepts.training_arcs_data_extractor import \
     add_false_root

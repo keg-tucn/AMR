@@ -91,8 +91,7 @@ class StandfordNerTaggerPreprocessingStep(PreprocessingStep):
         return STANFORD_NER_STEP
 
     def apply_step(self, amr, sentence):
-        new_amr, new_sentence = train_pre_processing(amr, sentence)
-        metadata = None
+        new_amr, new_sentence, metadata = (amr, sentence)
         return new_amr, sentence, metadata
 
 

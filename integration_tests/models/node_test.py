@@ -1,5 +1,5 @@
 from models.node import Node
-from trainers.arcs.head_selection.head_selection_on_ordered_concepts.trainer_util import calculate_smatch
+from trainers.arcs.head_selection.head_selection_on_ordered_concepts.arcs_trainer_util import calculate_smatch
 
 # amr_str = """(r / recommend-01~e.1
 #                 :ARG1 (a / advocate-01~e.4
